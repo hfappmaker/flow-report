@@ -25,12 +25,12 @@ export const Alert = ({ message, resetSignal, variant, icon }: AlertProps) => {
     };
 
     return (
-        <div className={`relative flex items-center gap-x-2 rounded-md p-3 text-sm ${variantStyles[variant]}`}>
+        <div className={`flex items-center justify-between gap-x-2 rounded-md p-3 text-sm ${variantStyles[variant]}`}>
             <span className="size-4 flex-none">{icon}</span>
             <p className="pr-6">{message}</p>
             <button
                 onClick={() => { setVisible(false); }}
-                className="absolute right-1 top-1 p-1 focus:outline-none"
+                className="ml-auto p-1 focus:outline-none"
             >
                 <Cross2Icon className="size-4" />
             </button>

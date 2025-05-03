@@ -151,7 +151,7 @@ export default function ClientClientListPage({ userId }: { userId: string }) {
                     className="flex items-center justify-between rounded-md border p-3"
                   >
                     <div
-                      className="cursor-pointer font-medium hover:underline"
+                      className="cursor-pointer font-medium hover:text-blue-500"
                       onClick={() => {
                         handleNavigation(client.id);
                       }}

@@ -94,7 +94,7 @@ export default function ContractClientPage({ contractId }: { contractId: string 
   // Load the reports on initial render
   useEffect(() => {
     startTransition(async () => {
-      await fetchReports(searchFormValues.from , searchFormValues.to);
+      await fetchReports(searchFormValues.from, searchFormValues.to);
     });
   }, [contractId, startTransition, fetchReports, searchFormValues.from, searchFormValues.to]);
 
@@ -176,7 +176,7 @@ export default function ContractClientPage({ contractId }: { contractId: string 
       {workReports.length === 0 ? (
         <p>作業報告書がありません</p>
       ) : (
-        <ul className="divide-y divide-gray-200">
+        <ul>
           {workReports.map((workReport) => (
             <li key={workReport.id} className="py-2">
               <div
