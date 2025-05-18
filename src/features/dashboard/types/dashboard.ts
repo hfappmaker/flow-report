@@ -26,4 +26,5 @@ export type ClientDashboard = RenameProperty<
 
 export type DashboardClientPageProps = {
   draftWorkReports: Record<string, ClientDashboard>;
+  submittedWorkReportsLast3Months: Record<string, ClientDashboard>;
 };

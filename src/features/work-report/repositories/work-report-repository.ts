@@ -153,3 +153,68 @@ export async function updateWorkReportStatus(
   });
   return workReport;
 }
+
+export async function getSubmittedWorkReportsByRecentMonths(months = 3) {
+  // Filter submissions within the past `months` months
+  const cutoffDate = new Date();
+  cutoffDate.setMonth(cutoffDate.getMonth() - months);
+
+  const workReports = await db.workReport.findMany({
+    where: {
+      status: WorkReportStatus.SUBMITTED,
+      targetDate: { gte: cutoffDate },
+    },
+    include: {
+      contract: {
+        include: {
+          client: true,
+        },
+      },
+    },
+  });
+
+  const groupedReports = workReports.reduce<
+    Record<
+      string,
+      {
+        clientName: string;
+        contracts: Record<
+          string,
+          {
+            contractName: string;
+            workReports: {
+              id: string;
+              targetDate: Date;
+              status: WorkReportStatus;
+            }[];
+          }
+        >;
+      }
+    >
+  >((acc, report) => {
+    const clientId = report.contract.clientId;
+    const contractId = report.contractId;
+
+    acc[clientId] = acc[clientId] ?? {
+      clientName: report.contract.client.name,
+      contracts: {},
+    };
+
+    acc[clientId].contracts[contractId] = acc[clientId].contracts[
+      contractId
+    ] ?? {
+      contractName: report.contract.name,
+      workReports: [],
+    };
+
+    acc[clientId].contracts[contractId].workReports.push({
+      id: report.id,
+      targetDate: report.targetDate,
+      status: report.status,
+    });
+
+    return acc;
+  }, {});
+
+  return groupedReports;
+}

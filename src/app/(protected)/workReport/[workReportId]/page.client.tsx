@@ -545,6 +545,7 @@ ${targetDate.getFullYear()}年${(targetDate.getMonth() + 1)}月分の作業報�
                         <Button
                             type="button"
                             variant="outline"
+                            disabled={status !== "SUBMITTED"}
                             onClick={createReportAndSendEmail}
                         >
                             メール送信
