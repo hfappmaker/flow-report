@@ -13,23 +13,6 @@ export async function getWorkReportById(workReportId: string) {
   return workReport;
 }
 
-export async function getOpenedWorkReport(contractId: string) {
-  const workReport = await db.workReport.findFirst({
-    where: {
-      contractId: contractId,
-      status: {
-        notIn: [
-          WorkReportStatus.SUBMITTED,
-          WorkReportStatus.APPROVED,
-          WorkReportStatus.REJECTED,
-        ],
-      },
-    },
-  });
-
-  return workReport;
-}
-
 export async function createWorkReport(contractId: string, targetDate: Date) {
   const workReport = await db.workReport.create({
     data: {
@@ -102,30 +85,18 @@ export async function getWorkReportsByContractIdAndYearMonthDateRange(
   return workReports;
 }
 
-export async function getCurrentWorkReports() {
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
-  const currentDate = new Date(currentYear, currentMonth, 1);
+export async function getDraftWorkReports() {
   const workReports = await db.workReport.findMany({
-    where: {
-      targetDate: currentDate,
-    },
+    where: { status: WorkReportStatus.DRAFT },
     include: {
       contract: {
         include: {
           client: true,
-          user: {
-            select: {
-              name: true,
-            },
-          },
         },
       },
     },
   });
 
-  // Group work reports by client and contract
   const groupedReports = workReports.reduce<
     Record<
       string,
@@ -170,4 +141,15 @@ export async function getCurrentWorkReports() {
   }, {});
 
   return groupedReports;
+}
+
+export async function updateWorkReportStatus(
+  workReportId: string,
+  status: WorkReportStatus,
+) {
+  const workReport = await db.workReport.update({
+    where: { id: workReportId },
+    data: { status },
+  });
+  return workReport;
 }

@@ -24,4 +24,5 @@ export type WorkReportClientProps = {
   basicStartTime: Date | undefined;
   basicEndTime: Date | undefined;
   basicBreakDuration: number | undefined;
+  status: WorkReportStatus;
 };

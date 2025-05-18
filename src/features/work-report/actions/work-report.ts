@@ -8,9 +8,11 @@ import {
   getWorkReportsByContractId,
   getWorkReportsByContractIdAndYearMonthDateRange,
   updateWorkReportAttendances,
+  updateWorkReportStatus,
 } from "@/features/work-report/repositories/work-report-repository";
 import { AttendanceDto } from "@/features/work-report/types/attendance";
 import { WorkReport } from "@/features/work-report/types/work-report";
+import type { WorkReportStatus } from "@/features/work-report/types/work-report";
 
 export const createWorkReportAction = async (
   contractId: string,
@@ -64,6 +66,15 @@ export const getWorkReportsByContractIdAndYearMonthDateRangeAction = async (
     console.error("Error fetching work reports:", error);
     throw new Error("Failed to fetch work reports");
   }
+};
+
+export const updateWorkReportStatusAction = async (
+  workReportId: string,
+  status: WorkReportStatus,
+): Promise<WorkReport> => {
+  const updated = await updateWorkReportStatus(workReportId, status);
+  revalidatePath(`/workReport/${updated.contractId}/${updated.id}`);
+  return convertPrismaWorkReportToWorkReportDto(updated);
 };
 
 function convertPrismaWorkReportToWorkReportDto(

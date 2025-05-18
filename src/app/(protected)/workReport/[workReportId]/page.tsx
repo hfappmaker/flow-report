@@ -50,6 +50,7 @@ export default async function WorkReportPage({ params }: { params: Promise<{ wor
       basicEndTime={Serialize(contract.basicEndTime ?? undefined)}
       basicBreakDuration={Serialize(contract.basicBreakDuration ?? undefined)}
       closingDay={Serialize(contract.closingDay ?? undefined)}
+      status={workReport.status}
     />
   );
 }

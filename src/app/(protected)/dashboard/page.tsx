@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 
-import { getCurrentWorkReports } from "@/features/work-report/repositories/work-report-repository";
+import { getDraftWorkReports } from "@/features/work-report/repositories/work-report-repository";
 
 import DashboardClientPage from "./page.client";
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardPage() {
-    const groupedWorkReports = await getCurrentWorkReports();
+    const draftWorkReports = await getDraftWorkReports();
 
-    return <DashboardClientPage groupedWorkReports={groupedWorkReports} />;
+    return <DashboardClientPage draftWorkReports={draftWorkReports} />;
 }

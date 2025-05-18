@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/time-picker";
 import { useTransitionContext } from "@/contexts/transition-context";
 import { updateWorkReportAttendanceAction } from "@/features/work-report/actions/attendance";
-import { updateWorkReportAttendancesAction } from "@/features/work-report/actions/work-report";
+import { updateWorkReportAttendancesAction, updateWorkReportStatusAction } from "@/features/work-report/actions/work-report";
 import {
     type EditFormValues,
     type BulkEditFormValues,
@@ -45,6 +45,7 @@ import {
 } from "@/features/work-report/types/attendance";
 import {
     type WorkReportClientProps,
+    type WorkReportStatus,
 } from "@/features/work-report/types/work-report";
 import {
     generateDefaultAttendances,
@@ -73,6 +74,7 @@ export default function ClientWorkReportPage({
     basicStartTime,
     basicEndTime,
     basicBreakDuration,
+    status: initialStatus,
 }: WorkReportClientProps) {
     const { error, success, showError, showSuccess } = useMessageState();
     const { startTransition } = useTransitionContext();
@@ -88,6 +90,7 @@ export default function ClientWorkReportPage({
         useState(false);
     const [templateOption, setTemplateOption] = useState("default"); // 'default' or 'upload'
     const [extensionOption, setExtensionOption] = useState("excel"); // 'excel' or 'pdf'
+    const [status, setStatus] = useState<WorkReportStatus>(initialStatus);
 
     // Compute default attendance values for each day in the range…
     const defaults = generateDefaultAttendances(
@@ -509,6 +512,24 @@ ${targetDate.getFullYear()}年${(targetDate.getMonth() + 1)}月分の作業報�
                         <Button
                             type="button"
                             variant="outline"
+                            onClick={() => {
+                                const nextStatus = status === "SUBMITTED" ? "DRAFT" : "SUBMITTED";
+                                startTransition(async () => {
+                                    try {
+                                        await updateWorkReportStatusAction(workReportId, nextStatus);
+                                        setStatus(nextStatus);
+                                        showSuccess(nextStatus === "SUBMITTED" ? "月締めしました" : "月締め解除しました");
+                                    } catch {
+                                        showError("月締めステータスの変更に失敗しました");
+                                    }
+                                });
+                            }}
+                        >
+                            {status === "SUBMITTED" ? "月締め解除" : "月締め"}
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
                             onClick={() => { setIsBulkEditModalOpen(true); }}
                         >
                             一括入力
@@ -516,6 +537,7 @@ ${targetDate.getFullYear()}年${(targetDate.getMonth() + 1)}月分の作業報�
                         <Button
                             type="button"
                             variant="outline"
+                            disabled={status !== "SUBMITTED"}
                             onClick={() => { setIsCreateReportDialogOpen(true); }}
                         >
                             作業報告書を作成

@@ -10,7 +10,7 @@ import {
     type DashboardClientPageProps
 } from "@/features/dashboard/types/dashboard";
 
-export default function DashboardClientPage({ groupedWorkReports }: DashboardClientPageProps) {
+export default function DashboardClientPage({ draftWorkReports }: DashboardClientPageProps) {
     const router = useRouter();
     const { startTransition } = useTransitionContext();
     const getStatusColor = (status: WorkReportStatus) => {
@@ -38,7 +38,7 @@ export default function DashboardClientPage({ groupedWorkReports }: DashboardCli
         <div className="space-y-6 p-6">
             <h1 className="mb-6 text-2xl font-bold">現在の作業報告書一覧</h1>
 
-            {Object.entries(groupedWorkReports).map(([clientId, client]) => (
+            {Object.entries(draftWorkReports).map(([clientId, client]) => (
                 <Card key={clientId} className="mb-6">
                     <CardHeader>
                         <CardTitle>{client.clientName}</CardTitle>
