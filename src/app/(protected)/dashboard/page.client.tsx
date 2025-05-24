@@ -9,8 +9,9 @@ import { useTransitionContext } from "@/contexts/transition-context";
 import {
     type DashboardClientPageProps
 } from "@/features/dashboard/types/dashboard";
+import { SubscriptionStatus } from "@/features/subscription/components/subscription-status";
 
-export default function DashboardClientPage({ draftWorkReports, submittedWorkReportsLast3Months }: DashboardClientPageProps) {
+export default function DashboardClientPage({ draftWorkReports, submittedWorkReportsLast3Months, subscriptionInfo }: DashboardClientPageProps) {
     const router = useRouter();
     const { startTransition } = useTransitionContext();
     const getStatusColor = (status: WorkReportStatus) => {
@@ -48,6 +49,26 @@ export default function DashboardClientPage({ draftWorkReports, submittedWorkRep
 
     return (
         <div className="space-y-6 p-6">
+            {/* サブスクリプション情報を上部に表示 */}
+            {subscriptionInfo && (
+                <Card className="mb-6">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <CardTitle>サブスクリプション情報</CardTitle>
+                            <SubscriptionStatus subscriptionInfo={subscriptionInfo} />
+                        </div>
+                    </CardHeader>
+                    {subscriptionInfo.isTrialActive && (
+                        <CardContent>
+                            <p className="text-sm text-muted-foreground">
+                                無料トライアル期間は残り{subscriptionInfo.daysLeftInTrial}日です。
+                                期間終了後は月額500円のプレミアムプランへの登録が必要となります。
+                            </p>
+                        </CardContent>
+                    )}
+                </Card>
+            )}
+
             <h1 className="mb-6 text-2xl font-bold">現在の作業報告書一覧</h1>
 
             {Object.entries(draftWorkReports).map(([clientId, client]) => (

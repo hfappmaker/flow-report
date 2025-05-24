@@ -32,6 +32,14 @@ enum ContractRateType {
   middle // 中間割
 }
 
+enum SubscriptionStatus {
+  TRIAL      // トライアル期間中
+  ACTIVE     // 有料プラン利用中
+  CANCELED   // キャンセル済み
+  PAST_DUE   // 支払い遅延
+  UNPAID     // 未払い
+}
+
 // ADMINは契約の作成、支払いの作成、Userの割り当てとUSERで出来ることが全て可能
 // USERは契約の閲覧、WorkReportの作成が可能
 model User {
@@ -49,6 +57,14 @@ model User {
   clients               Client[]
   auditLogs             AuditLog[]
   EmailTemplate         EmailTemplate[]
+  
+  // Stripeサブスクリプション関連
+  stripeCustomerId      String?                @unique
+  stripeSubscriptionId  String?                @unique
+  subscriptionStatus    SubscriptionStatus?
+  trialEndsAt          DateTime?              // トライアル期間の終了日時
+  hasUsedTrial         Boolean                @default(false) // トライアルを利用したことがあるかどうか
+  currentPeriodEnd     DateTime?              // 現在の請求期間の終了日時
 }
 
 model Client {

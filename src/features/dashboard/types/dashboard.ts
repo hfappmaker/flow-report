@@ -1,5 +1,6 @@
 import { Client } from "@/features/client/types/client";
 import { ContractOutput } from "@/features/contract/types/contract";
+import { SubscriptionInfo } from "@/features/subscription/types/subscription";
 import { WorkReport } from "@/features/work-report/types/work-report";
 import { RenameProperty } from "@/utils/types/type-utils";
 
@@ -27,4 +28,5 @@ export type ClientDashboard = RenameProperty<
 export type DashboardClientPageProps = {
   draftWorkReports: Record<string, ClientDashboard>;
   submittedWorkReportsLast3Months: Record<string, ClientDashboard>;
+  subscriptionInfo: SubscriptionInfo | null;
 };
