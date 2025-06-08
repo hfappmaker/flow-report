@@ -1,11 +1,5 @@
 import { redirect } from "next/navigation";
 
-import { currentUser } from "@/features/auth/lib/auth";
-
-export default async function Home() {
-  const user = await currentUser();
-  if (user) {
-    return redirect("/dashboard");
-  }
+export default function Home() {
   return redirect("/auth/login");
 }

@@ -7,44 +7,42 @@ export async function updateUserSubscription(
   data: {
     stripeCustomerId?: string;
     stripeSubscriptionId?: string;
-    subscriptionStatus?: SubscriptionStatus;
+    status?: SubscriptionStatus;
     trialEndsAt?: Date | null;
     currentPeriodEnd?: Date | null;
     hasUsedTrial?: boolean;
   },
 ) {
-  return await db.user.update({
-    where: { id: userId },
-    data,
+  return await db.subscription.upsert({
+    where: { userId },
+    create: {
+      userId,
+      ...data,
+    },
+    update: data,
   });
 }
 
 export async function getUserSubscriptionInfo(userId: string) {
-  const user = await db.user.findUnique({
-    where: { id: userId },
-    select: {
-      stripeCustomerId: true,
-      stripeSubscriptionId: true,
-      subscriptionStatus: true,
-      trialEndsAt: true,
-      currentPeriodEnd: true,
-      hasUsedTrial: true,
-    },
+  return await db.subscription.findUnique({
+    where: { userId },
   });
-
-  return user;
 }
 
 export async function getUserByStripeCustomerId(stripeCustomerId: string) {
-  return await db.user.findUnique({
+  const subscription = await db.subscription.findUnique({
     where: { stripeCustomerId },
+    include: { user: true },
   });
+  return subscription?.user;
 }
 
 export async function getUserByStripeSubscriptionId(
   stripeSubscriptionId: string,
 ) {
-  return await db.user.findUnique({
+  const subscription = await db.subscription.findUnique({
     where: { stripeSubscriptionId },
+    include: { user: true },
   });
+  return subscription?.user;
 }

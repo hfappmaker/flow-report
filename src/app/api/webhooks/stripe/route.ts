@@ -59,7 +59,7 @@ export async function POST(req: Request) {
             // ユーザーのサブスクリプション情報を更新
             await updateUserSubscription(user.id, {
               stripeSubscriptionId: subscription.id,
-              subscriptionStatus:
+              status:
                 trialEnd && trialEnd > new Date() ? "TRIAL" : "ACTIVE",
               trialEndsAt: trialEnd,
               currentPeriodEnd,
@@ -96,7 +96,7 @@ export async function POST(req: Request) {
             : null;
 
           await updateUserSubscription(user.id, {
-            subscriptionStatus: status,
+            status,
             currentPeriodEnd,
           });
         }
@@ -109,7 +109,7 @@ export async function POST(req: Request) {
 
         if (user) {
           await updateUserSubscription(user.id, {
-            subscriptionStatus: "CANCELED",
+            status: "CANCELED",
             stripeSubscriptionId: undefined,
           });
         }
@@ -126,7 +126,7 @@ export async function POST(req: Request) {
 
           if (user) {
             await updateUserSubscription(user.id, {
-              subscriptionStatus: "ACTIVE",
+              status: "ACTIVE",
             });
           }
         }
@@ -143,7 +143,7 @@ export async function POST(req: Request) {
 
           if (user) {
             await updateUserSubscription(user.id, {
-              subscriptionStatus: "PAST_DUE",
+              status: "PAST_DUE",
             });
           }
         }

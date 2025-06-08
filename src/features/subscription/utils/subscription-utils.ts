@@ -2,36 +2,36 @@ import { SubscriptionStatus } from "@prisma/client";
 
 import { SubscriptionInfo } from "@/features/subscription/types/subscription";
 
-export function calculateSubscriptionInfo(user: {
-  subscriptionStatus: SubscriptionStatus | null;
+export function calculateSubscriptionInfo(subscription: {
+  status: SubscriptionStatus | null;
   trialEndsAt: Date | null;
   currentPeriodEnd: Date | null;
   hasUsedTrial: boolean;
 }): SubscriptionInfo {
   const now = new Date();
-  const trialEndsAt = user.trialEndsAt ? new Date(user.trialEndsAt) : null;
-  const currentPeriodEnd = user.currentPeriodEnd
-    ? new Date(user.currentPeriodEnd)
+  const trialEndsAt = subscription.trialEndsAt ? new Date(subscription.trialEndsAt) : null;
+  const currentPeriodEnd = subscription.currentPeriodEnd
+    ? new Date(subscription.currentPeriodEnd)
     : null;
 
   // トライアル期間中かどうかを判定
   const isTrialActive =
-    user.subscriptionStatus === "TRIAL" &&
+    subscription.status === "TRIAL" &&
     trialEndsAt !== null &&
     trialEndsAt > now;
 
   // トライアル期間の残り日数を計算
   let daysLeftInTrial: number | null = null;
-  if (isTrialActive && trialEndsAt) {
+  if (isTrialActive) {
     const diffTime = trialEndsAt.getTime() - now.getTime();
     daysLeftInTrial = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 
   return {
-    status: user.subscriptionStatus,
+    status: subscription.status,
     trialEndsAt,
     currentPeriodEnd,
-    hasUsedTrial: user.hasUsedTrial,
+    hasUsedTrial: subscription.hasUsedTrial,
     isTrialActive,
     daysLeftInTrial,
   };
@@ -40,11 +40,12 @@ export function calculateSubscriptionInfo(user: {
 export function shouldShowSubscriptionPrompt(
   subscriptionInfo: SubscriptionInfo,
 ): boolean {
-  // サブスクリプションがない、またはキャンセル済み、期限切れの場合はプロンプトを表示
+  // サブスクリプションがない、キャンセル済み、期限切れ、またはトライアル期間が終了した場合はプロンプトを表示
   return (
     !subscriptionInfo.status ||
     subscriptionInfo.status === "CANCELED" ||
-    subscriptionInfo.status === "UNPAID"
+    subscriptionInfo.status === "UNPAID" ||
+    (subscriptionInfo.hasUsedTrial && !subscriptionInfo.isTrialActive && subscriptionInfo.status !== "ACTIVE")
   );
 }
 

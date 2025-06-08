@@ -57,14 +57,7 @@ model User {
   clients               Client[]
   auditLogs             AuditLog[]
   EmailTemplate         EmailTemplate[]
-  
-  // Stripeサブスクリプション関連
-  stripeCustomerId      String?                @unique
-  stripeSubscriptionId  String?                @unique
-  subscriptionStatus    SubscriptionStatus?
-  trialEndsAt          DateTime?              // トライアル期間の終了日時
-  hasUsedTrial         Boolean                @default(false) // トライアルを利用したことがあるかどうか
-  currentPeriodEnd     DateTime?              // 現在の請求期間の終了日時
+  subscription          Subscription?          // サブスクリプション情報への参照
 }
 
 model Client {
@@ -209,4 +202,18 @@ model AuditLog {
   // 操作を行ったユーザー（任意）
   userId        String?
   user          User?       @relation(fields: [userId], references: [id])
+}
+
+model Subscription {
+  id                    String            @id @default(cuid())
+  userId                String            @unique
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeCustomerId      String?           @unique
+  stripeSubscriptionId  String?           @unique
+  status                SubscriptionStatus?
+  trialEndsAt          DateTime?         // トライアル期間の終了日時
+  hasUsedTrial         Boolean           @default(false) // トライアルを利用したことがあるかどうか
+  currentPeriodEnd     DateTime?         // 現在の請求期間の終了日時
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
 }

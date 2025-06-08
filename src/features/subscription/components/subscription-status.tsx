@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { SubscriptionInfo } from "@/features/subscription/types/subscription";
 
-interface SubscriptionStatusProps {
+type SubscriptionStatusProps = {
     subscriptionInfo: SubscriptionInfo;
 }
 

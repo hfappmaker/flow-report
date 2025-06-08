@@ -1,7 +1,6 @@
 "use server";
 
 import { currentUser } from "@/features/auth/lib/auth";
-
 import { stripe, TRIAL_PERIOD_DAYS } from "@/features/subscription/libs/stripe";
 import {
   getUserSubscriptionInfo,
@@ -19,7 +18,7 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
     const subscriptionInfo = await getUserSubscriptionInfo(user.id);
 
     // 既に有効なサブスクリプションがある場合
-    if (subscriptionInfo?.subscriptionStatus === "ACTIVE") {
+    if (subscriptionInfo?.status === "ACTIVE") {
       return { error: "既に有効なサブスクリプションがあります" };
     }
 
@@ -59,11 +58,14 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
       mode: "subscription",
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?subscription=success`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?subscription=cancel`,
-      subscription_data: trialPeriodDays
-        ? {
-            trial_period_days: trialPeriodDays,
+      subscription_data: {
+        trial_period_days: trialPeriodDays,
+        trial_settings: {
+          end_behavior: {
+            missing_payment_method: 'cancel'
           }
-        : undefined,
+        }
+      },
       metadata: {
         userId: user.id,
       },
