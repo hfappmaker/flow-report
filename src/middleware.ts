@@ -1,4 +1,5 @@
 import NextAuth from "next-auth";
+import { NextRequest } from "next/server";
 
 import authConfig from "@/features/auth/lib/auth.config";
 import {
@@ -11,6 +12,28 @@ import {
 const { auth } = NextAuth(authConfig);
 
 console.log("Middleware file is being loaded");
+
+// サブスクリプション情報を取得する関数
+async function checkSubscriptionStatus(req: NextRequest): Promise<{
+  needsSubscription: boolean;
+  subscriptionInfo: any;
+} | null> {
+  try {
+    const baseUrl = req.nextUrl.origin;
+    const response = await fetch(`${baseUrl}/api/auth/check-subscription`, {
+      headers: {
+        'Cookie': req.headers.get('cookie') || '',
+      },
+    });
+    
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.error("Failed to check subscription status:", error);
+  }
+  return null;
+}
 
 export default auth(async (req) => {
   console.log("=== Middleware Execution Start ===");
@@ -29,6 +52,8 @@ export default auth(async (req) => {
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+  const isSubscriptionRoute = nextUrl.pathname === "/subscription";
+  const isSubscriptionExpiredRoute = nextUrl.pathname === "/subscription/expired";
 
   if (isApiAuthRoute) {
     console.log("Skipping middleware for API auth route");
@@ -40,6 +65,48 @@ export default auth(async (req) => {
       console.log("Redirecting authorized user from auth route");
       return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
     }
+
+    // サブスクリプション状態のチェック
+    try {
+      console.log("Checking subscription for authorized user");
+      const subscriptionResult = await checkSubscriptionStatus(req);
+      
+      if (subscriptionResult) {
+        const { needsSubscription, subscriptionInfo } = subscriptionResult;
+        console.log("Subscription needs:", needsSubscription);
+        console.log("Subscription status:", subscriptionInfo?.status);
+        console.log("Is trial active:", subscriptionInfo?.isTrialActive);
+        
+        // サブスクリプションが必要な場合の処理
+        if (needsSubscription) {
+          // 既にサブスクリプションページにいる場合は何もしない
+          if (isSubscriptionRoute || isSubscriptionExpiredRoute) {
+            console.log("User is already on subscription page");
+            return;
+          }
+          
+          // トライアル期間が終了した場合は専用ページにリダイレクト
+          if (subscriptionInfo?.hasUsedTrial && !subscriptionInfo?.isTrialActive) {
+            console.log("Redirecting to subscription expired page");
+            return Response.redirect(new URL("/subscription/expired", nextUrl));
+          }
+          
+          // その他の場合は通常のサブスクリプションページにリダイレクト
+          console.log("Redirecting to subscription page");
+          return Response.redirect(new URL("/subscription", nextUrl));
+        } else {
+          // サブスクリプションが有効な場合、サブスクリプションページからリダイレクト
+          if (isSubscriptionRoute || isSubscriptionExpiredRoute) {
+            console.log("Redirecting from subscription page to dashboard");
+            return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Subscription check error:", error);
+      // エラーの場合は通常通り処理を続行
+    }
+
     return;
   }
 
@@ -65,4 +132,4 @@ export default auth(async (req) => {
 // Optionally, don't invoke Middleware on some paths
 export const config = {
   matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
-}; 
+};

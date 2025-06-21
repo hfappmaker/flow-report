@@ -1,22 +1,28 @@
-import { redirect } from "next/navigation";
+"use client";
 
+import { useState, useEffect } from "react";
 import { getSubscriptionInfo } from "@/features/subscription/actions/get-subscription-info";
 import { SubscriptionPrompt } from "@/features/subscription/components/subscription-prompt";
-import { canAccessPaidFeatures } from "@/features/subscription/utils/subscription-utils";
+import { SubscriptionInfo } from "@/features/subscription/types/subscription";
+import { useTransitionContext } from "@/contexts/transition-context";
 
-export default async function SubscriptionPage() {
-  const subscriptionInfo = await getSubscriptionInfo();
-
-  // 既にサブスクリプションがある場合はダッシュボードにリダイレクト
-  if (subscriptionInfo && canAccessPaidFeatures(subscriptionInfo)) {
-    redirect("/dashboard");
-  }
+export default function SubscriptionPage() {
+  const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
+  const { startTransition } = useTransitionContext();
+  useEffect(() => {
+    startTransition(async () => {
+      try {
+        const info = await getSubscriptionInfo();
+        setSubscriptionInfo(info);
+      } catch (error) {
+        console.error("Failed to fetch subscription info:", error);
+      }
+    });
+  }, [startTransition]);
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">プレミアムプラン</h1>
-        <div className="bg-white rounded-lg shadow-lg p-6">
           <SubscriptionPrompt
             open={true}
             onOpenChange={() => {}}
@@ -31,6 +37,5 @@ export default async function SubscriptionPage() {
           />
         </div>
       </div>
-    </div>
   );
 } 

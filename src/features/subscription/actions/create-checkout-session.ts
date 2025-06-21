@@ -56,8 +56,8 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
         },
       ],
       mode: "subscription",
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?subscription=success`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?subscription=cancel`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/subscription`,
       subscription_data: {
         trial_period_days: trialPeriodDays,
         trial_settings: {

@@ -73,7 +73,7 @@ export function SubscriptionPrompt({
 
     return (
         <Dialog open={open} onOpenChange={forceOpen ? undefined : onOpenChange}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[425px]" showCloseButton={false}>
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>{description}</DialogDescription>
