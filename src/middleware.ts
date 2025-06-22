@@ -5,6 +5,7 @@ import authConfig from "@/features/auth/lib/auth.config";
 import {
   DEFAULT_LOGIN_REDIRECT,
   apiAuthPrefix,
+  apiWebhookPrefix,
   authRoutes,
   publicRoutes,
 } from "@/app/routes";
@@ -45,27 +46,24 @@ export default auth(async (req) => {
   console.log("Middleware executing for path:", nextUrl.pathname);
   console.log("Is authorized:", !!req.auth);
   console.log("Is API auth route:", nextUrl.pathname.startsWith(apiAuthPrefix));
+  console.log("Is API webhook route:", nextUrl.pathname.startsWith(apiWebhookPrefix));
   console.log("Is public route:", publicRoutes.includes(nextUrl.pathname));
   console.log("Is auth route:", authRoutes.includes(nextUrl.pathname));
 
   const isAuthorized = !!req.auth;
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
+  const isApiWebhookRoute = nextUrl.pathname.startsWith(apiWebhookPrefix);
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
   const isSubscriptionRoute = nextUrl.pathname === "/subscription";
   const isSubscriptionExpiredRoute = nextUrl.pathname === "/subscription/expired";
 
-  if (isApiAuthRoute) {
-    console.log("Skipping middleware for API auth route");
+  if (isApiAuthRoute || isApiWebhookRoute) {
+    console.log("Skipping middleware for API route");
     return;
   }
 
   if (isAuthorized) {
-    if (isAuthRoute) {
-      console.log("Redirecting authorized user from auth route");
-      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
-    }
-
     // サブスクリプション状態のチェック
     try {
       console.log("Checking subscription for authorized user");
@@ -102,6 +100,11 @@ export default auth(async (req) => {
           }
         }
       }
+      else if(!isSubscriptionRoute){
+        console.log("No subscription needed");
+        console.log("Redirecting to subscription page");
+        return Response.redirect(new URL("/subscription", nextUrl));
+      }
     } catch (error) {
       console.error("Subscription check error:", error);
       // エラーの場合は通常通り処理を続行
@@ -110,7 +113,7 @@ export default auth(async (req) => {
     return;
   }
 
-  if (!isAuthorized && !isPublicRoute) {
+  if (!isPublicRoute && !isAuthRoute) {
     let callbackUrl = nextUrl.pathname;
 
     if (nextUrl.search) {

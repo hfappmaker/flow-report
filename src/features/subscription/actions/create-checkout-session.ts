@@ -11,11 +11,19 @@ import { CheckoutSessionResult } from "@/features/subscription/types/subscriptio
 export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
   try {
     const user = await currentUser();
-    if (!user?.id || !user?.email) {
+    if (!user?.id || !user.email) {
       return { error: "認証が必要です" };
     }
 
-    const subscriptionInfo = await getUserSubscriptionInfo(user.id);
+    let subscriptionInfo;
+    try {
+      subscriptionInfo = await getUserSubscriptionInfo(user.id);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("does not exist")) {
+        return { error: "ユーザー情報が見つかりません。再度ログインしてください。" };
+      }
+      throw error;
+    }
 
     // 既に有効なサブスクリプションがある場合
     if (subscriptionInfo?.status === "ACTIVE") {
@@ -35,9 +43,16 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
       customerId = customer.id;
 
       // カスタマーIDを保存
-      await updateUserSubscription(user.id, {
-        stripeCustomerId: customerId,
-      });
+      try {
+        await updateUserSubscription(user.id, {
+          stripeCustomerId: customerId,
+        });
+      } catch (error) {
+        if (error instanceof Error && error.message.includes("does not exist")) {
+          return { error: "ユーザー情報が見つかりません。再度ログインしてください。" };
+        }
+        throw error;
+      }
     }
 
     // トライアル期間の設定

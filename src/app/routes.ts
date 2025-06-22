@@ -2,7 +2,7 @@
  * An array of routes that are accessible to the public
  * These routes do not require authentication
  */
-export const publicRoutes: string[] = ["/", "/auth/new-verification"];
+export const publicRoutes: string[] = ["/auth/new-verification"];
 
 /**
  * An array of routes that are used for authentication
@@ -27,6 +27,12 @@ export const authRoutes: string[] = [
  * Routes that start with this prefix are used for API authentication purposes. They are available to the public.
  */
 export const apiAuthPrefix = "/api/auth";
+
+/**
+ * The prefix for API webhook routes
+ * Routes that start with this prefix are used for webhook endpoints. They are available to the public.
+ */
+export const apiWebhookPrefix = "/api/webhook";
 
 /**
  * The default redirect path after logging in
