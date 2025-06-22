@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import LogoutButton from "@/features/auth/components/logout-button";
 import CancelSubscriptionButton from "@/features/subscription/components/cancel-subscription-button";
+import ResubscribeButton from "@/features/subscription/components/resubscribe-button";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useSubscription } from "@/hooks/use-subscription";
 
@@ -64,6 +65,21 @@ const UserButton = () => {
                 サブスクリプションキャンセル
               </button>
             </CancelSubscriptionButton>
+            <DropdownMenuSeparator />
+          </>
+        )}
+        
+        {/* サブスクリプション再購読ボタン */}
+        {!isLoading && !hasActiveSubscription && subscriptionInfo?.status === "CANCELED" && (
+          <>
+            <ResubscribeButton onSuccess={handleCancelSuccess}>
+              <div 
+                className="w-full px-2 py-1.5 text-sm flex items-center justify-center text-center hover:bg-green-50 hover:text-green-600 focus:bg-green-50 focus:text-green-600 rounded-sm cursor-pointer"
+              >
+                <ExitIcon className="mr-2 size-4" />
+                サブスクリプション再購読
+              </div>
+            </ResubscribeButton>
             <DropdownMenuSeparator />
           </>
         )}
