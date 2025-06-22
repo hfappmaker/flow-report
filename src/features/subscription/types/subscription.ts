@@ -16,13 +16,13 @@ export type CreateSubscriptionResult = {
   clientSecret?: string;
 };
 
-export type CancelSubscriptionResult = {
-  success?: boolean;
+export type CheckoutSessionResult = {
+  sessionId?: string;
+  url?: string;
   error?: string;
 };
 
-export type CheckoutSessionResult = {
-  sessionId?: string;
+export type CustomerPortalSessionResult = {
   url?: string;
   error?: string;
 };
