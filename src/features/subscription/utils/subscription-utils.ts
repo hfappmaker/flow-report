@@ -38,24 +38,76 @@ export function calculateSubscriptionInfo(subscription: {
 }
 
 export function shouldShowSubscriptionPrompt(
-  subscriptionInfo: SubscriptionInfo,
+  subscriptionInfo: SubscriptionInfo | null | undefined,
 ): boolean {
-  // サブスクリプションがない、キャンセル済み、期限切れ、またはトライアル期間が終了した場合はプロンプトを表示
-  return (
-    !subscriptionInfo.status ||
-    subscriptionInfo.status === "CANCELED" ||
-    subscriptionInfo.status === "UNPAID" ||
-    (subscriptionInfo.hasUsedTrial && !subscriptionInfo.isTrialActive && subscriptionInfo.status !== "ACTIVE")
-  );
+  // サブスクリプション情報がない場合はプロンプトを表示
+  if (!subscriptionInfo) {
+    return true;
+  }
+
+  const now = new Date();
+  
+  // キャンセル済みでも現在の期間中は表示しない
+  if (subscriptionInfo.status === "CANCELED" && 
+      subscriptionInfo.currentPeriodEnd && 
+      subscriptionInfo.currentPeriodEnd > now) {
+    return false;
+  }
+
+  // トライアル期間中はプロンプトを表示しない
+  if (subscriptionInfo.isTrialActive) {
+    return false;
+  }
+
+  // アクティブなサブスクリプションがある場合はプロンプトを表示しない
+  if (subscriptionInfo.status === "ACTIVE") {
+    return false;
+  }
+
+  // 支払い遅延でも現在の期間中は表示しない（猶予期間）
+  if (subscriptionInfo.status === "PAST_DUE" && 
+      subscriptionInfo.currentPeriodEnd && 
+      subscriptionInfo.currentPeriodEnd > now) {
+    return false;
+  }
+
+  // その他の場合はプロンプトを表示
+  return true;
 }
 
 export function canAccessPaidFeatures(
-  subscriptionInfo: SubscriptionInfo,
+  subscriptionInfo: SubscriptionInfo | null | undefined,
 ): boolean {
+  console.log("=== canAccessPaidFeatures ===");
+  console.log("Input subscriptionInfo:", subscriptionInfo);
+  
+  // サブスクリプション情報がない場合はアクセス拒否
+  if (!subscriptionInfo) {
+    console.log("No subscription info - access denied");
+    return false;
+  }
+
+  const now = new Date();
+  console.log("Current time:", now);
+  console.log("Subscription status:", subscriptionInfo.status);
+  console.log("Current period end:", subscriptionInfo.currentPeriodEnd);
+  console.log("Is trial active:", subscriptionInfo.isTrialActive);
+
+  // キャンセル済みでも現在の期間中はアクセス可能
+  if (subscriptionInfo.status === "CANCELED" && 
+      subscriptionInfo.currentPeriodEnd && 
+      subscriptionInfo.currentPeriodEnd > now) {
+    console.log("CANCELED but within current period - access granted");
+    return true;
+  }
+
   // トライアル期間中または有効なサブスクリプションがある場合はアクセス可能
-  return (
+  const hasAccess = (
     subscriptionInfo.isTrialActive ||
     subscriptionInfo.status === "ACTIVE" ||
     subscriptionInfo.status === "PAST_DUE"
   );
+
+  console.log("Final access decision:", hasAccess);
+  return hasAccess;
 }

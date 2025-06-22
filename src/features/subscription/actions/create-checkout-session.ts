@@ -1,10 +1,11 @@
 "use server";
+import Stripe from "stripe";
 
 import { currentUser } from "@/features/auth/lib/auth";
-import { stripe, TRIAL_PERIOD_DAYS } from "@/features/subscription/libs/stripe";
+import { stripe, TRIAL_PERIOD_DAYS, getStripeEnv } from "@/features/subscription/libs/stripe";
 import {
   getUserSubscriptionInfo,
-  updateUserSubscription,
+  upsertUserSubscription,
 } from "@/features/subscription/repositories/subscription-repository";
 import { CheckoutSessionResult } from "@/features/subscription/types/subscription";
 
@@ -13,6 +14,22 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
     const user = await currentUser();
     if (!user?.id || !user.email) {
       return { error: "認証が必要です" };
+    }
+
+    // 環境変数を安全に取得
+    let stripeEnv;
+    try {
+      stripeEnv = getStripeEnv();
+    } catch (error) {
+      console.error("Stripe environment variables not configured:", error);
+      return { error: "サーバー設定エラーが発生しました" };
+    }
+
+    // アプリケーションのベースURLを取得
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!baseUrl) {
+      console.error("NEXT_PUBLIC_APP_URL is not defined");
+      return { error: "サーバー設定エラーが発生しました" };
     }
 
     let subscriptionInfo;
@@ -44,7 +61,7 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
 
       // カスタマーIDを保存
       try {
-        await updateUserSubscription(user.id, {
+        await upsertUserSubscription(user.id, {
           stripeCustomerId: customerId,
         });
       } catch (error) {
@@ -56,35 +73,47 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
     }
 
     // トライアル期間の設定
-    const trialPeriodDays = subscriptionInfo?.hasUsedTrial
-      ? undefined
-      : TRIAL_PERIOD_DAYS;
+    // hasUsedTrialがtrueの場合、またはCANCELEDステータスの場合はトライアルなし
+    const trialPeriodDays = 
+      subscriptionInfo?.hasUsedTrial || subscriptionInfo?.status === "CANCELED"
+        ? undefined
+        : TRIAL_PERIOD_DAYS;
+
+    console.log("Trial period days:", trialPeriodDays);
+    console.log("Has used trial:", subscriptionInfo?.hasUsedTrial);
+    console.log("Subscription status:", subscriptionInfo?.status);
 
     // チェックアウトセッションを作成
-    const session = await stripe.checkout.sessions.create({
+    const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
       payment_method_types: ["card"],
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID!,
+          price: stripeEnv.STRIPE_PRICE_ID,
           quantity: 1,
         },
       ],
       mode: "subscription",
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/subscription`,
-      subscription_data: {
-        trial_period_days: trialPeriodDays,
-        trial_settings: {
-          end_behavior: {
-            missing_payment_method: 'cancel'
-          }
-        }
-      },
+      success_url: `${baseUrl}/dashboard`,
+      cancel_url: `${baseUrl}/subscription`,
       metadata: {
         userId: user.id,
       },
-    });
+    };
+
+    // トライアル期間がある場合のみ追加
+    if (trialPeriodDays) {
+      sessionConfig.subscription_data = {
+        trial_period_days: trialPeriodDays,
+        trial_settings: {
+          end_behavior: {
+            missing_payment_method: "cancel",
+          }
+        }
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     return {
       sessionId: session.id,

@@ -5,6 +5,8 @@ type MessageState = {
   date: Date;
 };
 
+type MessageType = "error" | "success";
+
 export const useMessageState = () => {
   const [error, setError] = useState<MessageState>({
     message: "",
@@ -23,10 +25,18 @@ export const useMessageState = () => {
     setSuccess({ message, date: new Date() });
   };
 
+  const setMessage = ({ type, message }: { type: MessageType; message: string }) => {
+    if (type === "error") {
+      showError(message);
+    } else if (type === "success") {
+      showSuccess(message);
+    }
+  };
+
   const clearMessages = () => {
     setError({ message: "", date: new Date() });
     setSuccess({ message: "", date: new Date() });
   };
 
-  return { error, success, showError, showSuccess, clearMessages };
+  return { error, success, showError, showSuccess, setMessage, clearMessages };
 }; 

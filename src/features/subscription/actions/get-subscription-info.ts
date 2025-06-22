@@ -9,12 +9,16 @@ export async function getSubscriptionInfo(): Promise<SubscriptionInfo | null> {
   try {
     const user = await currentUser();
     if (!user?.id) {
+      console.log("No user found in getSubscriptionInfo");
       return null;
     }
 
+    console.log("Getting subscription info for user:", user.id);
     const subscriptionData = await getUserSubscriptionInfo(user.id);
+    console.log("Raw subscription data:", subscriptionData);
 
     if (!subscriptionData) {
+      console.log("No subscription data found, returning default");
       return {
         status: null,
         trialEndsAt: null,
@@ -25,7 +29,10 @@ export async function getSubscriptionInfo(): Promise<SubscriptionInfo | null> {
       };
     }
 
-    return calculateSubscriptionInfo(subscriptionData);
+    const calculatedInfo = calculateSubscriptionInfo(subscriptionData);
+    console.log("Calculated subscription info:", calculatedInfo);
+    
+    return calculatedInfo;
   } catch (error) {
     console.error("Failed to get subscription info:", error);
     return null;

@@ -14,8 +14,16 @@ export const stripe = new Stripe(stripeSecretKey, {
 export const TRIAL_PERIOD_DAYS = 30; // 1ヶ月のトライアル期間
 export const SUBSCRIPTION_PRICE = 500; // 月額500円
 
+// 環境変数の型定義
+type StripeEnvVars = {
+  STRIPE_SECRET_KEY: string;
+  STRIPE_WEBHOOK_SECRET: string;
+  STRIPE_PRICE_ID: string;
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: string;
+}
+
 // 環境変数の検証
-export const getStripeEnv = () => {
+export const getStripeEnv = (): StripeEnvVars => {
   const requiredEnvVars = {
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
@@ -34,5 +42,6 @@ export const getStripeEnv = () => {
     );
   }
 
-  return requiredEnvVars;
+  // 型アサーション：すべての環境変数が存在することを確認済み
+  return requiredEnvVars as StripeEnvVars;
 };

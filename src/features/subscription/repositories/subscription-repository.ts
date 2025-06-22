@@ -3,7 +3,7 @@ import { SubscriptionStatus } from "@prisma/client";
 import { getUserById } from "@/features/auth/repositories/user-repository";
 import { db } from "@/repositories/db";
 
-export async function updateUserSubscription(
+export async function upsertUserSubscription(
   userId: string,
   data: {
     stripeCustomerId?: string;
