@@ -3,26 +3,41 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { SubscriptionPrompt } from "@/features/subscription/components/subscription-prompt";
+import { createCheckoutSession } from "@/features/subscription/actions/create-checkout-session";
 import type { SubscriptionInfo } from "@/features/subscription/types/subscription";
 
 export function SubscriptionPromptButton({ subscriptionInfo }: { subscriptionInfo: SubscriptionInfo }) {
-  const [showPrompt, setShowPrompt] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubscribe = async () => {
+    setIsLoading(true);
+
+    try {
+      const result = await createCheckoutSession();
+
+      if (result.error) {
+        console.error("Subscription error:", result.error);
+        return;
+      }
+
+      if (result.url) {
+        window.location.href = result.url;
+      }
+    } catch (error) {
+      console.error("Subscription error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <>
-      <Button 
-        onClick={() => { setShowPrompt(true); }} 
-        className="w-full"
-        size="lg"
-      >
-        プレミアムプランに登録
-      </Button>
-      <SubscriptionPrompt
-        open={showPrompt}
-        onOpenChange={setShowPrompt}
-        subscriptionInfo={subscriptionInfo}
-      />
-    </>
+    <Button 
+      onClick={handleSubscribe}
+      disabled={isLoading}
+      className="w-full"
+      size="lg"
+    >
+      {isLoading ? "処理中..." : "プレミアムプランに登録"}
+    </Button>
   );
 } 
