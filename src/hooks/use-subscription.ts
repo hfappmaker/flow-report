@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { SubscriptionInfo } from "@/features/subscription/types/subscription";
 
 export const useSubscription = () => {
@@ -12,11 +13,11 @@ export const useSubscription = () => {
     const fetchSubscription = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch("/api/auth/check-subscription");
+        const response = await fetch("/api/auth/get-subscription-info");
         
         if (response.ok) {
           const data = await response.json();
-          setSubscriptionInfo(data.subscriptionInfo);
+          setSubscriptionInfo(data);
         } else {
           setError("サブスクリプション情報の取得に失敗しました");
         }
@@ -32,10 +33,10 @@ export const useSubscription = () => {
 
   const refreshSubscription = async () => {
     try {
-      const response = await fetch("/api/auth/check-subscription");
+      const response = await fetch("/api/auth/get-subscription-info");
       if (response.ok) {
         const data = await response.json();
-        setSubscriptionInfo(data.subscriptionInfo);
+        setSubscriptionInfo(data);
       }
     } catch (err) {
       console.error("Failed to refresh subscription:", err);

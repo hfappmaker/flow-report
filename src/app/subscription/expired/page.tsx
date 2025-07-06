@@ -1,4 +1,4 @@
-import { SubscriptionPromptButton } from "@/app/subscription/expired/subscription-prompt-button";
+import { SubscriptionPromptButton } from "@/features/subscription/components/subscription-prompt-button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function SubscriptionExpiredPage() {
