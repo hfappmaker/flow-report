@@ -12,7 +12,8 @@
       "mcp__playwright__browser_click",
       "mcp__playwright__browser_snapshot",
       "Bash(git checkout:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   },
