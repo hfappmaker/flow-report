@@ -23,3 +23,4 @@ RUN npm install -g @anthropic-ai/claude-code
 # RUN npm install -g @playwright/mcp@latest
 # Playwright MCPのインストール
 # RUN claude mcp add playwright -s project -- npx  -y @playwright/mcp@latest --headless --no-sandbox --isolated
+# RUN claude mcp add postgresql -s project -- npx  -y @modelcontextprotocol/server-postgres@latest postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB
