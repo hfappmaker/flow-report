@@ -6,4 +6,7 @@ RUN curl -sSL https://github.com/stripe/stripe-cli/releases/download/v1.27.0/str
 # stripe listen --forward-to localhost:3000/api/webhook/stripe
 RUN npm install -g @anthropic-ai/claude-code
 # Playwright browserのインストール
-RUN npx playwright install --with-deps
+# RUN npm install -g playwright --with-deps
+# RUN npm install -g @playwright/mcp@latest
+# Playwright MCPのインストール
+# RUN claude mcp add playwright -s project -- npx  -y @playwright/mcp@latest --headless --no-sandbox --isolated

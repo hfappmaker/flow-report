@@ -11,5 +11,9 @@
       "mcp__playwright__browser_close"
     ],
     "deny": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "playwright"
+  ],
+  "enableAllProjectMcpServers": true
 }
