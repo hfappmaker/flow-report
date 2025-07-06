@@ -14,16 +14,15 @@ test.describe('基本的な動作確認', () => {
   test('ログインページの表示確認', async ({ page }) => {
     await page.goto('/auth/login');
     
-    // ログインフォームの要素確認
-    await expect(page.locator('input[name="email"]')).toBeVisible();
-    await expect(page.locator('input[name="password"]')).toBeVisible();
-    await expect(page.locator('button[type="submit"]')).toBeVisible();
+    // ログインページの要素確認
+    await expect(page.locator('h1')).toHaveText('勤怠管理システム');
+    await expect(page.locator('button')).toContainText('Googleでログイン');
   });
 
   test('404ページの表示確認', async ({ page }) => {
-    await page.goto('/nonexistent-page');
+    const response = await page.goto('/nonexistent-page');
     
     // 404ページまたはエラーページが表示されることを確認
-    expect([404]).toContain(page.status);
+    expect(response?.status()).toBe(404);
   });
 });

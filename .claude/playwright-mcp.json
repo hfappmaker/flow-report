@@ -1,0 +1,64 @@
+{
+  "name": "playwright-mcp",
+  "version": "1.0.0",
+  "description": "Playwright MCP Server Configuration",
+  "server": {
+    "command": "node",
+    "args": ["./tests/mcp-server.js"],
+    "env": {
+      "NODE_ENV": "test",
+      "PLAYWRIGHT_BASE_URL": "http://localhost:3000"
+    }
+  },
+  "capabilities": {
+    "tools": [
+      {
+        "name": "run_test",
+        "description": "Run Playwright tests",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "testFile": {
+              "type": "string",
+              "description": "Test file to run"
+            },
+            "testName": {
+              "type": "string",
+              "description": "Specific test name to run"
+            },
+            "options": {
+              "type": "object",
+              "properties": {
+                "headed": {
+                  "type": "boolean",
+                  "description": "Run in headed mode"
+                },
+                "debug": {
+                  "type": "boolean",
+                  "description": "Run in debug mode"
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "take_screenshot",
+        "description": "Take screenshot of a page",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "URL to take screenshot of"
+            },
+            "selector": {
+              "type": "string",
+              "description": "CSS selector to screenshot"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
