@@ -10,7 +10,9 @@
       "mcp__playwright__browser_type",
       "WebFetch(domain:api.coingecko.com)",
       "mcp__playwright__browser_click",
-      "mcp__playwright__browser_snapshot"
+      "mcp__playwright__browser_snapshot",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   },
