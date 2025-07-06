@@ -31,6 +31,12 @@ yarn-error.log*
 .env*.local
 .env
 .env.production
+.env.test
+.env.staging
+
+# keep these env files
+!.env.example
+!.env.development
 
 # vercel
 .vercel

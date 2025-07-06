@@ -3,7 +3,12 @@
     "allow": [
       "WebFetch(domain:docs.anthropic.com)",
       "Bash(find:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_install",
+      "Bash(npx playwright:*)",
+      "Bash(npm run dev:*)",
+      "mcp__playwright__browser_close"
     ],
     "deny": []
   }
