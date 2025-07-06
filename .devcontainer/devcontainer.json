@@ -12,7 +12,7 @@
   "service": "app",
   "workspaceFolder": "/WorkTimeManagementV2",
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "sudo chown -R node:node . && yarn install",
+  "postCreateCommand": "sudo chown -R node:node . && npm install",
   // Configure tool-specific properties.
 
   "customizations": {
@@ -21,7 +21,8 @@
       "extensions": [
         "esbenp.prettier-vscode",
         "vscode-icons-team.vscode-icons",
-        "bradlc.vscode-tailwindcss"
+        "bradlc.vscode-tailwindcss",
+        "Anthropic.claude-code"
       ]
     }
   },
@@ -38,7 +39,7 @@
   // "forwardPorts": ["5432"],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  // "postCreateCommand": "yarn install",
+  // "postCreateCommand": "npm install",
 
   // Configure tool-specific properties.
   // "customizations": {},

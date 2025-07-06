@@ -12,21 +12,8 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { createCheckoutSession } from "@/features/subscription/actions/create-checkout-session";
-import { SubscriptionInfo } from "@/features/subscription/types/subscription";
 
-type SubscriptionPromptProps = {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    subscriptionInfo: SubscriptionInfo;
-    forceOpen?: boolean;
-};
-
-export function SubscriptionPrompt({
-    open,
-    onOpenChange,
-    subscriptionInfo,
-    forceOpen = false
-}: SubscriptionPromptProps) {
+export function TrialSubscriptionPrompt() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -54,25 +41,17 @@ export function SubscriptionPrompt({
     };
 
     const getDialogContent = () => {
-        if (!subscriptionInfo.hasUsedTrial) {
-            return {
-                title: "プレミアムプランを始めましょう",
-                description: "30日間の無料トライアルをお試しください。クレジットカードの登録が必要ですが、トライアル期間中は課金されません。いつでもキャンセル可能です。",
-                buttonText: "無料トライアルを開始",
-            };
-        } else {
-            return {
-                title: "プレミアムプランに登録",
-                description: "月額500円で全ての機能をご利用いただけます。クレジットカードの登録が必要です。",
-                buttonText: "プレミアムプランに登録",
-            };
-        }
+        return {
+            title: "無料トライアルを開始",
+            description: "30日間の無料トライアルで全ての機能をお試しください。クレジットカードの登録が必要ですが、トライアル期間中は課金されません。いつでもキャンセル可能です。",
+            buttonText: "無料トライアルを開始",
+        };
     };
 
     const { title, description, buttonText } = getDialogContent();
 
     return (
-        <Dialog open={open} onOpenChange={forceOpen ? undefined : onOpenChange}>
+        <Dialog open={true}>
             <DialogContent className="sm:max-w-[425px]" showCloseButton={false}>
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
@@ -90,14 +69,12 @@ export function SubscriptionPrompt({
                         </ul>
                     </div>
 
-                    {!subscriptionInfo.hasUsedTrial && (
-                        <div className="rounded-lg bg-blue-50 p-3 text-sm">
-                            <p className="text-blue-900">
-                                <strong>特別オファー:</strong> 今なら30日間無料でお試しいただけます。
-                                クレジットカードの登録は必要ですが、トライアル期間中はいつでもキャンセル可能です。
-                            </p>
-                        </div>
-                    )}
+                    <div className="rounded-lg bg-blue-50 p-3 text-sm">
+                        <p className="text-blue-900">
+                            <strong>特別オファー:</strong> 今なら30日間無料でお試しいただけます。
+                            クレジットカードの登録は必要ですが、トライアル期間中はいつでもキャンセル可能です。
+                        </p>
+                    </div>
 
                     {error && (
                         <div className="rounded-lg bg-red-50 p-3 text-sm">

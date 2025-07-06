@@ -1,24 +1,13 @@
 import { SubscriptionPromptButton } from "@/app/subscription/expired/subscription-prompt-button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { getSubscriptionInfo } from "@/features/subscription/actions/get-subscription-info";
 
-
-export default async function SubscriptionExpiredPage() {
-  const subscriptionInfo = await getSubscriptionInfo();
-
-  if (!subscriptionInfo) {
-    return null;
-  }
+export default function SubscriptionExpiredPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">トライアル期間が終了しました</CardTitle>
-          <CardDescription>
-            30日間の無料トライアル期間が終了しました。
-            引き続きサービスをご利用いただくには、プレミアムプランへの登録が必要です。
-          </CardDescription>
+          <CardTitle className="text-2xl">プレミアムプランが期限切れになりました</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-lg bg-muted p-4">
@@ -30,9 +19,12 @@ export default async function SubscriptionExpiredPage() {
               <li>✓ 安心の決済システム</li>
             </ul>
           </div>
+          <CardDescription>
+            プレミアムプランの利用期限が切れています。サービスを継続してご利用いただくには、プランを再開してください。
+          </CardDescription>
         </CardContent>
         <CardFooter>
-          <SubscriptionPromptButton subscriptionInfo={subscriptionInfo} />
+          <SubscriptionPromptButton />
         </CardFooter>
       </Card>
     </div>

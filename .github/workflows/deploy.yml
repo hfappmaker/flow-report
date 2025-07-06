@@ -55,9 +55,9 @@ jobs:
           path: api-image-uri.txt
 
       # - name: Install dependencies
-      #   run: yarn install
+      #   run: npm install
       # - name: Apply all pending migrations to the database
-      #   run: yarn prisma migrate deploy
+      #   run: npx prisma migrate deploy
       #   env:
       #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
   deploy:
@@ -111,4 +111,4 @@ jobs:
       #     override-container-command: |
       #       sh
       #       -c
-      #       yarn prisma migrate deploy
+      #       npx prisma migrate deploy

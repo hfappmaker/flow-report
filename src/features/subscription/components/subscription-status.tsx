@@ -9,25 +9,14 @@ type SubscriptionStatusProps = {
 
 export function SubscriptionStatus({ subscriptionInfo }: SubscriptionStatusProps) {
     const getStatusBadge = () => {
-        if (subscriptionInfo.isTrialActive) {
-            return (
-                <Badge variant="secondary">
-                    トライアル期間中 (残り{subscriptionInfo.daysLeftInTrial}日)
-                </Badge>
-            );
-        }
-
+        const daysLeft = subscriptionInfo.currentPeriodEnd ? (subscriptionInfo.currentPeriodEnd.getTime() - Date.now()) / (1000 * 60 * 60 * 24) : 0;
         switch (subscriptionInfo.status) {
             case "ACTIVE":
                 return <Badge variant="success">プレミアムプラン</Badge>;
             case "CANCELED":
                 return <Badge variant="destructive">キャンセル済み</Badge>;
-            case "PAST_DUE":
-                return <Badge variant="warning">支払い遅延</Badge>;
-            case "UNPAID":
-                return <Badge variant="destructive">未払い</Badge>;
-            default:
-                return <Badge variant="outline">無料プラン</Badge>;
+            case "TRIAL":
+                return <Badge variant="warning">トライアル期間中 (残り{daysLeft}日)</Badge>;
         }
     };
 

@@ -58,14 +58,6 @@ export default function DashboardClientPage({ draftWorkReports, submittedWorkRep
                             <SubscriptionStatus subscriptionInfo={subscriptionInfo} />
                         </div>
                     </CardHeader>
-                    {subscriptionInfo.isTrialActive && (
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground">
-                                無料トライアル期間は残り{subscriptionInfo.daysLeftInTrial}日です。
-                                期間終了後は月額500円のプレミアムプランへの登録が必要となります。
-                            </p>
-                        </CardContent>
-                    )}
                 </Card>
             )}
 

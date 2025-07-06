@@ -4,9 +4,8 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { createCheckoutSession } from "@/features/subscription/actions/create-checkout-session";
-import type { SubscriptionInfo } from "@/features/subscription/types/subscription";
 
-export function SubscriptionPromptButton({ subscriptionInfo }: { subscriptionInfo: SubscriptionInfo }) {
+export function SubscriptionPromptButton() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubscribe = async () => {

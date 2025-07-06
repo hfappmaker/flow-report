@@ -73,15 +73,9 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
     }
 
     // トライアル期間の設定
-    // hasUsedTrialがtrueの場合、またはCANCELEDステータスの場合はトライアルなし
-    const trialPeriodDays = 
-      subscriptionInfo?.hasUsedTrial || subscriptionInfo?.status === "CANCELED"
-        ? undefined
-        : TRIAL_PERIOD_DAYS;
-
-    console.log("Trial period days:", trialPeriodDays);
-    console.log("Has used trial:", subscriptionInfo?.hasUsedTrial);
-    console.log("Subscription status:", subscriptionInfo?.status);
+    const trialPeriodDays = !subscriptionInfo
+        ? TRIAL_PERIOD_DAYS
+        : undefined;
 
     // チェックアウトセッションを作成
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
