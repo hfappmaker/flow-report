@@ -6,6 +6,7 @@ import {
   apiAuthPrefix,
   apiWebhookPrefix,
   authRoutes,
+  errorRoutes,
   publicRoutes,
 } from "@/app/routes";
 import authConfig from "@/features/auth/lib/auth.config";
@@ -120,7 +121,14 @@ export default auth(async (req) => {
   const isAuthorized = !!req.auth;
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isApiWebhookRoute = nextUrl.pathname.startsWith(apiWebhookPrefix);
+  const isErrorRoute = errorRoutes.includes(nextUrl.pathname);
 
+  // エラールートの場合は何もしない
+  if (isErrorRoute) {
+    console.log("Request is for an error route, skipping middleware processing.");
+    return;
+  }
+  
   // APIルートの場合はスキップ
   if (isApiAuthRoute || isApiWebhookRoute) {
     return;
