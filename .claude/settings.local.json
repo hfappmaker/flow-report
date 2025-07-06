@@ -5,12 +5,17 @@
       "Bash(find:*)",
       "Bash(mkdir:*)",
       "Bash(npx playwright:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_type",
+      "WebFetch(domain:api.coingecko.com)",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_snapshot"
     ],
     "deny": []
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "playwright"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }
