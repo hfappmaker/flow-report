@@ -11,6 +11,7 @@ import { CheckoutSessionResult } from "@/features/subscription/types/subscriptio
 
 export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
   try {
+    console.log("Creating checkout session...");
     const user = await currentUser();
     if (!user?.id || !user.email) {
       return { error: "認証が必要です" };
@@ -64,6 +65,7 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
         await upsertUserSubscription(user.id, {
           stripeCustomerId: customerId,
         });
+        console.log("Created new Stripe customer:", customerId);
       } catch (error) {
         if (error instanceof Error && error.message.includes("does not exist")) {
           return { error: "ユーザー情報が見つかりません。再度ログインしてください。" };

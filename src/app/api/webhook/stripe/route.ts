@@ -93,9 +93,7 @@ export async function POST(req: Request) {
                 stripeSubscriptionId: subscription.id,
                 status:
                   trialEnd && trialEnd > new Date() ? "TRIAL" : "ACTIVE",
-                trialEndsAt: trialEnd,
                 currentPeriodEnd,
-                hasUsedTrial: true,
               });
               console.log("Subscription updated for checkout.session.completed");
             } catch (error) {
@@ -122,7 +120,7 @@ export async function POST(req: Request) {
           const currentDbInfo = await getUserSubscriptionInfo(user.id);
 
           // ステータスを決定する関数（改善版）
-          const getSubscriptionStatus = (subscription: Stripe.Subscription): "TRIAL" | "ACTIVE" | "CANCELED" | "PAST_DUE" | "UNPAID" => {
+          const getSubscriptionStatus = (subscription: Stripe.Subscription): "TRIAL" | "ACTIVE" | "CANCELED" => {
             const now = Math.floor(Date.now() / 1000);
             
             // キャンセル予定（期間終了時にキャンセル）の場合
@@ -142,14 +140,14 @@ export async function POST(req: Request) {
               case "canceled":
                 return "CANCELED";
               case "past_due":
-                return "PAST_DUE";
+                return "CANCELED";
               case "unpaid":
               case "incomplete":
               case "incomplete_expired":
-                return "UNPAID";
+                return "CANCELED";
               default:
                 console.warn("Unexpected subscription status:", subscription.status);
-                return "UNPAID";
+                return "CANCELED";
             }
           };
 
@@ -171,28 +169,22 @@ export async function POST(req: Request) {
           };
 
           const newCurrentPeriodEnd = getPeriodEnd(subscription);
-          const newTrialEndsAt = subscription.trial_end 
-            ? new Date(subscription.trial_end * 1000) 
-            : null;
 
           // 変更があるかチェック
           const hasStatusChanged = currentDbInfo?.status !== newStatus;
           const hasPeriodEndChanged = currentDbInfo?.currentPeriodEnd?.getTime() !== newCurrentPeriodEnd?.getTime();
-          const hasTrialEndChanged = currentDbInfo?.trialEndsAt?.getTime() !== newTrialEndsAt?.getTime();
 
-          const hasChanges = hasStatusChanged || hasPeriodEndChanged || hasTrialEndChanged;
+          const hasChanges = hasStatusChanged || hasPeriodEndChanged;
 
           if (hasChanges) {
             console.log("Changes detected:");
             if (hasStatusChanged) console.log(`- Status: ${currentDbInfo?.status} → ${newStatus}`);
             if (hasPeriodEndChanged) console.log(`- Period end: ${currentDbInfo?.currentPeriodEnd} → ${newCurrentPeriodEnd}`);
-            if (hasTrialEndChanged) console.log(`- Trial end: ${currentDbInfo?.trialEndsAt} → ${newTrialEndsAt}`);
 
             try {
               await upsertUserSubscription(user.id, {
                 status: newStatus,
                 currentPeriodEnd: newCurrentPeriodEnd,
-                trialEndsAt: newTrialEndsAt,
               });
               console.log(`Subscription updated: ${subscription.id} -> ${newStatus}`);
               
@@ -254,7 +246,8 @@ export async function POST(req: Request) {
             const now = Math.floor(Date.now() / 1000);
             const isTrialActive = subscription.trial_end && subscription.trial_end > now;
             const newStatus = isTrialActive ? "TRIAL" : "ACTIVE";
-            const newCurrentPeriodEnd = new Date(subscription.items.data[0].current_period_end * 1000);
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const newCurrentPeriodEnd = new Date(isTrialActive ? subscription.trial_end! * 1000 : subscription.items.data[0].current_period_end * 1000);
             
             // ステータスの変更があるかチェック（支払い成功時は必ずACTIVEに）
             const hasStatusChanged = currentDbInfo?.status !== newStatus;
@@ -300,7 +293,7 @@ export async function POST(req: Request) {
           if (user) {
             try {
               await upsertUserSubscription(user.id, {
-                status: "PAST_DUE",
+                status: "CANCELED",
               });
               console.log("Subscription updated for invoice.payment_failed");
             } catch (error) {

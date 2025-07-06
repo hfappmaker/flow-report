@@ -14,7 +14,6 @@ export async function getSubscriptionInfo(): Promise<SubscriptionInfo | null> {
 
   console.log("Getting subscription info for user:", user.id);
   const subscriptionData = await getUserSubscriptionInfo(user.id);
-  console.log("Raw subscription data:", subscriptionData);
   
   return subscriptionData;
 }

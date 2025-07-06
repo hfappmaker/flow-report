@@ -54,7 +54,8 @@ async function handleAuthenticatedUser(req: NextRequest) {
     console.log("Subscription info retrieved:", subscriptionInfo);
 
     // サブスクリプション情報がない場合は、サブスクリプションページにリダイレクト
-    if (!subscriptionInfo) {
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+    if (!subscriptionInfo || subscriptionInfo.status === null) {
       console.log("No subscription info found, redirecting to subscription page");
 
       if (isSubscriptionRoute) {
@@ -64,8 +65,7 @@ async function handleAuthenticatedUser(req: NextRequest) {
       return Response.redirect(new URL("/subscription", nextUrl));
     }
 
-    const isExpired = subscriptionInfo.status == "CANCELED" && subscriptionInfo.currentPeriodEnd && subscriptionInfo.currentPeriodEnd < new Date();
-
+    const isExpired = subscriptionInfo.status == "CANCELED" && !!subscriptionInfo.currentPeriodEnd && new Date(subscriptionInfo.currentPeriodEnd) < new Date();
     // サブスクリプションが有効でない場合は、サブスクリプション期限切れページにリダイレクト
     if (isExpired) {
       console.log("Subscription is expired, redirecting to expired subscription page");

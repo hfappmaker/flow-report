@@ -9,9 +9,7 @@ export async function upsertUserSubscription(
     stripeCustomerId?: string;
     stripeSubscriptionId?: string;
     status?: SubscriptionStatus;
-    trialEndsAt?: Date | null;
     currentPeriodEnd?: Date | null;
-    hasUsedTrial?: boolean;
   },
 ) {
   // Validate that the user exists before attempting to create/update subscription
