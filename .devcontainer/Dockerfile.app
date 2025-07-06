@@ -5,3 +5,5 @@ RUN curl -sSL https://github.com/stripe/stripe-cli/releases/download/v1.27.0/str
 # stripe login
 # stripe listen --forward-to localhost:3000/api/webhook/stripe
 RUN npm install -g @anthropic-ai/claude-code
+# Playwright browserのインストール
+RUN npx playwright install --with-deps

@@ -122,12 +122,17 @@ src/
 - Use TypeScript strict mode and avoid `any` types
 - Prioritize editing existing files over creating new ones
 
-### Files to Ignore
-Claude Code should avoid processing these files and directories:
-- `node_modules/` - Package dependencies
-- `.next/` - Next.js build output
-- `dist/` - Distribution/build files
-- `build/` - Build output
-- `coverage/` - Test coverage reports
-- `.env*` - Environment variable files
-- `*.log` - Log files
+  ### Files to Ignore
+  Claude Code should avoid processing these files and directories:
+  - `node_modules/` - Package dependencies
+  - `.next/` - Next.js build output
+  - `dist/` - Distribution/build files
+  - `build/` - Build output
+  - `coverage/` - Test coverage reports
+  - `.env*` - Environment variable files
+  - `*.log` - Log files
+  - `test-results/` - Playwright test results
+  - `playwright-report/` - Playwright HTML reports
+  - `prisma/migrations/` - Database migration files
+  - `.git/` - Git repository data
+  - `*.lock` - Lock files (package-lock.json, yarn.lock)
