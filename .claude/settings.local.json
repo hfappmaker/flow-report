@@ -16,12 +16,14 @@
       "Bash(git push:*)",
       "Bash(git merge:*)",
       "Bash(git stash:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "mcp__postgresql__query"
     ],
     "deny": []
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
-    "playwright"
+    "playwright",
+    "postgresql"
   ]
 }

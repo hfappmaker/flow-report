@@ -11,6 +11,16 @@
         "--isolated"
       ],
       "env": {}
+    },
+    "postgresql": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres@latest",
+        "postgresql://user:password@db:5432/worktime_management"
+      ],
+      "env": {}
     }
   }
 }
