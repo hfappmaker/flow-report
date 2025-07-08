@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "rm -rf .next && next dev",
+    "dev:test": "rm -rf .next && NODE_ENV=test npx dotenv -e .env.test -- next dev",
     "dev:turbo": "rm -rf .next && next dev --turbo",
     "dev:inspect": "rm -rf .next && NODE_OPTIONS='--inspect' next dev",
     "build": "next build",

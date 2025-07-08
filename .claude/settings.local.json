@@ -17,7 +17,16 @@
       "Bash(git merge:*)",
       "Bash(git stash:*)",
       "Bash(ls:*)",
-      "mcp__postgresql__query"
+      "mcp__postgresql__query",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_press_key",
+      "Bash(pkill:*)",
+      "Bash(true)",
+      "mcp__playwright__browser_console_messages",
+      "mcp__playwright__browser_tab_new",
+      "Bash(curl:*)",
+      "mcp__playwright__browser_tab_select",
+      "mcp__playwright__browser_tab_list"
     ],
     "deny": []
   },
