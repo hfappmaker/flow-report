@@ -1,5 +1,5 @@
-import { TestLoginPage } from "./test-page.client";
-import { LoginPage } from "./page.client";
+import TestLoginPage from "./test-page.client";
+import LoginPage from "./page.client";
 
 export const metadata = {
   title: "ログイン",

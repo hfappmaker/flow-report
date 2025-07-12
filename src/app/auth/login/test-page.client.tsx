@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { BsCalendarCheck } from "react-icons/bs";
-import { GrGoogle } from "react-icons/gr";
 
 import { DEFAULT_LOGIN_REDIRECT } from "@/app/routes";
 import { Button } from "@/components/ui/button";
