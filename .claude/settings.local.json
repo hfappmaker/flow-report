@@ -26,7 +26,9 @@
       "mcp__playwright__browser_tab_new",
       "Bash(curl:*)",
       "mcp__playwright__browser_tab_select",
-      "mcp__playwright__browser_tab_list"
+      "mcp__playwright__browser_tab_list",
+      "Bash(npm run test:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   },

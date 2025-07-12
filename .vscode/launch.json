@@ -7,6 +7,13 @@
       "command": "npm run dev",
       "cwd": "${workspaceFolder}"
     },
+        {
+      "type": "node-terminal",
+      "name": "スクリプトの実行: dev:test",
+      "request": "launch",
+      "command": "npm run dev:test",
+      "cwd": "${workspaceFolder}"
+    },
     {
       "type": "node",
       "request": "attach",

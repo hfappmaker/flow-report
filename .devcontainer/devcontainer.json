@@ -12,7 +12,7 @@
   "service": "app",
   "workspaceFolder": "/WorkTimeManagementV2",
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "sudo chown -R node:node . && npm install",
+  "postCreateCommand": "sudo chown -R node:node . && npm install && npx playwright install",
   // Configure tool-specific properties.
 
   "customizations": {
@@ -22,7 +22,8 @@
         "esbenp.prettier-vscode",
         "vscode-icons-team.vscode-icons",
         "bradlc.vscode-tailwindcss",
-        "Anthropic.claude-code"
+        "Anthropic.claude-code",
+        "ms-playwright.playwright"
       ]
     }
   },

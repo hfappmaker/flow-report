@@ -6,8 +6,6 @@ export const metadata = {
 };
 
 export default function LoginPageServer() {
-  console.log("Current LOCAL_NODE_ENV:", process.env.LOCAL_NODE_ENV);
-
   if (process.env.LOCAL_NODE_ENV === 'test') {
     // テスト環境用の処理
     return <TestLoginPage/>;

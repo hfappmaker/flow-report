@@ -18,7 +18,8 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
     && apt install -y gh
 
 RUN npm install -g @anthropic-ai/claude-code
-RUN npx playwright install-deps
+# RUN npx playwright install
+# RUN npx playwright install-deps
 # Playwright browserのインストール
 # RUN npm install -g playwright --with-deps
 # RUN npm install -g @playwright/mcp@latest
