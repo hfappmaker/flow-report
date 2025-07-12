@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from "react";
 import { signIn } from "next-auth/react";
+import { useState } from "react";
 import { BsCalendarCheck } from "react-icons/bs";
 
 import { DEFAULT_LOGIN_REDIRECT } from "@/app/routes";

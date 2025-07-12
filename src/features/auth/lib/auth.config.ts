@@ -2,7 +2,6 @@ import { User } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 
 import { getUserByEmail } from "@/features/auth/repositories/user-repository";
@@ -14,7 +13,6 @@ export default {
     ...(process.env.NODE_ENV === "test" 
       ? []
       : [
-          GitHub,
           Google,
         ]
     ),

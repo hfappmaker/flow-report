@@ -40,6 +40,9 @@ const nextConfig = {
       
       return config
     },
+    env: {
+      LOCAL_NODE_ENV: process.env.NODE_ENV,
+    }
   }
   
-  module.exports = nextConfig
+module.exports = nextConfig

@@ -1,4 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import * as dotenv from 'dotenv';
+
+// .env ファイルから環境変数を読み込みます
+dotenv.config({path: '.env.test'});
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -18,7 +22,7 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['html'],
-    ['json', { outputFile: 'test-results/results.json' }]
+    ['json', { outputFile: 'test-results/results.json' }],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -39,6 +43,7 @@ export default defineConfig({
     
     /* Video settings */
     video: 'retain-on-failure',
+    storageState: undefined, // セッションをクリア
   },
 
   /* Configure projects for major browsers */
@@ -81,8 +86,8 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run dev',
-    url: 'http://127.0.0.1:3000',
+    command: 'npm run dev:test',
+    url: process.env.NEXT_PUBLIC_APP_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000, // 2 minutes
   },
