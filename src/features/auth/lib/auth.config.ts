@@ -20,20 +20,6 @@ export default {
     ),
     Credentials({
       async authorize(credentials): Promise<User | null> {
-        // テスト環境用のテストユーザー認証
-        if (process.env.NODE_ENV === "test" && credentials?.email === "test@example.com") {
-          return {
-            id: "test-user-id",
-            name: "Test User",
-            email: "test@example.com",
-            emailVerified: new Date(),
-            image: null,
-            password: null,
-            role: "USER",
-            isTwoFactorEnabled: false,
-          } as User;
-        }
-
         const validatedFields = LoginSchema.safeParse(credentials);
 
         if (validatedFields.success) {

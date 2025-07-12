@@ -16,7 +16,8 @@
     "test:p:ui": "NODE_ENV=test playwright test --ui",
     "test:p:debug": "NODE_ENV=test playwright test --debug",
     "test:p:headed": "NODE_ENV=test playwright test --headed",
-    "test:p:explicit": "NODE_ENV=test npx dotenv -e .env.test -- playwright test"
+    "test:p:explicit": "NODE_ENV=test npx dotenv -e .env.test -- playwright test",
+    "seed:test-users": "NODE_ENV=test npx dotenv -e .env.test -- npx tsx scripts/seed-test-users.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",
