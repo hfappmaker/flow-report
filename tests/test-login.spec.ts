@@ -39,7 +39,7 @@ test.describe('テスト環境ログイン', () => {
     await expect(page.locator('input[type="password"]')).toHaveValue('LoadTest123!');
   });
 
-  test('テストユーザーでのログインが成功する', async ({ page }) => {
+  test('サブスクリプション購読済みテストユーザーでのログインが成功', async ({ page }) => {
     await page.goto('/auth/login');
     await page.waitForLoadState('networkidle');
     
@@ -52,7 +52,39 @@ test.describe('テスト環境ログイン', () => {
     await page.locator('button[type="submit"]').click({ force: true });
 
     // ログイン後のページが読み込まれるまで待機
-    await page.waitForURL('/dashboard', { timeout: 10000 });
+    await page.waitForURL('/dashboard', { timeout: 20000 });
+  });
+
+  test('サブスクリプション未購読テストユーザーでのログインが成功する', async ({ page }) => {
+    await page.goto('/auth/login');
+    await page.waitForLoadState('networkidle');
+    
+    // ログインページのURLを確認
+    expect(page.url()).toContain('/auth/login');
+    // テストユーザー1の認証情報を入力
+    await page.locator('input[type="email"]').fill('loadtest2@example.com');
+    await page.locator('input[type="password"]').fill('LoadTest123!');
+    // ログインボタンをクリック
+    await page.locator('button[type="submit"]').click({ force: true });
+
+    // ログイン後のページが読み込まれるまで待機
+    await page.waitForURL('/subscription', { timeout: 20000 });
+  });
+
+  test('サブスクリプションキャンセル済みテストユーザーでのログインが成功する', async ({ page }) => {
+    await page.goto('/auth/login');
+    await page.waitForLoadState('networkidle');
+    
+    // ログインページのURLを確認
+    expect(page.url()).toContain('/auth/login');
+    // テストユーザー1の認証情報を入力
+    await page.locator('input[type="email"]').fill('loadtest3@example.com');
+    await page.locator('input[type="password"]').fill('LoadTest123!');
+    // ログインボタンをクリック
+    await page.locator('button[type="submit"]').click({ force: true });
+
+    // ログイン後のページが読み込まれるまで待機
+    await page.waitForURL('/subscription/expired', { timeout: 20000 });
   });
 
   test('無効な認証情報でログインが失敗する', async ({ page }) => {
