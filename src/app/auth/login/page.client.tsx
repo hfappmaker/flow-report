@@ -17,7 +17,7 @@ export default function LoginPage() {
             勤怠管理システム
           </h1>
         </div>
-        <Button variant="outline" onClick={() => signIn("google", { callbackUrl: DEFAULT_LOGIN_REDIRECT })}>
+        <Button variant="outline" onClick={() => signIn("google", { redirectTo: DEFAULT_LOGIN_REDIRECT })}>
           <div className="flex items-center gap-x-2">
             <GrGoogle />
             <p>Googleでログイン</p>

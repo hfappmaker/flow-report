@@ -7,7 +7,6 @@ import {
   apiWebhookPrefix,
   authRoutes,
   errorRoutes,
-  publicRoutes,
 } from "@/app/routes";
 import authConfig from "@/features/auth/lib/auth.config";
 import { SubscriptionInfo } from "@/features/subscription/types/subscription";
@@ -38,17 +37,8 @@ async function handleAuthenticatedUser(req: NextRequest) {
   const { nextUrl } = req;
   const isSubscriptionRoute = nextUrl.pathname === "/subscription";
   const isSubscriptionExpiredRoute = nextUrl.pathname === "/subscription/expired";
-  const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
   try {
-
-    if(isPublicRoute) {
-      return;
-    }
-
-    if(isAuthRoute) {
-      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
-    }
 
     const subscriptionInfo = await getSubscriptionInfo(req);
     console.log("Subscription info retrieved:", subscriptionInfo);
@@ -78,6 +68,11 @@ async function handleAuthenticatedUser(req: NextRequest) {
     }
 
     console.log("User is authorized and subscription is valid");
+
+    if(isAuthRoute || isSubscriptionRoute || isSubscriptionExpiredRoute) {
+      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+    }
+
     // 認証済みユーザーのリクエストをそのまま通過
     return;
 
@@ -90,11 +85,10 @@ async function handleAuthenticatedUser(req: NextRequest) {
 // 未認証ユーザーの処理
 function handleUnauthenticatedUser(req: NextRequest) {
   const { nextUrl } = req;
-  const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
 
-  // パブリックルートまたは認証ルートの場合は何もしない
-  if (isPublicRoute || isAuthRoute) {
+  // 認証ルートの場合は何もしない
+  if (isAuthRoute) {
     return;
   }
 
@@ -122,7 +116,7 @@ export default auth(async (req) => {
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isApiWebhookRoute = nextUrl.pathname.startsWith(apiWebhookPrefix);
   const isErrorRoute = errorRoutes.includes(nextUrl.pathname);
-
+  
   // エラールートの場合は何もしない
   if (isErrorRoute) {
     console.log("Request is for an error route, skipping middleware processing.");
@@ -131,6 +125,7 @@ export default auth(async (req) => {
   
   // APIルートの場合はスキップ
   if (isApiAuthRoute || isApiWebhookRoute) {
+    console.log("Request is for API route, skipping middleware processing.");
     return;
   }
 

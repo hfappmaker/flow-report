@@ -14,7 +14,7 @@ const Social = () => {
   const callbackUrl = searchParams.get("callbackUrl");
 
   const onClick = (provider: "google" | "github") => {
-    void signIn(provider, { callbackUrl: callbackUrl ?? DEFAULT_LOGIN_REDIRECT });
+    void signIn(provider, { redirectTo: callbackUrl ?? DEFAULT_LOGIN_REDIRECT });
   };
 
   return (

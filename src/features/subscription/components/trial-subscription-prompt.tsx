@@ -16,6 +16,7 @@ import { createCheckoutSession } from "@/features/subscription/actions/create-ch
 export function TrialSubscriptionPrompt() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isOpen, setIsOpen] = useState(true);
 
     const handleSubscribe = async () => {
         setIsLoading(true);
@@ -51,8 +52,8 @@ export function TrialSubscriptionPrompt() {
     const { title, description, buttonText } = getDialogContent();
 
     return (
-        <Dialog open={true}>
-            <DialogContent className="sm:max-w-[425px]" showCloseButton={false}>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogContent className="sm:max-w-[425px]" showCloseButton>
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>{description}</DialogDescription>
