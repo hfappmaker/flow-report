@@ -1,39 +1,54 @@
 'use client'
 
-import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
 import { BsCalendarCheck } from "react-icons/bs";
+import * as z from "zod";
 
-import { DEFAULT_LOGIN_REDIRECT } from "@/app/routes";
 import { Button } from "@/components/ui/button";
+import ErrorAlert from "@/components/ui/feedback/error-alert";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { login } from "@/features/auth/actions/login";
+import { LoginSchema } from "@/features/auth/schemas/login";
+
 
 export default function TestLoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<{ message: string, date: Date }>({ message: "", date: new Date() });
+  const [isPending, startTransition] = useTransition();
+  
+  const form = useForm<z.infer<typeof LoginSchema>>({
+    resolver: zodResolver(LoginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-  const handleTestLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const onSubmit = (values: z.infer<typeof LoginSchema>) => {
     
-    try {
-      await signIn("credentials", {
-        email,
-        password,
-        callbackUrl: DEFAULT_LOGIN_REDIRECT,
-      });
-    } catch (error) {
-      console.error("Login error:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    startTransition(async () => {
+      await login(values)
+        .then((data) => {
+          if (data?.error) {
+            form.reset();
+            setError({ message: data.error, date: new Date() });
+          }
+        });
+    });
   };
 
   const handleQuickLogin = (testUserEmail: string, testUserPassword: string) => {
-    setEmail(testUserEmail);
-    setPassword(testUserPassword);
+    form.setValue("email", testUserEmail);
+    form.setValue("password", testUserPassword);
   };
 
   return (
@@ -52,35 +67,51 @@ export default function TestLoginPage() {
           </p>
         </div>
 
-        <form onSubmit={handleTestLogin} className="w-full space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">メールアドレス</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="test@example.com"
-              required
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>メールアドレス</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="email"
+                      placeholder="test@example.com"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="password">パスワード</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="パスワード"
-              required
+            
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>パスワード</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="password"
+                      placeholder="パスワード"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "ログイン中..." : "テストログイン"}
-          </Button>
-        </form>
+            <ErrorAlert message={error.message} resetSignal={error.date.getTime()} />
+            
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? "ログイン中..." : "テストログイン"}
+            </Button>
+          </form>
+        </Form>
+        
 
         <div className="w-full space-y-2">
           <p className="text-sm text-gray-600 text-center">クイックログイン</p>
@@ -88,21 +119,27 @@ export default function TestLoginPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleQuickLogin("loadtest1@example.com", "LoadTest123!")}
+              onClick={() => {
+                handleQuickLogin("loadtest1@example.com", "LoadTest123!");
+              }}
             >
               テストユーザー1
             </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleQuickLogin("loadtest2@example.com", "LoadTest123!")}
+              onClick={() => {
+                handleQuickLogin("loadtest2@example.com", "LoadTest123!");
+              }}
             >
               テストユーザー2
             </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleQuickLogin("loadtest3@example.com", "LoadTest123!")}
+              onClick={() => {
+                handleQuickLogin("loadtest3@example.com", "LoadTest123!");
+              }}
             >
               テストユーザー3
             </Button>

@@ -10,7 +10,7 @@ import { LoginSchema } from "@/features/auth/schemas/login";
 export default {
   providers: [
     // テスト環境ではOAuth認証を無効化
-    ...(process.env.NODE_ENV === "test" 
+    ...(process.env.LOCAL_NODE_ENV === "test" 
       ? []
       : [
           Google,
