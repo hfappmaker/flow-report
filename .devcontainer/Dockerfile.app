@@ -5,8 +5,9 @@ RUN apt update && apt upgrade -y \
     && npm install -g npm@latest \
     && npm cache clean --force
 
-# Stripe CLIのインストール
-RUN curl -sSL https://github.com/stripe/stripe-cli/releases/download/v1.27.0/stripe_1.27.0_linux_x86_64.tar.gz | tar xz -C /usr/local/bin
+# Stripe CLIのインストール（最新版を自動取得）
+RUN STRIPE_VERSION=$(curl -s https://api.github.com/repos/stripe/stripe-cli/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")') \
+    && curl -sSL "https://github.com/stripe/stripe-cli/releases/download/${STRIPE_VERSION}/stripe_${STRIPE_VERSION#v}_linux_x86_64.tar.gz" | tar xz -C /usr/local/bin
 # 以下のコマンドでStripe CLIを使えるようにする
 # stripe login
 # stripe listen --forward-to localhost:3000/api/webhook/stripe

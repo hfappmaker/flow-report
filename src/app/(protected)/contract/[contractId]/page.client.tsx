@@ -13,11 +13,9 @@ import { Form } from '@/components/ui/form';
 import { useTransitionContext } from '@/contexts/transition-context';
 import { getContractByIdAction } from '@/features/contract/actions/contract';
 import { ContractOutput } from "@/features/contract/types/contract";
-import { createWorkReportAction, getWorkReportsByContractIdAndYearMonthDateRangeAction } from '@/features/work-report/actions/work-report';
-import { WorkReportDialog, type DialogType } from "@/features/work-report/components/work-report-dialog"
+import { getWorkReportsByContractIdAndYearMonthDateRangeAction } from '@/features/work-report/actions/work-report';
+import { WorkReportDialog } from "@/features/work-report/components/work-report-dialog"
 import {
-  createWorkReportFormSchema,
-  type CreateWorkReportFormValues,
   searchFormSchema,
   type SearchFormValues,
 } from "@/features/work-report/schemas/work-report-form-schemas";
@@ -29,7 +27,7 @@ export default function ContractClientPage({ contractId }: { contractId: string 
   const { error, success, showError, showSuccess } = useMessageState();
   const [workReports, setWorkReports] = useState<WorkReport[]>([]);
   const [contract, setContract] = useState<ContractOutput | null>(null);
-  const [activeDialog, setActiveDialog] = useState<DialogType>(null);
+  const [activeDialog, setActiveDialog] = useState<"search" | null>(null);
 
   const { startTransition } = useTransitionContext();
   const router = useRouter();
@@ -50,12 +48,6 @@ export default function ContractClientPage({ contractId }: { contractId: string 
     to: currentYearMonth,
   });
 
-  const createWorkReportForm = useForm<CreateWorkReportFormValues>({
-    resolver: zodResolver(createWorkReportFormSchema),
-    defaultValues: {
-      yearMonth: currentYearMonth,
-    },
-  });
 
   // 検索フォームの初期値を設定
   const searchForm = useForm<SearchFormValues>({
@@ -113,32 +105,6 @@ export default function ContractClientPage({ contractId }: { contractId: string 
     });
   };
 
-  // Handle creation of a new work time report
-  const handleCreateReport = (values: CreateWorkReportFormValues) => {
-    try {
-      if (!contract) {
-        showError('契約情報がありません');
-        return;
-      }
-
-      const targetDate = values.yearMonth;
-
-      startTransition(async () => {
-        await createWorkReportAction(contractId, targetDate);
-        showSuccess('作業報告書を作成しました');
-        // Refresh report list after creation
-        await fetchReports(searchFormValues.from, searchFormValues.to);
-        // Close dialog and reset the creation form
-        setActiveDialog(null);
-        createWorkReportForm.reset({
-          yearMonth: currentYearMonth,
-        });
-      });
-    } catch (error: unknown) {
-      console.error(error);
-      showError('作業報告書の作成に失敗しました');
-    }
-  };
 
   const handleNavigation = (workReportId: string) => {
     startTransition(() => {
@@ -165,11 +131,8 @@ export default function ContractClientPage({ contractId }: { contractId: string 
             {searchFormValues.to ? String(searchFormValues.to.getFullYear()) + "年" + String(searchFormValues.to.getMonth() + 1) + "月" : ""}
           </span>
         </div>
-        <Button onClick={() => { setActiveDialog("search"); }} className="mr-4">
+        <Button onClick={() => { setActiveDialog("search"); }}>
           検索
-        </Button>
-        <Button onClick={() => { setActiveDialog("create"); }}>
-          作業報告書を作成
         </Button>
       </div>
 
@@ -234,38 +197,6 @@ export default function ContractClientPage({ contractId }: { contractId: string 
         </Form>
       </WorkReportDialog>
 
-      {/* 作成ダイアログ */}
-      <WorkReportDialog
-        isOpen={activeDialog === "create"}
-        onClose={() => { setActiveDialog(null); }}
-        title="作業報告書を作成"
-      >
-        <Form {...createWorkReportForm}>
-          <form onSubmit={createWorkReportForm.handleSubmit(handleCreateReport)} className="space-y-4">
-            <div className="flex gap-4">
-              <YearMonthPickerField
-                control={createWorkReportForm.control}
-                name="yearMonth"
-                yearTriggerClassName="w-24"
-                monthTriggerClassName="w-20"
-                showClearButton={false}
-              />
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <Button type="button" onClick={() => {
-                setActiveDialog(null);
-                createWorkReportForm.reset({
-                  yearMonth: currentYearMonth,
-                });
-              }}>
-                キャンセル
-              </Button>
-              <Button type="submit">作成</Button>
-            </div>
-          </form>
-        </Form>
-      </WorkReportDialog>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import {
 import { db } from "@/repositories/db";
 import { Serialize } from "@/utils/serialization/serialization-utils";
 
+
 const transformContractData = (
   values: ContractInput,
 ): StrictOmit<PrismaContract, "id"> => {
@@ -44,11 +45,11 @@ const transformContractData = (
 };
 
 function processContractValues(values: StrictOmit<PrismaContract, "id">) {
-  const { clientId, userId } = values;
+  const { userId } = values;
 
   const processedRest = Object.entries(values).reduce<Record<string, unknown>>(
     (acc, [key, value]) => {
-      if (key !== "clientId" && key !== "userId") {
+      if (key !== "userId") {
         acc[key] = value;
       }
       return acc;
@@ -58,51 +59,36 @@ function processContractValues(values: StrictOmit<PrismaContract, "id">) {
 
   return {
     processedRest,
-    clientId,
     userId,
   };
 }
 
 export async function getContractsByUserId(userId: string) {
   const contracts = await db.contract.findMany({
-    where: { client: { createUserId: userId } },
+    where: { userId: userId },
   });
   return contracts.map(Serialize);
 }
 
-export async function getContractsByClientId(clientId: string) {
-  const contracts = await db.contract.findMany({
-    where: { clientId: clientId },
-  });
-  return contracts.map(Serialize);
-}
 
 export async function getContractById(contractId: string) {
   const contract = await db.contract.findUnique({
     where: { id: contractId },
-    include: {
-      client: true,
-    },
   });
   return contract ? Serialize(contract) : null;
 }
 
 export async function createContract(values: ContractInput) {
-  const { processedRest, clientId, userId } = processContractValues(
+  const { processedRest, userId } = processContractValues(
     transformContractData(values),
   );
 
-  await db.contract.create({
+  const contract = await db.contract.create({
     data: {
       ...(processedRest as StrictOmit<
         ContractOutput,
-        "id" | "clientId" | "userId"
+        "id" | "userId"
       >),
-      client: {
-        connect: {
-          id: clientId,
-        },
-      },
       user: {
         connect: {
           id: userId,
@@ -110,14 +96,22 @@ export async function createContract(values: ContractInput) {
       },
     },
   });
+
+
+  return contract;
 }
 
 export async function searchContracts(userId: string, searchQuery: string) {
   const contracts = await db.contract.findMany({
     where: {
       AND: [
-        { name: { contains: searchQuery, mode: "insensitive" } },
-        { client: { createUserId: userId } },
+        {
+          OR: [
+            { name: { contains: searchQuery, mode: "insensitive" } },
+            { clientName: { contains: searchQuery, mode: "insensitive" } },
+          ],
+        },
+        { userId: userId },
       ],
     },
   });
@@ -125,7 +119,7 @@ export async function searchContracts(userId: string, searchQuery: string) {
 }
 
 export async function updateContract(id: string, values: ContractInput) {
-  const { processedRest, clientId, userId } = processContractValues(
+  const { processedRest, userId } = processContractValues(
     transformContractData(values),
   );
 
@@ -134,13 +128,8 @@ export async function updateContract(id: string, values: ContractInput) {
     data: {
       ...(processedRest as StrictOmit<
         ContractOutput,
-        "id" | "clientId" | "userId"
+        "id" | "userId"
       >),
-      client: {
-        connect: {
-          id: clientId,
-        },
-      },
       user: {
         connect: {
           id: userId,

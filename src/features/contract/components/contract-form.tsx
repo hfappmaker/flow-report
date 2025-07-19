@@ -14,6 +14,9 @@ export const contractFormSchema = z.object({
     name: z.string().min(1, "契約名は必須です"),
     startDate: z.date(),
     endDate: z.date().optional(),
+    clientName: z.string().min(1, "クライアント名は必須です"),
+    clientContactName: z.string().min(1, "担当者名は必須です"),
+    clientEmail: z.string().email("有効なメールアドレスを入力してください"),
     unitPrice: z.number().optional(),
     settlementMin: z.number().optional(),
     settlementMax: z.number().optional(),
@@ -50,6 +53,9 @@ export const ContractForm = ({
             name: "",
             startDate: new Date(),
             endDate: undefined,
+            clientName: "",
+            clientContactName: "",
+            clientEmail: "",
             unitPrice: undefined,
             settlementMin: undefined,
             settlementMax: undefined,
@@ -80,6 +86,51 @@ export const ContractForm = ({
                             <FormLabel>契約名</FormLabel>
                             <FormControl>
                                 <Input {...field} value={field.value} placeholder="契約名を入力" />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                {/* Client Information */}
+                <div className="flex gap-4">
+                    <FormField
+                        control={form.control}
+                        name="clientName"
+                        render={({ field }) => (
+                            <FormItem className="flex-1">
+                                <FormLabel>クライアント名</FormLabel>
+                                <FormControl>
+                                    <Input {...field} value={field.value} placeholder="クライアント名を入力" />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="clientContactName"
+                        render={({ field }) => (
+                            <FormItem className="flex-1">
+                                <FormLabel>担当者名</FormLabel>
+                                <FormControl>
+                                    <Input {...field} value={field.value} placeholder="担当者名を入力" />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+
+                <FormField
+                    control={form.control}
+                    name="clientEmail"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>メールアドレス</FormLabel>
+                            <FormControl>
+                                <Input {...field} value={field.value} placeholder="メールアドレスを入力" type="email" />
                             </FormControl>
                             <FormMessage />
                         </FormItem>

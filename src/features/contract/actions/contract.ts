@@ -9,7 +9,6 @@ import {
   searchContracts,
   getContractsByUserId,
   getContractById,
-  getContractsByClientId,
 } from "@/features/contract/repositories/contract-repository";
 import {
   ContractOutput,
@@ -20,7 +19,7 @@ export const createContractAction = async (
   values: ContractInput,
 ): Promise<void> => {
   await createContract(values);
-  revalidatePath(`/client/${values.clientId}`);
+  revalidatePath("/dashboard");
 };
 
 export const updateContractAction = async (
@@ -28,12 +27,13 @@ export const updateContractAction = async (
   values: ContractInput,
 ): Promise<void> => {
   await updateContract(id, values);
-  revalidatePath(`/client/${values.clientId}`);
+  revalidatePath("/dashboard");
+  revalidatePath(`/contract/${id}`);
 };
 
 export const deleteContractAction = async (id: string): Promise<void> => {
   await deleteContract(id);
-  revalidatePath(`/client/${id}`);
+  revalidatePath("/dashboard");
 };
 
 export const searchContractsAction = async (
@@ -61,17 +61,6 @@ export const getContractsByUserIdAction = async (
   }
 };
 
-export const getContractsByClientIdAction = async (
-  clientId: string,
-): Promise<ContractOutput[]> => {
-  try {
-    const contracts = await getContractsByClientId(clientId);
-    return contracts;
-  } catch (error) {
-    console.error("Error fetching contracts:", error);
-    throw new Error("Failed to fetch contracts");
-  }
-};
 
 export const getContractByIdAction = async (
   contractId: string,

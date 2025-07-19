@@ -41,9 +41,9 @@ export default async function WorkReportPage({ params }: { params: Promise<{ wor
       userName={user.name ?? ""}
       attendances={attendances}
       contractName={contract.name}
-      clientName={contract.client.name}
-      contactName={contract.client.contactName}
-      clientEmail={contract.client.email}
+      clientName={contract.clientName}
+      contactName={contract.clientContactName}
+      clientEmail={contract.clientEmail}
       dailyWorkMinutes={contract.dailyWorkMinutes ?? 1}
       monthlyWorkMinutes={contract.monthlyWorkMinutes ?? 1}
       basicStartTime={Serialize(contract.basicStartTime ?? undefined)}

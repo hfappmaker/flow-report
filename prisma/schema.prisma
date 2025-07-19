@@ -52,31 +52,23 @@ model User {
   isTwoFactorEnabled    Boolean                @default(false)
   twoFactorConfirmation TwoFactorConfirmation?
   contracts             Contract[]
-  clients               Client[]
   auditLogs             AuditLog[]
   EmailTemplate         EmailTemplate[]
   subscription          Subscription?          // サブスクリプション情報への参照
 }
 
-model Client {
-  id                     String         @id @default(cuid())
-  name                   String
-  contactName            String
-  email                  String
-  createUserId           String
-  createUser             User           @relation(fields: [createUserId], references: [id], onDelete: Cascade)
-  contracts              Contract[]
-  defaultEmailTemplateId String?
-  defaultEmailTemplate   EmailTemplate? @relation(fields: [defaultEmailTemplateId], references: [id])
-}
 
 model Contract {
   id            String           @id @default(cuid())
   name          String
   startDate     DateTime
   endDate       DateTime?
-  clientId      String
-  client        Client           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  // クライアント情報（契約時点のスナップショット）
+  clientName         String
+  clientContactName  String
+  clientEmail        String
+  
   userId        String
   user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   workReports   WorkReport[]
@@ -131,7 +123,6 @@ model EmailTemplate {
   createUser   User     @relation(fields: [createUserId], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  Client       Client[]
 }
 
 model Account {

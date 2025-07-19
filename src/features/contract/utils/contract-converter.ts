@@ -7,7 +7,6 @@ import {
 export const convertContractFormValuesToContract = (
   data: ContractFormValues,
   userId: string,
-  clientId: string,
 ): ContractInput => {
   return {
     name: data.name,
@@ -27,7 +26,9 @@ export const convertContractFormValuesToContract = (
     basicBreakDuration: data.basicBreakDuration,
     closingDay: data.closingDay,
     userId,
-    clientId,
+    clientName: data.clientName,
+    clientContactName: data.clientContactName,
+    clientEmail: data.clientEmail,
   };
 };
 
@@ -38,6 +39,9 @@ export const convertContractToFormValues = (
     name: contract.name,
     startDate: new Date(contract.startDate),
     endDate: contract.endDate ? new Date(contract.endDate) : undefined,
+    clientName: contract.clientName,
+    clientContactName: contract.clientContactName,
+    clientEmail: contract.clientEmail,
     unitPrice: contract.unitPrice ? Number(contract.unitPrice) : undefined,
     settlementMin: contract.settlementMin
       ? Number(contract.settlementMin)

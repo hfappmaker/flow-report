@@ -89,11 +89,7 @@ export async function getDraftWorkReports() {
   const workReports = await db.workReport.findMany({
     where: { status: WorkReportStatus.DRAFT },
     include: {
-      contract: {
-        include: {
-          client: true,
-        },
-      },
+      contract: true,
     },
   });
 
@@ -106,6 +102,7 @@ export async function getDraftWorkReports() {
           string,
           {
             contractName: string;
+            clientName: string;
             workReports: {
               id: string;
               targetDate: Date;
@@ -116,22 +113,23 @@ export async function getDraftWorkReports() {
       }
     >
   >((acc, report) => {
-    const clientId = report.contract.clientId;
+    const clientName = report.contract.clientName;
     const contractId = report.contractId;
 
-    acc[clientId] = acc[clientId] ?? {
-      clientName: report.contract.client.name,
+    acc[clientName] = acc[clientName] ?? {
+      clientName,
       contracts: {},
     };
 
-    acc[clientId].contracts[contractId] = acc[clientId].contracts[
+    acc[clientName].contracts[contractId] = acc[clientName].contracts[
       contractId
     ] ?? {
       contractName: report.contract.name,
+      clientName,
       workReports: [],
     };
 
-    acc[clientId].contracts[contractId].workReports.push({
+    acc[clientName].contracts[contractId].workReports.push({
       id: report.id,
       targetDate: report.targetDate,
       status: report.status,
@@ -165,11 +163,7 @@ export async function getSubmittedWorkReportsByRecentMonths(months = 3) {
       targetDate: { gte: cutoffDate },
     },
     include: {
-      contract: {
-        include: {
-          client: true,
-        },
-      },
+      contract: true,
     },
   });
 
@@ -182,6 +176,7 @@ export async function getSubmittedWorkReportsByRecentMonths(months = 3) {
           string,
           {
             contractName: string;
+            clientName: string;
             workReports: {
               id: string;
               targetDate: Date;
@@ -192,22 +187,23 @@ export async function getSubmittedWorkReportsByRecentMonths(months = 3) {
       }
     >
   >((acc, report) => {
-    const clientId = report.contract.clientId;
+    const clientName = report.contract.clientName;
     const contractId = report.contractId;
 
-    acc[clientId] = acc[clientId] ?? {
-      clientName: report.contract.client.name,
+    acc[clientName] = acc[clientName] ?? {
+      clientName,
       contracts: {},
     };
 
-    acc[clientId].contracts[contractId] = acc[clientId].contracts[
+    acc[clientName].contracts[contractId] = acc[clientName].contracts[
       contractId
     ] ?? {
       contractName: report.contract.name,
+      clientName,
       workReports: [],
     };
 
-    acc[clientId].contracts[contractId].workReports.push({
+    acc[clientName].contracts[contractId].workReports.push({
       id: report.id,
       targetDate: report.targetDate,
       status: report.status,

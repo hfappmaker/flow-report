@@ -4,8 +4,8 @@ export const NAV_LINKS = [
     path: "/dashboard",
   },
   {
-    title: "クライアント一覧",
-    path: "/client",
+    title: "契約一覧",
+    path: "/contracts",
   },
   {
     title: "設定",

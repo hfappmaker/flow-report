@@ -1,4 +1,3 @@
-import { Client } from "@/features/client/types/client";
 import { ContractOutput } from "@/features/contract/types/contract";
 import { SubscriptionInfo } from "@/features/subscription/types/subscription";
 import { WorkReport } from "@/features/work-report/types/work-report";
@@ -10,18 +9,16 @@ export type WorkReportDashboard = Pick<
 >;
 
 export type ContractDashboard = RenameProperty<
-  Pick<ContractOutput, "name">,
+  Pick<ContractOutput, "name" | "clientName">,
   "name",
   "contractName"
 > & {
   workReports: WorkReportDashboard[];
+  clientName: string;
 };
 
-export type ClientDashboard = RenameProperty<
-  Pick<Client, "name">,
-  "name",
-  "clientName"
-> & {
+export type ClientDashboard = {
+  clientName: string;
   contracts: Record<string, ContractDashboard>;
 };
 
