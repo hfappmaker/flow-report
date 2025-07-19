@@ -16,9 +16,6 @@ enum UserRole {
 enum WorkReportStatus {
   DRAFT // 作成中
   SUBMITTED // 作成完了
-  APPROVED // 承認済み
-  REJECTED // 却下
-  REQUEST_REVISION // 修正依頼
 }
 
 enum AuditAction {

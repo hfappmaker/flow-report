@@ -4,7 +4,9 @@ import { WorkReport as PrismaWorkReport } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 import {
+  checkWorkReportExists,
   createWorkReport,
+  deleteWorkReport,
   getWorkReportsByContractId,
   getWorkReportsByContractIdAndYearMonthDateRange,
   updateWorkReportAttendances,
@@ -18,6 +20,14 @@ export const createWorkReportAction = async (
   contractId: string,
   targetDate: Date,
 ): Promise<WorkReport> => {
+  // サーバーサイドでの重複チェック
+  const exists = await checkWorkReportExists(contractId, targetDate);
+  if (exists) {
+    const targetYear = targetDate.getFullYear();
+    const targetMonth = targetDate.getMonth() + 1;
+    throw new Error(`${targetYear}年${targetMonth}月の作業報告書は既に存在します`);
+  }
+
   const workReport = await createWorkReport(contractId, targetDate);
   revalidatePath(`/workReport/${contractId}`);
   return convertPrismaWorkReportToWorkReportDto(workReport);
@@ -76,6 +86,22 @@ export const updateWorkReportStatusAction = async (
   revalidatePath(`/workReport/${updated.contractId}/${updated.id}`);
   return convertPrismaWorkReportToWorkReportDto(updated);
 };
+
+export const deleteWorkReportAction = async (
+  workReportId: string,
+): Promise<WorkReport> => {
+  const deleted = await deleteWorkReport(workReportId);
+  revalidatePath(`/contract/${deleted.contractId}`);
+  return convertPrismaWorkReportToWorkReportDto(deleted);
+};
+
+export const checkWorkReportExistsAction = async (
+  contractId: string,
+  targetDate: Date,
+): Promise<boolean> => {
+  return await checkWorkReportExists(contractId, targetDate);
+};
+
 
 function convertPrismaWorkReportToWorkReportDto(
   workReport: PrismaWorkReport,

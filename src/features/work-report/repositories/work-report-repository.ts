@@ -152,6 +152,31 @@ export async function updateWorkReportStatus(
   return workReport;
 }
 
+export async function deleteWorkReport(workReportId: string) {
+  const workReport = await db.workReport.delete({
+    where: { id: workReportId },
+  });
+  return workReport;
+}
+
+export async function checkWorkReportExists(contractId: string, targetDate: Date): Promise<boolean> {
+  const targetYear = targetDate.getFullYear();
+  const targetMonth = targetDate.getMonth();
+  
+  // 同じ年月の作業報告書が存在するかチェック
+  const existingReport = await db.workReport.findFirst({
+    where: {
+      contractId,
+      targetDate: {
+        gte: new Date(targetYear, targetMonth, 1),
+        lt: new Date(targetYear, targetMonth + 1, 1),
+      },
+    },
+  });
+  
+  return !!existingReport;
+}
+
 export async function getSubmittedWorkReportsByRecentMonths(months = 3) {
   // Filter submissions within the past `months` months
   const cutoffDate = new Date();

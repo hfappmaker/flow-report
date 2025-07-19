@@ -88,7 +88,7 @@ const UserButton = () => {
         <LogoutButton>
           <DropdownMenuItem className="justify-center text-center hover:bg-sky-400 hover:text-primary-foreground focus:bg-sky-400 focus:text-primary-foreground">
             <ExitIcon className="mr-2 size-4" />
-            Logout
+            ログアウト
           </DropdownMenuItem>
         </LogoutButton>
       </DropdownMenuContent>

@@ -217,54 +217,61 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
           )}
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-3">
           {contracts.map((contract) => {
             const statusInfo = getContractStatus(contract);
             return (
               <Card
                 key={contract.id}
-                className="hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => { openDetailsDialog(contract); }}
+                className="hover:shadow-lg hover:bg-muted/50 transition-all duration-200 w-full"
               >
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg line-clamp-1">
-                      {contract.name}
-                    </CardTitle>
-                    <span className={`text-sm font-medium ${statusInfo.color}`}>
-                      {statusInfo.status}
-                    </span>
-                  </div>
-                  <CardDescription className="text-base font-medium text-gray-700">
-                    {contract.clientName}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div className="flex justify-between">
-                      <span>開始日:</span>
-                      <span>{formatDate(contract.startDate)}</span>
-                    </div>
-                    {contract.endDate && (
-                      <div className="flex justify-between">
-                        <span>終了日:</span>
-                        <span>{formatDate(contract.endDate)}</span>
+                <div className="p-4">
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-6 flex-1 min-w-0 cursor-pointer" onClick={() => { handleNavigateToWorkReports(contract.id); }}>
+                      <div className="min-w-0">
+                        <h3 className="text-lg font-semibold text-foreground truncate">
+                          {contract.name}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {contract.clientName}
+                        </p>
                       </div>
-                    )}
-                    <div className="flex justify-between">
-                      <span>担当者:</span>
-                      <span>{contract.clientContactName}</span>
-                    </div>
-                    {contract.unitPrice && (
-                      <div className="flex justify-between">
-                        <span>月単価:</span>
-                        <span className="font-medium">
-                          ¥{Number(contract.unitPrice).toLocaleString()}
-                        </span>
+                      <div className="hidden sm:flex items-center gap-4 text-sm text-muted-foreground">
+                        <div>
+                          開始: {formatDate(contract.startDate)}
+                        </div>
+                        {contract.endDate && (
+                          <div>
+                            終了: {formatDate(contract.endDate)}
+                          </div>
+                        )}
+                        <div>
+                          担当: {contract.clientContactName}
+                        </div>
+                        {contract.unitPrice && (
+                          <div className="font-medium">
+                            ¥{Number(contract.unitPrice).toLocaleString()}
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
+                    <div className="ml-4 flex items-center gap-3 flex-shrink-0">
+                      <span className={`text-sm font-medium ${statusInfo.color}`}>
+                        {statusInfo.status}
+                      </span>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openDetailsDialog(contract);
+                        }}
+                        size="sm"
+                        variant="outline"
+                      >
+                        詳細
+                      </Button>
+                    </div>
                   </div>
-                </CardContent>
+                </div>
               </Card>
             );
           })}
@@ -341,9 +348,6 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
             <div className="mt-4 flex justify-end gap-2">
               <Button variant="outline" onClick={() => { setActiveDialog("edit"); }}>編集</Button>
               <Button variant="destructive" onClick={() => { setActiveDialog("delete"); }}>削除</Button>
-              <Button onClick={() => { handleNavigateToWorkReports(activeContract.id); }}>
-                作業報告書を表示
-              </Button>
               <Button variant="outline" onClick={closeDialog}>閉じる</Button>
             </div>
           </div>

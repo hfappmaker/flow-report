@@ -29,7 +29,9 @@
       "mcp__playwright__browser_tab_list",
       "Bash(npm run test:*)",
       "Bash(cat:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)"
     ],
     "deny": []
   },
