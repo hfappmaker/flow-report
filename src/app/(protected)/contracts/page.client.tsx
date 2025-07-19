@@ -15,6 +15,7 @@ import { ContractDialog, type DialogType } from "@/features/contract/components/
 import { ContractForm, ContractFormValues } from "@/features/contract/components/contract-form";
 import { convertContractFormValuesToContract, convertContractToFormValues } from "@/features/contract/utils/contract-converter";
 import { useMessageState } from '@/hooks/use-message-state';
+import { formatDateAsUTC, formatDateLongAsUTC } from '@/utils/date-utils';
 
 export default function ContractsClientPage({ userId }: { userId: string }) {
   const { error, success, showError, showSuccess } = useMessageState();
@@ -143,12 +144,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
 
   // 日付フォーマット関数
   const formatDate = (date: string | Date) => {
-    const d = new Date(date);
-    return d.toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    return formatDateLongAsUTC(date);
   };
 
   // 契約ステータスの取得
@@ -303,9 +299,9 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                   <p className="mt-1">{activeContract.clientEmail}</p>
                 </div>
                 <div className="font-semibold">開始日</div>
-                <div>{new Date(activeContract.startDate).toLocaleDateString()}</div>
+                <div>{formatDateAsUTC(activeContract.startDate)}</div>
                 <div className="font-semibold">終了日</div>
-                <div>{activeContract.endDate ? new Date(activeContract.endDate).toLocaleDateString() : 'なし'}</div>
+                <div>{activeContract.endDate ? formatDateAsUTC(activeContract.endDate) : 'なし'}</div>
               </div>
             </div>
 

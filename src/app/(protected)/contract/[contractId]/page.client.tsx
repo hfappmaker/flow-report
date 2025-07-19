@@ -59,7 +59,7 @@ export default function ContractClientPage({ contractId }: { contractId: string 
   const createForm = useForm<CreateWorkReportValues>({
     resolver: zodResolver(createWorkReportSchema),
     defaultValues: {
-      targetDate: new Date(selectedYear, new Date().getMonth(), 1),
+      targetDate: new Date(Date.UTC(selectedYear, new Date().getMonth(), 1)), // 初期値は選択年の1月1日
     },
   });
 
@@ -146,7 +146,10 @@ export default function ContractClientPage({ contractId }: { contractId: string 
         console.error('Failed to create work report:', error);
         // サーバーエラーメッセージを表示（重複エラーを含む）
         const errorMessage = error instanceof Error ? error.message : '作業報告書の作成に失敗しました';
-        showError(errorMessage);
+        createForm.setError('targetDate', {
+          type: 'manual',
+          message: errorMessage,
+        });
       }
     });
   };

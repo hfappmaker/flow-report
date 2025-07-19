@@ -83,7 +83,7 @@ const DatePickerFieldContent = ({ field, label, placeholder }: { field: any; lab
           value={selectedDate}
           onChange={(date) => {
             setSelectedDate(date);
-            field.onChange(date ? new Date(date) : undefined);
+            field.onChange(date ? new Date(date + 'T00:00:00.000Z') : undefined);
           }}
           placeholder={placeholder}
         />

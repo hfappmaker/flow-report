@@ -6,6 +6,7 @@ import {
   getUserSubscriptionInfo,
   upsertUserSubscription,
 } from "@/features/subscription/repositories/subscription-repository";
+import { formatDateAsUTC } from '@/utils/date-utils';
 
 export async function fixCanceledSubscription() {
   try {
@@ -43,7 +44,7 @@ export async function fixCanceledSubscription() {
         currentPeriodEnd: periodEndDate,
       });
 
-      const formattedDate = periodEndDate.toLocaleDateString('ja-JP');
+      const formattedDate = formatDateAsUTC(periodEndDate);
       return { 
         success: `サブスクリプション期間を修正しました。${formattedDate}まで利用可能です。` 
       };
