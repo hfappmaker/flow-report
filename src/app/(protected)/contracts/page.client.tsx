@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DialogFooter } from '@/components/ui/dialog';
 import FormError from "@/components/ui/feedback/error-alert";
 import FormSuccess from "@/components/ui/feedback/success-alert";
 import { Input } from '@/components/ui/input';
@@ -341,11 +342,11 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
               </div>
             </div>
 
-            <div className="mt-4 flex justify-end gap-2">
+            <DialogFooter sticky className="p-6">
               <Button variant="outline" onClick={() => { setActiveDialog("edit"); }}>編集</Button>
               <Button variant="destructive" onClick={() => { setActiveDialog("delete"); }}>削除</Button>
               <Button variant="outline" onClick={closeDialog}>閉じる</Button>
-            </div>
+            </DialogFooter>
           </div>
         )}
       </ContractDialog>
@@ -385,10 +386,10 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
           <p>本当に契約 &quot;{activeContract?.name}&quot; を削除しますか？</p>
           <p className="mt-2 text-sm text-gray-500">この操作は元に戻すことができません。</p>
         </div>
-        <div className="mt-4 flex justify-end gap-2">
+        <DialogFooter sticky className="p-6">
           <Button variant="outline" onClick={closeDialog}>キャンセル</Button>
           <Button variant="destructive" onClick={onDeleteContract}>削除</Button>
-        </div>
+        </DialogFooter>
       </ContractDialog>
     </div>
   );

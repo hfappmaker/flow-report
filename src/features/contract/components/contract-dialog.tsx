@@ -22,8 +22,8 @@ export const ContractDialog = ({
     }}>
         <DialogPortal>
             <DialogOverlay />
-            <DialogContent className="max-h-[90vh] w-[95vw] max-w-[1400px] overflow-y-auto p-8">
-                <DialogHeader>
+            <DialogContent className="flex flex-col max-h-[90vh] w-[95vw] max-w-[1400px] p-0">
+                <DialogHeader sticky>
                     <DialogTitle>
                         {type === "create" && "契約を作成"}
                         {type === "edit" && "契約を編集"}
@@ -31,7 +31,9 @@ export const ContractDialog = ({
                         {type === "details" && "契約詳細"}
                     </DialogTitle>
                 </DialogHeader>
-                {children}
+                <div className="flex-1 overflow-y-auto p-6 pt-4 pb-0">
+                    {children}
+                </div>
             </DialogContent>
         </DialogPortal>
     </Dialog>

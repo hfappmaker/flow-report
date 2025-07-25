@@ -49,11 +49,12 @@ const DialogContent: FC<ComponentPropsWithRef<typeof DialogPrimitive.Content> & 
   )
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
-const DialogHeader: FC<ComponentPropsWithRef<"div">> =
-  ({ className, ...props }) => (
+const DialogHeader: FC<ComponentPropsWithRef<"div"> & { sticky?: boolean }> =
+  ({ className, sticky = false, ...props }) => (
     <div
       className={cn(
         "flex flex-col space-y-1.5 text-center sm:text-left",
+        sticky && "sticky top-0 border-b bg-background p-6 pb-4 mb-0 shrink-0 z-10",
         className
       )}
       {...props}
@@ -61,11 +62,12 @@ const DialogHeader: FC<ComponentPropsWithRef<"div">> =
   )
 DialogHeader.displayName = "DialogHeader"
 
-const DialogFooter: FC<ComponentPropsWithRef<"div">> =
-  ({ className, ...props }) => (
+const DialogFooter: FC<ComponentPropsWithRef<"div"> & { sticky?: boolean }> =
+  ({ className, sticky = false, ...props }) => (
     <div
       className={cn(
         "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+        sticky && "sticky bottom-0 border-t bg-background p-0 mt-0 shrink-0 z-10",
         className
       )}
       {...props}

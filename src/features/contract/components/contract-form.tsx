@@ -4,6 +4,7 @@ import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
 import { DatePickerField } from "@/components/ui/date-picker";
+import { DialogFooter } from "@/components/ui/dialog";
 import { Form, FormItem, FormLabel, FormControl, FormMessage, FormField } from "@/components/ui/form";
 import { Input, NumberInputField } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -294,10 +295,14 @@ export const ContractForm = ({
                     placeholder="（例）20（未入力の場合は末日）"
                 />
 
-                <div className="mt-4 flex justify-end gap-2">
-                    <Button type="button" variant="outline" onClick={onCancel}>キャンセル</Button>
-                    <Button type="submit">{submitButtonText}</Button>
-                </div>
+                <DialogFooter sticky className="p-6">
+                    <Button type="button" variant="outline" onClick={onCancel}>
+                        キャンセル
+                    </Button>
+                    <Button type="submit">
+                        {submitButtonText}
+                    </Button>
+                </DialogFooter>
             </form>
         </Form>
     );

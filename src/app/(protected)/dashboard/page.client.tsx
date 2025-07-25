@@ -67,7 +67,7 @@ export default function DashboardClientPage({ draftWorkReports, submittedWorkRep
                             {contract.workReports.map((workReport) => (
                                 <div
                                     key={workReport.id}
-                                    className="block cursor-pointer rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                                    className="block cursor-pointer rounded-lg border bg-background p-4 transition-colors hover:bg-muted/50"
                                     onClick={() => { handleNavigation(workReport.id); }}
                                 >
                                     <div className="mb-2 flex items-start justify-between space-x-2">
@@ -99,14 +99,14 @@ export default function DashboardClientPage({ draftWorkReports, submittedWorkRep
                             {contract.workReports.map((workReport) => (
                                 <div
                                     key={workReport.id}
-                                    className="block cursor-pointer rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                                    className="block cursor-pointer rounded-lg border bg-background p-4 transition-colors hover:bg-muted/50"
                                     onClick={() => { handleNavigation(workReport.id); }}
                                 >
                                     <div className="mb-2 flex items-start justify-between space-x-2">
                                         <div className="text-lg font-medium">
                                             {workReport.targetDate.getFullYear()}年{workReport.targetDate.getMonth() + 1}月
                                         </div>
-                                        <Badge className={getStatusColor(workReport.status)}>
+                                        <Badge className={`${getStatusColor(workReport.status)} pointer-events-none`}>
                                             {workReport.status}
                                         </Badge>
                                     </div>
