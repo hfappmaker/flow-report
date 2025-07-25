@@ -101,18 +101,62 @@ export async function createContract(values: ContractInput) {
   return contract;
 }
 
-export async function searchContracts(userId: string, searchQuery: string) {
+export async function searchContracts(
+  userId: string, 
+  searchQuery?: string, 
+  periodFrom?: string, 
+  periodTo?: string
+) {
+  const whereConditions: any[] = [{ userId: userId }];
+
+  // 契約名とクライアント名のOR検索
+  if (searchQuery && searchQuery.trim()) {
+    whereConditions.push({
+      OR: [
+        { name: { contains: searchQuery, mode: "insensitive" } },
+        { clientName: { contains: searchQuery, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  // 期間重複検索（検索期間と契約期間が重複するもの）
+  if (periodFrom || periodTo) {
+    const searchStart = periodFrom ? new Date(periodFrom) : null;
+    const searchEnd = periodTo ? new Date(periodTo) : null;
+
+    if (searchStart && searchEnd) {
+      // 検索期間が指定されている場合：契約期間と重複するもの
+      // 契約開始日 <= 検索終了日 AND (契約終了日 >= 検索開始日 OR 契約終了日がnull)
+      whereConditions.push({
+        AND: [
+          { startDate: { lte: searchEnd } },
+          {
+            OR: [
+              { endDate: { gte: searchStart } },
+              { endDate: null }  // 終了日未設定の契約は無期限とみなす
+            ]
+          }
+        ]
+      });
+    } else if (searchStart) {
+      // 検索開始日のみ指定：契約が検索開始日以降に重複するもの
+      whereConditions.push({
+        OR: [
+          { endDate: { gte: searchStart } },
+          { endDate: null }
+        ]
+      });
+    } else if (searchEnd) {
+      // 検索終了日のみ指定：契約が検索終了日以前に重複するもの
+      whereConditions.push({
+        startDate: { lte: searchEnd }
+      });
+    }
+  }
+
   const contracts = await db.contract.findMany({
     where: {
-      AND: [
-        {
-          OR: [
-            { name: { contains: searchQuery, mode: "insensitive" } },
-            { clientName: { contains: searchQuery, mode: "insensitive" } },
-          ],
-        },
-        { userId: userId },
-      ],
+      AND: whereConditions,
     },
   });
   return contracts.map(Serialize);

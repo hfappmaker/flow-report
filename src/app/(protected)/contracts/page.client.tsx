@@ -4,16 +4,17 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker';
 import { DialogFooter } from '@/components/ui/dialog';
 import FormError from "@/components/ui/feedback/error-alert";
 import FormSuccess from "@/components/ui/feedback/success-alert";
 import { Input } from '@/components/ui/input';
 import { useTransitionContext } from '@/contexts/transition-context';
 import { getContractsByUserIdAction, searchContractsAction, deleteContractAction, createContractAction, updateContractAction } from '@/features/contract/actions/contract';
-import { ContractOutput } from "@/features/contract/types/contract";
 import { ContractDialog, type DialogType } from "@/features/contract/components/contract-dialog";
 import { ContractForm, ContractFormValues } from "@/features/contract/components/contract-form";
+import { ContractOutput } from "@/features/contract/types/contract";
 import { convertContractFormValuesToContract, convertContractToFormValues } from "@/features/contract/utils/contract-converter";
 import { useMessageState } from '@/hooks/use-message-state';
 import { formatDateAsUTC, formatDateLongAsUTC } from '@/utils/date-utils';
@@ -22,6 +23,8 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
   const { error, success, showError, showSuccess } = useMessageState();
   const [contracts, setContracts] = useState<ContractOutput[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [periodFrom, setPeriodFrom] = useState('');
+  const [periodTo, setPeriodTo] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [activeContract, setActiveContract] = useState<ContractOutput | null>(null);
   const [activeDialog, setActiveDialog] = useState<DialogType>(null);
@@ -41,26 +44,40 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
   };
 
   // 検索処理
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      await fetchContracts();
+  const handleSearch = () => {
+    const hasSearchQuery = searchQuery.trim();
+    const hasPeriodFilters = periodFrom || periodTo;
+    
+    if (!hasSearchQuery && !hasPeriodFilters) {
       setIsSearching(false);
+      startTransition(async () => {
+        await fetchContracts();
+      });
       return;
     }
 
-    try {
-      setIsSearching(true);
-      const searchResults = await searchContractsAction(userId, searchQuery);
-      setContracts(searchResults);
-    } catch (error: unknown) {
-      console.error(error);
-      showError('検索に失敗しました');
-    }
+    setIsSearching(true);
+    startTransition(async () => {
+      try {
+        const searchResults = await searchContractsAction(
+          userId, 
+          searchQuery || undefined, 
+          periodFrom || undefined, 
+          periodTo || undefined
+        );
+        setContracts(searchResults);
+      } catch (error: unknown) {
+        console.error(error);
+        showError('検索に失敗しました');
+      }
+    });
   };
 
   // 検索クリア
   const handleClearSearch = () => {
     setSearchQuery('');
+    setPeriodFrom('');
+    setPeriodTo('');
     setIsSearching(false);
     startTransition(async () => {
       await fetchContracts();
@@ -177,28 +194,55 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
       <FormError message={error.message} resetSignal={error.date.getTime()} />
       <FormSuccess message={success.message} resetSignal={success.date.getTime()} />
 
-      {/* 検索バー */}
-      <div className="mb-6 flex gap-2">
-        <Input
-          type="text"
-          placeholder="契約名またはクライアント名で検索..."
-          value={searchQuery}
-          onChange={(e) => { setSearchQuery(e.target.value); }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              void handleSearch();
-            }
-          }}
-          className="flex-1"
-        />
-        <Button onClick={handleSearch} disabled={!searchQuery.trim()}>
-          検索
-        </Button>
-        {isSearching && (
-          <Button variant="outline" onClick={handleClearSearch}>
-            クリア
+      {/* 検索フォーム */}
+      <div className="mb-6 space-y-4">
+        <div className="flex gap-2">
+          <Input
+            type="text"
+            placeholder="契約名またはクライアント名で検索..."
+            value={searchQuery}
+            onChange={(e) => { setSearchQuery(e.target.value); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleSearch();
+              }
+            }}
+            className="flex-1"
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">期間検索（契約期間と重複する期間を検索）</label>
+          <div className="flex gap-2">
+            <DatePicker
+              placeholder="期間開始"
+              value={periodFrom}
+              onChange={(date) => { setPeriodFrom(date); }}
+              className="flex-1"
+            />
+            <span className="flex items-center text-gray-500">〜</span>
+            <DatePicker
+              placeholder="期間終了"
+              value={periodTo}
+              onChange={(date) => { setPeriodTo(date); }}
+              className="flex-1"
+            />
+          </div>
+        </div>
+        
+        <div className="flex gap-2">
+          <Button 
+            onClick={handleSearch} 
+            disabled={(!searchQuery.trim() && !periodFrom && !periodTo)}
+          >
+            検索
           </Button>
-        )}
+          {isSearching && (
+            <Button variant="outline" onClick={handleClearSearch}>
+              クリア
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* 契約一覧 */}
@@ -252,7 +296,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                         )}
                       </div>
                     </div>
-                    <div className="ml-4 flex items-center gap-3 flex-shrink-0">
+                    <div className="ml-4 flex items-center gap-3 shrink-0">
                       <span className={`text-sm font-medium ${statusInfo.color}`}>
                         {statusInfo.status}
                       </span>

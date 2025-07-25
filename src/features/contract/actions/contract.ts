@@ -38,10 +38,17 @@ export const deleteContractAction = async (id: string): Promise<void> => {
 
 export const searchContractsAction = async (
   userId: string,
-  searchQuery: string,
+  searchQuery?: string,
+  periodFrom?: string,
+  periodTo?: string,
 ): Promise<ContractOutput[]> => {
   try {
-    const contracts = await searchContracts(userId, searchQuery);
+    const contracts = await searchContracts(
+      userId, 
+      searchQuery, 
+      periodFrom, 
+      periodTo
+    );
     return contracts;
   } catch (error) {
     console.error("Error searching contracts:", error);
