@@ -97,39 +97,25 @@ export async function getDraftWorkReports() {
     Record<
       string,
       {
+        contractName: string;
         clientName: string;
-        contracts: Record<
-          string,
-          {
-            contractName: string;
-            clientName: string;
-            workReports: {
-              id: string;
-              targetDate: Date;
-              status: WorkReportStatus;
-            }[];
-          }
-        >;
+        workReports: {
+          id: string;
+          targetDate: Date;
+          status: WorkReportStatus;
+        }[];
       }
     >
   >((acc, report) => {
-    const clientName = report.contract.clientName;
     const contractId = report.contractId;
 
-    acc[clientName] = acc[clientName] ?? {
-      clientName,
-      contracts: {},
-    };
-
-    acc[clientName].contracts[contractId] = acc[clientName].contracts[
-      contractId
-    ] ?? {
+    acc[contractId] = acc[contractId] ?? {
       contractName: report.contract.name,
-      clientName,
+      clientName: report.contract.clientName,
       workReports: [],
     };
 
-    acc[clientName].contracts[contractId].workReports.push({
+    acc[contractId].workReports.push({
       id: report.id,
       targetDate: report.targetDate,
       status: report.status,
@@ -196,39 +182,25 @@ export async function getSubmittedWorkReportsByRecentMonths(months = 3) {
     Record<
       string,
       {
+        contractName: string;
         clientName: string;
-        contracts: Record<
-          string,
-          {
-            contractName: string;
-            clientName: string;
-            workReports: {
-              id: string;
-              targetDate: Date;
-              status: WorkReportStatus;
-            }[];
-          }
-        >;
+        workReports: {
+          id: string;
+          targetDate: Date;
+          status: WorkReportStatus;
+        }[];
       }
     >
   >((acc, report) => {
-    const clientName = report.contract.clientName;
     const contractId = report.contractId;
 
-    acc[clientName] = acc[clientName] ?? {
-      clientName,
-      contracts: {},
-    };
-
-    acc[clientName].contracts[contractId] = acc[clientName].contracts[
-      contractId
-    ] ?? {
+    acc[contractId] = acc[contractId] ?? {
       contractName: report.contract.name,
-      clientName,
+      clientName: report.contract.clientName,
       workReports: [],
     };
 
-    acc[clientName].contracts[contractId].workReports.push({
+    acc[contractId].workReports.push({
       id: report.id,
       targetDate: report.targetDate,
       status: report.status,

@@ -23,7 +23,7 @@ export type ClientDashboard = {
 };
 
 export type DashboardClientPageProps = {
-  draftWorkReports: Record<string, ClientDashboard>;
-  submittedWorkReportsLast3Months: Record<string, ClientDashboard>;
+  draftWorkReports: Record<string, ContractDashboard>;
+  submittedWorkReportsLast3Months: Record<string, ContractDashboard>;
   subscriptionInfo: SubscriptionInfo | null;
 };
