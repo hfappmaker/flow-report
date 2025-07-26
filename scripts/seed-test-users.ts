@@ -50,6 +50,16 @@ async function main() {
         },
       });
 
+      // 認証プロバイダー用のAccountレコードを作成
+      await prisma.account.create({
+        data: {
+          userId: user.id,
+          type: "credentials",
+          provider: "credentials",
+          providerAccountId: user.id,
+        },
+      });
+
       console.log(`✅ ${userData.email} を作成しました (ID: ${user.id})`);
     } catch (error) {
       console.error(`❌ ${userData.email} の作成に失敗しました:`, error);
@@ -60,7 +70,7 @@ async function main() {
 }
 
 main()
-  .catch((e) => {
+  .catch((e: unknown) => {
     console.error("エラーが発生しました:", e);
     process.exit(1);
   })

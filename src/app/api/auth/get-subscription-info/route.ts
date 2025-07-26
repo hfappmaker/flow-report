@@ -1,11 +1,20 @@
 import { NextResponse } from "next/server";
 
-import { getSubscriptionInfo } from "@/features/subscription/actions/get-subscription-info";
+import { currentUser } from "@/features/auth/lib/auth";
+import { getUserSubscriptionInfo } from "@/features/subscription/repositories/subscription-repository";
 
 export async function GET() {
   try {
     console.log("=== Checking subscription status ===");
-    const subscriptionInfo = await getSubscriptionInfo();
+    const user = await currentUser();
+    
+    if (!user?.id) {
+      console.log("No user found in getSubscriptionInfo");
+      throw new Error("User not authenticated");
+    }
+
+    console.log("Getting subscription info for user:", user.id);
+    const subscriptionInfo = await getUserSubscriptionInfo(user.id);
     console.log("Subscription info retrieved:", subscriptionInfo);
     return NextResponse.json(subscriptionInfo);
 

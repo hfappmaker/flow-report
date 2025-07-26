@@ -85,9 +85,16 @@ export async function getWorkReportsByContractIdAndYearMonthDateRange(
   return workReports;
 }
 
-export async function getDraftWorkReports() {
+export async function getDraftWorkReports(userId?: string) {
   const workReports = await db.workReport.findMany({
-    where: { status: WorkReportStatus.DRAFT },
+    where: { 
+      status: WorkReportStatus.DRAFT,
+      ...(userId && {
+        contract: {
+          userId: userId,
+        },
+      }),
+    },
     include: {
       contract: true,
     },
@@ -163,7 +170,7 @@ export async function checkWorkReportExists(contractId: string, targetDate: Date
   return !!existingReport;
 }
 
-export async function getSubmittedWorkReportsByRecentMonths(months = 3) {
+export async function getSubmittedWorkReportsByRecentMonths(userId?: string, months = 3) {
   // Filter submissions within the past `months` months
   const cutoffDate = new Date();
   cutoffDate.setMonth(cutoffDate.getMonth() - months);
@@ -172,6 +179,11 @@ export async function getSubmittedWorkReportsByRecentMonths(months = 3) {
     where: {
       status: WorkReportStatus.SUBMITTED,
       targetDate: { gte: cutoffDate },
+      ...(userId && {
+        contract: {
+          userId: userId,
+        },
+      }),
     },
     include: {
       contract: true,
