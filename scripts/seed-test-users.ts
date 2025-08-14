@@ -42,6 +42,7 @@ async function main() {
       // ユーザーを作成
       const user = await prisma.user.create({
         data: {
+          id: `test-${userData.email.split('@')[0]}`, // ユーザーIDを一意にするためのプレフィックス
           email: userData.email,
           password: hashedPassword,
           name: userData.name,

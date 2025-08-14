@@ -57,7 +57,7 @@ export default function DashboardClientPage({ draftWorkReports, submittedWorkRep
             {Object.entries(draftWorkReports).map(([contractId, contract]) => (
                 <Card key={contractId} className="mb-6">
                     <CardHeader>
-                        <CardTitle className="cursor-pointer transition-colors hover:text-blue-600 hover:underline" onClick={() => { handleContractNavigation(contractId); }}>
+                        <CardTitle className="cursor-pointer transition-colors hover:text-blue-600" onClick={() => { handleContractNavigation(contractId); }}>
                             {contract.contractName}
                         </CardTitle>
                         <p className="text-sm text-gray-600">{contract.clientName}</p>
@@ -89,7 +89,7 @@ export default function DashboardClientPage({ draftWorkReports, submittedWorkRep
             {Object.entries(submittedWorkReportsLast3Months).map(([contractId, contract]) => (
                 <Card key={contractId} className="mb-6">
                     <CardHeader>
-                        <CardTitle className="cursor-pointer transition-colors hover:text-blue-600 hover:underline" onClick={() => { handleContractNavigation(contractId); }}>
+                        <CardTitle className="cursor-pointer transition-colors hover:text-blue-600" onClick={() => { handleContractNavigation(contractId); }}>
                             {contract.contractName}
                         </CardTitle>
                         <p className="text-sm text-gray-600">{contract.clientName}</p>

@@ -23,7 +23,8 @@
         "vscode-icons-team.vscode-icons",
         "bradlc.vscode-tailwindcss",
         "Anthropic.claude-code",
-        "ms-playwright.playwright"
+        "ms-playwright.playwright",
+        "Stripe.vscode-stripe"
       ]
     }
   },
