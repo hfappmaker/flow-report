@@ -15,14 +15,6 @@ services:
       dockerfile: Dockerfile.app
     # コンテナの名前を指定します。
     container_name: app_container
-    # GPUサポートの追加
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: 1
-    #           capabilities: [gpu]
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
