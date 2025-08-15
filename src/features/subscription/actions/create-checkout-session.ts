@@ -5,7 +5,6 @@ import { currentUser } from "@/features/auth/lib/auth";
 import { stripe, TRIAL_PERIOD_DAYS, getStripeEnv } from "@/features/subscription/libs/stripe";
 import {
   getUserSubscriptionInfo,
-  upsertUserSubscription,
 } from "@/features/subscription/repositories/subscription-repository";
 import { CheckoutSessionResult } from "@/features/subscription/types/subscription";
 
@@ -59,19 +58,6 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
         },
       });
       customerId = customer.id;
-
-      // カスタマーIDを保存
-      try {
-        await upsertUserSubscription(user.id, {
-          stripeCustomerId: customerId,
-        });
-        console.log("Created new Stripe customer:", customerId);
-      } catch (error) {
-        if (error instanceof Error && error.message.includes("does not exist")) {
-          return { error: "ユーザー情報が見つかりません。再度ログインしてください。" };
-        }
-        throw error;
-      }
     }
 
     // トライアル期間の設定
