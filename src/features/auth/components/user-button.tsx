@@ -22,23 +22,12 @@ const UserButton = () => {
   const user = useCurrentUser();
   const { subscriptionInfo, isLoading, refreshSubscription } = useSubscription();
 
-  // アクティブなサブスクリプションがあるかチェック
-  // キャンセル済みでも有効期間中はアクティブとして扱う
-  const hasActiveSubscription = 
-    subscriptionInfo && 
-    (subscriptionInfo.status === "ACTIVE" || 
-     subscriptionInfo.status === "TRIAL" ||
-     (subscriptionInfo.status === "CANCELED" && 
-      subscriptionInfo.currentPeriodEnd && 
-      subscriptionInfo.currentPeriodEnd > new Date()));
-
   const handleCancelSuccess = () => {
     // サブスクリプション情報をリフレッシュ
     void refreshSubscription();
   };
 
   console.log("UserButton - subscriptionInfo:", subscriptionInfo);
-  console.log("UserButton - hasActiveSubscription:", hasActiveSubscription);
 
   return (
     <DropdownMenu>
@@ -55,14 +44,14 @@ const UserButton = () => {
         align="end"
       >
         {/* サブスクリプションキャンセルボタン */}
-        {!isLoading && hasActiveSubscription && subscriptionInfo.status !== "CANCELED" && (
+        {!isLoading && (subscriptionInfo?.status === "TRIAL" || subscriptionInfo?.status === "ACTIVE") && (
           <>
             <CancelSubscriptionButton onSuccess={handleCancelSuccess}>
               <button 
-                className="w-full px-2 py-1.5 text-sm flex items-center justify-center text-center hover:bg-red-50 hover:text-red-600 focus:bg-red-50 focus:text-red-600 rounded-sm"
+                className="flex w-full items-center justify-center rounded-sm px-2 py-1.5 text-center text-sm hover:bg-red-50 hover:text-red-600 focus:bg-red-50 focus:text-red-600"
               >
                 <MdCancel className="mr-2 size-4" />
-                サブスクリプションキャンセル
+                サブスクリプションをキャンセル
               </button>
             </CancelSubscriptionButton>
             <DropdownMenuSeparator />
@@ -70,14 +59,14 @@ const UserButton = () => {
         )}
         
         {/* サブスクリプション再購読ボタン */}
-        {!isLoading && !hasActiveSubscription && subscriptionInfo?.status === "CANCELED" && (
+        {!isLoading && subscriptionInfo?.status === "CANCELED" && (
           <>
             <ResubscribeButton onSuccess={handleCancelSuccess}>
               <div 
-                className="w-full px-2 py-1.5 text-sm flex items-center justify-center text-center hover:bg-green-50 hover:text-green-600 focus:bg-green-50 focus:text-green-600 rounded-sm cursor-pointer"
+                className="flex w-full cursor-pointer items-center justify-center rounded-sm px-2 py-1.5 text-center text-sm hover:bg-green-50 hover:text-green-600 focus:bg-green-50 focus:text-green-600"
               >
                 <ExitIcon className="mr-2 size-4" />
-                サブスクリプション再購読
+                サブスクリプションを再購読
               </div>
             </ResubscribeButton>
             <DropdownMenuSeparator />

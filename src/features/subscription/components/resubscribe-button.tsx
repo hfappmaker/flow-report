@@ -1,28 +1,31 @@
 "use client";
 
-import { useTransition } from "react";
 import { toast } from "sonner";
 
-import { createCheckoutSession } from "@/features/subscription/actions/create-checkout-session";
+import { useTransitionContext } from "@/contexts/transition-context";
+import { createCustomerPortalSession } from "@/features/subscription/actions/create-customer-portal-session";
 
 type ResubscribeButtonProps = {
   children: React.ReactNode;
   onSuccess?: () => void;
 }
 
-const ResubscribeButton = ({ children, onSuccess }: ResubscribeButtonProps) => {
-  const [isPending, startTransition] = useTransition();
+const ResubscribeButton = ({ 
+  children, 
+  onSuccess 
+}: ResubscribeButtonProps) => {
+  const { startTransition } = useTransitionContext();
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    startTransition(() => {
-      void createCheckoutSession().then((data) => {
+    startTransition(async () => {
+      await createCustomerPortalSession().then((data) => {
         if (data.error) {
           toast.error(data.error);
         } else if (data.url) {
-          // Stripeチェックアウトページにリダイレクト
+          // カスタマーポータルにリダイレクト
           window.location.href = data.url;
           onSuccess?.();
         }
@@ -30,17 +33,7 @@ const ResubscribeButton = ({ children, onSuccess }: ResubscribeButtonProps) => {
     });
   };
 
-  return (
-    <div onClick={handleClick}>
-      {isPending ? (
-        <div className="opacity-50 pointer-events-none">
-          {children}
-        </div>
-      ) : (
-        children
-      )}
-    </div>
-  );
+  return <div onClick={handleClick}>{children}</div>;
 };
 
 export default ResubscribeButton;

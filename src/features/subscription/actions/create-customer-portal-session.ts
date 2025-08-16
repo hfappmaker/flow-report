@@ -24,6 +24,8 @@ export async function createCustomerPortalSession(): Promise<CustomerPortalSessi
       return { error: "サーバー設定エラーが発生しました" };
     }
 
+    console.log("Creating customer portal session for user:", user.id, "with customer ID:", subscriptionInfo.stripeCustomerId);
+
     // カスタマーポータルセッションを作成
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: subscriptionInfo.stripeCustomerId,

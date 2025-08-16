@@ -128,13 +128,15 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
       try {
         await deleteContractAction(activeContract.id);
         showSuccess(`契約 '${activeContract.name}' を削除しました`);
-        closeDialog();
         await fetchContracts();
       } catch (error: unknown) {
         console.error(error);
         showError(
           "契約の削除に失敗しました。関連する作業報告書が存在する可能性があります。",
         );
+      }
+      finally { 
+        closeDialog();
       }
     });
   };
@@ -146,11 +148,13 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
         const contractData = convertContractFormValuesToContract(data, userId);
         await createContractAction(contractData);
         showSuccess(`契約 '${data.name}' を作成しました`);
-        closeDialog();
         await fetchContracts();
       } catch (error: unknown) {
         console.error(error);
         showError("契約の作成に失敗しました");
+      }
+      finally { 
+        closeDialog();
       }
     });
   };
@@ -163,11 +167,13 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
         const contractData = convertContractFormValuesToContract(data, userId);
         await updateContractAction(activeContract.id, contractData);
         showSuccess(`契約 '${data.name}' を編集しました`);
-        closeDialog();
         await fetchContracts();
       } catch (error: unknown) {
         console.error(error);
         showError("契約の更新に失敗しました");
+      }
+      finally { 
+        closeDialog();
       }
     });
   };
