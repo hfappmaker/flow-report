@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { currentUser } from "@/features/auth/lib/auth";
-import { getUserSubscriptionInfo } from "@/features/subscription/repositories/subscription-repository";
+import { getSubscriptionInfoByUserId } from "@/features/subscription/repositories/subscription-repository";
 import { getDraftWorkReports, getSubmittedWorkReportsByRecentMonths } from "@/features/work-report/repositories/work-report-repository";
 
 import DashboardClientPage from "./page.client";
@@ -23,7 +23,7 @@ export default async function DashboardPage() {
     const [draftWorkReports, submittedWorkReportsLast3Months, subscriptionInfo] = await Promise.all([
         getDraftWorkReports(userId),
         getSubmittedWorkReportsByRecentMonths(userId),
-        getUserSubscriptionInfo(userId)
+        getSubscriptionInfoByUserId(userId)
     ]);
 
     return (

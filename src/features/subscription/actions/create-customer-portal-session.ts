@@ -2,7 +2,9 @@
 
 import { currentUser } from "@/features/auth/lib/auth";
 import { stripe } from "@/features/subscription/libs/stripe";
-import { getUserSubscriptionInfo } from "@/features/subscription/repositories/subscription-repository";
+import {
+  getStripeCustomerByUserId,
+} from "@/features/subscription/repositories/subscription-repository";
 import { CustomerPortalSessionResult } from "@/features/subscription/types/subscription";
 
 export async function createCustomerPortalSession(): Promise<CustomerPortalSessionResult> {
@@ -12,10 +14,10 @@ export async function createCustomerPortalSession(): Promise<CustomerPortalSessi
       return { error: "認証が必要です" };
     }
 
-    const subscriptionInfo = await getUserSubscriptionInfo(user.id);
-    
-    if (!subscriptionInfo?.stripeCustomerId) {
-      return { error: "サブスクリプション情報が見つかりません" };
+    const stripeCustomer = await getStripeCustomerByUserId(user.id);
+
+    if (!stripeCustomer?.stripeCustomerId) {
+      return { error: "顧客情報が見つかりません" };
     }
 
     // アプリケーションのベースURLを取得
@@ -24,19 +26,24 @@ export async function createCustomerPortalSession(): Promise<CustomerPortalSessi
       return { error: "サーバー設定エラーが発生しました" };
     }
 
-    console.log("Creating customer portal session for user:", user.id, "with customer ID:", subscriptionInfo.stripeCustomerId);
+    console.log(
+      "Creating customer portal session for user:",
+      user.id,
+      "with customer ID:",
+      stripeCustomer.stripeCustomerId,
+    );
 
     // カスタマーポータルセッションを作成
     const portalSession = await stripe.billingPortal.sessions.create({
-      customer: subscriptionInfo.stripeCustomerId,
+      customer: stripeCustomer.stripeCustomerId,
       return_url: `${baseUrl}/subscription`,
     });
 
     return { url: portalSession.url };
   } catch (error) {
     console.error("Failed to create customer portal session:", error);
-    return { 
-      error: `カスタマーポータルの作成に失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}` 
+    return {
+      error: `カスタマーポータルの作成に失敗しました: ${error instanceof Error ? error.message : "Unknown error"}`,
     };
   }
-} 
+}

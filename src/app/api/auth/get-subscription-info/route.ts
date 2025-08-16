@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { currentUser } from "@/features/auth/lib/auth";
-import { getUserSubscriptionInfo } from "@/features/subscription/repositories/subscription-repository";
+import { getSubscriptionInfoByUserId } from "@/features/subscription/repositories/subscription-repository";
 
 export async function GET() {
   try {
@@ -14,7 +14,7 @@ export async function GET() {
     }
 
     console.log("Getting subscription info for user:", user.id);
-    const subscriptionInfo = await getUserSubscriptionInfo(user.id);
+    const subscriptionInfo = await getSubscriptionInfoByUserId(user.id);
     console.log("Subscription info retrieved:", subscriptionInfo);
     return NextResponse.json(subscriptionInfo);
 

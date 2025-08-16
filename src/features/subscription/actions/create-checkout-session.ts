@@ -2,9 +2,14 @@
 import Stripe from "stripe";
 
 import { currentUser } from "@/features/auth/lib/auth";
-import { stripe, TRIAL_PERIOD_DAYS, getStripeEnv } from "@/features/subscription/libs/stripe";
 import {
-  getUserSubscriptionInfo,
+  stripe,
+  TRIAL_PERIOD_DAYS,
+  getStripeEnv,
+} from "@/features/subscription/libs/stripe";
+import {
+  getSubscriptionInfoByUserId,
+  getStripeCustomerByUserId,
 } from "@/features/subscription/repositories/subscription-repository";
 import { CheckoutSessionResult } from "@/features/subscription/types/subscription";
 
@@ -34,10 +39,12 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
 
     let subscriptionInfo;
     try {
-      subscriptionInfo = await getUserSubscriptionInfo(user.id);
+      subscriptionInfo = await getSubscriptionInfoByUserId(user.id);
     } catch (error) {
       if (error instanceof Error && error.message.includes("does not exist")) {
-        return { error: "ユーザー情報が見つかりません。再度ログインしてください。" };
+        return {
+          error: "ユーザー情報が見つかりません。再度ログインしてください。",
+        };
       }
       throw error;
     }
@@ -47,7 +54,9 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
       return { error: "既に有効なサブスクリプションがあります" };
     }
 
-    let customerId = subscriptionInfo?.stripeCustomerId;
+    // StripeCustomer情報を取得
+    const stripeCustomer = await getStripeCustomerByUserId(user.id);
+    let customerId = stripeCustomer?.stripeCustomerId;
 
     // Stripeカスタマーが存在しない場合は作成（API呼び出しを最小限に）
     if (!customerId) {
@@ -61,9 +70,7 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
     }
 
     // トライアル期間の設定
-    const trialPeriodDays = !subscriptionInfo
-        ? TRIAL_PERIOD_DAYS
-        : undefined;
+    const trialPeriodDays = !subscriptionInfo ? TRIAL_PERIOD_DAYS : undefined;
 
     // チェックアウトセッションを作成
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
@@ -90,8 +97,8 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
         trial_settings: {
           end_behavior: {
             missing_payment_method: "cancel",
-          }
-        }
+          },
+        },
       };
     }
 
