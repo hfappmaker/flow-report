@@ -753,7 +753,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
 
                   return (
                     <>
-                      {dateStr} (<span className={colorClass}>{dayName}</span>)
+                      {dateStr} <span className={colorClass}>({dayName})</span>
                     </>
                   );
                 })()}
