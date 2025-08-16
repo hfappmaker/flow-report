@@ -42,7 +42,10 @@
       "mcp__serena__find_file",
       "mcp__serena__find_symbol"
     ],
-    "deny": []
+    "deny": [
+      "Read(.env*)",
+      "Write(.env*)"
+    ]
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [

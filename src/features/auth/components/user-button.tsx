@@ -59,7 +59,9 @@ const UserButton = () => {
         )}
         
         {/* サブスクリプション再購読ボタン */}
-        {!isLoading && subscriptionInfo?.status === "CANCELED" && (
+        {!isLoading && subscriptionInfo?.status === "CANCELED" && 
+        subscriptionInfo.currentPeriodEnd && 
+        new Date(subscriptionInfo.currentPeriodEnd) > new Date() && (
           <>
             <ResubscribeButton onSuccess={handleCancelSuccess}>
               <div 
