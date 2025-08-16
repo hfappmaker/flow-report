@@ -329,60 +329,90 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
             <div>
               <h3 className="mb-3 text-lg font-medium">基本情報</h3>
               <div className="grid grid-cols-2 gap-3">
-                <div className="font-semibold">契約名</div>
-                <div>{activeContract.name}</div>
-                <div>
+                <div className="col-span-2">
+                  <label className="text-sm font-medium text-gray-500">契約名</label>
+                  <p className="mt-1 whitespace-pre-line">{activeContract.name}</p>
+                </div>
+                <div className="col-span-2">
                   <label className="text-sm font-medium text-gray-500">クライアント名</label>
                   <p className="mt-1">{activeContract.clientName}</p>
                 </div>
-                <div>
+                <div className="col-span-2">
                   <label className="text-sm font-medium text-gray-500">担当者</label>
                   <p className="mt-1">{activeContract.clientContactName}</p>
                 </div>
-                <div>
+                <div className="col-span-2">
                   <label className="text-sm font-medium text-gray-500">メールアドレス</label>
                   <p className="mt-1">{activeContract.clientEmail}</p>
                 </div>
-                <div className="font-semibold">開始日</div>
-                <div>{formatDateAsUTC(activeContract.startDate)}</div>
-                <div className="font-semibold">終了日</div>
-                <div>{activeContract.endDate ? formatDateAsUTC(activeContract.endDate) : 'なし'}</div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">開始日</label>
+                  <p className="mt-1">{formatDateAsUTC(activeContract.startDate)}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">終了日</label>
+                  <p className="mt-1">{activeContract.endDate ? formatDateAsUTC(activeContract.endDate) : 'なし'}</p>
+                </div>
               </div>
             </div>
 
             <div>
               <h3 className="mb-3 text-lg font-medium">精算情報</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="font-semibold">単価</div>
-                <div>{activeContract.unitPrice ? `${activeContract.unitPrice}円` : 'なし'}</div>
-                <div className="font-semibold">精算下限</div>
-                <div>{activeContract.settlementMin ? `${activeContract.settlementMin}時間` : 'なし'}</div>
-                <div className="font-semibold">精算上限</div>
-                <div>{activeContract.settlementMax ? `${activeContract.settlementMax}時間` : 'なし'}</div>
-                <div className="font-semibold">超過単価</div>
-                <div>{activeContract.upperRate ? `${activeContract.upperRate}円` : 'なし'}</div>
-                <div className="font-semibold">控除単価</div>
-                <div>{activeContract.lowerRate ? `${activeContract.lowerRate}円` : 'なし'}</div>
-                <div className="font-semibold">中間単価</div>
-                <div>{activeContract.middleRate ? `${activeContract.middleRate}円` : 'なし'}</div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-3">
+                  <label className="text-sm font-medium text-gray-500">月単価</label>
+                  <p className="mt-1">{activeContract.unitPrice ? `${activeContract.unitPrice}円` : 'なし'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">精算下限</label>
+                  <p className="mt-1">{activeContract.settlementMin ? `${activeContract.settlementMin}時間` : 'なし'}</p>
+                </div>
+                <div className="col-span-2">
+                  <label className="text-sm font-medium text-gray-500">精算上限</label>
+                  <p className="mt-1">{activeContract.settlementMax ? `${activeContract.settlementMax}時間` : 'なし'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">超過単価</label>
+                  <p className="mt-1">{activeContract.upperRate ? `${activeContract.upperRate}円` : 'なし'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">控除単価</label>
+                  <p className="mt-1">{activeContract.lowerRate ? `${activeContract.lowerRate}円` : 'なし'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">中間単価</label>
+                  <p className="mt-1">{activeContract.middleRate ? `${activeContract.middleRate}円` : 'なし'}</p>
+                </div>
               </div>
             </div>
 
             <div>
               <h3 className="mb-3 text-lg font-medium">勤務設定</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="font-semibold">1日あたりの作業単位</div>
-                <div>{activeContract.dailyWorkMinutes ? `${activeContract.dailyWorkMinutes.toString()}分` : 'なし'}</div>
-                <div className="font-semibold">1ヶ月あたりの作業単位</div>
-                <div>{activeContract.monthlyWorkMinutes ? `${activeContract.monthlyWorkMinutes.toString()}分` : 'なし'}</div>
-                <div className="font-semibold">基本開始時刻</div>
-                <div>{activeContract.basicStartTime ? new Date(activeContract.basicStartTime).toLocaleTimeString('en-US', { timeZone: 'UTC', hour12: false, hour: '2-digit', minute: '2-digit' }) : 'なし'}</div>
-                <div className="font-semibold">基本終了時刻</div>
-                <div>{activeContract.basicEndTime ? new Date(activeContract.basicEndTime).toLocaleTimeString('en-US', { timeZone: 'UTC', hour12: false, hour: '2-digit', minute: '2-digit' }) : 'なし'}</div>
-                <div className="font-semibold">基本休憩時間</div>
-                <div>{activeContract.basicBreakDuration ? `${activeContract.basicBreakDuration.toString()}分` : 'なし'}</div>
-                <div className="font-semibold">締め日</div>
-                <div>{activeContract.closingDay ? `${activeContract.closingDay.toString()}日` : '末日'}</div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">1日あたりの作業単位</label>
+                  <p className="mt-1">{activeContract.dailyWorkMinutes ? `${activeContract.dailyWorkMinutes.toString()}分` : 'なし'}</p>
+                </div>
+                <div className="col-span-2">
+                  <label className="text-sm font-medium text-gray-500">1ヶ月あたりの作業単位</label>
+                  <p className="mt-1">{activeContract.monthlyWorkMinutes ? `${activeContract.monthlyWorkMinutes.toString()}分` : 'なし'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">基本開始時刻</label>
+                  <p className="mt-1">{activeContract.basicStartTime ? new Date(activeContract.basicStartTime).toLocaleTimeString('en-US', { timeZone: 'UTC', hour12: false, hour: '2-digit', minute: '2-digit' }) : 'なし'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">基本終了時刻</label>
+                  <p className="mt-1">{activeContract.basicEndTime ? new Date(activeContract.basicEndTime).toLocaleTimeString('en-US', { timeZone: 'UTC', hour12: false, hour: '2-digit', minute: '2-digit' }) : 'なし'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">基本休憩時間</label>
+                  <p className="mt-1">{activeContract.basicBreakDuration ? `${activeContract.basicBreakDuration.toString()}分` : 'なし'}</p>
+                </div>
+                <div className="col-span-3">
+                  <label className="text-sm font-medium text-gray-500">締め日</label>
+                  <p className="mt-1">{activeContract.closingDay ? `${activeContract.closingDay.toString()}日` : '末日'}</p>
+                </div>
               </div>
             </div>
 

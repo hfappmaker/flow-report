@@ -93,9 +93,7 @@ export const ContractForm = ({
                     )}
                 />
 
-                {/* Client Information */}
-                <div className="flex gap-4">
-                    <FormField
+                <FormField
                         control={form.control}
                         name="clientName"
                         render={({ field }) => (
@@ -109,20 +107,19 @@ export const ContractForm = ({
                         )}
                     />
 
-                    <FormField
-                        control={form.control}
-                        name="clientContactName"
-                        render={({ field }) => (
-                            <FormItem className="flex-1">
-                                <FormLabel>担当者名</FormLabel>
-                                <FormControl>
-                                    <Input {...field} value={field.value} placeholder="担当者名を入力" />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
+                <FormField
+                    control={form.control}
+                    name="clientContactName"
+                    render={({ field }) => (
+                        <FormItem className="flex-1">
+                            <FormLabel>担当者名</FormLabel>
+                            <FormControl>
+                                <Input {...field} value={field.value} placeholder="担当者名を入力" />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
 
                 <FormField
                     control={form.control}
