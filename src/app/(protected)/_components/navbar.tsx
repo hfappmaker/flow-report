@@ -5,12 +5,17 @@ import { usePathname, useRouter } from "next/navigation";
 import { MdMenu } from "react-icons/md";
 
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { useTransitionContext } from "@/contexts/transition-context";
 import UserButton from "@/features/auth/components/user-button";
 
 import { NAV_LINKS } from "../_constants";
-
 
 const Navbar = () => {
   const { startTransition } = useTransitionContext();
@@ -34,7 +39,15 @@ const Navbar = () => {
               variant={pathName === link.path ? "default" : "outline"}
               className="w-full hover:bg-sky-400 hover:text-primary-foreground"
             >
-              <Link role="link" href={link.path} onClick={() => { handleNavigation(link.path); }}>{link.title}</Link>
+              <Link
+                role="link"
+                href={link.path}
+                onClick={() => {
+                  handleNavigation(link.path);
+                }}
+              >
+                {link.title}
+              </Link>
             </Button>
           ))}
         </div>
@@ -54,6 +67,11 @@ const Navbar = () => {
             </Button>
           </SheetTrigger>
           <SheetContent>
+            <SheetHeader>
+              <SheetTitle className="sr-only">
+                ナビゲーションメニュー
+              </SheetTitle>
+            </SheetHeader>
             <div className="flex-col p-2">
               {NAV_LINKS.map((link, index) => (
                 <Button
@@ -62,7 +80,15 @@ const Navbar = () => {
                   variant={pathName === link.path ? "default" : "outline"}
                   className="my-2 w-full hover:bg-sky-400 hover:text-primary-foreground"
                 >
-                  <Link role="link" href={link.path} onClick={() => { handleNavigation(link.path); }}>{link.title}</Link>
+                  <Link
+                    role="link"
+                    href={link.path}
+                    onClick={() => {
+                      handleNavigation(link.path);
+                    }}
+                  >
+                    {link.title}
+                  </Link>
                 </Button>
               ))}
             </div>

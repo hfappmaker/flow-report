@@ -27,15 +27,16 @@ export function SubscriptionStatus({ subscriptionInfo }: SubscriptionStatusProps
             return parts.length > 0 ? parts.join('') : "1分未満";
         };
 
+        const timeLeft = subscriptionInfo.currentPeriodEnd
+            ? formatTimeLeft(subscriptionInfo.currentPeriodEnd)
+            : "期限不明";
+
         switch (subscriptionInfo.status) {
             case "ACTIVE":
                 return <Badge variant="success" className="pointer-events-none">プレミアムプラン</Badge>;
             case "CANCELED":
-                return <Badge variant="destructive" className="pointer-events-none">キャンセル済み</Badge>;
+                return <Badge variant="destructive" className="pointer-events-none">キャンセル済み (残り{timeLeft})</Badge>;
             case "TRIAL": {
-                const timeLeft = subscriptionInfo.currentPeriodEnd 
-                    ? formatTimeLeft(subscriptionInfo.currentPeriodEnd)
-                    : "期限不明";
                 return <Badge variant="warning" className="pointer-events-none">トライアル期間中 (残り{timeLeft})</Badge>;
             }
         }

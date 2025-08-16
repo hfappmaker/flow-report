@@ -1,32 +1,49 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { DatePicker } from '@/components/ui/date-picker';
-import { DialogFooter } from '@/components/ui/dialog';
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { DatePicker } from "@/components/ui/date-picker";
+import { DialogFooter } from "@/components/ui/dialog";
 import FormError from "@/components/ui/feedback/error-alert";
 import FormSuccess from "@/components/ui/feedback/success-alert";
-import { Input } from '@/components/ui/input';
-import { useTransitionContext } from '@/contexts/transition-context';
-import { getContractsByUserIdAction, searchContractsAction, deleteContractAction, createContractAction, updateContractAction } from '@/features/contract/actions/contract';
-import { ContractDialog, type DialogType } from "@/features/contract/components/contract-dialog";
-import { ContractForm, ContractFormValues } from "@/features/contract/components/contract-form";
+import { Input } from "@/components/ui/input";
+import { useTransitionContext } from "@/contexts/transition-context";
+import {
+  getContractsByUserIdAction,
+  searchContractsAction,
+  deleteContractAction,
+  createContractAction,
+  updateContractAction,
+} from "@/features/contract/actions/contract";
+import {
+  ContractDialog,
+  type DialogType,
+} from "@/features/contract/components/contract-dialog";
+import {
+  ContractForm,
+  ContractFormValues,
+} from "@/features/contract/components/contract-form";
 import { ContractOutput } from "@/features/contract/types/contract";
-import { convertContractFormValuesToContract, convertContractToFormValues } from "@/features/contract/utils/contract-converter";
-import { useMessageState } from '@/hooks/use-message-state';
-import { formatDateAsUTC, formatDateLongAsUTC } from '@/utils/date-utils';
+import {
+  convertContractFormValuesToContract,
+  convertContractToFormValues,
+} from "@/features/contract/utils/contract-converter";
+import { useMessageState } from "@/hooks/use-message-state";
+import { formatDateAsUTC, formatDateLongAsUTC } from "@/utils/date-utils";
 
 export default function ContractsClientPage({ userId }: { userId: string }) {
   const { error, success, showError, showSuccess } = useMessageState();
   const [contracts, setContracts] = useState<ContractOutput[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [periodFrom, setPeriodFrom] = useState('');
-  const [periodTo, setPeriodTo] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [periodFrom, setPeriodFrom] = useState("");
+  const [periodTo, setPeriodTo] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const [activeContract, setActiveContract] = useState<ContractOutput | null>(null);
+  const [activeContract, setActiveContract] = useState<ContractOutput | null>(
+    null,
+  );
   const [activeDialog, setActiveDialog] = useState<DialogType>(null);
 
   const { startTransition } = useTransitionContext();
@@ -39,7 +56,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
       setContracts(contractsData);
     } catch (error: unknown) {
       console.error(error);
-      showError('契約の取得に失敗しました');
+      showError("契約の取得に失敗しました");
     }
   };
 
@@ -47,7 +64,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
   const handleSearch = () => {
     const hasSearchQuery = searchQuery.trim();
     const hasPeriodFilters = periodFrom || periodTo;
-    
+
     if (!hasSearchQuery && !hasPeriodFilters) {
       setIsSearching(false);
       startTransition(async () => {
@@ -60,24 +77,24 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
     startTransition(async () => {
       try {
         const searchResults = await searchContractsAction(
-          userId, 
-          searchQuery || undefined, 
-          periodFrom || undefined, 
-          periodTo || undefined
+          userId,
+          searchQuery || undefined,
+          periodFrom || undefined,
+          periodTo || undefined,
         );
         setContracts(searchResults);
       } catch (error: unknown) {
         console.error(error);
-        showError('検索に失敗しました');
+        showError("検索に失敗しました");
       }
     });
   };
 
   // 検索クリア
   const handleClearSearch = () => {
-    setSearchQuery('');
-    setPeriodFrom('');
-    setPeriodTo('');
+    setSearchQuery("");
+    setPeriodFrom("");
+    setPeriodTo("");
     setIsSearching(false);
     startTransition(async () => {
       await fetchContracts();
@@ -115,7 +132,9 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
         await fetchContracts();
       } catch (error: unknown) {
         console.error(error);
-        showError('契約の削除に失敗しました。関連する作業報告書が存在する可能性があります。');
+        showError(
+          "契約の削除に失敗しました。関連する作業報告書が存在する可能性があります。",
+        );
       }
     });
   };
@@ -131,7 +150,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
         await fetchContracts();
       } catch (error: unknown) {
         console.error(error);
-        showError('契約の作成に失敗しました');
+        showError("契約の作成に失敗しました");
       }
     });
   };
@@ -148,7 +167,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
         await fetchContracts();
       } catch (error: unknown) {
         console.error(error);
-        showError('契約の更新に失敗しました');
+        showError("契約の更新に失敗しました");
       }
     });
   };
@@ -171,11 +190,11 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
     const endDate = contract.endDate ? new Date(contract.endDate) : null;
 
     if (endDate && endDate < now) {
-      return { status: '終了', color: 'text-red-600' };
+      return { status: "終了", color: "text-red-600" };
     } else if (endDate) {
-      return { status: '進行中', color: 'text-green-600' };
+      return { status: "進行中", color: "text-green-600" };
     } else {
-      return { status: '無期限', color: 'text-blue-600' };
+      return { status: "無期限", color: "text-blue-600" };
     }
   };
 
@@ -184,7 +203,11 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
       <div className="mb-6">
         <div className="mb-2 flex items-center justify-between">
           <h1 className="text-2xl font-bold">契約一覧</h1>
-          <Button onClick={() => { setActiveDialog("create"); }}>
+          <Button
+            onClick={() => {
+              setActiveDialog("create");
+            }}
+          >
             新しい契約を作成
           </Button>
         </div>
@@ -192,7 +215,10 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
       </div>
 
       <FormError message={error.message} resetSignal={error.date.getTime()} />
-      <FormSuccess message={success.message} resetSignal={success.date.getTime()} />
+      <FormSuccess
+        message={success.message}
+        resetSignal={success.date.getTime()}
+      />
 
       {/* 検索フォーム */}
       <div className="mb-6 space-y-4">
@@ -201,39 +227,47 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
             type="text"
             placeholder="契約名またはクライアント名で検索..."
             value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); }}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+            }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
+              if (e.key === "Enter") {
                 handleSearch();
               }
             }}
             className="flex-1"
           />
         </div>
-        
+
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">期間検索（契約期間と重複する期間を検索）</label>
+          <label className="text-sm font-medium text-gray-700">
+            期間検索（契約期間と重複する期間を検索）
+          </label>
           <div className="flex gap-2">
             <DatePicker
               placeholder="期間開始"
               value={periodFrom}
-              onChange={(date) => { setPeriodFrom(date); }}
+              onChange={(date) => {
+                setPeriodFrom(date);
+              }}
               className="flex-1"
             />
             <span className="flex items-center text-gray-500">〜</span>
             <DatePicker
               placeholder="期間終了"
               value={periodTo}
-              onChange={(date) => { setPeriodTo(date); }}
+              onChange={(date) => {
+                setPeriodTo(date);
+              }}
               className="flex-1"
             />
           </div>
         </div>
-        
+
         <div className="flex gap-2">
-          <Button 
-            onClick={handleSearch} 
-            disabled={(!searchQuery.trim() && !periodFrom && !periodTo)}
+          <Button
+            onClick={handleSearch}
+            disabled={!searchQuery.trim() && !periodFrom && !periodTo}
           >
             検索
           </Button>
@@ -249,12 +283,10 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
       {contracts.length === 0 ? (
         <div className="py-12 text-center">
           <p className="text-lg text-gray-500">
-            {isSearching ? '検索結果がありません' : '契約がありません'}
+            {isSearching ? "検索結果がありません" : "契約がありません"}
           </p>
           {!isSearching && (
-            <p className="mt-2 text-gray-400">
-              新しい契約を作成してください
-            </p>
+            <p className="mt-2 text-gray-400">新しい契約を作成してください</p>
           )}
         </div>
       ) : (
@@ -268,8 +300,13 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
               >
                 <div className="p-4">
                   <div className="flex w-full items-center justify-between">
-                    <div className="flex min-w-0 flex-1 cursor-pointer items-center gap-6" onClick={() => { handleNavigateToWorkReports(contract.id); }}>
-                      <div className="min-w-0">
+                    <div
+                      className="flex min-w-0 flex-1 cursor-pointer items-center gap-6"
+                      onClick={() => {
+                        handleNavigateToWorkReports(contract.id);
+                      }}
+                    >
+                      <div className="min-w-48">
                         <h3 className="truncate text-lg font-semibold text-foreground">
                           {contract.name}
                         </h3>
@@ -278,17 +315,11 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                         </p>
                       </div>
                       <div className="hidden items-center gap-4 text-sm text-muted-foreground sm:flex">
-                        <div>
-                          開始: {formatDate(contract.startDate)}
-                        </div>
+                        <div>開始: {formatDate(contract.startDate)}</div>
                         {contract.endDate && (
-                          <div>
-                            終了: {formatDate(contract.endDate)}
-                          </div>
+                          <div>終了: {formatDate(contract.endDate)}</div>
                         )}
-                        <div>
-                          担当: {contract.clientContactName}
-                        </div>
+                        <div>担当: {contract.clientContactName}</div>
                         {contract.unitPrice && (
                           <div className="font-medium">
                             ¥{Number(contract.unitPrice).toLocaleString()}
@@ -297,7 +328,9 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                       </div>
                     </div>
                     <div className="ml-4 flex shrink-0 items-center gap-3">
-                      <span className={`text-sm font-medium ${statusInfo.color}`}>
+                      <span
+                        className={`text-sm font-medium ${statusInfo.color}`}
+                      >
                         {statusInfo.status}
                       </span>
                       <Button
@@ -330,28 +363,48 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
               <h3 className="mb-3 text-lg font-medium">基本情報</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2">
-                  <label className="text-sm font-medium text-gray-500">契約名</label>
-                  <p className="mt-1 whitespace-pre-line">{activeContract.name}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    契約名
+                  </label>
+                  <p className="mt-1 whitespace-pre-line">
+                    {activeContract.name}
+                  </p>
                 </div>
                 <div className="col-span-2">
-                  <label className="text-sm font-medium text-gray-500">クライアント名</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    クライアント名
+                  </label>
                   <p className="mt-1">{activeContract.clientName}</p>
                 </div>
                 <div className="col-span-2">
-                  <label className="text-sm font-medium text-gray-500">担当者</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    担当者
+                  </label>
                   <p className="mt-1">{activeContract.clientContactName}</p>
                 </div>
                 <div className="col-span-2">
-                  <label className="text-sm font-medium text-gray-500">メールアドレス</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    メールアドレス
+                  </label>
                   <p className="mt-1">{activeContract.clientEmail}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">開始日</label>
-                  <p className="mt-1">{formatDateAsUTC(activeContract.startDate)}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    開始日
+                  </label>
+                  <p className="mt-1">
+                    {formatDateAsUTC(activeContract.startDate)}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">終了日</label>
-                  <p className="mt-1">{activeContract.endDate ? formatDateAsUTC(activeContract.endDate) : 'なし'}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    終了日
+                  </label>
+                  <p className="mt-1">
+                    {activeContract.endDate
+                      ? formatDateAsUTC(activeContract.endDate)
+                      : "なし"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -360,28 +413,64 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
               <h3 className="mb-3 text-lg font-medium">精算情報</h3>
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-3">
-                  <label className="text-sm font-medium text-gray-500">月単価</label>
-                  <p className="mt-1">{activeContract.unitPrice ? `${activeContract.unitPrice}円` : 'なし'}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    月単価
+                  </label>
+                  <p className="mt-1">
+                    {activeContract.unitPrice
+                      ? `${activeContract.unitPrice}円`
+                      : "なし"}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">精算下限</label>
-                  <p className="mt-1">{activeContract.settlementMin ? `${activeContract.settlementMin}時間` : 'なし'}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    精算下限
+                  </label>
+                  <p className="mt-1">
+                    {activeContract.settlementMin
+                      ? `${activeContract.settlementMin}時間`
+                      : "なし"}
+                  </p>
                 </div>
                 <div className="col-span-2">
-                  <label className="text-sm font-medium text-gray-500">精算上限</label>
-                  <p className="mt-1">{activeContract.settlementMax ? `${activeContract.settlementMax}時間` : 'なし'}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    精算上限
+                  </label>
+                  <p className="mt-1">
+                    {activeContract.settlementMax
+                      ? `${activeContract.settlementMax}時間`
+                      : "なし"}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">超過単価</label>
-                  <p className="mt-1">{activeContract.upperRate ? `${activeContract.upperRate}円` : 'なし'}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    超過単価
+                  </label>
+                  <p className="mt-1">
+                    {activeContract.upperRate
+                      ? `${activeContract.upperRate}円`
+                      : "なし"}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">控除単価</label>
-                  <p className="mt-1">{activeContract.lowerRate ? `${activeContract.lowerRate}円` : 'なし'}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    控除単価
+                  </label>
+                  <p className="mt-1">
+                    {activeContract.lowerRate
+                      ? `${activeContract.lowerRate}円`
+                      : "なし"}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">中間単価</label>
-                  <p className="mt-1">{activeContract.middleRate ? `${activeContract.middleRate}円` : 'なし'}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    中間単価
+                  </label>
+                  <p className="mt-1">
+                    {activeContract.middleRate
+                      ? `${activeContract.middleRate}円`
+                      : "なし"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -390,36 +479,102 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
               <h3 className="mb-3 text-lg font-medium">勤務設定</h3>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">1日あたりの作業単位</label>
-                  <p className="mt-1">{activeContract.dailyWorkMinutes ? `${activeContract.dailyWorkMinutes.toString()}分` : 'なし'}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    1日あたりの作業単位
+                  </label>
+                  <p className="mt-1">
+                    {activeContract.dailyWorkMinutes
+                      ? `${activeContract.dailyWorkMinutes.toString()}分`
+                      : "なし"}
+                  </p>
                 </div>
                 <div className="col-span-2">
-                  <label className="text-sm font-medium text-gray-500">1ヶ月あたりの作業単位</label>
-                  <p className="mt-1">{activeContract.monthlyWorkMinutes ? `${activeContract.monthlyWorkMinutes.toString()}分` : 'なし'}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    1ヶ月あたりの作業単位
+                  </label>
+                  <p className="mt-1">
+                    {activeContract.monthlyWorkMinutes
+                      ? `${activeContract.monthlyWorkMinutes.toString()}分`
+                      : "なし"}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">基本開始時刻</label>
-                  <p className="mt-1">{activeContract.basicStartTime ? new Date(activeContract.basicStartTime).toLocaleTimeString('en-US', { timeZone: 'UTC', hour12: false, hour: '2-digit', minute: '2-digit' }) : 'なし'}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    基本開始時刻
+                  </label>
+                  <p className="mt-1">
+                    {activeContract.basicStartTime
+                      ? new Date(
+                          activeContract.basicStartTime,
+                        ).toLocaleTimeString("en-US", {
+                          timeZone: "UTC",
+                          hour12: false,
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "なし"}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">基本終了時刻</label>
-                  <p className="mt-1">{activeContract.basicEndTime ? new Date(activeContract.basicEndTime).toLocaleTimeString('en-US', { timeZone: 'UTC', hour12: false, hour: '2-digit', minute: '2-digit' }) : 'なし'}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    基本終了時刻
+                  </label>
+                  <p className="mt-1">
+                    {activeContract.basicEndTime
+                      ? new Date(
+                          activeContract.basicEndTime,
+                        ).toLocaleTimeString("en-US", {
+                          timeZone: "UTC",
+                          hour12: false,
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "なし"}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">基本休憩時間</label>
-                  <p className="mt-1">{activeContract.basicBreakDuration ? `${activeContract.basicBreakDuration.toString()}分` : 'なし'}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    基本休憩時間
+                  </label>
+                  <p className="mt-1">
+                    {activeContract.basicBreakDuration
+                      ? `${activeContract.basicBreakDuration.toString()}分`
+                      : "なし"}
+                  </p>
                 </div>
                 <div className="col-span-3">
-                  <label className="text-sm font-medium text-gray-500">締め日</label>
-                  <p className="mt-1">{activeContract.closingDay ? `${activeContract.closingDay.toString()}日` : '末日'}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    締め日
+                  </label>
+                  <p className="mt-1">
+                    {activeContract.closingDay
+                      ? `${activeContract.closingDay.toString()}日`
+                      : "末日"}
+                  </p>
                 </div>
               </div>
             </div>
 
             <DialogFooter sticky className="p-6">
-              <Button variant="outline" onClick={() => { setActiveDialog("edit"); }}>編集</Button>
-              <Button variant="destructive" onClick={() => { setActiveDialog("delete"); }}>削除</Button>
-              <Button variant="outline" onClick={closeDialog}>閉じる</Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setActiveDialog("edit");
+                }}
+              >
+                編集
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  setActiveDialog("delete");
+                }}
+              >
+                削除
+              </Button>
+              <Button variant="outline" onClick={closeDialog}>
+                閉じる
+              </Button>
             </DialogFooter>
           </div>
         )}
@@ -444,7 +599,11 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
         onClose={closeDialog}
       >
         <ContractForm
-          defaultValues={activeContract ? convertContractToFormValues(activeContract) : undefined}
+          defaultValues={
+            activeContract
+              ? convertContractToFormValues(activeContract)
+              : undefined
+          }
           onSubmit={onEditContract}
           onCancel={closeDialog}
           submitButtonText="更新"
@@ -458,11 +617,17 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
       >
         <div>
           <p>本当に契約 &quot;{activeContract?.name}&quot; を削除しますか？</p>
-          <p className="mt-2 text-sm text-gray-500">この操作は元に戻すことができません。</p>
+          <p className="mt-2 text-sm text-gray-500">
+            この操作は元に戻すことができません。
+          </p>
         </div>
         <DialogFooter sticky className="p-6">
-          <Button variant="outline" onClick={closeDialog}>キャンセル</Button>
-          <Button variant="destructive" onClick={onDeleteContract}>削除</Button>
+          <Button variant="outline" onClick={closeDialog}>
+            キャンセル
+          </Button>
+          <Button variant="destructive" onClick={onDeleteContract}>
+            削除
+          </Button>
         </DialogFooter>
       </ContractDialog>
     </div>
