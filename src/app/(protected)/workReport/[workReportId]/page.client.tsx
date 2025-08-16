@@ -709,7 +709,9 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
               variant="outline"
               disabled={status !== "SUBMITTED"}
               onClick={() => {
-                handleConfirmCreateReport();
+                startTransition(async () => {
+                  await handleConfirmCreateReport();
+                });
               }}
             >
               作業報告書を作成
