@@ -31,6 +31,7 @@ export const bulkEditFormSchema = z.object({
   selectedDays: z.number().array().optional(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
+  excludeHolidays: z.boolean().default(true),
   startTime: z.date().optional(),
   endTime: z.date().optional(),
   breakDuration: z.number().optional(),

@@ -59,6 +59,7 @@ import {
 } from "@/features/work-report/utils/attendance-utils";
 import { useMessageState } from "@/hooks/use-message-state";
 import { formatDateAsUTC } from '@/utils/date-utils';
+import { fetchHolidays, getDateColorClass, Holiday } from "@/utils/holiday-utils";
 
 
 export default function ClientWorkReportPage({
@@ -83,6 +84,19 @@ export default function ClientWorkReportPage({
     // モーダルの状態管理
     const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
     const [editingDate, setEditingDate] = useState<Date | null>(null);
+    // 祝日データの状態管理
+    const [holidays, setHolidays] = useState<Holiday[]>([]);
+    
+    // 祝日データを取得
+    useEffect(() => {
+        const loadHolidays = async () => {
+            const year = targetDate.getFullYear();
+            const holidayData = await fetchHolidays(year);
+            setHolidays(holidayData);
+        };
+        void loadHolidays();
+    }, [targetDate]);
+    
     // New state for holding the uploaded template file
     const [uploadedTemplateFile, setUploadedTemplateFile] = useState<File | null>(
         null,
@@ -152,6 +166,8 @@ export default function ClientWorkReportPage({
                 data.selectedDays,
                 data.startDate,
                 data.endDate,
+                data.excludeHolidays,
+                holidays,
             );
             if (shouldUpdate) {
                 return {
@@ -598,7 +614,15 @@ ${targetDate.getUTCFullYear()}年${(targetDate.getUTCMonth() + 1)}月分の作�
                                 {(() => {
                                     const date = day.date;
                                     const dayOfWeek = date.getDay();
-                                    return `${formatDateAsUTC(date)} (${dayNames[dayOfWeek]})`;
+                                    const dateStr = formatDateAsUTC(date);
+                                    const dayName = dayNames[dayOfWeek];
+                                    const colorClass = getDateColorClass(date, holidays);
+                                    
+                                    return (
+                                        <>
+                                            {dateStr} (<span className={colorClass}>{dayName}</span>)
+                                        </>
+                                    );
                                 })()}
                             </span>
                         </div>
@@ -777,6 +801,27 @@ ${targetDate.getUTCFullYear()}年${(targetDate.getUTCMonth() + 1)}月分の作�
                                     />
                                 </div>
                             )}
+
+                            {/* 祝日除外チェックボックス */}
+                            <div className="py-2">
+                                <FormField
+                                    control={bulkEditForm.control}
+                                    name="excludeHolidays"
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                            <FormControl>
+                                                <Checkbox
+                                                    checked={field.value}
+                                                    onCheckedChange={field.onChange}
+                                                />
+                                            </FormControl>
+                                            <FormLabel className="text-sm font-normal">
+                                                祝日は除く
+                                            </FormLabel>
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
                             <div className="space-y-4">
                                 <h3 className="text-sm font-medium">勤怠情報</h3>

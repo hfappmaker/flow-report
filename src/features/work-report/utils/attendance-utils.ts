@@ -122,22 +122,39 @@ export function shouldUpdateDate(
   selectedDays?: number[],
   startDate?: Date,
   endDate?: Date,
+  excludeHolidays?: boolean,
+  holidays?: Array<{ date: string }>,
 ): boolean {
   const dayOfWeek = date.getDay();
 
+  // 基本的な条件チェック
+  let shouldUpdate = false;
   switch (dateRangeMode) {
     case "all":
-      return true;
+      shouldUpdate = true;
+      break;
     case "weekday":
-      return selectedDays?.includes(dayOfWeek) ?? false;
+      shouldUpdate = selectedDays?.includes(dayOfWeek) ?? false;
+      break;
     case "custom":
       if (startDate && endDate) {
-        return date >= startDate && date <= endDate;
+        shouldUpdate = date >= startDate && date <= endDate;
       }
-      return false;
+      break;
     default:
-      return false;
+      shouldUpdate = false;
   }
+
+  // 祝日除外オプションが有効で、かつ祝日の場合は除外
+  if (shouldUpdate && excludeHolidays && holidays) {
+    const dateStr = date.toISOString().split("T")[0];
+    const isHoliday = holidays.some(holiday => holiday.date === dateStr);
+    if (isHoliday) {
+      shouldUpdate = false;
+    }
+  }
+
+  return shouldUpdate;
 }
 
 export function getBulkEditFormDefaults(
@@ -148,6 +165,7 @@ export function getBulkEditFormDefaults(
   return {
     dateRangeMode: "weekday" as DateRangeMode,
     selectedDays: [1, 2, 3, 4, 5],
+    excludeHolidays: true,
     startTime: basicStartTime
       ? new Date(basicStartTime.toISOString())
       : undefined,

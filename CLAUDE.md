@@ -122,17 +122,31 @@ src/
 - Use TypeScript strict mode and avoid `any` types
 - Prioritize editing existing files over creating new ones
 
-  ### Files to Ignore
-  Claude Code should avoid processing these files and directories:
-  - `node_modules/` - Package dependencies
-  - `.next/` - Next.js build output
-  - `dist/` - Distribution/build files
-  - `build/` - Build output
-  - `coverage/` - Test coverage reports
-  - `.env*` - Environment variable files
-  - `*.log` - Log files
-  - `test-results/` - Playwright test results
-  - `playwright-report/` - Playwright HTML reports
-  - `prisma/migrations/` - Database migration files
-  - `.git/` - Git repository data
-  - `*.lock` - Lock files (package-lock.json, yarn.lock)
+### MCP Settings Management
+- **ALWAYS** manage MCP permissions and settings in `.claude/settings.json` for repository-wide sharing
+- **NEVER** create or modify `.claude/settings.local.json` files
+- All MCP server configurations and permissions must be committed to the repository
+- When adding new MCP permissions, update `.claude/settings.json` directly
+- This ensures consistent MCP settings across all team members and environments
+
+### Files to Ignore
+Claude Code should avoid processing these files and directories:
+- `node_modules/` - Package dependencies
+- `.next/` - Next.js build output
+- `dist/` - Distribution/build files
+- `build/` - Build output
+- `coverage/` - Test coverage reports
+- `.env*` - Environment variable files
+- `*.log` - Log files
+- `test-results/` - Playwright test results
+- `playwright-report/` - Playwright HTML reports
+- `prisma/migrations/` - Database migration files
+- `.git/` - Git repository data
+- `*.lock` - Lock files (package-lock.json, yarn.lock)
+- `.claude/settings.local.json` - Individual MCP settings (use .claude/settings.json instead)
+
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
