@@ -86,8 +86,6 @@ export async function POST(req: Request) {
 
           // ステータスを決定する関数（改善版）
           const getSubscriptionStatus = (subscription: Stripe.Subscription): SubscriptionStatus => {
-            const now = Math.floor(Date.now() / 1000);
-            
             // キャンセル予定（期間終了時にキャンセル）の場合
             if (subscription.cancel_at_period_end) {
               return "CANCELED";
@@ -96,12 +94,11 @@ export async function POST(req: Request) {
             // Stripeのステータスベースで判定
             switch (subscription.status) {
               case "active":
-                // トライアル期間中かどうかを判定
-                if (subscription.trial_end && subscription.trial_end > now) {
-                  return "TRIAL";
-                } else {
-                  return "ACTIVE";
-                }
+                return "ACTIVE";
+              case "trialing":
+                return "TRIAL";
+              case "paused":
+                return "CANCELED";
               case "canceled":
                 return "CANCELED";
               case "past_due":
