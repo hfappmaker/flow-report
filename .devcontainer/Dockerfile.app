@@ -20,6 +20,9 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
     && apt update \
     && apt install -y gh
 
+#uvのinstall
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+
 RUN npm install -g @anthropic-ai/claude-code
 # RUN npx playwright install
 RUN npx playwright install-deps
