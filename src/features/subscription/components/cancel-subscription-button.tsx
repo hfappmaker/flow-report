@@ -1,24 +1,27 @@
 "use client";
 
-import { useTransition } from "react";
 import { toast } from "sonner";
 
+import { useTransitionContext } from "@/contexts/transition-context";
 import { createCustomerPortalSession } from "@/features/subscription/actions/create-customer-portal-session";
 
 type CancelSubscriptionButtonProps = {
   children: React.ReactNode;
   onSuccess?: () => void;
-}
+};
 
-const CancelSubscriptionButton = ({ children, onSuccess }: CancelSubscriptionButtonProps) => {
-  const [isPending, startTransition] = useTransition();
+const CancelSubscriptionButton = ({
+  children,
+  onSuccess,
+}: CancelSubscriptionButtonProps) => {
+  const { startTransition } = useTransitionContext();
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    startTransition(() => {
-      void createCustomerPortalSession().then((data) => {
+
+    startTransition(async () => {
+      await createCustomerPortalSession().then((data) => {
         if (data.error) {
           toast.error(data.error);
         } else if (data.url) {
@@ -30,17 +33,7 @@ const CancelSubscriptionButton = ({ children, onSuccess }: CancelSubscriptionBut
     });
   };
 
-  return (
-    <div onClick={handleClick}>
-      {isPending ? (
-        <div className="opacity-50 pointer-events-none">
-          {children}
-        </div>
-      ) : (
-        children
-      )}
-    </div>
-  );
+  return <div onClick={handleClick}>{children}</div>;
 };
 
-export default CancelSubscriptionButton; 
+export default CancelSubscriptionButton;

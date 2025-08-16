@@ -3,20 +3,21 @@
 import { useRouter } from "next/navigation";
 
 import { logout } from "@/features/auth/actions/logout";
+import { useTransitionContext } from "@/contexts/transition-context";
 
 const LogoutButton = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
+  const { startTransition } = useTransitionContext();
 
   const handleLogout = async () => {
-    await logout();
-    router.push("/auth/login");
+    startTransition(async () => {
+      await logout();
+      router.push("/auth/login");
+    });
   };
 
   return (
-    <span
-      onClick={handleLogout}
-      className="cursor-pointer"
-    >
+    <span onClick={handleLogout} className="cursor-pointer">
       {children}
     </span>
   );

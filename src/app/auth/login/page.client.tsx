@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { signIn } from "next-auth/react";
 import { BsCalendarCheck } from "react-icons/bs";
@@ -6,8 +6,17 @@ import { GrGoogle } from "react-icons/gr";
 
 import { DEFAULT_LOGIN_REDIRECT } from "@/app/routes";
 import { Button } from "@/components/ui/button";
+import { useTransitionContext } from "@/contexts/transition-context";
 
 export default function LoginPage() {
+  const { startTransition } = useTransitionContext();
+
+  const handleGoogleLogin = () => {
+    startTransition(async () => {
+      await signIn("google", { redirectTo: DEFAULT_LOGIN_REDIRECT });
+    });
+  };
+
   return (
     <main className="flex h-full flex-col items-center justify-center">
       <div className="flex flex-col items-center justify-center gap-y-4 rounded-md border-2 p-4">
@@ -17,7 +26,7 @@ export default function LoginPage() {
             勤怠管理システム
           </h1>
         </div>
-        <Button variant="outline" onClick={() => signIn("google", { redirectTo: DEFAULT_LOGIN_REDIRECT })}>
+        <Button variant="outline" onClick={handleGoogleLogin}>
           <div className="flex items-center gap-x-2">
             <GrGoogle />
             <p>Googleでログイン</p>
