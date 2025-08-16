@@ -341,7 +341,7 @@ export default function ClientWorkReportPage({
         }
       }
 
-      // 年月の名前付き範囲を処理
+      // タイトルの名前付き範囲を処理
       const workReportMonthRanges =
         templateWorkbook.definedNames.getRanges("タイトル");
       const [workReportMonthSheetName, workReportMonthRangeAddress] =
@@ -355,6 +355,23 @@ export default function ClientWorkReportPage({
             workReportMonthRangeAddress,
           );
           workReportMonthCell.value = `${targetDate.getFullYear()}年${targetDate.getMonth() + 1}月度作業報告書`;
+        }
+      }
+
+      // 作業者名の名前付き範囲を処理
+      const workerNameRanges = workbook.definedNames.getRanges("作業者名");
+      if (workerNameRanges.ranges.length > 0) {
+        const [workerNameSheetName, workerNameRangeAddress] =
+          parseRangeReference(workerNameRanges.ranges[0]);
+        if (workerNameSheetName && workerNameRangeAddress) {
+          const targetWorkerNameSheet =
+            workbook.getWorksheet(workerNameSheetName);
+          if (targetWorkerNameSheet) {
+            const workerNameCell = targetWorkerNameSheet.getCell(
+              workerNameRangeAddress,
+            );
+            workerNameCell.value = userName;
+          }
         }
       }
 
@@ -451,9 +468,10 @@ export default function ClientWorkReportPage({
             monthlyWorkMinutesSheetName,
           );
           if (targetMonthlyWorkMinutesSheet) {
-            const monthlyWorkMinutesCell = targetMonthlyWorkMinutesSheet.getCell(
-              monthlyWorkMinutesRangeAddress,
-            );
+            const monthlyWorkMinutesCell =
+              targetMonthlyWorkMinutesSheet.getCell(
+                monthlyWorkMinutesRangeAddress,
+              );
             monthlyWorkMinutesCell.value = `${monthlyWorkMinutes}分`;
           }
         }
