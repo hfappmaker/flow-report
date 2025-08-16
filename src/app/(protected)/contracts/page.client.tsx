@@ -180,9 +180,9 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="mx-auto max-w-6xl p-6">
       <div className="mb-6">
-        <div className="flex justify-between items-center mb-2">
+        <div className="mb-2 flex items-center justify-between">
           <h1 className="text-2xl font-bold">契約一覧</h1>
           <Button onClick={() => { setActiveDialog("create"); }}>
             新しい契約を作成
@@ -247,12 +247,12 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
 
       {/* 契約一覧 */}
       {contracts.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">
+        <div className="py-12 text-center">
+          <p className="text-lg text-gray-500">
             {isSearching ? '検索結果がありません' : '契約がありません'}
           </p>
           {!isSearching && (
-            <p className="text-gray-400 mt-2">
+            <p className="mt-2 text-gray-400">
               新しい契約を作成してください
             </p>
           )}
@@ -264,20 +264,20 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
             return (
               <Card
                 key={contract.id}
-                className="hover:shadow-lg hover:bg-muted/50 transition-all duration-200 w-full"
+                className="w-full transition-all duration-200 hover:bg-muted/50 hover:shadow-lg"
               >
                 <div className="p-4">
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-6 flex-1 min-w-0 cursor-pointer" onClick={() => { handleNavigateToWorkReports(contract.id); }}>
+                  <div className="flex w-full items-center justify-between">
+                    <div className="flex min-w-0 flex-1 cursor-pointer items-center gap-6" onClick={() => { handleNavigateToWorkReports(contract.id); }}>
                       <div className="min-w-0">
-                        <h3 className="text-lg font-semibold text-foreground truncate">
+                        <h3 className="truncate text-lg font-semibold text-foreground">
                           {contract.name}
                         </h3>
                         <p className="text-sm text-muted-foreground">
                           {contract.clientName}
                         </p>
                       </div>
-                      <div className="hidden sm:flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="hidden items-center gap-4 text-sm text-muted-foreground sm:flex">
                         <div>
                           開始: {formatDate(contract.startDate)}
                         </div>
@@ -296,7 +296,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                         )}
                       </div>
                     </div>
-                    <div className="ml-4 flex items-center gap-3 shrink-0">
+                    <div className="ml-4 flex shrink-0 items-center gap-3">
                       <span className={`text-sm font-medium ${statusInfo.color}`}>
                         {statusInfo.status}
                       </span>

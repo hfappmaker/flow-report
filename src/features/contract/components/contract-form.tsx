@@ -159,7 +159,7 @@ export const ContractForm = ({
                     <NumberInputField
                         control={form.control}
                         name="unitPrice"
-                        label="単価（円）"
+                        label="月単価（円）"
                         placeholder="（例）500000"
                     />
 
