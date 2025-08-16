@@ -52,3 +52,6 @@ work-time-management-user-deploy_accessKeys.csv
 
 /test-results
 /playwright-report
+
+# serena cache
+.serena/cache/
