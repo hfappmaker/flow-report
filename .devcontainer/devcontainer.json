@@ -24,7 +24,8 @@
         "bradlc.vscode-tailwindcss",
         "Anthropic.claude-code",
         "ms-playwright.playwright",
-        "Stripe.vscode-stripe"
+        "Stripe.vscode-stripe",
+        "mhutchie.git-graph"
       ]
     }
   },
