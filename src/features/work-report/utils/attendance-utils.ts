@@ -123,7 +123,7 @@ export function shouldUpdateDate(
   startDate?: Date,
   endDate?: Date,
   excludeHolidays?: boolean,
-  holidays?: Array<{ date: string }>,
+  holidays?: { date: string }[],
 ): boolean {
   const dayOfWeek = date.getDay();
 
@@ -148,7 +148,7 @@ export function shouldUpdateDate(
   // 祝日除外オプションが有効で、かつ祝日の場合は除外
   if (shouldUpdate && excludeHolidays && holidays) {
     const dateStr = date.toISOString().split("T")[0];
-    const isHoliday = holidays.some(holiday => holiday.date === dateStr);
+    const isHoliday = holidays.some((holiday) => holiday.date === dateStr);
     if (isHoliday) {
       shouldUpdate = false;
     }
@@ -174,5 +174,6 @@ export function getBulkEditFormDefaults(
     memo: "",
     startDate: undefined,
     endDate: undefined,
+    prompt: "",
   };
 }

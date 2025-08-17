@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import ExcelJS from "exceljs";
 import { useState, useEffect } from "react";
+import type { DateRangeMode } from "@/features/work-report/schemas/work-report-form-schemas";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,10 @@ import {
   TimePickerFieldForNumber,
 } from "@/components/ui/time-picker";
 import { useTransitionContext } from "@/contexts/transition-context";
-import { updateWorkReportAttendanceAction } from "@/features/work-report/actions/attendance";
+import {
+  createAttendancesByPromptAction,
+  updateWorkReportAttendanceAction,
+} from "@/features/work-report/actions/attendance";
 import {
   updateWorkReportAttendancesAction,
   updateWorkReportStatusAction,
@@ -136,11 +140,6 @@ export default function ClientWorkReportPage({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [extensionOption, setExtensionOption] = useState("excel"); // 'excel' or 'pdf'
   const [status, setStatus] = useState<WorkReportStatus>(initialStatus);
-  // 確認ダイアログの状態管理
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<
-    "submit" | "unsubmit" | null
-  >(null);
 
   // Compute default attendance values for each day in the range…
   const defaults = generateDefaultAttendances(
@@ -190,31 +189,39 @@ export default function ClientWorkReportPage({
 
   // 一括編集を適用する
   const applyBulkEdit = (data: BulkEditFormValues) => {
-    const updatedValues = currentAttendances.map((attendance) => {
-      const shouldUpdate = shouldUpdateDate(
-        attendance.date,
-        data.dateRangeMode,
-        data.selectedDays,
-        data.startDate,
-        data.endDate,
-        data.excludeHolidays,
-        holidays,
-      );
-      if (shouldUpdate) {
-        return {
-          ...attendance,
-          startTime: data.startTime,
-          endTime: data.endTime,
-          breakDuration: data.breakDuration,
-          memo: data.memo,
-        };
-      }
-      return attendance;
-    });
-
     startTransition(async () => {
+      const updatedValues =
+        data.dateRangeMode == "prompt"
+          ? await createAttendancesByPromptAction(
+              workReportId,
+              targetDate,
+              basicStartTime,
+              basicEndTime,
+              basicBreakDuration,
+              data.prompt ?? "",
+            )
+          : currentAttendances.map((attendance) => {
+              const shouldUpdate = shouldUpdateDate(
+                attendance.date,
+                data.dateRangeMode,
+                data.selectedDays,
+                data.startDate,
+                data.endDate,
+                data.excludeHolidays,
+                holidays,
+              );
+              if (shouldUpdate) {
+                return {
+                  ...attendance,
+                  startTime: data.startTime,
+                  endTime: data.endTime,
+                  breakDuration: data.breakDuration,
+                  memo: data.memo,
+                };
+              }
+              return attendance;
+            });
       await updateWorkReportAttendancesAction(
-        contractId,
         workReportId,
         updatedValues.map((attendance) => ({
           ...attendance,
@@ -250,7 +257,6 @@ export default function ClientWorkReportPage({
           );
           if (attendance) {
             await updateWorkReportAttendanceAction(
-              contractId,
               workReportId,
               attendance.date,
               {
@@ -529,16 +535,18 @@ export default function ClientWorkReportPage({
                 let value: string | number = "";
                 if (i < sortedFormData.length) {
                   const entry = sortedFormData[i];
+                  console.log("Start Time:", entry.startTime?.toISOString());
+                  console.log("End Time:", entry.endTime?.toISOString());
                   if (fieldName === "日付") {
                     value = formatMonthDay(entry.date.toISOString());
                   } else if (fieldName === "開始時刻") {
                     if (entry.startTime) {
-                      value = msToSerial(entry.startTime.getTime());
+                      value = msToSerial((entry.startTime.getUTCHours() * 60 + entry.startTime.getUTCMinutes()) * 60000);
                       sheet.getCell(currentRow, startCol).numFmt = "[h]:mm";
                     }
                   } else if (fieldName === "終了時刻") {
                     if (entry.endTime) {
-                      value = msToSerial(entry.endTime.getTime());
+                      value = msToSerial((entry.endTime.getUTCHours() * 60 + entry.endTime.getUTCMinutes()) * 60000);
                       sheet.getCell(currentRow, startCol).numFmt = "[h]:mm";
                     }
                   } else if (fieldName === "休憩時間") {
@@ -663,18 +671,9 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
     }
   };
 
-  // 月締め確認ダイアログを開く
-  const handleStatusChangeClick = () => {
-    const nextAction = status === "SUBMITTED" ? "unsubmit" : "submit";
-    setConfirmAction(nextAction);
-    setIsConfirmDialogOpen(true);
-  };
-
   // 月締め処理を実行
   const handleConfirmStatusChange = () => {
-    if (!confirmAction) return;
-
-    const nextStatus = confirmAction === "submit" ? "SUBMITTED" : "DRAFT";
+    const nextStatus = status === "DRAFT" ? "SUBMITTED" : "DRAFT";
     startTransition(async () => {
       try {
         await updateWorkReportStatusAction(workReportId, nextStatus);
@@ -686,14 +685,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
         showError("月締めステータスの変更に失敗しました");
       }
     });
-    setIsConfirmDialogOpen(false);
-    setConfirmAction(null);
-  };
-
-  // 確認ダイアログをキャンセル
-  const handleCancelConfirm = () => {
-    setIsConfirmDialogOpen(false);
-    setConfirmAction(null);
+    setStatus(nextStatus);
   };
 
   return (
@@ -715,13 +707,14 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
             <Button
               type="button"
               variant="outline"
-              onClick={handleStatusChangeClick}
+              onClick={handleConfirmStatusChange}
             >
               {status === "SUBMITTED" ? "月締め解除" : "月締め"}
             </Button>
             <Button
               type="button"
               variant="outline"
+              disabled={status === "SUBMITTED"}
               onClick={() => {
                 setIsBulkEditModalOpen(true);
               }}
@@ -876,9 +869,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                     <FormItem className="flex space-x-4">
                       <FormControl>
                         <RadioGroup
-                          onValueChange={(
-                            value: "all" | "weekday" | "custom",
-                          ) => {
+                          onValueChange={(value: DateRangeMode) => {
                             field.onChange(value);
                           }}
                           value={field.value}
@@ -896,6 +887,10 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                             <RadioGroupItem value="custom" id="custom" />
                             <label htmlFor="custom">期間指定</label>
                           </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="prompt" id="prompt" />
+                            <label htmlFor="prompt">プロンプト指定</label>
+                          </div>
                         </RadioGroup>
                       </FormControl>
                       <FormMessage />
@@ -905,44 +900,66 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
               </div>
 
               {bulkEditForm.watch("dateRangeMode") === "weekday" && (
-                <div className="py-2">
-                  <h3 className="mb-2 text-sm font-medium">曜日を選択</h3>
-                  <FormField
-                    control={bulkEditForm.control}
-                    name="selectedDays"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="flex flex-wrap gap-2">
-                            {dayNames.map((day, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center space-x-2"
-                              >
-                                <Checkbox
-                                  id={`day-${index}`}
-                                  checked={field.value?.includes(index)}
-                                  onCheckedChange={(checked) => {
-                                    const currentValue = field.value ?? [];
-                                    if (checked) {
-                                      field.onChange([...currentValue, index]);
-                                    } else {
-                                      field.onChange(
-                                        currentValue.filter((d) => d !== index),
-                                      );
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor={`day-${index}`}>{day}</Label>
-                              </div>
-                            ))}
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <>
+                  <div className="py-2">
+                    <h3 className="mb-2 text-sm font-medium">曜日を選択</h3>
+                    <FormField
+                      control={bulkEditForm.control}
+                      name="selectedDays"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <div className="flex flex-wrap gap-2">
+                              {dayNames.map((day, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center space-x-2"
+                                >
+                                  <Checkbox
+                                    id={`day-${index}`}
+                                    checked={field.value?.includes(index)}
+                                    onCheckedChange={(checked) => {
+                                      const currentValue = field.value ?? [];
+                                      if (checked) {
+                                        field.onChange([...currentValue, index]);
+                                      } else {
+                                        field.onChange(
+                                          currentValue.filter((d) => d !== index),
+                                        );
+                                      }
+                                    }}
+                                  />
+                                  <Label htmlFor={`day-${index}`}>{day}</Label>
+                                </div>
+                              ))}
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  {/* 祝日除外チェックボックス */}
+                  <div className="py-2">
+                    <FormField
+                      control={bulkEditForm.control}
+                      name="excludeHolidays"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel className="text-sm font-normal">
+                            祝日は除く
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </>
               )}
 
               {bulkEditForm.watch("dateRangeMode") === "custom" && (
@@ -963,90 +980,98 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                 </div>
               )}
 
-              {/* 祝日除外チェックボックス */}
-              <div className="py-2">
-                <FormField
-                  control={bulkEditForm.control}
-                  name="excludeHolidays"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormLabel className="text-sm font-normal">
-                        祝日は除く
-                      </FormLabel>
-                    </FormItem>
-                  )}
-                />
-              </div>
+              {bulkEditForm.watch("dateRangeMode") === "prompt" && (
+                <div className="py-2">
+                  <FormField
+                    control={bulkEditForm.control}
+                    name="prompt"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>プロンプト</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            className="w-full"
+                            placeholder="例: 9:00-18:00の勤務で、昼休憩は60分"
+                            {...field}
+                          />
+                        </FormControl>
+                        <div className="text-xs text-gray-600 mt-1">
+                          💡 その他の例: "フレックスタイム制で10:00-19:00" /
+                          "短時間勤務で9:30-15:30、休憩30分" /
+                          "リモートワークで自由な時間"
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
 
-              <div className="space-y-4">
-                <h3 className="text-sm font-medium">勤怠情報</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="flex flex-col gap-2">
-                    <TimePickerFieldForDate
-                      control={bulkEditForm.control}
-                      name="startTime"
-                      showClearButton={false}
-                      minuteStep={dailyWorkMinutes}
-                      label="出勤時間"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <TimePickerFieldForDate
-                      control={bulkEditForm.control}
-                      name="endTime"
-                      showClearButton={false}
-                      minuteStep={dailyWorkMinutes}
-                      label="退勤時間"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <TimePickerFieldForNumber
-                      control={bulkEditForm.control}
-                      name="breakDuration"
-                      showClearButton={false}
-                      minuteStep={dailyWorkMinutes}
-                      label="休憩時間"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <div>作業内容</div>
-                    <FormField
-                      control={bulkEditForm.control}
-                      name="memo"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>作業内容</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="text"
-                              className="w-[400px]"
-                              {...field}
-                              value={field.value}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              {(bulkEditForm.watch("dateRangeMode") === "weekday" || bulkEditForm.watch("dateRangeMode") === "custom" || bulkEditForm.watch("dateRangeMode") === "all") && (
+                <>
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium">勤怠情報</h3>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="flex flex-col gap-2">
+                      <TimePickerFieldForDate
+                        control={bulkEditForm.control}
+                        name="startTime"
+                        showClearButton={false}
+                        minuteStep={dailyWorkMinutes}
+                        label="出勤時間"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <TimePickerFieldForDate
+                        control={bulkEditForm.control}
+                        name="endTime"
+                        showClearButton={false}
+                        minuteStep={dailyWorkMinutes}
+                        label="退勤時間"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <TimePickerFieldForNumber
+                        control={bulkEditForm.control}
+                        name="breakDuration"
+                        showClearButton={false}
+                        minuteStep={dailyWorkMinutes}
+                        label="休憩時間"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <div>作業内容</div>
+                      <FormField
+                        control={bulkEditForm.control}
+                        name="memo"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>作業内容</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="text"
+                                className="w-[400px]"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </div>
                 </div>
-
-                <div className="mt-4 flex justify-end space-x-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={resetBulkEditForm}
-                  >
-                    キャンセル
-                  </Button>
-                  <Button type="submit">適用</Button>
-                </div>
+              </>)}
+              <div className="mt-4 flex justify-end space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={resetBulkEditForm}
+                >
+                  キャンセル
+                </Button>
+                <Button type="submit">適用</Button>
               </div>
             </form>
           </Form>
@@ -1138,32 +1163,6 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
               </form>
             </Form>
           )}
-        </DialogContent>
-      </Dialog>
-
-      {/* 月締め確認ダイアログ */}
-      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {confirmAction === "submit" ? "月締め確認" : "月締め解除確認"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p>
-              {confirmAction === "submit"
-                ? "この作業報告書を月締めします。月締め後は内容の変更ができなくなります。よろしいですか？"
-                : "この作業報告書の月締めを解除します。解除後は内容の変更が可能になります。よろしいですか？"}
-            </p>
-          </div>
-          <DialogFooter className="p-6">
-            <Button variant="outline" onClick={handleCancelConfirm}>
-              キャンセル
-            </Button>
-            <Button onClick={handleConfirmStatusChange}>
-              {confirmAction === "submit" ? "月締めする" : "月締め解除する"}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

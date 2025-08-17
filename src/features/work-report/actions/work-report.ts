@@ -64,7 +64,6 @@ export const createWorkReportAction = async (
 };
 
 export const updateWorkReportAttendancesAction = async (
-  contractId: string,
   workReportId: string,
   attendances: AttendanceDto[],
 ): Promise<WorkReport> => {
@@ -72,7 +71,7 @@ export const updateWorkReportAttendancesAction = async (
     workReportId,
     attendances,
   );
-  revalidatePath(`/workReport/${contractId}/${workReportId}`);
+  revalidatePath(`/workReport/${workReportId}`);
   return convertPrismaWorkReportToWorkReportDto(workReport);
 };
 
@@ -131,7 +130,6 @@ export const checkWorkReportExistsAction = async (
 ): Promise<boolean> => {
   return await checkWorkReportExists(contractId, targetDate);
 };
-
 
 function convertPrismaWorkReportToWorkReportDto(
   workReport: PrismaWorkReport,

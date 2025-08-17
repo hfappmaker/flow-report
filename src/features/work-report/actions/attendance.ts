@@ -1,7 +1,11 @@
 "use server";
+
 import { Attendance as PrismaAttendance } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
+import { generateWithAI } from "@/features/ai/lib/ai";
+import { fetchHolidays } from "@/features/holidays/libs/google-calendar";
 import {
   getAttendancesByWorkReportId,
   updateWorkReportAttendance,
@@ -21,7 +25,6 @@ export const getAttendancesByWorkReportIdAction = async (
 };
 
 export const updateWorkReportAttendanceAction = async (
-  contractId: string,
   workReportId: string,
   date: Date,
   attendance: AttendanceDto,
@@ -31,8 +34,157 @@ export const updateWorkReportAttendanceAction = async (
     date,
     attendance,
   );
-  revalidatePath(`/workReport/${contractId}/${workReportId}`);
+  revalidatePath(`/workReport/${workReportId}`);
   return convertPrismaAttendanceToAttendanceDto(updatedAttendance);
+};
+
+export const createAttendancesByPromptAction = async (
+  workReportId: string,
+  targetDate: Date,
+  basicStartTime: Date | undefined,
+  basicEndTime: Date | undefined,
+  basicBreakDuration: number | undefined,
+  prompt: string,
+): Promise<AttendanceDto[]> => {
+  const schema = z.object({
+    attendances: z.array(
+      z.object({
+        date: z.string().datetime(),
+        startTime: z.string().datetime().nullable().optional(),
+        endTime: z.string().datetime().nullable().optional(),
+        breakDuration: z.number().min(0).max(1440).nullable().optional(),
+        memo: z.string().nullable().optional(),
+      }),
+    ),
+  });
+
+  type SchemaType = z.infer<typeof schema>;
+
+  const holidays = await fetchHolidays(2025);
+  targetDate = new Date(targetDate);
+
+  // 月の全日付と曜日情報を生成
+  const year = targetDate.getFullYear();
+  const month = targetDate.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
+
+  const calendarInfo = Array.from({ length: daysInMonth }, (_, i) => {
+    const date = new Date(year, month, i + 1);
+    const dayOfWeek = date.getDay();
+    const dayName = dayNames[dayOfWeek];
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const dateStr = date.toISOString().split("T")[0];
+    const isHoliday = holidays.some((holiday) => holiday.date === dateStr);
+
+    return {
+      date: i + 1,
+      dayName,
+      isWeekend,
+      isHoliday,
+      isWorkday: !isWeekend && !isHoliday,
+    };
+  });
+
+  const systemPrompt = `あなたは勤怠管理アシスタントです。プロンプトに基づいて${year}年${month + 1}月の勤怠情報を生成してください。
+
+  📋 **出力要件**
+  - 月の1日から最終日まで全ての日付を含める
+  - 勤務日は平日（月〜金）を基本とし、土日祝は休日とする
+
+  📅 **${year}年${month + 1}月カレンダー情報**
+  ${calendarInfo
+    .map(
+      (day) =>
+        `${day.date}日(${day.dayName})${day.isHoliday ? "🏮祝日" : day.isWeekend ? "🏠休日" : "💼平日"}`,
+    )
+    .join(", ")}
+
+  🎌 **祝日データ**: ${JSON.stringify(holidays.map((h) => `${h.date}(${h.name})`))}
+
+  📊 **データ形式**
+  - date: 日付（YYYY-MM-DDTHH:mm:ss.sssZ形式）
+  - startTime: 出勤時間（YYYY-MM-DDTHH:mm:ss.sssZ形式、休日はnull）${basicStartTime ? `\n- 基本出勤時間: ${new Date(basicStartTime).toISOString().split("T")[1]}` : ""}
+  - endTime: 退勤時間（YYYY-MM-DDTHH:mm:ss.sssZ形式、休日はnull）${basicEndTime ? `\n- 基本退勤時間: ${new Date(basicEndTime).toISOString().split("T")[1]}` : ""}
+  - breakDuration: 休憩時間（分単位、休日はnull）${basicBreakDuration !== undefined ? `\n- 基本休憩時間: ${basicBreakDuration}分` : ""}
+  - memo: 作業内容（休日は"休日"、平日は"通常業務"など）
+
+  💡 **プロンプト例**
+  - "9:00-18:00の勤務で、昼休憩は60分"
+  - "フレックスタイム制で10:00-19:00"
+  - "短時間勤務で9:30-15:30、休憩30分"
+  - "リモートワークで自由な時間"`;
+
+  console.log(systemPrompt);
+
+  const response = await generateWithAI({
+    system: systemPrompt,
+    prompt: prompt,
+    schema: schema,
+  });
+
+  if (!response.success || !response.data) {
+    throw new Error(response.error ?? "Failed to generate attendances");
+  }
+
+  // データは既にOpenAIのparseでバリデーション済みだが、型安全性のためにもう一度パース
+  const parseResult = schema.safeParse(response.data);
+  if (!parseResult.success) {
+    throw new Error(`Invalid response format: ${parseResult.error.message}`);
+  }
+
+  const data: SchemaType = parseResult.data;
+  const attendances = data.attendances.map((attendance) => ({
+    workReportId: workReportId,
+    date: new Date(
+      Date.UTC(
+        targetDate.getFullYear(),
+        targetDate.getMonth(),
+        new Date(attendance.date).getDate(),
+      ),
+    ),
+    startTime: attendance.startTime
+      ? new Date(
+          Date.UTC(
+            targetDate.getFullYear(),
+            targetDate.getMonth(),
+            new Date(attendance.date).getDate(),
+            new Date(attendance.startTime).getHours(),
+            new Date(attendance.startTime).getMinutes(),
+          ),
+        )
+      : undefined,
+    endTime: attendance.endTime
+      ? new Date(
+          Date.UTC(
+            targetDate.getFullYear(),
+            targetDate.getMonth(),
+            new Date(attendance.date).getDate(),
+            new Date(attendance.endTime).getHours(),
+            new Date(attendance.endTime).getMinutes(),
+          ),
+        )
+      : undefined,
+    breakDuration: attendance.breakDuration ?? undefined,
+    memo: attendance.memo ?? undefined,
+  }));
+  return calendarInfo.map((day) => {
+    const attendance = attendances.find((a) => a.date.getDate() === day.date);
+    if (!attendance) {
+      // 該当日が生成されていない場合は、基本値を使用
+      return {
+        workReportId: workReportId,
+        date: new Date(
+          Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), day.date),
+        ),
+        startTime: undefined,
+        endTime: undefined,
+        breakDuration: basicBreakDuration ?? undefined,
+        memo: "",
+      };
+    }
+    return attendance;
+  });
 };
 
 function convertPrismaAttendanceToAttendanceDto(

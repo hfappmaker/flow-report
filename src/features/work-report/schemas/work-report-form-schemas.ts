@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const dateRangeModes = ["all", "weekday", "custom"] as const;
+export const dateRangeModes = ["all", "weekday", "custom", "prompt"] as const;
 export type DateRangeMode = (typeof dateRangeModes)[number];
 
 export type ExcelRange = {
@@ -36,6 +36,7 @@ export const bulkEditFormSchema = z.object({
   endTime: z.date().optional(),
   breakDuration: z.number().optional(),
   memo: z.string(),
+  prompt: z.string().optional(),
 });
 
 export type CreateWorkReportFormValues = z.infer<

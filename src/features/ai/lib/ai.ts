@@ -5,8 +5,6 @@ import OpenAI from "openai";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { z } from "zod";
 
-import { fetchHolidays } from "@/features/holidays/libs/google-calendar";
-
 type OllamaConfig = {
   model?: string;
   temperature?: number;
@@ -14,13 +12,14 @@ type OllamaConfig = {
 };
 
 export type GenerateRequest = {
-  method: string;
+  system: string;
   prompt: string;
+  schema: z.ZodTypeAny;
 };
 
-export type GenerateResult = {
+export type GenerateResult<T = unknown> = {
   success: boolean;
-  data?: unknown;
+  data?: T;
   error?: string;
 };
 
@@ -67,17 +66,6 @@ export async function generateWithAI(
   request: GenerateRequest,
 ): Promise<GenerateResult> {
   try {
-    // バリデーション
-    if (!request.method || !request.prompt) {
-      return {
-        success: false,
-        error: "Missing required fields: method and prompt are required",
-      };
-    }
-
-    const { system, schema } = await getSystemPromptAndSchema(request.method);
-    console.log("Using system prompt:", system);
-
     const client = new OpenAI();
 
     const completion = await client.chat.completions.parse({
@@ -85,24 +73,27 @@ export async function generateWithAI(
       messages: [
         {
           role: "system",
-          content: system,
+          content: request.system,
         },
         { role: "user", content: request.prompt },
       ],
-      response_format: zodResponseFormat(schema, "workTimes"),
+      response_format: zodResponseFormat(request.schema, "result"),
     });
 
     const message = completion.choices[0]?.message;
     if (message.parsed) {
-      console.log(message.parsed);
+      console.log("AI generated data:", message.parsed);
+      return {
+        success: true,
+        data: message.parsed,
+      };
     } else {
-      console.log(message.refusal);
+      console.log("AI generation refusal:", message.refusal);
+      return {
+        success: false,
+        error: message.refusal ?? "AI generation was refused",
+      };
     }
-
-    return {
-      success: true,
-      data: message,
-    };
   } catch (error) {
     console.error("Error in AI generation:", error);
 
@@ -110,30 +101,5 @@ export async function generateWithAI(
       success: false,
       error: error instanceof Error ? error.message : "Unknown error occurred",
     };
-  }
-}
-
-async function getSystemPromptAndSchema(method: string): Promise<{
-  system: string;
-  schema: z.ZodTypeAny;
-}> {
-  switch (method) {
-    case "create-work-time": {
-      // 祝日データを取得してプロンプトに含める
-      const holidays = await fetchHolidays(2025);
-      return {
-        system: `Based on the prompt, generate work hours in August 2025 in a structured format. 祭日は${JSON.stringify(holidays)}です。`,
-        schema: z.object({
-          workTimes: z.array(
-            z.object({
-              start: z.string(),
-              end: z.string(),
-            }),
-          ),
-        }),
-      };
-    }
-    default:
-      return { system: "", schema: z.any() };
   }
 }

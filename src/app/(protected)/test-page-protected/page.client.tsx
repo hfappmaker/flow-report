@@ -27,10 +27,25 @@ const TestPageClient = () => {
     startTransition(async () => {
       try {
         const { generateWithAI } = await import("@/features/ai/lib/ai");
+        const { fetchHolidays } = await import(
+          "@/features/holidays/libs/google-calendar"
+        );
+        const { z } = await import("zod");
+
+        const holidays = await fetchHolidays(2025);
+        const schema = z.object({
+          workTimes: z.array(
+            z.object({
+              start: z.string(),
+              end: z.string(),
+            }),
+          ),
+        });
 
         const payload = {
-          method: "create-work-time",
+          system: `Based on the prompt, generate work hours in August 2025 in a structured format. 祭日は${JSON.stringify(holidays)}です。`,
           prompt: "9:00 AM to 6:00 PM on weekdays",
+          schema: schema,
         };
 
         const result = await generateWithAI(payload);
