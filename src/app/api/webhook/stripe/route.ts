@@ -11,9 +11,6 @@ import {
 } from "@/features/subscription/repositories/subscription-repository";
 
 export async function POST(req: Request) {
-  const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] 📥 Stripe webhook received`);
-
   const body = await req.text();
   const signature = (await headers()).get("Stripe-Signature");
 
@@ -47,8 +44,10 @@ export async function POST(req: Request) {
     );
   }
 
+  const created = new Date(event.created * 1000);
+
   console.log(
-    `[${timestamp}] 🎯 Processing webhook event: ${event.type} (ID: ${event.id})`,
+    `[${created}] 🎯 Processing webhook event: ${event.type} (ID: ${event.id})`,
   );
 
   try {
@@ -56,7 +55,7 @@ export async function POST(req: Request) {
       case "customer.created":
       case "customer.updated": {
         const customer = event.data.object;
-        console.log(`[${timestamp}] 👤 ${event.type}:`);
+        console.log(`[${created}] 👤 ${event.type}:`);
         console.log(`   - Customer ID: ${customer.id}`);
         console.log(`   - User ID: ${customer.metadata.userId || "N/A"}`);
         console.log(`   - Email: ${customer.email ?? "N/A"}`);
@@ -64,13 +63,13 @@ export async function POST(req: Request) {
         // ユーザーのStripeカスタマーIDをDBに保存
         if (customer.metadata.userId) {
           try {
-            await upsertStripeCustomer(customer.metadata.userId, customer.id);
+            await upsertStripeCustomer(customer.metadata.userId, customer.id, created);
             console.log(
-              `[${timestamp}] ✅ Successfully linked Stripe customer to user DB`,
+              `[${created}] ✅ Successfully linked Stripe customer to user DB`,
             );
           } catch (error) {
             console.error(
-              `[${timestamp}] ❌ Failed to link Stripe customer:`,
+              `[${created}] ❌ Failed to link Stripe customer:`,
               error,
             );
             throw error;
@@ -86,7 +85,7 @@ export async function POST(req: Request) {
         );
 
         if (user) {
-          console.log(`[${timestamp}] 📊 ${event.type}:`);
+          console.log(`[${created}] 📊 ${event.type}:`);
           console.log(`   - Subscription ID: ${subscription.id}`);
           console.log(`   - User ID: ${user.id}`);
           console.log(`   - Status: ${subscription.status}`);
@@ -160,13 +159,13 @@ export async function POST(req: Request) {
               stripeSubscriptionId: subscription.id,
               status: newStatus,
               currentPeriodEnd: newCurrentPeriodEnd,
-            });
+            },created);
             console.log(
-              `[${timestamp}] ✅ Subscription updated: ${subscription.id} -> ${newStatus}`,
+              `[${created}] ✅ Subscription updated: ${subscription.id} -> ${newStatus}`,
             );
           } catch (error) {
             console.error(
-              `[${timestamp}] ❌ Failed to update subscription:`,
+              `[${created}] ❌ Failed to update subscription:`,
               error,
             );
             throw error;
@@ -186,7 +185,7 @@ export async function POST(req: Request) {
             await upsertUserSubscription(subscription.customer as string, {
               stripeSubscriptionId: subscription.id,
               status: "CANCELED",
-            });
+            },created);
             console.log(
               "Subscription updated for customer.subscription.deleted",
             );
@@ -205,10 +204,10 @@ export async function POST(req: Request) {
         console.log(`Unhandled event type: ${event.type}`);
     }
 
-    console.log(`[${timestamp}] ✅ Webhook processed successfully`);
+    console.log(`[${created}] ✅ Webhook processed successfully`);
     return new NextResponse(null, { status: 200 });
   } catch (error) {
-    console.error(`[${timestamp}] ❌ Webhook processing error:`, error);
+    console.error(`[${created}] ❌ Webhook processing error:`, error);
     return new NextResponse(
       `Webhook handler failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       { status: 500 },

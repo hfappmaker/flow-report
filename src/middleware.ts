@@ -5,6 +5,7 @@ import {
   DEFAULT_LOGIN_REDIRECT,
   apiAuthPrefix,
   apiWebhookPrefix,
+  apiTestPrefix,
   authRoutes,
   errorRoutes,
 } from "@/app/routes";
@@ -16,14 +17,16 @@ const { auth } = NextAuth(authConfig);
 console.log("Middleware file is being loaded");
 
 // サブスクリプション情報を取得する関数
-async function getSubscriptionInfo(req: NextRequest): Promise<SubscriptionInfo | null> {
+async function getSubscriptionInfo(
+  req: NextRequest,
+): Promise<SubscriptionInfo | null> {
   const baseUrl = req.nextUrl.origin;
   const response = await fetch(`${baseUrl}/api/auth/get-subscription-info`, {
     headers: {
-      'Cookie': req.headers.get('cookie') ?? '',
+      Cookie: req.headers.get("cookie") ?? "",
     },
   });
-  
+
   if (response.ok) {
     return await response.json();
   }
@@ -36,17 +39,19 @@ async function getSubscriptionInfo(req: NextRequest): Promise<SubscriptionInfo |
 async function handleAuthenticatedUser(req: NextRequest) {
   const { nextUrl } = req;
   const isSubscriptionRoute = nextUrl.pathname === "/subscription";
-  const isSubscriptionExpiredRoute = nextUrl.pathname === "/subscription/expired";
+  const isSubscriptionExpiredRoute =
+    nextUrl.pathname === "/subscription/expired";
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
   try {
-
     const subscriptionInfo = await getSubscriptionInfo(req);
     console.log("Subscription info retrieved:", subscriptionInfo);
 
     // サブスクリプション情報がない場合は、サブスクリプションページにリダイレクト
     // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     if (!subscriptionInfo || subscriptionInfo.status === null) {
-      console.log("No subscription info found, redirecting to subscription page");
+      console.log(
+        "No subscription info found, redirecting to subscription page",
+      );
 
       if (isSubscriptionRoute) {
         return;
@@ -55,10 +60,15 @@ async function handleAuthenticatedUser(req: NextRequest) {
       return Response.redirect(new URL("/subscription", nextUrl));
     }
 
-    const isExpired = subscriptionInfo.status == "CANCELED" && !!subscriptionInfo.currentPeriodEnd && new Date(subscriptionInfo.currentPeriodEnd) < new Date();
+    const isExpired =
+      subscriptionInfo.status == "CANCELED" &&
+      !!subscriptionInfo.currentPeriodEnd &&
+      new Date(subscriptionInfo.currentPeriodEnd) < new Date();
     // サブスクリプションが有効でない場合は、サブスクリプション期限切れページにリダイレクト
     if (isExpired) {
-      console.log("Subscription is expired, redirecting to expired subscription page");
+      console.log(
+        "Subscription is expired, redirecting to expired subscription page",
+      );
 
       if (isSubscriptionExpiredRoute) {
         return;
@@ -69,15 +79,18 @@ async function handleAuthenticatedUser(req: NextRequest) {
 
     console.log("User is authorized and subscription is valid");
 
-    if(isAuthRoute || isSubscriptionRoute || isSubscriptionExpiredRoute) {
+    if (isAuthRoute || isSubscriptionRoute || isSubscriptionExpiredRoute) {
       return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
     }
 
     // 認証済みユーザーのリクエストをそのまま通過
     return;
-
   } catch (error) {
-    console.log("Error occurred:", error, ", redirecting to global error page for security");
+    console.log(
+      "Error occurred:",
+      error,
+      ", redirecting to global error page for security",
+    );
     return Response.redirect(new URL("/global-error", nextUrl));
   }
 }
@@ -99,7 +112,10 @@ function handleUnauthenticatedUser(req: NextRequest) {
   }
 
   const encodedCallbackUrl = encodeURIComponent(callbackUrl);
-  console.log("Redirecting unauthorized user to login with callback:", callbackUrl);
+  console.log(
+    "Redirecting unauthorized user to login with callback:",
+    callbackUrl,
+  );
 
   return Response.redirect(
     new URL(`/auth/login?callbackUrl=${encodedCallbackUrl}`, nextUrl),
@@ -109,22 +125,28 @@ function handleUnauthenticatedUser(req: NextRequest) {
 export default auth(async (req) => {
   console.log("Middleware Request URL:", req.nextUrl.toString());
   console.log("Middleware Request Method:", req.method);
-  console.log("Middleware Request Headers:", Object.fromEntries(req.headers.entries()));
-  
+  console.log(
+    "Middleware Request Headers:",
+    Object.fromEntries(req.headers.entries()),
+  );
+
   const { nextUrl } = req;
   const isAuthorized = !!req.auth;
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isApiWebhookRoute = nextUrl.pathname.startsWith(apiWebhookPrefix);
+  const isApiTestRoute = nextUrl.pathname.startsWith(apiTestPrefix);
   const isErrorRoute = errorRoutes.includes(nextUrl.pathname);
-  
+
   // エラールートの場合は何もしない
   if (isErrorRoute) {
-    console.log("Request is for an error route, skipping middleware processing.");
+    console.log(
+      "Request is for an error route, skipping middleware processing.",
+    );
     return;
   }
-  
+
   // APIルートの場合はスキップ
-  if (isApiAuthRoute || isApiWebhookRoute) {
+  if (isApiAuthRoute || isApiWebhookRoute || isApiTestRoute) {
     console.log("Request is for API route, skipping middleware processing.");
     return;
   }

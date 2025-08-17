@@ -1,12 +1,10 @@
-version: '3.8'
-
 volumes:
   postgres-data:
   # コメントアウトしているのは、ollamaのコンテナを使用しない場合の設定です。
   # 使用する場合は、コメントアウトを解除してください。
-  # ollama:
-  #   driver_opts:
-  #     o: 'size=100G'
+  ollama:
+    # driver_opts:
+    #   o: 'size=100G'
 
 services:
   app:
@@ -37,7 +35,7 @@ services:
       - db
       # コメントアウトしているのは、ollamaのコンテナを使用しない場合の設定です。
       # 使用する場合は、コメントアウトを解除してください。
-      # - ollama
+      - ollama
     # Use "forwardPorts" in **devcontainer.json** to forward an app port locally. 
     # (Adding the "ports" property to this file will not forward from a Codespace.)
   db:
@@ -74,25 +72,25 @@ services:
     # (Adding the "ports" property to this file will not forward from a Codespace.)
   # コメントアウトしているのは、ollamaのコンテナを使用しない場合の設定です。
   # 使用する場合は、コメントアウトを解除してください。
-  # ollama:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.ollama
-  #   container_name: ollama_container
-  #   networks: 
-  #     - worktime-management-network
-  #   volumes:
-  #     - ollama:/root/.ollama:cached
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 24g
-  #       reservations:
-  #         devices:
-  #           - driver: nvidia
-  #             count: 1
-  #             capabilities: [gpu]
-  #   restart: unless-stopped
+  ollama:
+    build:
+      context: .
+      dockerfile: Dockerfile.ollama
+    container_name: ollama_container
+    networks: 
+      - worktime-management-network
+    volumes:
+      - ollama:/root/.ollama:cached
+    deploy:
+      resources:
+        limits:
+          memory: 24G
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
 
 networks:
   worktime-management-network:

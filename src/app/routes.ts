@@ -1,8 +1,4 @@
-
-export const errorRoutes: string[] = [
-  "/global-error",
-  "/not-found",
-];
+export const errorRoutes: string[] = ["/global-error", "/not-found"];
 
 /**
  * An array of routes that are used for authentication
@@ -14,7 +10,7 @@ export const authRoutes: string[] = [
   "/auth/error",
   "/auth/reset",
   "/auth/new-password",
-  "/auth/new-verification"
+  "/auth/new-verification",
 ];
 
 /**
@@ -34,6 +30,12 @@ export const apiAuthPrefix = "/api/auth";
  * Routes that start with this prefix are used for webhook endpoints. They are available to the public.
  */
 export const apiWebhookPrefix = "/api/webhook";
+
+/**
+ * The prefix for API test routes
+ * Routes that start with this prefix are used for testing purposes. They are available to the public.
+ */
+export const apiTestPrefix = "/api/generate";
 
 /**
  * The default redirect path after logging in
