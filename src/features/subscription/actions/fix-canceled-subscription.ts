@@ -47,11 +47,15 @@ export async function fixCanceledSubscription() {
         return { error: "Stripe顧客情報が見つかりません" };
       }
 
-      await upsertUserSubscription(stripeCustomer.stripeCustomerId, {
-        stripeSubscriptionId: subscriptionInfo.stripeSubscriptionId,
-        status: subscriptionInfo.status,
-        currentPeriodEnd: periodEndDate,
-      });
+      await upsertUserSubscription(
+        stripeCustomer.stripeCustomerId,
+        {
+          stripeSubscriptionId: subscriptionInfo.stripeSubscriptionId,
+          status: subscriptionInfo.status,
+          currentPeriodEnd: periodEndDate,
+        },
+        new Date(stripeSubscription.created * 1000),
+      );
 
       const formattedDate = formatDateAsUTC(periodEndDate);
       return {

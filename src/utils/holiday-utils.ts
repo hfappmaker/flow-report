@@ -2,10 +2,10 @@
  * 祝日関連のユーティリティ関数
  */
 
-export interface Holiday {
+export type Holiday = {
   date: string; // YYYY-MM-DD format
   name: string;
-}
+};
 
 /**
  * 祝日データを取得する
@@ -14,18 +14,18 @@ export interface Holiday {
  */
 export async function fetchHolidays(year?: number): Promise<Holiday[]> {
   try {
-    const targetYear = year || new Date().getFullYear();
+    const targetYear = year ?? new Date().getFullYear();
     const response = await fetch(`/api/holidays?year=${targetYear}`);
-    
+
     if (!response.ok) {
-      console.error('Failed to fetch holidays:', response.status);
+      console.error("Failed to fetch holidays:", response.status);
       return [];
     }
-    
+
     const data = await response.json();
-    return data.holidays || [];
+    return data.holidays ?? [];
   } catch (error) {
-    console.error('Error fetching holidays:', error);
+    console.error("Error fetching holidays:", error);
     return [];
   }
 }
@@ -37,8 +37,8 @@ export async function fetchHolidays(year?: number): Promise<Holiday[]> {
  * @returns 祝日の場合true
  */
 export function isHoliday(date: Date, holidays: Holiday[]): boolean {
-  const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
-  return holidays.some(holiday => holiday.date === dateStr);
+  const dateStr = date.toISOString().split("T")[0]; // YYYY-MM-DD format
+  return holidays.some((holiday) => holiday.date === dateStr);
 }
 
 /**
@@ -49,22 +49,22 @@ export function isHoliday(date: Date, holidays: Holiday[]): boolean {
  */
 export function getDateColorClass(date: Date, holidays: Holiday[]): string {
   const dayOfWeek = date.getDay();
-  
+
   // 祝日チェック
   if (isHoliday(date, holidays)) {
-    return 'text-red-600'; // 祝日は赤
+    return "text-red-600"; // 祝日は赤
   }
-  
+
   // 日曜日
   if (dayOfWeek === 0) {
-    return 'text-red-600'; // 日曜日は赤
+    return "text-red-600"; // 日曜日は赤
   }
-  
+
   // 土曜日
   if (dayOfWeek === 6) {
-    return 'text-blue-600'; // 土曜日は青
+    return "text-blue-600"; // 土曜日は青
   }
-  
+
   // 平日
-  return 'text-white-900';
+  return "text-white-900";
 }

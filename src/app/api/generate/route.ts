@@ -1,3 +1,4 @@
+import { fetchHolidays } from "@/utils/holiday-utils";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from 'openai';
 import { zodResponseFormat } from 'openai/helpers/zod';
@@ -32,8 +33,8 @@ export async function POST(
       );
     }
 
-    const { system, schema } = getSystemPromptAndSchema(body.method);
-
+    const { system, schema } = await getSystemPromptAndSchema(body.method);
+    console.log("Using system prompt:", system);
     const client = new OpenAI();
 
     const completion = await client.chat.completions.parse({
@@ -88,15 +89,16 @@ export async function POST(
   }
 }
 
-function getSystemPromptAndSchema(method: string): {
+async function getSystemPromptAndSchema(method: string): Promise<{
   system: string;
   schema: z.ZodTypeAny;
-} {
+}> {
   switch (method) {
-    case "create-work-time":
+    case "create-work-time":{
+      const holidays = await fetchHolidays(2025);
       return {
         system:
-          "Based on the prompt, generate work hours in August 2025 in a structured format.",
+          `Based on the prompt, generate work hours in August 2025 in a structured format. 祭日は${JSON.stringify(holidays)}です。`,
         schema: z.object({
           workTimes: z.array(
             z.object({
@@ -106,6 +108,7 @@ function getSystemPromptAndSchema(method: string): {
           ),
         }),
       };
+    }
     default:
       return { system: "", schema: z.any() };
   }

@@ -28,7 +28,7 @@ const TestPageClient = () => {
       try {
         const payload = {
           method: "create-work-time",
-          prompt: "9:00 AM to 6:00 PM on all weekdays",
+          prompt: "9:00 AM to 6:00 PM on weekdays",
         };
 
         const res = await fetch("/api/generate", {

@@ -80,122 +80,112 @@ export async function POST(req: Request) {
       case "customer.subscription.created":
       case "customer.subscription.updated": {
         const subscription = event.data.object;
-        const user = await getUserByStripeCustomerId(
-          subscription.customer as string,
+
+        console.log(`[${created}] 📊 ${event.type}:`);
+        console.log(`   - Subscription ID: ${subscription.id}`);
+        console.log(`   - Customer ID: ${subscription.customer as string}`);
+        console.log(`   - Status: ${subscription.status}`);
+        console.log(
+          `   - Trial end: ${subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : "N/A"}`,
+        );
+        console.log(
+          `   - Current period end: ${new Date(subscription.items.data[0].current_period_end * 1000).toISOString()}`,
+        );
+        console.log(
+          `   - Cancel at period end: ${subscription.cancel_at_period_end}`,
         );
 
-        if (user) {
-          console.log(`[${created}] 📊 ${event.type}:`);
-          console.log(`   - Subscription ID: ${subscription.id}`);
-          console.log(`   - User ID: ${user.id}`);
-          console.log(`   - Status: ${subscription.status}`);
-          console.log(
-            `   - Trial end: ${subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : "N/A"}`,
-          );
-          console.log(
-            `   - Current period end: ${new Date(subscription.items.data[0].current_period_end * 1000).toISOString()}`,
-          );
-          console.log(
-            `   - Cancel at period end: ${subscription.cancel_at_period_end}`,
-          );
-
-          // ステータスを決定する関数（改善版）
-          const getSubscriptionStatus = (
-            subscription: Stripe.Subscription,
-          ): SubscriptionStatus => {
-            // キャンセル予定（期間終了時にキャンセル）の場合
-            if (subscription.cancel_at_period_end) {
-              return "CANCELED";
-            }
-
-            // Stripeのステータスベースで判定
-            switch (subscription.status) {
-              case "active":
-                return "ACTIVE";
-              case "trialing":
-                return "TRIAL";
-              case "paused":
-                return "CANCELED";
-              case "canceled":
-                return "CANCELED";
-              case "past_due":
-                return "CANCELED";
-              case "unpaid":
-              case "incomplete":
-              case "incomplete_expired":
-                return "CANCELED";
-              default:
-                console.warn(
-                  "Unexpected subscription status:",
-                  subscription.status,
-                );
-                return "CANCELED";
-            }
-          };
-
-          const newStatus = getSubscriptionStatus(subscription);
-
-          // Stripeのサブスクリプションから期間終了日を取得
-          // トライアル期間中: trial_end、通常期間: items.data[0].current_period_end
-          const getPeriodEnd = (subscription: Stripe.Subscription) => {
-            const now = Math.floor(Date.now() / 1000);
-
-            // トライアル期間中の場合
-            if (subscription.trial_end && subscription.trial_end > now) {
-              return new Date(subscription.trial_end * 1000);
-            }
-            if (subscription.items.data[0].current_period_end) {
-              return new Date(
-                subscription.items.data[0].current_period_end * 1000,
-              );
-            }
-            return null;
-          };
-
-          const newCurrentPeriodEnd = getPeriodEnd(subscription);
-
-          try {
-            await upsertUserSubscription(subscription.customer as string, {
-              stripeSubscriptionId: subscription.id,
-              status: newStatus,
-              currentPeriodEnd: newCurrentPeriodEnd,
-            },created);
-            console.log(
-              `[${created}] ✅ Subscription updated: ${subscription.id} -> ${newStatus}`,
-            );
-          } catch (error) {
-            console.error(
-              `[${created}] ❌ Failed to update subscription:`,
-              error,
-            );
-            throw error;
+        // ステータスを決定する関数（改善版）
+        const getSubscriptionStatus = (
+          subscription: Stripe.Subscription,
+        ): SubscriptionStatus => {
+          // キャンセル予定（期間終了時にキャンセル）の場合
+          if (subscription.cancel_at_period_end) {
+            return "CANCELED";
           }
+
+          // Stripeのステータスベースで判定
+          switch (subscription.status) {
+            case "active":
+              return "ACTIVE";
+            case "trialing":
+              return "TRIAL";
+            case "paused":
+              return "CANCELED";
+            case "canceled":
+              return "CANCELED";
+            case "past_due":
+              return "CANCELED";
+            case "unpaid":
+            case "incomplete":
+            case "incomplete_expired":
+              return "CANCELED";
+            default:
+              console.warn(
+                "Unexpected subscription status:",
+                subscription.status,
+              );
+              return "CANCELED";
+          }
+        };
+
+        const newStatus = getSubscriptionStatus(subscription);
+
+        // Stripeのサブスクリプションから期間終了日を取得
+        // トライアル期間中: trial_end、通常期間: items.data[0].current_period_end
+        const getPeriodEnd = (subscription: Stripe.Subscription) => {
+          const now = Math.floor(Date.now() / 1000);
+
+          // トライアル期間中の場合
+          if (subscription.trial_end && subscription.trial_end > now) {
+            return new Date(subscription.trial_end * 1000);
+          }
+          if (subscription.items.data[0].current_period_end) {
+            return new Date(
+              subscription.items.data[0].current_period_end * 1000,
+            );
+          }
+          return null;
+        };
+
+        const newCurrentPeriodEnd = getPeriodEnd(subscription);
+
+        try {
+          await upsertUserSubscription(subscription.customer as string, {
+            stripeSubscriptionId: subscription.id,
+            status: newStatus,
+            currentPeriodEnd: newCurrentPeriodEnd,
+          },created);
+          console.log(
+            `[${created}] ✅ Subscription updated: ${subscription.id} -> ${newStatus}`,
+          );
+        } catch (error) {
+          console.error(
+            `[${created}] ❌ Failed to update subscription:`,
+            error,
+          );
+          throw error;
         }
         break;
       }
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object;
-        const user = await getUserByStripeCustomerId(
-          subscription.customer as string,
-        );
 
-        if (user) {
-          try {
-            await upsertUserSubscription(subscription.customer as string, {
-              stripeSubscriptionId: subscription.id,
-              status: "CANCELED",
-            },created);
-            console.log(
-              "Subscription updated for customer.subscription.deleted",
-            );
-          } catch (error) {
-            console.error(
-              "Failed to update user subscription for customer.subscription.deleted:",
-              error,
-            );
-            throw error;
-          }
+        try {
+          await upsertUserSubscription(subscription.customer as string, {
+            stripeSubscriptionId: subscription.id,
+            status: "CANCELED",
+          },created);
+          console.log(
+            "Subscription updated for customer.subscription.deleted",
+          );
+        } catch (error) {
+          console.error(
+            "Failed to update user subscription for customer.subscription.deleted:",
+            error,
+          );
+          throw error;
         }
         break;
       }

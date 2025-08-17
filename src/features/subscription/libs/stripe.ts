@@ -7,7 +7,7 @@ if (!stripeSecretKey) {
 }
 
 export const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: "2025-04-30.basil",
+  apiVersion: "2025-07-30.basil",
 });
 
 // 定数
@@ -20,7 +20,7 @@ type StripeEnvVars = {
   STRIPE_WEBHOOK_SECRET: string;
   STRIPE_PRICE_ID: string;
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: string;
-}
+};
 
 // 環境変数の検証
 export const getStripeEnv = (): StripeEnvVars => {
