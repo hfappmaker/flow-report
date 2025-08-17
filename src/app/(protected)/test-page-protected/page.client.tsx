@@ -23,34 +23,37 @@ const TestPageClient = () => {
     });
   };
 
-  const handleollamaGenerate = () => {
+  const handleAIGenerate = () => {
     startTransition(async () => {
       try {
+        const { generateWithAI } = await import("@/features/ai/lib/ai");
+
         const payload = {
           method: "create-work-time",
           prompt: "9:00 AM to 6:00 PM on weekdays",
         };
 
-        const res = await fetch("/api/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+        const result = await generateWithAI(payload);
 
-        const data = await res.json();
-
-        if (!res.ok) {
-          toast.error(data?.error ?? "Ollama API error");
+        if (!result.success) {
+          toast.error(result.error ?? "AI generation error");
           return;
         }
 
-        const content =
-          data?.message?.content ?? JSON.stringify(data, null, 2) ?? "No content";
-        toast.info(typeof content === "string" ? content : JSON.stringify(content));
-        console.log("Ollama response:", content);
+        const content = result.data
+          ? JSON.stringify(result.data, null, 2)
+          : "No content";
+        toast.success("AI generation completed");
+        console.log("AI response:", content);
       } catch (error: unknown) {
-        console.log("Ollama API call failed:" + (error instanceof Error ? error.message : String(error)));
-        toast.error("Ollama API call failed: " + (error instanceof Error ? error.message : String(error)));
+        console.log(
+          "AI generation failed:" +
+            (error instanceof Error ? error.message : String(error)),
+        );
+        toast.error(
+          "AI generation failed: " +
+            (error instanceof Error ? error.message : String(error)),
+        );
       }
     });
   };
@@ -58,13 +61,13 @@ const TestPageClient = () => {
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">サブスクリプション修正テスト</h1>
-      
+
       <div className="space-y-4">
         <p className="text-gray-600">
           キャンセル済みサブスクリプションの期間終了日を修正します。
         </p>
-        
-        <Button 
+
+        <Button
           onClick={handleFixSubscription}
           disabled={isPending}
           className="bg-blue-600 hover:bg-blue-700"
@@ -72,16 +75,16 @@ const TestPageClient = () => {
           {isPending ? "修正中..." : "サブスクリプション期間を修正"}
         </Button>
 
-        <Button 
-          onClick={handleollamaGenerate}
+        <Button
+          onClick={handleAIGenerate}
           disabled={isPending}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-green-600 hover:bg-green-700"
         >
-          {isPending ? "生成中..." : "Ollamaにリクエスト"}
+          {isPending ? "生成中..." : "AIで勤務時間生成"}
         </Button>
       </div>
     </div>
   );
 };
 
-export default TestPageClient; 
+export default TestPageClient;

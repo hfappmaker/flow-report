@@ -5,7 +5,6 @@ import {
   DEFAULT_LOGIN_REDIRECT,
   apiAuthPrefix,
   apiWebhookPrefix,
-  apiTestPrefix,
   authRoutes,
   errorRoutes,
 } from "@/app/routes";
@@ -134,7 +133,6 @@ export default auth(async (req) => {
   const isAuthorized = !!req.auth;
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isApiWebhookRoute = nextUrl.pathname.startsWith(apiWebhookPrefix);
-  const isApiTestRoute = nextUrl.pathname.startsWith(apiTestPrefix);
   const isErrorRoute = errorRoutes.includes(nextUrl.pathname);
 
   // エラールートの場合は何もしない
@@ -146,7 +144,7 @@ export default auth(async (req) => {
   }
 
   // APIルートの場合はスキップ
-  if (isApiAuthRoute || isApiWebhookRoute || isApiTestRoute) {
+  if (isApiAuthRoute || isApiWebhookRoute) {
     console.log("Request is for API route, skipping middleware processing.");
     return;
   }

@@ -32,12 +32,6 @@ export const apiAuthPrefix = "/api/auth";
 export const apiWebhookPrefix = "/api/webhook";
 
 /**
- * The prefix for API test routes
- * Routes that start with this prefix are used for testing purposes. They are available to the public.
- */
-export const apiTestPrefix = "/api/generate";
-
-/**
  * The default redirect path after logging in
  */
 export const DEFAULT_LOGIN_REDIRECT = "/dashboard";

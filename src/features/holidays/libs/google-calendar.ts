@@ -1,3 +1,4 @@
+"use server";
 /**
  * Google Calendar API関連の機能
  */
