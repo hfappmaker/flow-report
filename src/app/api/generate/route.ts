@@ -1,8 +1,9 @@
-import { fetchHolidays } from "@/utils/holiday-utils";
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from 'openai';
-import { zodResponseFormat } from 'openai/helpers/zod';
+import OpenAI from "openai";
+import { zodResponseFormat } from "openai/helpers/zod";
 import { z } from "zod";
+
+import { fetchHolidays } from "@/features/holidays/libs/google-calendar";
 
 type GenerateRequest = {
   method: string;
@@ -38,22 +39,22 @@ export async function POST(
     const client = new OpenAI();
 
     const completion = await client.chat.completions.parse({
-        model: 'gpt-4o-2024-08-06',
-        messages: [
-            {
-                "role": "system",
-                "content": system,
-            },
-            { "role": "user", "content": body.prompt },
-        ],
-        response_format: zodResponseFormat(schema, 'workTimes'),
+      model: "gpt-4o-2024-08-06",
+      messages: [
+        {
+          role: "system",
+          content: system,
+        },
+        { role: "user", content: body.prompt },
+      ],
+      response_format: zodResponseFormat(schema, "workTimes"),
     });
 
     const message = completion.choices[0]?.message;
     if (message.parsed) {
-        console.log(message.parsed);
+      console.log(message.parsed);
     } else {
-        console.log(message.refusal);
+      console.log(message.refusal);
     }
 
     // 成功レスポンスを返す
@@ -94,11 +95,11 @@ async function getSystemPromptAndSchema(method: string): Promise<{
   schema: z.ZodTypeAny;
 }> {
   switch (method) {
-    case "create-work-time":{
+    case "create-work-time": {
+      // 共通関数を使用（サーバーサイドで自動的に直接API呼び出し）
       const holidays = await fetchHolidays(2025);
       return {
-        system:
-          `Based on the prompt, generate work hours in August 2025 in a structured format. 祭日は${JSON.stringify(holidays)}です。`,
+        system: `Based on the prompt, generate work hours in August 2025 in a structured format. 祭日は${JSON.stringify(holidays)}です。`,
         schema: z.object({
           workTimes: z.array(
             z.object({

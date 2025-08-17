@@ -60,11 +60,35 @@ import {
 } from "@/features/work-report/utils/attendance-utils";
 import { useMessageState } from "@/hooks/use-message-state";
 import { formatDateAsUTC } from "@/utils/date-utils";
-import {
-  fetchHolidays,
-  getDateColorClass,
-  Holiday,
-} from "@/utils/holiday-utils";
+import { fetchHolidays } from "@/features/holidays/libs/google-calendar";
+import { Holiday } from "@/features/holidays/types/holiday";
+
+function isHoliday(date: Date, holidays: Holiday[]): boolean {
+  const dateStr = date.toISOString().split("T")[0]; // YYYY-MM-DD format
+  return holidays.some((holiday) => holiday.date === dateStr);
+}
+
+function getDateColorClass(date: Date, holidays: Holiday[]): string {
+  const dayOfWeek = date.getDay();
+
+  // 祝日チェック
+  if (isHoliday(date, holidays)) {
+    return "text-red-600"; // 祝日は赤
+  }
+
+  // 日曜日
+  if (dayOfWeek === 0) {
+    return "text-red-600"; // 日曜日は赤
+  }
+
+  // 土曜日
+  if (dayOfWeek === 6) {
+    return "text-blue-600"; // 土曜日は青
+  }
+
+  // 平日
+  return "text-white-900";
+}
 
 export default function ClientWorkReportPage({
   contractId,

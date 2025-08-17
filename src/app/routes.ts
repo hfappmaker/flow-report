@@ -37,9 +37,6 @@ export const apiWebhookPrefix = "/api/webhook";
  */
 export const apiTestPrefix = "/api/generate";
 
-
-export const apiHolidaysPrefix = "/api/holidays";
-
 /**
  * The default redirect path after logging in
  */
