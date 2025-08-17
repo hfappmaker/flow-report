@@ -198,6 +198,7 @@ export default function ClientWorkReportPage({
               basicStartTime,
               basicEndTime,
               basicBreakDuration,
+              currentAttendances,
               data.prompt ?? "",
             )
           : currentAttendances.map((attendance) => {

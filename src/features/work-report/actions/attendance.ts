@@ -10,7 +10,7 @@ import {
   getAttendancesByWorkReportId,
   updateWorkReportAttendance,
 } from "@/features/work-report/repositories/attendance-repository";
-import { AttendanceDto } from "@/features/work-report/types/attendance";
+import { AttendanceData, AttendanceDto } from "@/features/work-report/types/attendance";
 
 export const getAttendancesByWorkReportIdAction = async (
   workReportId: string,
@@ -44,6 +44,7 @@ export const createAttendancesByPromptAction = async (
   basicStartTime: Date | undefined,
   basicEndTime: Date | undefined,
   basicBreakDuration: number | undefined,
+  currentAttendances: AttendanceData[],
   prompt: string,
 ): Promise<AttendanceDto[]> => {
   const schema = z.object({
@@ -168,19 +169,17 @@ export const createAttendancesByPromptAction = async (
     breakDuration: attendance.breakDuration ?? undefined,
     memo: attendance.memo ?? undefined,
   }));
-  return calendarInfo.map((day) => {
-    const attendance = attendances.find((a) => a.date.getDate() === day.date);
+  return currentAttendances.map((day) => {
+    const attendance = attendances.find((a) => a.date.getDate() === new Date(day.date).getDate());
     if (!attendance) {
       // 該当日が生成されていない場合は、基本値を使用
       return {
         workReportId: workReportId,
-        date: new Date(
-          Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), day.date),
-        ),
-        startTime: undefined,
-        endTime: undefined,
-        breakDuration: basicBreakDuration ?? undefined,
-        memo: "",
+        date: day.date,
+        startTime: day.startTime,
+        endTime: day.endTime,
+        breakDuration: day.breakDuration,
+        memo: day.memo,
       };
     }
     return attendance;
