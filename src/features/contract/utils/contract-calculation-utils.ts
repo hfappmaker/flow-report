@@ -28,11 +28,11 @@ export function calculateWorkAmount(
   const workHours = workMinutes / 60;
 
   // 契約の単価が税込か税抜かによって基準金額を決定
-  let contractAmount = Number(params.unitPrice); // 契約上の月単価
+  let contractAmount = params.unitPrice; // 契約上の月単価
 
   // 精算処理（この時点で両方の値が設定されていることが保証されている）
-  const settlementMin = Number(params.settlementMin);
-  const settlementMax = Number(params.settlementMax);
+  const settlementMin = params.settlementMin;
+  const settlementMax = params.settlementMax;
 
   if (workHours < settlementMin) {
     if(params.rateType === "upperLower" && !params.lowerRate){
@@ -45,12 +45,8 @@ export function calculateWorkAmount(
     const shortfallHours = settlementMin - workHours;
     const deductionRate =
       params.rateType === "middle"
-        ? params.middleRate
-          ? Number(params.middleRate)
-          : 0
-        : params.lowerRate
-          ? Number(params.lowerRate)
-          : 0;
+        ? params.middleRate ?? 0
+        : params.lowerRate ?? 0;
 
     contractAmount = contractAmount - shortfallHours * deductionRate;
   } else if (workHours > settlementMax) {
@@ -64,12 +60,8 @@ export function calculateWorkAmount(
     const excessHours = workHours - settlementMax;
     const excessRate =
       params.rateType === "middle"
-        ? params.middleRate
-          ? Number(params.middleRate)
-          : 0
-        : params.upperRate
-          ? Number(params.upperRate)
-          : 0;
+        ? params.middleRate ?? 0
+        : params.upperRate ?? 0;
 
     contractAmount = contractAmount + excessHours * excessRate;
   }
@@ -152,11 +144,11 @@ export function calculateWorkAmount(
  * 作業報告書から総稼働時間（分）を計算する
  */
 export function calculateTotalWorkMinutes(
-  attendances: Array<{
+  attendances: {
     startTime?: string | Date | null;
     endTime?: string | Date | null;
     breakDuration?: number | null;
-  }>,
+  }[],
 ): number {
   return attendances.reduce((total, attendance) => {
     if (!attendance.startTime || !attendance.endTime) {
@@ -173,7 +165,7 @@ export function calculateTotalWorkMinutes(
         (endTime.getTime() - startTime.getTime()) / (1000 * 60);
 
       // 休憩時間を差し引く
-      const breakMinutes = attendance.breakDuration || 0;
+      const breakMinutes = attendance.breakDuration ?? 0;
 
       return total + Math.max(0, workMinutes - breakMinutes);
     } catch (error) {
