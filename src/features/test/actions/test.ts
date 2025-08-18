@@ -37,6 +37,6 @@ export const getTestAction = async (): Promise<SerializedType<Test>> => {
   return test;
 };
 
-export const createTestAction = (test: Test): void => {
+export const createTestAction = async (test: Test): Promise<void> => {
   console.log(test);
 };
