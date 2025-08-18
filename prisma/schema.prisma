@@ -29,6 +29,17 @@ enum ContractRateType {
   middle // 中間割
 }
 
+enum TaxInclusiveType {
+  INCLUSIVE // 税込
+  EXCLUSIVE // 税抜
+}
+
+enum TaxRoundingType {
+  ROUND_DOWN // 切り捨て
+  ROUND_UP   // 切り上げ  
+  ROUND      // 四捨五入
+}
+
 enum SubscriptionStatus {
   TRIAL      // トライアル期間中
   ACTIVE     // 有料プラン利用中
@@ -84,6 +95,9 @@ model Contract {
   basicBreakDuration Int? // 基本休憩時間（分）
 
   closingDay Int? // 締め日(1～31)
+  
+  taxInclusiveType TaxInclusiveType @default(EXCLUSIVE) // 税込・税抜
+  taxRoundingType TaxRoundingType @default(ROUND_DOWN) // 消費税端数処理
 }
 
 model WorkReport {

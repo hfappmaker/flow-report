@@ -11,13 +11,13 @@ export default function GlobalError({
   return (
     <html>
       <body>
-        <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="flex min-h-screen items-center justify-center bg-background">
           <div className="text-center">
             <h1 className="mb-4 text-6xl font-bold text-red-600">500</h1>
-            <h2 className="mb-4 text-2xl font-semibold text-gray-700">
+            <h2 className="mb-4 text-2xl font-semibold text-muted-foreground">
               予期しないエラーが発生しました
             </h2>
-            <p className="mb-8 text-gray-500">
+            <p className="mb-8 text-muted-foreground">
               申し訳ございません。システムエラーが発生しました。
               <br />
               問題が解決されない場合は、管理者にお問い合わせください。
@@ -26,8 +26,8 @@ export default function GlobalError({
               <Button onClick={reset} variant="default">
                 リトライ
               </Button>
-              <Button 
-                onClick={() => window.location.href = "/"} 
+              <Button
+                onClick={() => (window.location.href = "/")}
                 variant="outline"
               >
                 ホームに戻る

@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useTransition } from "react";
@@ -20,11 +20,13 @@ import { Input } from "@/components/ui/input";
 import { login } from "@/features/auth/actions/login";
 import { LoginSchema } from "@/features/auth/schemas/login";
 
-
 export default function TestLoginPage() {
-  const [error, setError] = useState<{ message: string, date: Date }>({ message: "", date: new Date() });
+  const [error, setError] = useState<{ message: string; date: Date }>({
+    message: "",
+    date: new Date(),
+  });
   const [isPending, startTransition] = useTransition();
-  
+
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
@@ -34,19 +36,20 @@ export default function TestLoginPage() {
   });
 
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
-    
     startTransition(async () => {
-      await login(values)
-        .then((data) => {
-          if (data?.error) {
-            form.reset();
-            setError({ message: data.error, date: new Date() });
-          }
-        });
+      await login(values).then((data) => {
+        if (data?.error) {
+          form.reset();
+          setError({ message: data.error, date: new Date() });
+        }
+      });
     });
   };
 
-  const handleQuickLogin = (testUserEmail: string, testUserPassword: string) => {
+  const handleQuickLogin = (
+    testUserEmail: string,
+    testUserPassword: string,
+  ) => {
     form.setValue("email", testUserEmail);
     form.setValue("password", testUserPassword);
   };
@@ -60,7 +63,7 @@ export default function TestLoginPage() {
             勤怠管理システム
           </h1>
         </div>
-        
+
         <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 w-full">
           <p className="text-sm text-yellow-800 text-center">
             テスト環境 - 開発用ログイン
@@ -68,7 +71,10 @@ export default function TestLoginPage() {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="w-full space-y-4"
+          >
             <FormField
               control={form.control}
               name="email"
@@ -86,7 +92,7 @@ export default function TestLoginPage() {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="password"
@@ -104,17 +110,21 @@ export default function TestLoginPage() {
                 </FormItem>
               )}
             />
-            <ErrorAlert message={error.message} resetSignal={error.date.getTime()} />
-            
+            <ErrorAlert
+              message={error.message}
+              resetSignal={error.date.getTime()}
+            />
+
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? "ログイン中..." : "テストログイン"}
             </Button>
           </form>
         </Form>
-        
 
         <div className="w-full space-y-2">
-          <p className="text-sm text-gray-600 text-center">クイックログイン</p>
+          <p className="text-sm text-muted-foreground text-center">
+            クイックログイン
+          </p>
           <div className="grid grid-cols-1 gap-2">
             <Button
               variant="outline"

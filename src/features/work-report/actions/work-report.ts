@@ -14,7 +14,10 @@ import {
   updateWorkReportStatus,
 } from "@/features/work-report/repositories/work-report-repository";
 import { AttendanceDto } from "@/features/work-report/types/attendance";
-import { WorkReport } from "@/features/work-report/types/work-report";
+import {
+  WorkReport,
+  WorkReportWithAttendances,
+} from "@/features/work-report/types/work-report";
 import type { WorkReportStatus } from "@/features/work-report/types/work-report";
 
 export const createWorkReportAction = async (
@@ -24,7 +27,7 @@ export const createWorkReportAction = async (
   // 契約情報を取得
   const contract = await getContractById(contractId);
   if (!contract) {
-    throw new Error('契約が見つかりません');
+    throw new Error("契約が見つかりません");
   }
 
   // 契約期間のバリデーション
@@ -35,27 +38,41 @@ export const createWorkReportAction = async (
 
   // 対象年月の最初の日で比較
   const targetFirstDay = new Date(targetYear, targetDate.getMonth(), 1);
-  const contractStartFirstDay = new Date(contractStart.getFullYear(), contractStart.getMonth(), 1);
+  const contractStartFirstDay = new Date(
+    contractStart.getFullYear(),
+    contractStart.getMonth(),
+    1,
+  );
 
   if (targetFirstDay < contractStartFirstDay) {
     const contractStartYear = contractStart.getFullYear();
     const contractStartMonth = contractStart.getMonth() + 1;
-    throw new Error(`契約開始日より前の作業報告書は作成できません。契約開始: ${contractStartYear}年${contractStartMonth}月`);
+    throw new Error(
+      `契約開始日より前の作業報告書は作成できません。契約開始: ${contractStartYear}年${contractStartMonth}月`,
+    );
   }
 
   if (contractEnd) {
-    const contractEndFirstDay = new Date(contractEnd.getFullYear(), contractEnd.getMonth(), 1);
+    const contractEndFirstDay = new Date(
+      contractEnd.getFullYear(),
+      contractEnd.getMonth(),
+      1,
+    );
     if (targetFirstDay > contractEndFirstDay) {
       const contractEndYear = contractEnd.getFullYear();
       const contractEndMonth = contractEnd.getMonth() + 1;
-      throw new Error(`契約終了日より後の作業報告書は作成できません。契約終了: ${contractEndYear}年${contractEndMonth}月`);
+      throw new Error(
+        `契約終了日より後の作業報告書は作成できません。契約終了: ${contractEndYear}年${contractEndMonth}月`,
+      );
     }
   }
 
   // サーバーサイドでの重複チェック
   const exists = await checkWorkReportExists(contractId, targetDate);
   if (exists) {
-    throw new Error(`${targetYear}年${targetMonth}月の作業報告書は既に存在します`);
+    throw new Error(
+      `${targetYear}年${targetMonth}月の作業報告書は既に存在します`,
+    );
   }
 
   const workReport = await createWorkReport(contractId, targetDate);
@@ -92,7 +109,7 @@ export const getWorkReportsByContractIdAndYearMonthDateRangeAction = async (
   contractId: string,
   fromDate?: Date,
   toDate?: Date,
-): Promise<WorkReport[]> => {
+): Promise<WorkReportWithAttendances[]> => {
   try {
     return (
       await getWorkReportsByContractIdAndYearMonthDateRange(
@@ -100,7 +117,7 @@ export const getWorkReportsByContractIdAndYearMonthDateRangeAction = async (
         fromDate,
         toDate,
       )
-    ).map(convertPrismaWorkReportToWorkReportDto);
+    ).map(convertPrismaWorkReportWithAttendancesToWorkReportDto);
   } catch (error) {
     console.error("Error fetching work reports:", error);
     throw new Error("Failed to fetch work reports");
@@ -137,5 +154,15 @@ function convertPrismaWorkReportToWorkReportDto(
   return {
     ...workReport,
     memo: workReport.memo ?? undefined,
+  };
+}
+
+function convertPrismaWorkReportWithAttendancesToWorkReportDto(
+  workReport: PrismaWorkReport & { attendances: any[] },
+): WorkReportWithAttendances {
+  return {
+    ...workReport,
+    memo: workReport.memo ?? undefined,
+    attendances: workReport.attendances,
   };
 }

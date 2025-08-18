@@ -4,7 +4,7 @@ export const Spinner = () => {
       <svg
         aria-hidden="true"
         // TODO: In the future pass the color and size as a prop
-        className="inline size-8 animate-spin fill-sky-400 text-gray-200 dark:text-muted"
+        className="inline size-8 animate-spin fill-sky-400 text-muted"
         viewBox="0 0 100 101"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

@@ -10,13 +10,16 @@ import { Serialize } from "@/utils/serialization/serialization-utils";
 
 import ClientWorkReportPage from "./page.client";
 
-
 export const metadata: Metadata = {
   title: "作業報告書",
   description: "作業報告書",
 };
 
-export default async function WorkReportPage({ params }: { params: Promise<{ workReportId: string }> }) {
+export default async function WorkReportPage({
+  params,
+}: {
+  params: Promise<{ workReportId: string }>;
+}) {
   const { workReportId } = await params;
   const user = await currentUser();
   // Assume that getWorkReportById returns a work report with startDate and endDate as strings or Date objects.
@@ -56,6 +59,19 @@ export default async function WorkReportPage({ params }: { params: Promise<{ wor
       closingDay={Serialize(contract.closingDay ?? undefined)}
       status={workReport.status}
       holidays={holidayData}
+      unitPrice={contract.unitPrice ? Number(contract.unitPrice) : undefined}
+      settlementMin={
+        contract.settlementMin ? Number(contract.settlementMin) : undefined
+      }
+      settlementMax={
+        contract.settlementMax ? Number(contract.settlementMax) : undefined
+      }
+      upperRate={contract.upperRate ? Number(contract.upperRate) : undefined}
+      lowerRate={contract.lowerRate ? Number(contract.lowerRate) : undefined}
+      middleRate={contract.middleRate ? Number(contract.middleRate) : undefined}
+      taxInclusiveType={contract.taxInclusiveType}
+      taxRoundingType={contract.taxRoundingType}
+      rateType={contract.rateType}
     />
   );
 }

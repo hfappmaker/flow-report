@@ -25,6 +25,8 @@ export const convertContractFormValuesToContract = (
     basicEndTime: data.basicEndTime,
     basicBreakDuration: data.basicBreakDuration,
     closingDay: data.closingDay,
+    taxInclusiveType: data.taxInclusiveType,
+    taxRoundingType: data.taxRoundingType,
     userId,
     clientName: data.clientName,
     clientContactName: data.clientContactName,
@@ -63,5 +65,7 @@ export const convertContractToFormValues = (
       : undefined,
     basicBreakDuration: contract.basicBreakDuration ?? undefined,
     closingDay: contract.closingDay ?? undefined,
+    taxInclusiveType: contract.taxInclusiveType,
+    taxRoundingType: contract.taxRoundingType,
   };
 };

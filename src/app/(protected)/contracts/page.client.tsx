@@ -134,8 +134,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
         showError(
           "契約の削除に失敗しました。関連する作業報告書が存在する可能性があります。",
         );
-      }
-      finally { 
+      } finally {
         closeDialog();
       }
     });
@@ -152,8 +151,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
       } catch (error: unknown) {
         console.error(error);
         showError("契約の作成に失敗しました");
-      }
-      finally { 
+      } finally {
         closeDialog();
       }
     });
@@ -171,8 +169,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
       } catch (error: unknown) {
         console.error(error);
         showError("契約の更新に失敗しました");
-      }
-      finally { 
+      } finally {
         closeDialog();
       }
     });
@@ -217,7 +214,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
             新しい契約を作成
           </Button>
         </div>
-        <p className="text-gray-600">あなたの契約を管理できます</p>
+        <p className="text-muted-foreground">あなたの契約を管理できます</p>
       </div>
 
       <FormError message={error.message} resetSignal={error.date.getTime()} />
@@ -246,7 +243,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">
+          <label className="text-sm font-medium text-muted-foreground">
             期間検索（契約期間と重複する期間を検索）
           </label>
           <div className="flex gap-2">
@@ -258,7 +255,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
               }}
               className="flex-1"
             />
-            <span className="flex items-center text-gray-500">〜</span>
+            <span className="flex items-center text-muted-foreground">〜</span>
             <DatePicker
               placeholder="期間終了"
               value={periodTo}
@@ -288,11 +285,13 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
       {/* 契約一覧 */}
       {contracts.length === 0 ? (
         <div className="py-12 text-center">
-          <p className="text-lg text-gray-500">
+          <p className="text-lg text-muted-foreground">
             {isSearching ? "検索結果がありません" : "契約がありません"}
           </p>
           {!isSearching && (
-            <p className="mt-2 text-gray-400">新しい契約を作成してください</p>
+            <p className="mt-2 text-muted-foreground">
+              新しい契約を作成してください
+            </p>
           )}
         </div>
       ) : (
@@ -326,11 +325,6 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                           <div>終了: {formatDate(contract.endDate)}</div>
                         )}
                         <div>担当: {contract.clientContactName}</div>
-                        {contract.unitPrice && (
-                          <div className="font-medium">
-                            ¥{Number(contract.unitPrice).toLocaleString()}
-                          </div>
-                        )}
                       </div>
                     </div>
                     <div className="ml-4 flex shrink-0 items-center gap-3">
@@ -369,7 +363,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
               <h3 className="mb-3 text-lg font-medium">基本情報</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2">
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="text-sm font-medium text-muted-foreground">
                     契約名
                   </label>
                   <p className="mt-1 whitespace-pre-line">
@@ -377,25 +371,25 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                   </p>
                 </div>
                 <div className="col-span-2">
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="text-sm font-medium text-muted-foreground">
                     クライアント名
                   </label>
                   <p className="mt-1">{activeContract.clientName}</p>
                 </div>
                 <div className="col-span-2">
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="text-sm font-medium text-muted-foreground">
                     担当者
                   </label>
                   <p className="mt-1">{activeContract.clientContactName}</p>
                 </div>
                 <div className="col-span-2">
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="text-sm font-medium text-muted-foreground">
                     メールアドレス
                   </label>
                   <p className="mt-1">{activeContract.clientEmail}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="text-sm font-medium text-muted-foreground">
                     開始日
                   </label>
                   <p className="mt-1">
@@ -403,7 +397,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="text-sm font-medium text-muted-foreground">
                     終了日
                   </label>
                   <p className="mt-1">
@@ -419,7 +413,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
               <h3 className="mb-3 text-lg font-medium">精算情報</h3>
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-3">
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="text-sm font-medium text-muted-foreground">
                     月単価
                   </label>
                   <p className="mt-1">
@@ -429,7 +423,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="text-sm font-medium text-muted-foreground">
                     精算下限
                   </label>
                   <p className="mt-1">
@@ -439,7 +433,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                   </p>
                 </div>
                 <div className="col-span-2">
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="text-sm font-medium text-muted-foreground">
                     精算上限
                   </label>
                   <p className="mt-1">
@@ -449,7 +443,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="text-sm font-medium text-muted-foreground">
                     超過単価
                   </label>
                   <p className="mt-1">
@@ -459,7 +453,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="text-sm font-medium text-muted-foreground">
                     控除単価
                   </label>
                   <p className="mt-1">
@@ -469,7 +463,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="text-sm font-medium text-muted-foreground">
                     中間単価
                   </label>
                   <p className="mt-1">
@@ -482,10 +476,38 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
             </div>
 
             <div>
+              <h3 className="mb-3 text-lg font-medium">税務設定</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    税込・税抜設定
+                  </label>
+                  <p className="mt-1">
+                    {activeContract.taxInclusiveType === "INCLUSIVE"
+                      ? "税込"
+                      : "税抜"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    消費税端数処理
+                  </label>
+                  <p className="mt-1">
+                    {activeContract.taxRoundingType === "ROUND_DOWN" &&
+                      "切り捨て"}
+                    {activeContract.taxRoundingType === "ROUND_UP" &&
+                      "切り上げ"}
+                    {activeContract.taxRoundingType === "ROUND" && "四捨五入"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div>
               <h3 className="mb-3 text-lg font-medium">勤務設定</h3>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="text-sm font-medium text-muted-foreground">
                     1日あたりの作業単位
                   </label>
                   <p className="mt-1">
@@ -495,7 +517,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                   </p>
                 </div>
                 <div className="col-span-2">
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="text-sm font-medium text-muted-foreground">
                     1ヶ月あたりの作業単位
                   </label>
                   <p className="mt-1">
@@ -505,7 +527,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="text-sm font-medium text-muted-foreground">
                     基本開始時刻
                   </label>
                   <p className="mt-1">
@@ -522,7 +544,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="text-sm font-medium text-muted-foreground">
                     基本終了時刻
                   </label>
                   <p className="mt-1">
@@ -539,7 +561,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="text-sm font-medium text-muted-foreground">
                     基本休憩時間
                   </label>
                   <p className="mt-1">
@@ -549,7 +571,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                   </p>
                 </div>
                 <div className="col-span-3">
-                  <label className="text-sm font-medium text-gray-500">
+                  <label className="text-sm font-medium text-muted-foreground">
                     締め日
                   </label>
                   <p className="mt-1">
@@ -623,7 +645,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
       >
         <div>
           <p>本当に契約 &quot;{activeContract?.name}&quot; を削除しますか？</p>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-muted-foreground">
             この操作は元に戻すことができません。
           </p>
         </div>

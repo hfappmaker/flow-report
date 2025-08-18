@@ -78,7 +78,7 @@ const TestPageClient = () => {
       <h1 className="text-2xl font-bold mb-6">サブスクリプション修正テスト</h1>
 
       <div className="space-y-4">
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           キャンセル済みサブスクリプションの期間終了日を修正します。
         </p>
 

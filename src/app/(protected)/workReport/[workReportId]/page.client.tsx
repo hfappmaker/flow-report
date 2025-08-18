@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import ExcelJS from "exceljs";
 import { useState, useEffect } from "react";
-import type { DateRangeMode } from "@/features/work-report/schemas/work-report-form-schemas";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -35,6 +34,13 @@ import {
 } from "@/components/ui/time-picker";
 import { useTransitionContext } from "@/contexts/transition-context";
 import {
+  calculateWorkAmount,
+  calculateTotalWorkMinutes,
+  formatWorkTime,
+  formatAmount,
+} from "@/features/contract/utils/contract-calculation-utils";
+import { Holiday } from "@/features/holidays/types/holiday";
+import {
   createAttendancesByPromptAction,
   updateWorkReportAttendanceAction,
 } from "@/features/work-report/actions/attendance";
@@ -47,6 +53,7 @@ import {
   type BulkEditFormValues,
   editFormSchema,
   bulkEditFormSchema,
+  type DateRangeMode,
 } from "@/features/work-report/schemas/work-report-form-schemas";
 import { type AttendanceData } from "@/features/work-report/types/attendance";
 import {
@@ -64,8 +71,6 @@ import {
 } from "@/features/work-report/utils/attendance-utils";
 import { useMessageState } from "@/hooks/use-message-state";
 import { formatDateAsUTC } from "@/utils/date-utils";
-import { fetchHolidays } from "@/features/holidays/libs/google-calendar";
-import { Holiday } from "@/features/holidays/types/holiday";
 
 function isHoliday(date: Date, holidays: Holiday[]): boolean {
   const dateStr = date.toISOString().split("T")[0]; // YYYY-MM-DD format
@@ -95,7 +100,6 @@ function getDateColorClass(date: Date, holidays: Holiday[]): string {
 }
 
 export default function ClientWorkReportPage({
-  contractId,
   workReportId,
   attendances,
   contractName,
@@ -112,6 +116,15 @@ export default function ClientWorkReportPage({
   basicBreakDuration,
   holidays,
   status: initialStatus,
+  unitPrice,
+  settlementMin,
+  settlementMax,
+  upperRate,
+  lowerRate,
+  middleRate,
+  taxInclusiveType,
+  taxRoundingType,
+  rateType,
 }: WorkReportClientProps) {
   const { error, success, showError, showSuccess } = useMessageState();
   const { startTransition } = useTransitionContext();
@@ -120,13 +133,10 @@ export default function ClientWorkReportPage({
   const [editingDate, setEditingDate] = useState<Date | null>(null);
 
   // New state for holding the uploaded template file
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [uploadedTemplateFile, setUploadedTemplateFile] = useState<File | null>(
     null,
   );
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [templateOption, setTemplateOption] = useState("default"); // 'default' or 'upload'
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [extensionOption, setExtensionOption] = useState("excel"); // 'excel' or 'pdf'
   const [status, setStatus] = useState<WorkReportStatus>(initialStatus);
 
@@ -141,6 +151,22 @@ export default function ClientWorkReportPage({
 
   const [currentAttendances, setCurrentAttendances] =
     useState<AttendanceData[]>(initialAttendances);
+
+  // Calculate work hours and amounts for summary
+  const totalWorkMinutes = calculateTotalWorkMinutes(currentAttendances);
+  const workTimeText = formatWorkTime(totalWorkMinutes);
+
+  const amountCalculation = calculateWorkAmount(totalWorkMinutes, {
+    unitPrice,
+    settlementMin,
+    settlementMax,
+    upperRate,
+    lowerRate,
+    middleRate,
+    taxInclusiveType,
+    taxRoundingType,
+    rateType,
+  });
 
   // 編集用フォーム
   const editForm = useForm<EditFormValues>({
@@ -531,12 +557,20 @@ export default function ClientWorkReportPage({
                     value = formatMonthDay(entry.date.toISOString());
                   } else if (fieldName === "開始時刻") {
                     if (entry.startTime) {
-                      value = msToSerial((entry.startTime.getUTCHours() * 60 + entry.startTime.getUTCMinutes()) * 60000);
+                      value = msToSerial(
+                        (entry.startTime.getUTCHours() * 60 +
+                          entry.startTime.getUTCMinutes()) *
+                          60000,
+                      );
                       sheet.getCell(currentRow, startCol).numFmt = "[h]:mm";
                     }
                   } else if (fieldName === "終了時刻") {
                     if (entry.endTime) {
-                      value = msToSerial((entry.endTime.getUTCHours() * 60 + entry.endTime.getUTCMinutes()) * 60000);
+                      value = msToSerial(
+                        (entry.endTime.getUTCHours() * 60 +
+                          entry.endTime.getUTCMinutes()) *
+                          60000,
+                      );
                       sheet.getCell(currentRow, startCol).numFmt = "[h]:mm";
                     }
                   } else if (fieldName === "休憩時間") {
@@ -680,7 +714,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
 
   return (
     <div className="p-4">
-      <h1 className="mb-4 text-xl font-bold dark:text-white">
+      <h1 className="mb-4 text-xl font-bold text-muted-foreground">
         {contractName}の{targetDate.getFullYear()}年{targetDate.getMonth() + 1}
         月度作業報告書
       </h1>
@@ -689,6 +723,35 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
         message={success.message}
         resetSignal={success.date.getTime()}
       />
+
+      {/* Work Hours and Amount Summary */}
+      <div className="mb-6 rounded-lg border bg-muted/30 p-4">
+        <h2 className="mb-3 text-lg font-semibold">稼働時間・金額サマリー</h2>
+        <div className="grid grid-cols-3 gap-4 text-sm">
+          <div>
+            <span className="font-medium text-muted-foreground">稼働時間:</span>
+            <div className="text-base font-semibold">{workTimeText}</div>
+          </div>
+          <div>
+            <span className="font-medium text-muted-foreground">税抜金額:</span>
+            <div className="text-base font-semibold">
+              {amountCalculation
+                ? formatAmount(amountCalculation.baseAmount)
+                : "¥---,---"}
+            </div>
+          </div>
+          <div>
+            <span className="font-medium text-muted-foreground">税込金額:</span>
+            <div className="text-base font-semibold">
+              {amountCalculation
+                ? formatAmount(
+                    amountCalculation.baseAmount + amountCalculation.taxAmount,
+                  )
+                : "¥---,---"}
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="flex flex-col gap-2">
         <div className="mb-4 flex items-center justify-between">
@@ -911,10 +974,15 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                                     onCheckedChange={(checked) => {
                                       const currentValue = field.value ?? [];
                                       if (checked) {
-                                        field.onChange([...currentValue, index]);
+                                        field.onChange([
+                                          ...currentValue,
+                                          index,
+                                        ]);
                                       } else {
                                         field.onChange(
-                                          currentValue.filter((d) => d !== index),
+                                          currentValue.filter(
+                                            (d) => d !== index,
+                                          ),
                                         );
                                       }
                                     }}
@@ -986,7 +1054,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                             {...field}
                           />
                         </FormControl>
-                        <div className="text-xs text-gray-600 mt-1">
+                        <div className="text-xs text-muted-foreground mt-1">
                           💡 その他の例: "フレックスタイム制で10:00-19:00" /
                           "短時間勤務で9:30-15:30、休憩30分" /
                           "リモートワークで自由な時間"
@@ -998,61 +1066,64 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                 </div>
               )}
 
-              {(bulkEditForm.watch("dateRangeMode") === "weekday" || bulkEditForm.watch("dateRangeMode") === "custom" || bulkEditForm.watch("dateRangeMode") === "all") && (
+              {(bulkEditForm.watch("dateRangeMode") === "weekday" ||
+                bulkEditForm.watch("dateRangeMode") === "custom" ||
+                bulkEditForm.watch("dateRangeMode") === "all") && (
                 <>
-                <div className="space-y-4">
-                  <h3 className="text-sm font-medium">勤怠情報</h3>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="flex flex-col gap-2">
-                      <TimePickerFieldForDate
-                        control={bulkEditForm.control}
-                        name="startTime"
-                        showClearButton={false}
-                        minuteStep={dailyWorkMinutes}
-                        label="出勤時間"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <TimePickerFieldForDate
-                        control={bulkEditForm.control}
-                        name="endTime"
-                        showClearButton={false}
-                        minuteStep={dailyWorkMinutes}
-                        label="退勤時間"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <TimePickerFieldForNumber
-                        control={bulkEditForm.control}
-                        name="breakDuration"
-                        showClearButton={false}
-                        minuteStep={dailyWorkMinutes}
-                        label="休憩時間"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <div>作業内容</div>
-                      <FormField
-                        control={bulkEditForm.control}
-                        name="memo"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>作業内容</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="text"
-                                className="w-[400px]"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-medium">勤怠情報</h3>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="flex flex-col gap-2">
+                        <TimePickerFieldForDate
+                          control={bulkEditForm.control}
+                          name="startTime"
+                          showClearButton={false}
+                          minuteStep={dailyWorkMinutes}
+                          label="出勤時間"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <TimePickerFieldForDate
+                          control={bulkEditForm.control}
+                          name="endTime"
+                          showClearButton={false}
+                          minuteStep={dailyWorkMinutes}
+                          label="退勤時間"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <TimePickerFieldForNumber
+                          control={bulkEditForm.control}
+                          name="breakDuration"
+                          showClearButton={false}
+                          minuteStep={dailyWorkMinutes}
+                          label="休憩時間"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <div>作業内容</div>
+                        <FormField
+                          control={bulkEditForm.control}
+                          name="memo"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>作業内容</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="text"
+                                  className="w-[400px]"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </>)}
+                </>
+              )}
               <div className="mt-4 flex justify-end space-x-2">
                 <Button
                   type="button"
