@@ -3,6 +3,7 @@ import { WorkReport as PrismaWorkReport } from "@prisma/client";
 import { SerializedType } from "@/utils/serialization/serialization-utils";
 
 import { AttendanceDto } from "./attendance";
+import { Holiday } from "@/features/holidays/types/holiday";
 
 export type WorkReport = SerializedType<PrismaWorkReport>;
 
@@ -25,4 +26,5 @@ export type WorkReportClientProps = {
   basicEndTime: Date | undefined;
   basicBreakDuration: number | undefined;
   status: WorkReportStatus;
+  holidays: Holiday[];
 };

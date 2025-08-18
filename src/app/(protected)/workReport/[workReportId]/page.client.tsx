@@ -110,6 +110,7 @@ export default function ClientWorkReportPage({
   basicStartTime,
   basicEndTime,
   basicBreakDuration,
+  holidays,
   status: initialStatus,
 }: WorkReportClientProps) {
   const { error, success, showError, showSuccess } = useMessageState();
@@ -117,18 +118,6 @@ export default function ClientWorkReportPage({
   // モーダルの状態管理
   const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
   const [editingDate, setEditingDate] = useState<Date | null>(null);
-  // 祝日データの状態管理
-  const [holidays, setHolidays] = useState<Holiday[]>([]);
-
-  // 祝日データを取得
-  useEffect(() => {
-    const loadHolidays = async () => {
-      const year = targetDate.getFullYear();
-      const holidayData = await fetchHolidays(year);
-      setHolidays(holidayData);
-    };
-    void loadHolidays();
-  }, [targetDate]);
 
   // New state for holding the uploaded template file
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

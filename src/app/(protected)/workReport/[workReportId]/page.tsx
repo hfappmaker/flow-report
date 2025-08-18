@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { currentUser } from "@/features/auth/lib/auth";
 import { getContractById } from "@/features/contract/repositories/contract-repository";
+import { fetchHolidays } from "@/features/holidays/libs/google-calendar";
 import { getAttendancesByWorkReportIdAction } from "@/features/work-report/actions/attendance";
 import { getWorkReportById } from "@/features/work-report/repositories/work-report-repository";
 import { Serialize } from "@/utils/serialization/serialization-utils";
@@ -33,6 +34,9 @@ export default async function WorkReportPage({ params }: { params: Promise<{ wor
 
   const attendances = await getAttendancesByWorkReportIdAction(workReportId);
 
+  const year = workReport.targetDate.getFullYear();
+  const holidayData = await fetchHolidays(year);
+
   return (
     <ClientWorkReportPage
       contractId={contract.id}
@@ -51,6 +55,7 @@ export default async function WorkReportPage({ params }: { params: Promise<{ wor
       basicBreakDuration={Serialize(contract.basicBreakDuration ?? undefined)}
       closingDay={Serialize(contract.closingDay ?? undefined)}
       status={workReport.status}
+      holidays={holidayData}
     />
   );
 }
