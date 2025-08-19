@@ -26,8 +26,12 @@ export const contractFormSchema = z.object({
   startDate: z.date(),
   endDate: z.date().optional(),
   clientName: z.string().min(1, "クライアント名は必須です"),
-  clientContactName: z.string().min(1, "担当者名は必須です"),
-  clientEmail: z.string().email("有効なメールアドレスを入力してください"),
+  clientContactName: z.string(),
+  clientEmail: z
+    .string()
+    .refine((v) => v === "" || z.string().email().safeParse(v).success, {
+      message: "有効なメールアドレスを入力してください",
+    }),
   unitPrice: z.number().optional(),
   settlementMin: z.number().optional(),
   settlementMax: z.number().optional(),
