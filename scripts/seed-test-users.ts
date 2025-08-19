@@ -61,6 +61,47 @@ async function main() {
         },
       });
 
+      // サブスクリプション情報の追加
+      if (userData.email === "loadtest1@example.com") {
+        const stripeCustomer = await prisma.stripeCustomer.create({
+          data: {
+            userId: user.id,
+            stripeCustomerId: `cus_test_${user.id}`,
+            created: new Date(),
+          },
+        });
+        const oneMonthLater = new Date();
+        oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+        await prisma.subscription.create({
+          data: {
+            stripeCustomerId: stripeCustomer.stripeCustomerId,
+            stripeSubscriptionId: `sub_test_${user.id}`,
+            status: "ACTIVE",
+            currentPeriodEnd: oneMonthLater,
+            created: new Date(),
+          },
+        });
+        console.log(`✅ ${userData.email} に有効なサブスクリプションを追加しました`);
+      } else if (userData.email === "loadtest3@example.com") {
+        const stripeCustomer = await prisma.stripeCustomer.create({
+          data: {
+            userId: user.id,
+            stripeCustomerId: `cus_test_${user.id}`,
+            created: new Date(),
+          },
+        });
+        await prisma.subscription.create({
+          data: {
+            stripeCustomerId: stripeCustomer.stripeCustomerId,
+            stripeSubscriptionId: `sub_test_${user.id}`,
+            status: "CANCELED",
+            currentPeriodEnd: new Date(),
+            created: new Date(),
+          },
+        });
+        console.log(`✅ ${userData.email} にキャンセル済みのサブスクリプションを追加しました`);
+      }
+
       console.log(`✅ ${userData.email} を作成しました (ID: ${user.id})`);
     } catch (error) {
       console.error(`❌ ${userData.email} の作成に失敗しました:`, error);
