@@ -90,6 +90,7 @@ export const ContractForm = ({
   });
 
   const rateType = form.watch("rateType");
+  const taxInclusiveType = form.watch("taxInclusiveType");
 
   return (
     <Form {...form}>
@@ -189,7 +190,7 @@ export const ContractForm = ({
           <NumberInputField
             control={form.control}
             name="unitPrice"
-            label="月単価（円）"
+            label={`月単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
             placeholder="（例）500000"
           />
 
@@ -245,14 +246,14 @@ export const ContractForm = ({
               <NumberInputField
                 control={form.control}
                 name="upperRate"
-                label="超過単価（円）"
+                label={`超過単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
                 placeholder="（例）5000"
               />
 
               <NumberInputField
                 control={form.control}
                 name="lowerRate"
-                label="控除単価（円）"
+                label={`控除単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
                 placeholder="（例）5000"
               />
             </>
@@ -262,7 +263,7 @@ export const ContractForm = ({
             <NumberInputField
               control={form.control}
               name="middleRate"
-              label="中間単価（円）"
+              label={`中間単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
               placeholder="（例）5000"
             />
           )}

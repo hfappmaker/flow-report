@@ -415,6 +415,9 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                 <div className="col-span-3">
                   <label className="text-sm font-medium text-muted-foreground">
                     月単価
+                    {activeContract.taxInclusiveType === "INCLUSIVE"
+                      ? "（税込）"
+                      : "（税抜）"}
                   </label>
                   <p className="mt-1">
                     {activeContract.unitPrice
@@ -445,6 +448,9 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
                     超過単価
+                    {activeContract.taxInclusiveType === "INCLUSIVE"
+                      ? "（税込）"
+                      : "（税抜）"}
                   </label>
                   <p className="mt-1">
                     {activeContract.upperRate
@@ -455,6 +461,9 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
                     控除単価
+                    {activeContract.taxInclusiveType === "INCLUSIVE"
+                      ? "（税込）"
+                      : "（税抜）"}
                   </label>
                   <p className="mt-1">
                     {activeContract.lowerRate
@@ -465,6 +474,9 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
                     中間単価
+                    {activeContract.taxInclusiveType === "INCLUSIVE"
+                      ? "（税込）"
+                      : "（税抜）"}
                   </label>
                   <p className="mt-1">
                     {activeContract.middleRate
