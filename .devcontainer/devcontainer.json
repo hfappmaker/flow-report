@@ -12,7 +12,7 @@
   "service": "app",
   "workspaceFolder": "/WorkTimeManagementV2",
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "sudo chown -R node:node . && npm install && npx playwright install && npm run seed:test-users",
+  "postCreateCommand": "sudo chown -R node:node . && npm install && npx playwright install && npx prisma db seed",
   // Configure tool-specific properties.
 
   "customizations": {

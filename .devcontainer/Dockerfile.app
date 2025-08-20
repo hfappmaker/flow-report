@@ -26,6 +26,8 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 RUN npm install -g @anthropic-ai/claude-code
 # RUN npx playwright install
 RUN npx playwright install-deps
+
+RUN npm install -g vercel
 # Playwright browserのインストール
 # RUN npm install -g playwright --with-deps
 # RUN npm install -g @playwright/mcp@latest
