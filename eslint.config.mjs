@@ -65,6 +65,12 @@ export default tseslint.config(
       "@typescript-eslint/restrict-template-expressions": "warn",
       "@typescript-eslint/restrict-plus-operands": "warn",
       "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-floating-promises": "warn",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/require-await": "warn",
+      "@typescript-eslint/no-unnecessary-type-conversion": "warn",
+      "@typescript-eslint/prefer-optional-chain": "warn",
+      "@typescript-eslint/no-unnecessary-condition": "warn"
     },
   },
   {
