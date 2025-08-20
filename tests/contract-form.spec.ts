@@ -4,9 +4,10 @@ test.describe("契約フォームのバリデーション", () => {
   // 事前にログイン
   test.beforeEach(async ({ page }) => {
     await page.goto("/auth/login");
+    await page.waitForLoadState('networkidle');
     await page.locator('input[type="email"]').fill("loadtest1@example.com");
     await page.locator('input[type="password"]').fill("LoadTest123!");
-    await page.locator('button[type="submit"]').click();
+    await page.locator('button[type="submit"]').click({ force: true });
     await page.waitForURL("/dashboard", { timeout: 20000 });
   });
 
