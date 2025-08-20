@@ -7,9 +7,9 @@ import ContractsClientPage from "./page.client";
 export default async function ContractsPage() {
   const user = await currentUser();
 
-  if (!user) {
+  if (!user?.id) {
     redirect("/auth/login");
   }
 
-  return <ContractsClientPage userId={user.id!} />;
+  return <ContractsClientPage userId={user.id} />;
 }

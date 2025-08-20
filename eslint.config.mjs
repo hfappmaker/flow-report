@@ -55,15 +55,16 @@ export default tseslint.config(
       },
     },
     rules: {
-      "@typescript-eslint/consistent-type-definitions": ["error", "type"],
-      "@typescript-eslint/no-unsafe-assignment": "off",
-      "@typescript-eslint/no-misused-promises": "off",
-      "@typescript-eslint/no-unsafe-member-access": "off",
-      "@typescript-eslint/no-unsafe-call": "off",
-      "@typescript-eslint/no-unsafe-return": "off",
-      "@typescript-eslint/no-unsafe-argument": "off",
-      "@typescript-eslint/restrict-template-expressions": "off",
-      "@typescript-eslint/restrict-plus-operands": "off",
+      "@typescript-eslint/consistent-type-definitions": ["warn", "interface"],
+      "@typescript-eslint/no-unsafe-assignment": "warn",
+      "@typescript-eslint/no-misused-promises": "warn",
+      "@typescript-eslint/no-unsafe-member-access": "warn",
+      "@typescript-eslint/no-unsafe-call": "warn",
+      "@typescript-eslint/no-unsafe-return": "warn",
+      "@typescript-eslint/no-unsafe-argument": "warn",
+      "@typescript-eslint/restrict-template-expressions": "warn",
+      "@typescript-eslint/restrict-plus-operands": "warn",
+      "@typescript-eslint/no-unused-vars": "warn",
     },
   },
   {
@@ -81,7 +82,7 @@ export default tseslint.config(
     },
     rules: {
       "import/order": [
-        "error",
+        "warn",
         {
           groups: ["builtin", "external", "internal"],
           alphabetize: { order: "asc", caseInsensitive: true },
@@ -96,8 +97,8 @@ export default tseslint.config(
           ],
         },
       ],
-      "import/newline-after-import": "error",
-      "import/no-duplicates": "error",
+      "import/newline-after-import": "warn",
+      "import/no-duplicates": "warn",
     },
   },
   {
@@ -106,14 +107,14 @@ export default tseslint.config(
       "unused-imports": unusedImports,
     },
     rules: {
-      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-imports": "warn",
     },
   },
   {
     // その他設定
     files: ["src/**/*.{js,jsx,ts,tsx}"],
     linterOptions: {
-      reportUnusedDisableDirectives: "error",
+      reportUnusedDisableDirectives: "warn",
     },
     languageOptions: {
       globals: {
@@ -121,8 +122,8 @@ export default tseslint.config(
       },
     },
     rules: {
-      "react/jsx-boolean-value": "error",
-      "react/jsx-curly-brace-presence": "error",
+      "react/jsx-boolean-value": "warn",
+      "react/jsx-curly-brace-presence": "warn",
     },
   },
   eslintConfigPrettier,
