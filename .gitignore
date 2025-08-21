@@ -33,6 +33,7 @@ yarn-error.log*
 .env.production
 .env.test
 .env.staging
+.env.preview
 
 # keep these env files
 !.env.example
