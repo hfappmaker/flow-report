@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { withAccelerate } from '@prisma/extension-accelerate'
+
 import { currentUser } from "@/features/auth/lib/auth";
 import { baseDb } from "@/repositories/base-db";
 
 declare global {
-  // eslint-disable-next-line no-var
   var prisma: ExtendedPrismaClient | undefined;
 }
 
@@ -76,7 +76,7 @@ const extendedDb = baseDb.$extends({
       },
     },
   },
-});
+}).$extends(withAccelerate());
 
 type ExtendedPrismaClient = typeof extendedDb;
 
