@@ -6,7 +6,7 @@ export const metadata = {
 };
 
 export default function LoginPageServer() {
-  if (process.env.LOCAL_NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production') {
     // 本番環境用の処理
     return <LoginPage/>;
   } else {
