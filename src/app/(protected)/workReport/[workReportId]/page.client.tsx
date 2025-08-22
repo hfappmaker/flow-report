@@ -828,59 +828,64 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                 編集
               </Button>
             </div>
-            <div className="grid grid-cols-4 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1">
-                  出勤時間
-                </label>
-                <Input
-                  type="time"
-                  id={`start-${day.date.toISOString()}`}
-                  readOnly
-                  value={
-                    day.startTime
-                      ? day.startTime
-                          .toISOString()
-                          .split("T")[1]
-                          .substring(0, 5)
-                      : ""
-                  }
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1">
-                  退勤時間
-                </label>
-                <Input
-                  type="time"
-                  id={`end-${day.date.toISOString()}`}
-                  readOnly
-                  value={
-                    day.endTime
-                      ? day.endTime.toISOString().split("T")[1].substring(0, 5)
-                      : ""
-                  }
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1">
-                  休憩時間
-                </label>
-                <Input
-                  type="time"
-                  id={`break-${day.date.toISOString()}`}
-                  readOnly
-                  value={
-                    day.breakDuration
-                      ? `${Math.floor(day.breakDuration / 60)
-                          .toString()
-                          .padStart(
-                            2,
-                            "0",
-                          )}:${(day.breakDuration % 60).toString().padStart(2, "0")}`
-                      : ""
-                  }
-                />
+            <div className="space-y-3">
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
+                    出勤時間
+                  </label>
+                  <Input
+                    type="time"
+                    id={`start-${day.date.toISOString()}`}
+                    readOnly
+                    value={
+                      day.startTime
+                        ? day.startTime
+                            .toISOString()
+                            .split("T")[1]
+                            .substring(0, 5)
+                        : ""
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
+                    退勤時間
+                  </label>
+                  <Input
+                    type="time"
+                    id={`end-${day.date.toISOString()}`}
+                    readOnly
+                    value={
+                      day.endTime
+                        ? day.endTime
+                            .toISOString()
+                            .split("T")[1]
+                            .substring(0, 5)
+                        : ""
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
+                    休憩時間
+                  </label>
+                  <Input
+                    type="time"
+                    id={`break-${day.date.toISOString()}`}
+                    readOnly
+                    value={
+                      day.breakDuration
+                        ? `${Math.floor(day.breakDuration / 60)
+                            .toString()
+                            .padStart(
+                              2,
+                              "0",
+                            )}:${(day.breakDuration % 60).toString().padStart(2, "0")}`
+                        : ""
+                    }
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1">
