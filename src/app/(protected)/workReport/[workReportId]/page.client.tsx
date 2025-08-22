@@ -799,7 +799,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
         {currentAttendances.map((day) => (
           <div
             key={day.date.toISOString()}
-            className="mb-4 border rounded-lg p-4 space-y-3"
+            className="mb-4 border rounded-lg p-3 space-y-3 max-w-md"
           >
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">
@@ -830,7 +830,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
             </div>
             <div className="space-y-3">
               <div className="flex gap-2">
-                <div className="w-20">
+                <div className="w-24">
                   <label className="block text-xs font-medium text-muted-foreground mb-1">
                     出勤時間
                   </label>
@@ -848,7 +848,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                     }
                   />
                 </div>
-                <div className="w-20">
+                <div className="w-24">
                   <label className="block text-xs font-medium text-muted-foreground mb-1">
                     退勤時間
                   </label>
@@ -866,7 +866,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                     }
                   />
                 </div>
-                <div className="w-20">
+                <div className="w-24">
                   <label className="block text-xs font-medium text-muted-foreground mb-1">
                     休憩時間
                   </label>
@@ -887,7 +887,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                   />
                 </div>
               </div>
-              <div className="max-w-xs">
+              <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1">
                   作業内容
                 </label>
