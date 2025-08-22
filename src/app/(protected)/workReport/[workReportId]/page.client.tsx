@@ -796,23 +796,13 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
           </div>
         </div>
 
-        {/* 列ヘッダー */}
-        <div className="mb-2 flex items-center space-x-4">
-          <span className="flex-grow-0 flex-shrink max-w-40"></span>
-          <span className="flex-grow-0 flex-shrink max-w-16"></span>
-          <span className="w-20 text-center font-medium">出勤時間</span>
-          <span className="w-20 text-center font-medium">退勤時間</span>
-          <span className="w-20 text-center font-medium">休憩時間</span>
-          <span className="flex-grow-0 flex-shrink max-w-96 text-center font-medium">作業内容</span>
-        </div>
-
         {currentAttendances.map((day) => (
           <div
             key={day.date.toISOString()}
-            className="mb-2 flex items-center space-x-4"
+            className="mb-4 border rounded-lg p-4 space-y-3"
           >
-            <div className="flex-grow-0 flex-shrink max-w-40 items-center justify-between">
-              <span>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">
                 {(() => {
                   const date = day.date;
                   const dayOfWeek = date.getDay();
@@ -827,8 +817,6 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                   );
                 })()}
               </span>
-            </div>
-            <div className="flex-grow-0 flex-shrink max-w-16 items-center justify-between">
               <Button
                 type="button"
                 variant="outline"
@@ -840,54 +828,71 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                 編集
               </Button>
             </div>
-            <div className=" w-20">
-              <Input
-                type="time"
-                id={`start-${day.date.toISOString()}`}
-                readOnly
-                value={
-                  day.startTime
-                    ? day.startTime.toISOString().split("T")[1].substring(0, 5)
-                    : ""
-                }
-              />
-            </div>
-            <div className="w-20">
-              <Input
-                type="time"
-                id={`end-${day.date.toISOString()}`}
-                readOnly
-                value={
-                  day.endTime
-                    ? day.endTime.toISOString().split("T")[1].substring(0, 5)
-                    : ""
-                }
-              />
-            </div>
-            <div className="w-20">
-              <Input
-                type="time"
-                id={`break-${day.date.toISOString()}`}
-                readOnly
-                value={
-                  day.breakDuration
-                    ? `${Math.floor(day.breakDuration / 60)
-                        .toString()
-                        .padStart(
-                          2,
-                          "0",
-                        )}:${(day.breakDuration % 60).toString().padStart(2, "0")}`
-                    : ""
-                }
-              />
-            </div>
-            <div className="flex-grow-0 flex-shrink max-w-96">
-              <Input
-                type="text"
-                id={`memo-${day.date.toISOString()}`}
-                readOnly
-                value={day.memo ?? ""}
-              />
+            <div className="grid grid-cols-4 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
+                  出勤時間
+                </label>
+                <Input
+                  type="time"
+                  id={`start-${day.date.toISOString()}`}
+                  readOnly
+                  value={
+                    day.startTime
+                      ? day.startTime
+                          .toISOString()
+                          .split("T")[1]
+                          .substring(0, 5)
+                      : ""
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
+                  退勤時間
+                </label>
+                <Input
+                  type="time"
+                  id={`end-${day.date.toISOString()}`}
+                  readOnly
+                  value={
+                    day.endTime
+                      ? day.endTime.toISOString().split("T")[1].substring(0, 5)
+                      : ""
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
+                  休憩時間
+                </label>
+                <Input
+                  type="time"
+                  id={`break-${day.date.toISOString()}`}
+                  readOnly
+                  value={
+                    day.breakDuration
+                      ? `${Math.floor(day.breakDuration / 60)
+                          .toString()
+                          .padStart(
+                            2,
+                            "0",
+                          )}:${(day.breakDuration % 60).toString().padStart(2, "0")}`
+                      : ""
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
+                  作業内容
+                </label>
+                <Input
+                  type="text"
+                  id={`memo-${day.date.toISOString()}`}
+                  readOnly
+                  value={day.memo ?? ""}
+                />
+              </div>
             </div>
           </div>
         ))}
@@ -1053,7 +1058,8 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                           />
                         </FormControl>
                         <div className="mt-1 text-xs text-muted-foreground">
-                          💡 その他の例: &quot;フレックスタイム制で10:00-19:00&quot; /
+                          💡 その他の例:
+                          &quot;フレックスタイム制で10:00-19:00&quot; /
                           &quot;短時間勤務で9:30-15:30、休憩30分&quot; /
                           &quot;リモートワークで自由な時間&quot;
                         </div>
