@@ -796,102 +796,112 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
           </div>
         </div>
 
-        {/* 列ヘッダー */}
-        <div className="mb-2 flex items-center space-x-4">
-          <span className="w-40"></span>
-          <span className="w-16"></span>
-          <span className="flex-1 text-center font-medium">出勤時間</span>
-          <span className="flex-1 text-center font-medium">退勤時間</span>
-          <span className="flex-1 text-center font-medium">休憩時間</span>
-          <span className="w-[400px] text-center font-medium">作業内容</span>
-        </div>
-
-        {currentAttendances.map((day) => (
-          <div
-            key={day.date.toISOString()}
-            className="mb-2 flex items-center space-x-4"
-          >
-            <div className="flex w-40 items-center justify-between">
-              <span>
-                {(() => {
-                  const date = day.date;
-                  const dayOfWeek = date.getDay();
-                  const dateStr = formatDateAsUTC(date);
-                  const dayName = dayNames[dayOfWeek];
-                  const colorClass = getDateColorClass(date, holidays);
-
-                  return (
-                    <>
-                      {dateStr} <span className={colorClass}>({dayName})</span>
-                    </>
-                  );
-                })()}
+        <div className="overflow-x-auto">
+          <div className="min-w-[1000px]">
+            {/* 列ヘッダー */}
+            <div className="mb-2 flex items-center space-x-4">
+              <span className="w-40"></span>
+              <span className="w-16"></span>
+              <span className="flex-1 text-center font-medium">出勤時間</span>
+              <span className="flex-1 text-center font-medium">退勤時間</span>
+              <span className="flex-1 text-center font-medium">休憩時間</span>
+              <span className="w-[400px] text-center font-medium">
+                作業内容
               </span>
             </div>
-            <div className="flex w-16 items-center justify-between">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  openEditDialog(day.date);
-                }}
+
+            {currentAttendances.map((day) => (
+              <div
+                key={day.date.toISOString()}
+                className="mb-2 flex items-center space-x-4"
               >
-                編集
-              </Button>
-            </div>
-            <div className="flex-1">
-              <Input
-                type="time"
-                id={`start-${day.date.toISOString()}`}
-                readOnly
-                value={
-                  day.startTime
-                    ? day.startTime.toISOString().split("T")[1].substring(0, 5)
-                    : ""
-                }
-              />
-            </div>
-            <div className="flex-1">
-              <Input
-                type="time"
-                id={`end-${day.date.toISOString()}`}
-                readOnly
-                value={
-                  day.endTime
-                    ? day.endTime.toISOString().split("T")[1].substring(0, 5)
-                    : ""
-                }
-              />
-            </div>
-            <div className="flex-1">
-              <Input
-                type="time"
-                id={`break-${day.date.toISOString()}`}
-                readOnly
-                value={
-                  day.breakDuration
-                    ? `${Math.floor(day.breakDuration / 60)
-                        .toString()
-                        .padStart(
-                          2,
-                          "0",
-                        )}:${(day.breakDuration % 60).toString().padStart(2, "0")}`
-                    : ""
-                }
-              />
-            </div>
-            <div className="flex-1">
-              <Input
-                type="text"
-                id={`memo-${day.date.toISOString()}`}
-                className="w-[400px]"
-                readOnly
-                value={day.memo ?? ""}
-              />
-            </div>
+                <div className="flex w-40 items-center justify-between">
+                  <span>
+                    {(() => {
+                      const date = day.date;
+                      const dayOfWeek = date.getDay();
+                      const dateStr = formatDateAsUTC(date);
+                      const dayName = dayNames[dayOfWeek];
+                      const colorClass = getDateColorClass(date, holidays);
+
+                      return (
+                        <>
+                          {dateStr}{" "}
+                          <span className={colorClass}>({dayName})</span>
+                        </>
+                      );
+                    })()}
+                  </span>
+                </div>
+                <div className="flex w-16 items-center justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      openEditDialog(day.date);
+                    }}
+                  >
+                    編集
+                  </Button>
+                </div>
+                <div className="flex-1">
+                  <Input
+                    type="time"
+                    id={`start-${day.date.toISOString()}`}
+                    readOnly
+                    value={
+                      day.startTime
+                        ? day.startTime
+                            .toISOString()
+                            .split("T")[1]
+                            .substring(0, 5)
+                        : ""
+                    }
+                  />
+                </div>
+                <div className="flex-1">
+                  <Input
+                    type="time"
+                    id={`end-${day.date.toISOString()}`}
+                    readOnly
+                    value={
+                      day.endTime
+                        ? day.endTime.toISOString().split("T")[1].substring(0, 5)
+                        : ""
+                    }
+                  />
+                </div>
+                <div className="flex-1">
+                  <Input
+                    type="time"
+                    id={`break-${day.date.toISOString()}`}
+                    readOnly
+                    value={
+                      day.breakDuration
+                        ? `${Math.floor(day.breakDuration / 60)
+                            .toString()
+                            .padStart(
+                              2,
+                              "0",
+                            )}:${(day.breakDuration % 60).toString().padStart(2, "0")}`
+                        : ""
+                    }
+                  />
+                </div>
+                <div className="flex-1">
+                  <Input
+                    type="text"
+                    id={`memo-${day.date.toISOString()}`}
+                    className="w-[400px]"
+                    readOnly
+                    value={day.memo ?? ""}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
 
       {/* 一括編集用モーダルダイアログ */}
