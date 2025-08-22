@@ -1,0 +1,3 @@
+
+> work-time-management@0.1.0 dev:turbo
+> rm -rf .next && next dev --turbopack

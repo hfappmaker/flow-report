@@ -712,7 +712,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
   };
 
   return (
-    <div className="mx-auto min-w-96 max-w-6xl p-6">
+    <div className="mx-auto max-w-6xl p-6">
       <h1 className="mb-4 text-xl font-bold text-muted-foreground">
         {contractName}の{targetDate.getFullYear()}年{targetDate.getMonth() + 1}
         月度作業報告書
