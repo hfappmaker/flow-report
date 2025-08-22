@@ -27,6 +27,17 @@ export default function DashboardClientPage({
     }
   };
 
+  const getDisplayText = (status: WorkReportStatus) => {
+    switch (status) {
+      case "DRAFT":
+        return "作成中";
+      case "SUBMITTED":
+        return "作成完了";
+      default:
+        return status;
+    }
+  };
+
   const handleNavigation = (reportId: string) => {
     startTransition(() => {
       router.push(`/workReport/${reportId}`);
@@ -88,7 +99,7 @@ export default function DashboardClientPage({
                     <Badge
                       className={`${getStatusColor(workReport.status)} pointer-events-none`}
                     >
-                      {workReport.status}
+                      {getDisplayText(workReport.status)}
                     </Badge>
                   </div>
                 </div>
@@ -135,7 +146,7 @@ export default function DashboardClientPage({
                       <Badge
                         className={`${getStatusColor(workReport.status)} pointer-events-none`}
                       >
-                        {workReport.status}
+                        {getDisplayText(workReport.status)}
                       </Badge>
                     </div>
                   </div>
