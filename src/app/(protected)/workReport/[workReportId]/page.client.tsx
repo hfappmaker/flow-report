@@ -803,7 +803,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
           <span className="w-20 text-center font-medium">出勤時間</span>
           <span className="w-20 text-center font-medium">退勤時間</span>
           <span className="w-20 text-center font-medium">休憩時間</span>
-          <span className="flex-grow-0 flex-shrink w-[400px] text-center font-medium">作業内容</span>
+          <span className="flex-grow-0 flex-shrink max-w-96 text-center font-medium">作業内容</span>
         </div>
 
         {currentAttendances.map((day) => (
@@ -881,7 +881,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                 }
               />
             </div>
-            <div className="flex-grow-0 flex-shrink w-[400px]">
+            <div className="flex-grow-0 flex-shrink max-w-96">
               <Input
                 type="text"
                 id={`memo-${day.date.toISOString()}`}
