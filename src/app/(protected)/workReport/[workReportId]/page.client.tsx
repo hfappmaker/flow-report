@@ -753,7 +753,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
       </div>
 
       <div className="flex flex-col gap-2">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-2 flex justify-end">
           <div className="flex gap-2">
             <Button
               type="button"
@@ -772,6 +772,10 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
             >
               一括入力
             </Button>
+          </div>
+        </div>
+        <div className="mb-4 flex justify-end">
+          <div className="flex gap-2">
             <Button
               type="button"
               variant="outline"
