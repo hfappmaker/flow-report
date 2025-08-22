@@ -829,8 +829,8 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
               </Button>
             </div>
             <div className="space-y-3">
-              <div className="grid grid-cols-3 gap-4">
-                <div>
+              <div className="flex gap-3">
+                <div className="w-32">
                   <label className="block text-xs font-medium text-muted-foreground mb-1">
                     出勤時間
                   </label>
@@ -848,7 +848,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                     }
                   />
                 </div>
-                <div>
+                <div className="w-32">
                   <label className="block text-xs font-medium text-muted-foreground mb-1">
                     退勤時間
                   </label>
@@ -866,7 +866,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                     }
                   />
                 </div>
-                <div>
+                <div className="w-32">
                   <label className="block text-xs font-medium text-muted-foreground mb-1">
                     休憩時間
                   </label>
@@ -887,7 +887,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                   />
                 </div>
               </div>
-              <div>
+              <div className="w-96">
                 <label className="block text-xs font-medium text-muted-foreground mb-1">
                   作業内容
                 </label>
