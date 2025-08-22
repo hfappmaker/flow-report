@@ -798,8 +798,8 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
 
         {/* 列ヘッダー */}
         <div className="mb-2 flex items-center space-x-4">
-          <span className="flex-grow-0 flex-shrink w-40"></span>
-          <span className="flex-grow-0 flex-shrink w-16"></span>
+          <span className="flex-grow-0 flex-shrink max-w-40"></span>
+          <span className="flex-grow-0 flex-shrink max-w-16"></span>
           <span className="w-20 text-center font-medium">出勤時間</span>
           <span className="w-20 text-center font-medium">退勤時間</span>
           <span className="w-20 text-center font-medium">休憩時間</span>
@@ -811,7 +811,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
             key={day.date.toISOString()}
             className="mb-2 flex items-center space-x-4"
           >
-            <div className="flex-grow-0 flex-shrink w-40 items-center justify-between">
+            <div className="flex-grow-0 flex-shrink max-w-40 items-center justify-between">
               <span>
                 {(() => {
                   const date = day.date;
@@ -828,7 +828,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                 })()}
               </span>
             </div>
-            <div className="flex-grow-0 flex-shrink w-16 items-center justify-between">
+            <div className="flex-grow-0 flex-shrink max-w-16 items-center justify-between">
               <Button
                 type="button"
                 variant="outline"
