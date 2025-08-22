@@ -754,7 +754,6 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
 
       <div className="flex flex-col gap-2">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">出勤情報を入力</h2>
           <div className="flex gap-2">
             <Button
               type="button"
