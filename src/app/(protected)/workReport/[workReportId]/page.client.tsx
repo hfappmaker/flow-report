@@ -799,7 +799,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
         {currentAttendances.map((day) => (
           <div
             key={day.date.toISOString()}
-            className="mb-4 border rounded-lg p-3 space-y-3 max-w-md"
+            className="mb-4 border rounded-lg p-3 space-y-3 max-w-sm"
           >
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">
