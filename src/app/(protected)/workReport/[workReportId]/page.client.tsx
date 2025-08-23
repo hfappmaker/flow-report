@@ -712,7 +712,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
   };
 
   return (
-    <div className="mx-auto">
+    <div className="w-full">
       <h1 className="mb-4 text-xl font-bold text-muted-foreground">
         {contractName}の{targetDate.getFullYear()}年{targetDate.getMonth() + 1}
         月度作業報告書
@@ -799,12 +799,23 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
           </div>
         </div>
 
+        {/* Header for desktop view */}
+        <div className="hidden md:grid md:grid-cols-[minmax(0,_1fr)_120px_120px_120px_minmax(0,_2fr)_100px] md:gap-4 items-center mb-2 px-3 text-sm font-medium text-muted-foreground">
+          <span>日付</span>
+          <span>出勤時間</span>
+          <span>退勤時間</span>
+          <span>休憩時間</span>
+          <span>作業内容</span>
+          <span />
+        </div>
+
         {currentAttendances.map((day) => (
           <div
             key={day.date.toISOString()}
-            className="mb-4 border rounded-lg p-3 space-y-3 max-w-sm"
+            className="mb-4 border rounded-lg p-3 md:grid md:grid-cols-[minmax(0,_1fr)_120px_120px_120px_minmax(0,_2fr)_100px] md:gap-4 md:items-center"
           >
-            <div className="flex items-center justify-between">
+            {/* Date */}
+            <div className="flex items-center justify-between md:col-span-1">
               <span className="text-sm font-medium">
                 {(() => {
                   const date = day.date;
@@ -824,6 +835,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                 type="button"
                 variant="outline"
                 size="sm"
+                className="md:hidden"
                 onClick={() => {
                   openEditDialog(day.date);
                 }}
@@ -831,10 +843,13 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                 編集
               </Button>
             </div>
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                <div className="w-24">
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">
+
+            {/* Inputs */}
+            <div className="space-y-3 mt-3 md:mt-0 md:contents">
+              <div className="flex gap-2 md:contents">
+                {/* Start time */}
+                <div className="w-1/3 md:w-auto md:col-span-1">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1 md:hidden">
                     出勤時間
                   </label>
                   <Input
@@ -851,8 +866,9 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                     }
                   />
                 </div>
-                <div className="w-24">
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">
+                {/* End time */}
+                <div className="w-1/3 md:w-auto md:col-span-1">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1 md:hidden">
                     退勤時間
                   </label>
                   <Input
@@ -869,8 +885,9 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                     }
                   />
                 </div>
-                <div className="w-24">
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">
+                {/* Break time */}
+                <div className="w-1/3 md:w-auto md:col-span-1">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1 md:hidden">
                     休憩時間
                   </label>
                   <Input
@@ -890,8 +907,9 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1">
+              {/* Memo */}
+              <div className="md:col-span-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1 md:hidden">
                   作業内容
                 </label>
                 <Input
@@ -901,6 +919,19 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                   value={day.memo ?? ""}
                 />
               </div>
+            </div>
+            {/* Edit Button (Desktop) */}
+            <div className="hidden md:block md:col-span-1 text-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  openEditDialog(day.date);
+                }}
+              >
+                編集
+              </Button>
             </div>
           </div>
         ))}
