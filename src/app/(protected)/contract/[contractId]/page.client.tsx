@@ -38,6 +38,10 @@ import {
 import { WorkReportDialog } from "@/features/work-report/components/work-report-dialog";
 import { WorkReportWithAttendances } from "@/features/work-report/types/work-report";
 import { useMessageState } from "@/hooks/use-message-state";
+import {
+  getWorkReportStatusColor,
+  getWorkReportStatusDisplayText,
+} from "@/features/work-report/utils/status-utils";
 
 // 作業報告書作成用のスキーマ
 const createWorkReportSchema = z.object({
@@ -47,18 +51,6 @@ const createWorkReportSchema = z.object({
 });
 
 type CreateWorkReportValues = z.infer<typeof createWorkReportSchema>;
-
-// ステータス表示用のヘルパー関数
-const getStatusDisplay = (status: string) => {
-  switch (status) {
-    case "DRAFT":
-      return { label: "作成中", variant: "secondary" as const };
-    case "SUBMITTED":
-      return { label: "作成完了", variant: "default" as const };
-    default:
-      return { label: status, variant: "secondary" as const };
-  }
-};
 
 export default function ContractClientPage({
   contractId,
@@ -279,8 +271,6 @@ export default function ContractClientPage({
       ) : (
         <div className="space-y-3">
           {workReports.map((workReport) => {
-            const statusDisplay = getStatusDisplay(workReport.status);
-
             // 稼働時間と金額を計算
             const totalWorkMinutes = calculateTotalWorkMinutes(
               workReport.attendances,
@@ -352,8 +342,10 @@ export default function ContractClientPage({
                     </div>
                   </div>
                   <div className="ml-4 flex items-center gap-3 flex-shrink-0">
-                    <Badge variant={statusDisplay.variant}>
-                      {statusDisplay.label}
+                    <Badge
+                      className={getWorkReportStatusColor(workReport.status)}
+                    >
+                      {getWorkReportStatusDisplayText(workReport.status)}
                     </Badge>
                     {isDeletable(workReport) ? (
                       <Button
