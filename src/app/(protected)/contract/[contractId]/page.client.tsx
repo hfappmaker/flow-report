@@ -343,7 +343,7 @@ export default function ContractClientPage({
                   </div>
                   <div className="ml-4 flex items-center gap-3 flex-shrink-0">
                     <Badge
-                      className={getWorkReportStatusColor(workReport.status)}
+                      className={`${getWorkReportStatusColor(workReport.status)} pointer-events-none`}
                     >
                       {getWorkReportStatusDisplayText(workReport.status)}
                     </Badge>
