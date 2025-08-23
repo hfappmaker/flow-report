@@ -8,6 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTransitionContext } from "@/contexts/transition-context";
 import { type DashboardClientPageProps } from "@/features/dashboard/types/dashboard";
 import { SubscriptionStatus } from "@/features/subscription/components/subscription-status";
+import {
+  getWorkReportStatusColor,
+  getWorkReportStatusDisplayText,
+} from "@/features/work-report/utils/status-utils";
 
 export default function DashboardClientPage({
   draftWorkReports,
@@ -16,27 +20,6 @@ export default function DashboardClientPage({
 }: DashboardClientPageProps) {
   const router = useRouter();
   const { startTransition } = useTransitionContext();
-  const getStatusColor = (status: WorkReportStatus) => {
-    switch (status) {
-      case "DRAFT":
-        return "bg-yellow-200 text-yellow-800";
-      case "SUBMITTED":
-        return "bg-blue-200 text-blue-800";
-      default:
-        return "bg-gray-200 text-gray-800";
-    }
-  };
-
-  const getDisplayText = (status: WorkReportStatus) => {
-    switch (status) {
-      case "DRAFT":
-        return "作成中";
-      case "SUBMITTED":
-        return "作成完了";
-      default:
-        return status;
-    }
-  };
 
   const handleNavigation = (reportId: string) => {
     startTransition(() => {
@@ -97,9 +80,11 @@ export default function DashboardClientPage({
                       {workReport.targetDate.getMonth() + 1}月
                     </div>
                     <Badge
-                      className={`${getStatusColor(workReport.status)} pointer-events-none`}
+                      className={`${getWorkReportStatusColor(
+                        workReport.status,
+                      )} pointer-events-none`}
                     >
-                      {getDisplayText(workReport.status)}
+                      {getWorkReportStatusDisplayText(workReport.status)}
                     </Badge>
                   </div>
                 </div>
@@ -144,9 +129,11 @@ export default function DashboardClientPage({
                         {workReport.targetDate.getMonth() + 1}月
                       </div>
                       <Badge
-                        className={`${getStatusColor(workReport.status)} pointer-events-none`}
+                        className={`${getWorkReportStatusColor(
+                          workReport.status,
+                        )} pointer-events-none`}
                       >
-                        {getDisplayText(workReport.status)}
+                        {getWorkReportStatusDisplayText(workReport.status)}
                       </Badge>
                     </div>
                   </div>
