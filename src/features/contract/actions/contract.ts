@@ -14,11 +14,19 @@ import {
   ContractOutput,
   ContractInput,
 } from "@/features/contract/types/contract";
+import { createMonthlyWorkReportsAction } from "@/features/work-report/actions/work-report";
 
 export const createContractAction = async (
   values: ContractInput,
 ): Promise<void> => {
-  await createContract(values);
+  const contract = await createContract(values);
+  const today = new Date();
+  await createMonthlyWorkReportsAction(
+    contract.id,
+    new Date(contract.startDate),
+    today,
+  );
+
   revalidatePath("/dashboard");
 };
 

@@ -36,3 +36,21 @@ export function formatDateLongAsUTC(date: string | Date, locale = 'ja-JP'): stri
     day: 'numeric'
   });
 }
+
+/**
+ * 指定された期間内の各月のリストを生成する
+ * @param startDate 開始日
+ * @param endDate 終了日
+ * @returns Dateオブジェクトの配列
+ */
+export function getMonthListBetween(startDate: Date, endDate: Date): Date[] {
+  const monthList: Date[] = [];
+  const currentDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+
+  while (currentDate <= endDate) {
+    monthList.push(new Date(currentDate));
+    currentDate.setMonth(currentDate.getMonth() + 1);
+  }
+
+  return monthList;
+}

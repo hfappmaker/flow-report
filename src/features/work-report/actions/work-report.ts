@@ -4,6 +4,7 @@ import { WorkReport as PrismaWorkReport } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 import { getContractById } from "@/features/contract/repositories/contract-repository";
+import { getMonthListBetween } from "@/utils/date-utils";
 import {
   checkWorkReportExists,
   createWorkReport,
@@ -78,6 +79,27 @@ export const createWorkReportAction = async (
   const workReport = await createWorkReport(contractId, targetDate);
   revalidatePath(`/workReport/${contractId}`);
   return convertPrismaWorkReportToWorkReportDto(workReport);
+};
+
+export const createMonthlyWorkReportsAction = async (
+  contractId: string,
+  startDate: Date,
+  endDate: Date,
+): Promise<void> => {
+  const monthList = getMonthListBetween(startDate, endDate);
+
+  for (const month of monthList) {
+    try {
+      // 既存のチェックロジックを再利用するため、`createWorkReportAction`を呼び出す
+      await createWorkReportAction(contractId, month);
+    } catch (error) {
+      // エラーが発生しても処理を中断せず、コンソールに出力する
+      console.error(
+        `作業報告書作成エラー (契約ID: ${contractId}, 対象月: ${month.getFullYear()}/${month.getMonth() + 1}):`,
+        error,
+      );
+    }
+  }
 };
 
 export const updateWorkReportAttendancesAction = async (
