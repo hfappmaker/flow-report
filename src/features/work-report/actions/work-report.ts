@@ -1,9 +1,13 @@
 "use server";
 
-import { WorkReport as PrismaWorkReport } from "@prisma/client";
+import {
+  WorkReport as PrismaWorkReport,
+  Attendance as PrismaAttendance,
+} from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 import { getContractById } from "@/features/contract/repositories/contract-repository";
+import { ERROR_MESSAGES } from "@/features/work-report/constants/error-messages";
 import {
   checkWorkReportExists,
   createWorkReport,
@@ -27,7 +31,7 @@ export const createWorkReportAction = async (
   // 契約情報を取得
   const contract = await getContractById(contractId);
   if (!contract) {
-    throw new Error("契約が見つかりません");
+    throw new Error(ERROR_MESSAGES.CONTRACT_NOT_FOUND);
   }
 
   // 契約期間のバリデーション
@@ -48,7 +52,10 @@ export const createWorkReportAction = async (
     const contractStartYear = contractStart.getFullYear();
     const contractStartMonth = contractStart.getMonth() + 1;
     throw new Error(
-      `契約開始日より前の作業報告書は作成できません。契約開始: ${contractStartYear}年${contractStartMonth}月`,
+      ERROR_MESSAGES.WORK_REPORT_CREATION_BEFORE_CONTRACT_START(
+        contractStartYear,
+        contractStartMonth,
+      ),
     );
   }
 
@@ -62,7 +69,10 @@ export const createWorkReportAction = async (
       const contractEndYear = contractEnd.getFullYear();
       const contractEndMonth = contractEnd.getMonth() + 1;
       throw new Error(
-        `契約終了日より後の作業報告書は作成できません。契約終了: ${contractEndYear}年${contractEndMonth}月`,
+        ERROR_MESSAGES.WORK_REPORT_CREATION_AFTER_CONTRACT_END(
+          contractEndYear,
+          contractEndMonth,
+        ),
       );
     }
   }
@@ -71,13 +81,13 @@ export const createWorkReportAction = async (
   const exists = await checkWorkReportExists(contractId, targetDate);
   if (exists) {
     throw new Error(
-      `${targetYear}年${targetMonth}月の作業報告書は既に存在します`,
+      ERROR_MESSAGES.WORK_REPORT_ALREADY_EXISTS(targetYear, targetMonth),
     );
   }
 
   const workReport = await createWorkReport(contractId, targetDate);
   revalidatePath(`/workReport/${contractId}`);
-  return convertPrismaWorkReportToWorkReportDto(workReport);
+  return convertPrismaWorkReportToDto(workReport);
 };
 
 export const updateWorkReportAttendancesAction = async (
@@ -89,19 +99,18 @@ export const updateWorkReportAttendancesAction = async (
     attendances,
   );
   revalidatePath(`/workReport/${workReportId}`);
-  return convertPrismaWorkReportToWorkReportDto(workReport);
+  return convertPrismaWorkReportToDto(workReport);
 };
 
 export const getWorkReportsByContractIdAction = async (
   contractId: string,
 ): Promise<WorkReport[]> => {
   try {
-    return (await getWorkReportsByContractId(contractId)).map(
-      convertPrismaWorkReportToWorkReportDto,
-    );
+    const workReports = await getWorkReportsByContractId(contractId);
+    return workReports.map(convertPrismaWorkReportToDto);
   } catch (error) {
     console.error("Error fetching work reports:", error);
-    throw new Error("Failed to fetch work reports");
+    throw new Error(ERROR_MESSAGES.FETCH_WORK_REPORTS_FAILED);
   }
 };
 
@@ -111,16 +120,15 @@ export const getWorkReportsByContractIdAndYearMonthDateRangeAction = async (
   toDate?: Date,
 ): Promise<WorkReportWithAttendances[]> => {
   try {
-    return (
-      await getWorkReportsByContractIdAndYearMonthDateRange(
-        contractId,
-        fromDate,
-        toDate,
-      )
-    ).map(convertPrismaWorkReportWithAttendancesToWorkReportDto);
+    const workReports = await getWorkReportsByContractIdAndYearMonthDateRange(
+      contractId,
+      fromDate,
+      toDate,
+    );
+    return workReports.map(convertPrismaWorkReportToDto) as WorkReportWithAttendances[];
   } catch (error) {
     console.error("Error fetching work reports:", error);
-    throw new Error("Failed to fetch work reports");
+    throw new Error(ERROR_MESSAGES.FETCH_WORK_REPORTS_FAILED);
   }
 };
 
@@ -130,7 +138,7 @@ export const updateWorkReportStatusAction = async (
 ): Promise<WorkReport> => {
   const updated = await updateWorkReportStatus(workReportId, status);
   revalidatePath(`/workReport/${updated.contractId}/${updated.id}`);
-  return convertPrismaWorkReportToWorkReportDto(updated);
+  return convertPrismaWorkReportToDto(updated);
 };
 
 export const deleteWorkReportAction = async (
@@ -138,7 +146,7 @@ export const deleteWorkReportAction = async (
 ): Promise<WorkReport> => {
   const deleted = await deleteWorkReport(workReportId);
   revalidatePath(`/contract/${deleted.contractId}`);
-  return convertPrismaWorkReportToWorkReportDto(deleted);
+  return convertPrismaWorkReportToDto(deleted);
 };
 
 export const checkWorkReportExistsAction = async (
@@ -148,21 +156,26 @@ export const checkWorkReportExistsAction = async (
   return await checkWorkReportExists(contractId, targetDate);
 };
 
-function convertPrismaWorkReportToWorkReportDto(
-  workReport: PrismaWorkReport,
-): WorkReport {
-  return {
-    ...workReport,
-    memo: workReport.memo ?? undefined,
-  };
+// Type guard to check if the work report has attendances
+function hasAttendances(
+  obj: any,
+): obj is PrismaWorkReport & { attendances: PrismaAttendance[] } {
+  return "attendances" in obj && Array.isArray(obj.attendances);
 }
 
-function convertPrismaWorkReportWithAttendancesToWorkReportDto(
-  workReport: PrismaWorkReport & { attendances: any[] },
-): WorkReportWithAttendances {
-  return {
+function convertPrismaWorkReportToDto(
+  workReport:
+    | PrismaWorkReport
+    | (PrismaWorkReport & { attendances: PrismaAttendance[] }),
+): WorkReport | WorkReportWithAttendances {
+  const dto: WorkReport | WorkReportWithAttendances = {
     ...workReport,
     memo: workReport.memo ?? undefined,
-    attendances: workReport.attendances,
   };
+
+  if (hasAttendances(workReport)) {
+    (dto as WorkReportWithAttendances).attendances = workReport.attendances;
+  }
+
+  return dto;
 }

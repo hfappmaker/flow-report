@@ -13,6 +13,7 @@
     "analyze": "ANALYZE=true next build",
     "postinstall": "prisma generate",
     "test:j": "jest",
+    "test:j:coverage": "jest --coverage",
     "test:p": "playwright test",
     "test:p:ui": "playwright test --ui",
     "test:p:debug": "playwright test --debug",
