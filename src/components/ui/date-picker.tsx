@@ -80,6 +80,7 @@ type DatePickerFieldProps<T extends FieldValues> = {
     }[Path<T>];
   label: string;
   placeholder?: string;
+  disabled?: boolean;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -87,10 +88,12 @@ const DatePickerFieldContent = ({
   field,
   label,
   placeholder,
+  disabled,
 }: {
   field: any;
   label: string;
   placeholder?: string;
+  disabled?: boolean;
 }) => {
   const [selectedDate, setSelectedDate] = useState<string>(
     field.value ? new Date(field.value).toISOString().split("T")[0] : "",
@@ -109,6 +112,7 @@ const DatePickerFieldContent = ({
             );
           }}
           placeholder={placeholder}
+          disabled={disabled}
         />
       </FormControl>
       <FormMessage />
@@ -121,7 +125,7 @@ DatePickerFieldContent.displayName = "DatePickerFieldContent";
 export const DatePickerField = <T extends FieldValues>(
   props: DatePickerFieldProps<T>,
 ) => {
-  const { control, name, label, placeholder } = props;
+  const { control, name, label, placeholder, disabled } = props;
   return (
     <FormField
       control={control}
@@ -131,6 +135,7 @@ export const DatePickerField = <T extends FieldValues>(
           field={field}
           label={label}
           placeholder={placeholder}
+          disabled={disabled}
         />
       )}
     />

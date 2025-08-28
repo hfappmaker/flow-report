@@ -29,6 +29,7 @@ type NumberInputFieldProps<T extends FieldValues> = {
   }[Path<T>];
   label: string;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 const NumberInput = memo(({
@@ -36,11 +37,13 @@ const NumberInput = memo(({
   onChange,
   onKeyDown,
   placeholder,
+  disabled,
 }: {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   placeholder?: string;
+  disabled?: boolean;
 }) => (
   <Input
     type="number"
@@ -50,13 +53,14 @@ const NumberInput = memo(({
     step="1"
     onChange={onChange}
     onKeyDown={onKeyDown}
+    disabled={disabled}
   />
 ));
 
 NumberInput.displayName = "NumberInput";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const NumberInputFieldContent = ({ field, label, placeholder }: { field: any; label: string; placeholder?: string }) => {
+const NumberInputFieldContent = ({ field, label, placeholder, disabled }: { field: any; label: string; placeholder?: string; disabled?: boolean; }) => {
   const [localValue, setLocalValue] = useState<string>(field.value?.toString() ?? "");
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,6 +91,7 @@ const NumberInputFieldContent = ({ field, label, placeholder }: { field: any; la
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
+          disabled={disabled}
         />
       </FormControl>
       <FormMessage />
@@ -97,13 +102,13 @@ const NumberInputFieldContent = ({ field, label, placeholder }: { field: any; la
 NumberInputFieldContent.displayName = "NumberInputFieldContent";
 
 export const NumberInputField = <T extends FieldValues>(props: NumberInputFieldProps<T>) => {
-  const { control, name, label, placeholder } = props;
+  const { control, name, label, placeholder, disabled } = props;
   return (
     <FormField
       control={control}
       name={name}
       render={({ field }) => (
-        <NumberInputFieldContent field={field} label={label} placeholder={placeholder} />
+        <NumberInputFieldContent field={field} label={label} placeholder={placeholder} disabled={disabled} />
       )}
     />
   );

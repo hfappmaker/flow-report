@@ -150,6 +150,7 @@ export type ComboBoxFieldProps<T extends FieldValues, V> = {
   triggerClassName?: string;
   label?: string;
   showClearButton?: boolean;
+  disabled?: boolean;
 }
 
 const ComboBoxSelect = memo(({
@@ -158,19 +159,22 @@ const ComboBoxSelect = memo(({
   onValueChange,
   placeholder,
   triggerClassName,
+  disabled,
 }: {
   options: { label: string, value: string | number | bigint }[];
   value: string;
   onValueChange: (value: string) => void;
   placeholder?: string;
   triggerClassName?: string;
+  disabled?: boolean;
 }) => (
   <Select
     onValueChange={onValueChange}
     value={value}
+    disabled={disabled}
   >
     <FormControl>
-      <SelectTrigger className={triggerClassName}>
+      <SelectTrigger className={triggerClassName} disabled={disabled}>
         <SelectValue placeholder={<span className="text-muted-foreground">{placeholder}</span>} className="truncate" />
       </SelectTrigger>
     </FormControl>
@@ -187,7 +191,7 @@ const ComboBoxSelect = memo(({
 ComboBoxSelect.displayName = "ComboBoxSelect";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ComboBoxFieldContent = ({ field, options, placeholder, triggerClassName, label, showClearButton }: { field: any; options: { label: string, value: any }[]; placeholder?: string; triggerClassName?: string; label?: string; showClearButton: boolean }) => {
+const ComboBoxFieldContent = ({ field, options, placeholder, triggerClassName, label, showClearButton, disabled }: { field: any; options: { label: string, value: any }[]; placeholder?: string; triggerClassName?: string; label?: string; showClearButton: boolean; disabled?: boolean; }) => {
   const [localValue, setLocalValue] = useState<string>(field.value?.toString() ?? "");
 
   const handleValueChange = useCallback((value: string) => {
@@ -212,6 +216,7 @@ const ComboBoxFieldContent = ({ field, options, placeholder, triggerClassName, l
         onValueChange={handleValueChange}
         placeholder={placeholder}
         triggerClassName={triggerClassName}
+        disabled={disabled}
       />
       {showClearButton && (
         <Button
@@ -232,7 +237,7 @@ const ComboBoxFieldContent = ({ field, options, placeholder, triggerClassName, l
 ComboBoxFieldContent.displayName = "ComboBoxFieldContent";
 
 export const ComboBoxField = <T extends FieldValues, V extends string | number | bigint>(props: ComboBoxFieldProps<T, V>) => {
-  const { control, name, options, placeholder, triggerClassName, label, showClearButton = true } = props;
+  const { control, name, options, placeholder, triggerClassName, label, showClearButton = true, disabled } = props;
 
   return (
     <FormField
@@ -246,6 +251,7 @@ export const ComboBoxField = <T extends FieldValues, V extends string | number |
           triggerClassName={triggerClassName}
           label={label}
           showClearButton={showClearButton}
+          disabled={disabled}
         />
       )}
     />
