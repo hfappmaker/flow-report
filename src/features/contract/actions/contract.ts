@@ -21,10 +21,15 @@ export const createContractAction = async (
 ): Promise<void> => {
   const contract = await createContract(values);
   const today = new Date();
+
+  const endDate = contract.endDate ? new Date(contract.endDate) : null;
+
+  const reportEndDate = endDate && endDate < today ? endDate : today;
+
   await createMonthlyWorkReportsAction(
     contract.id,
     new Date(contract.startDate),
-    today,
+    reportEndDate,
   );
 
   revalidatePath("/dashboard");
