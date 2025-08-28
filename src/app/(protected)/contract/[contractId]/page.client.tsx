@@ -150,9 +150,9 @@ export default function ContractClientPage({
     });
   }, [contractId, fetchReports]);
 
-  // 作成完了状態（SUBMITTEDステータス）は削除不可
-  const isDeletable = (workReport: WorkReportWithAttendances): boolean => {
-    return workReport.status !== "SUBMITTED";
+  // 作成完了状態（SUBMITTEDステータス）でも削除可能にする
+  const isDeletable = (_workReport: WorkReportWithAttendances): boolean => {
+    return true;
   };
 
   // 作業報告書作成処理
