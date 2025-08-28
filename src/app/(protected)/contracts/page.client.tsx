@@ -597,14 +597,6 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
 
             <DialogFooter sticky className="p-6">
               <Button
-                variant="outline"
-                onClick={() => {
-                  setActiveDialog("edit");
-                }}
-              >
-                編集
-              </Button>
-              <Button
                 variant="destructive"
                 onClick={() => {
                   setActiveDialog("delete");
