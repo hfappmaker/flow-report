@@ -58,6 +58,7 @@ type ContractFormProps = {
   onSubmit: (values: ContractFormValues) => void;
   onCancel: () => void;
   submitButtonText: string;
+  isEditing?: boolean;
 };
 
 export const ContractForm = ({
@@ -65,6 +66,7 @@ export const ContractForm = ({
   onSubmit,
   onCancel,
   submitButtonText,
+  isEditing,
 }: ContractFormProps) => {
   const form = useForm<ContractFormValues>({
     resolver: zodResolver(contractFormSchema),
@@ -180,12 +182,14 @@ export const ContractForm = ({
             name="startDate"
             label="開始日"
             placeholder="開始日を選択"
+            disabled={isEditing}
           />
           <DatePickerField
             control={form.control}
             name="endDate"
             label="終了日"
             placeholder="終了日を選択（任意）"
+            disabled={isEditing}
           />
         </div>
 
@@ -196,6 +200,7 @@ export const ContractForm = ({
             name="unitPrice"
             label={`月単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
             placeholder="（例）500000"
+            disabled={isEditing}
           />
 
           <NumberInputField
@@ -203,6 +208,7 @@ export const ContractForm = ({
             name="settlementMin"
             label="精算下限（時間）"
             placeholder="（例）140"
+            disabled={isEditing}
           />
 
           <NumberInputField
@@ -210,6 +216,7 @@ export const ContractForm = ({
             name="settlementMax"
             label="精算上限（時間）"
             placeholder="（例）180"
+            disabled={isEditing}
           />
         </div>
 
@@ -227,6 +234,7 @@ export const ContractForm = ({
                   }}
                   defaultValue={form.getValues("rateType")}
                   className="flex flex-row space-x-4"
+                  disabled={isEditing}
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="upperLower" id="upperLower" />
@@ -252,6 +260,7 @@ export const ContractForm = ({
                 name="upperRate"
                 label={`超過単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
                 placeholder="（例）5000"
+                disabled={isEditing}
               />
 
               <NumberInputField
@@ -259,6 +268,7 @@ export const ContractForm = ({
                 name="lowerRate"
                 label={`控除単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
                 placeholder="（例）5000"
+                disabled={isEditing}
               />
             </>
           )}
@@ -269,6 +279,7 @@ export const ContractForm = ({
               name="middleRate"
               label={`中間単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
               placeholder="（例）5000"
+              disabled={isEditing}
             />
           )}
         </div>
@@ -287,6 +298,7 @@ export const ContractForm = ({
                   }}
                   defaultValue={form.getValues("taxInclusiveType")}
                   className="flex flex-row space-x-4"
+                  disabled={isEditing}
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="INCLUSIVE" id="inclusive" />
@@ -319,6 +331,7 @@ export const ContractForm = ({
                   }}
                   defaultValue={form.getValues("taxRoundingType")}
                   className="flex flex-row space-x-4"
+                  disabled={isEditing}
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="ROUND_DOWN" id="roundDown" />
@@ -350,6 +363,7 @@ export const ContractForm = ({
             }))}
             placeholder="（例）15"
             label="1日あたりの作業単位(分)"
+            disabled={isEditing}
           />
 
           <ComboBoxField
@@ -361,6 +375,7 @@ export const ContractForm = ({
             }))}
             placeholder="（例）15"
             label="1ヶ月あたりの作業単位(分)"
+            disabled={isEditing}
           />
         </div>
 
@@ -394,6 +409,7 @@ export const ContractForm = ({
           name="closingDay"
           label="締め日"
           placeholder="（例）20（未入力の場合は末日）"
+          disabled={isEditing}
         />
 
         <DialogFooter sticky className="p-6">

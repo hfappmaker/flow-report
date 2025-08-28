@@ -647,6 +647,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
           onSubmit={onEditContract}
           onCancel={closeDialog}
           submitButtonText="更新"
+          isEditing={true}
         />
       </ContractDialog>
 
