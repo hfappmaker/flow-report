@@ -6,15 +6,27 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTransitionContext } from "@/contexts/transition-context";
-import { getContractByIdAction } from "@/features/contract/actions/contract";
+import {
+  getContractByIdAction,
+  updateContractAction,
+} from "@/features/contract/actions/contract";
 import { ContractDetailsContent } from "@/features/contract/components/contract-details-content";
 import {
   ContractDialog,
   type DialogType,
 } from "@/features/contract/components/contract-dialog";
+import {
+  ContractForm,
+  ContractFormValues,
+} from "@/features/contract/components/contract-form";
 import { type ContractOutput } from "@/features/contract/types/contract";
+import {
+  convertContractFormValuesToContract,
+  convertContractToFormValues,
+} from "@/features/contract/utils/contract-converter";
 import { type DashboardClientPageProps } from "@/features/dashboard/types/dashboard";
 import { SubscriptionStatus } from "@/features/subscription/components/subscription-status";
+import { useMessageState } from "@/hooks/use-message-state";
 import {
   getWorkReportStatusColor,
   getWorkReportStatusDisplayText,
@@ -27,6 +39,7 @@ export default function DashboardClientPage({
 }: DashboardClientPageProps) {
   const router = useRouter();
   const { startTransition } = useTransitionContext();
+  const { error, success, showError, showSuccess } = useMessageState();
   const [activeContract, setActiveContract] = useState<ContractOutput | null>(
     null,
   );
@@ -60,6 +73,29 @@ export default function DashboardClientPage({
       router.push(`/contract/${contractId}`);
     });
     closeDialog();
+  };
+
+  // 契約編集
+  const onEditContract = (data: ContractFormValues) => {
+    if (!activeContract) return;
+    startTransition(async () => {
+      try {
+        const contractData = convertContractFormValuesToContract(
+          data,
+          activeContract.userId,
+        );
+        await updateContractAction(activeContract.id, contractData);
+        const newContractData = await getContractByIdAction(activeContract.id);
+        // 更新されたデータで activeContract を更新
+        setActiveContract(newContractData);
+        showSuccess(`契約 '${data.name}' を編集しました`);
+      } catch (error: unknown) {
+        console.error(error);
+        showError("契約の更新に失敗しました");
+      } finally {
+        closeDialog();
+      }
+    });
   };
 
   return (
@@ -186,12 +222,33 @@ export default function DashboardClientPage({
           <ContractDetailsContent
             contract={activeContract}
             onNavigateToWorkReports={handleNavigateToWorkReports}
+            onEdit={() => {
+              setActiveDialog("edit");
+            }}
             onClose={closeDialog}
             showWorkReportsButton
-            showEditButton={false}
+            showEditButton
             showDeleteButton={false}
           />
         )}
+      </ContractDialog>
+
+      <ContractDialog
+        type="edit"
+        isOpen={activeDialog === "edit"}
+        onClose={closeDialog}
+      >
+        <ContractForm
+          defaultValues={
+            activeContract
+              ? convertContractToFormValues(activeContract)
+              : undefined
+          }
+          onSubmit={onEditContract}
+          onCancel={closeDialog}
+          submitButtonText="更新"
+          isEditing
+        />
       </ContractDialog>
     </div>
   );
