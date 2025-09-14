@@ -3,6 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import FormError from "@/components/ui/feedback/error-alert";
+import FormSuccess from "@/components/ui/feedback/success-alert";
+
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTransitionContext } from "@/contexts/transition-context";
@@ -100,6 +103,11 @@ export default function DashboardClientPage({
 
   return (
     <div className="space-y-6 p-6">
+      <FormError message={error.message} resetSignal={error.date.getTime()} />
+      <FormSuccess
+        message={success.message}
+        resetSignal={success.date.getTime()}
+      />
       {/* サブスクリプション情報を上部に表示 */}
       {subscriptionInfo && (
         <Card className="mb-6">
