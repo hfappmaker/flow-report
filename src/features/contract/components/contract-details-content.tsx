@@ -3,7 +3,7 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { type ContractOutput } from "@/features/contract/types/contract";
 import { formatDateAsUTC } from "@/utils/date-utils";
 
-type ContractDetailsContentProps = {
+interface ContractDetailsContentProps {
   contract: ContractOutput;
   onNavigateToWorkReports?: (contractId: string) => void;
   onEdit?: () => void;
@@ -12,7 +12,7 @@ type ContractDetailsContentProps = {
   showWorkReportsButton?: boolean;
   showEditButton?: boolean;
   showDeleteButton?: boolean;
-};
+}
 
 export const ContractDetailsContent = ({
   contract,

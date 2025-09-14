@@ -18,11 +18,11 @@ import {
   createContractAction,
   updateContractAction,
 } from "@/features/contract/actions/contract";
+import { ContractDetailsContent } from "@/features/contract/components/contract-details-content";
 import {
   ContractDialog,
   type DialogType,
 } from "@/features/contract/components/contract-dialog";
-import { ContractDetailsContent } from "@/features/contract/components/contract-details-content";
 import {
   ContractForm,
   ContractFormValues,
@@ -33,7 +33,7 @@ import {
   convertContractToFormValues,
 } from "@/features/contract/utils/contract-converter";
 import { useMessageState } from "@/hooks/use-message-state";
-import { formatDateAsUTC, formatDateLongAsUTC } from "@/utils/date-utils";
+import { formatDateLongAsUTC } from "@/utils/date-utils";
 
 export default function ContractsClientPage({ userId }: { userId: string }) {
   const { error, success, showError, showSuccess } = useMessageState();
@@ -362,12 +362,12 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
           <ContractDetailsContent
             contract={activeContract}
             onNavigateToWorkReports={handleNavigateToWorkReports}
-            onEdit={() => setActiveDialog("edit")}
-            onDelete={() => setActiveDialog("delete")}
+            onEdit={() => { setActiveDialog("edit"); }}
+            onDelete={() => { setActiveDialog("delete"); }}
             onClose={closeDialog}
-            showWorkReportsButton={true}
-            showEditButton={true}
-            showDeleteButton={true}
+            showWorkReportsButton
+            showEditButton
+            showDeleteButton
           />
         )}
       </ContractDialog>
@@ -399,7 +399,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
           onSubmit={onEditContract}
           onCancel={closeDialog}
           submitButtonText="更新"
-          isEditing={true}
+          isEditing
         />
       </ContractDialog>
 

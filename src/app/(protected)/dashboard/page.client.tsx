@@ -4,15 +4,14 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTransitionContext } from "@/contexts/transition-context";
 import { getContractByIdAction } from "@/features/contract/actions/contract";
+import { ContractDetailsContent } from "@/features/contract/components/contract-details-content";
 import {
   ContractDialog,
   type DialogType,
 } from "@/features/contract/components/contract-dialog";
-import { ContractDetailsContent } from "@/features/contract/components/contract-details-content";
 import { type ContractOutput } from "@/features/contract/types/contract";
 import { type DashboardClientPageProps } from "@/features/dashboard/types/dashboard";
 import { SubscriptionStatus } from "@/features/subscription/components/subscription-status";
@@ -188,7 +187,7 @@ export default function DashboardClientPage({
             contract={activeContract}
             onNavigateToWorkReports={handleNavigateToWorkReports}
             onClose={closeDialog}
-            showWorkReportsButton={true}
+            showWorkReportsButton
             showEditButton={false}
             showDeleteButton={false}
           />
