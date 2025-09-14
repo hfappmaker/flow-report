@@ -1,11 +1,19 @@
 "use client";
 
-import { WorkReportStatus } from "@prisma/client";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTransitionContext } from "@/contexts/transition-context";
+import { getContractByIdAction } from "@/features/contract/actions/contract";
+import {
+  ContractDialog,
+  type DialogType,
+} from "@/features/contract/components/contract-dialog";
+import { ContractDetailsContent } from "@/features/contract/components/contract-details-content";
+import { type ContractOutput } from "@/features/contract/types/contract";
 import { type DashboardClientPageProps } from "@/features/dashboard/types/dashboard";
 import { SubscriptionStatus } from "@/features/subscription/components/subscription-status";
 import {
@@ -20,6 +28,10 @@ export default function DashboardClientPage({
 }: DashboardClientPageProps) {
   const router = useRouter();
   const { startTransition } = useTransitionContext();
+  const [activeContract, setActiveContract] = useState<ContractOutput | null>(
+    null,
+  );
+  const [activeDialog, setActiveDialog] = useState<DialogType>(null);
 
   const handleNavigation = (reportId: string) => {
     startTransition(() => {
@@ -27,10 +39,28 @@ export default function DashboardClientPage({
     });
   };
 
-  const handleContractNavigation = (contractId: string) => {
+  const openContractDetailsDialog = async (contractId: string) => {
+    try {
+      const contractData = await getContractByIdAction(contractId);
+      if (contractData) {
+        setActiveContract(contractData);
+        setActiveDialog("details");
+      }
+    } catch (error) {
+      console.error("Error fetching contract details:", error);
+    }
+  };
+
+  const closeDialog = () => {
+    setActiveDialog(null);
+    setActiveContract(null);
+  };
+
+  const handleNavigateToWorkReports = (contractId: string) => {
     startTransition(() => {
       router.push(`/contract/${contractId}`);
     });
+    closeDialog();
   };
 
   return (
@@ -55,7 +85,9 @@ export default function DashboardClientPage({
             <CardTitle
               className="cursor-pointer transition-colors hover:text-blue-600"
               onClick={() => {
-                handleContractNavigation(contractId);
+                startTransition(async () => {
+                  await openContractDetailsDialog(contractId);
+                });
               }}
             >
               {contract.contractName}
@@ -104,7 +136,9 @@ export default function DashboardClientPage({
               <CardTitle
                 className="cursor-pointer transition-colors hover:text-blue-600"
                 onClick={() => {
-                  handleContractNavigation(contractId);
+                  startTransition(async () => {
+                    await openContractDetailsDialog(contractId);
+                  });
                 }}
               >
                 {contract.contractName}
@@ -143,6 +177,23 @@ export default function DashboardClientPage({
           </Card>
         ),
       )}
+
+      <ContractDialog
+        type="details"
+        isOpen={activeDialog === "details"}
+        onClose={closeDialog}
+      >
+        {activeContract && (
+          <ContractDetailsContent
+            contract={activeContract}
+            onNavigateToWorkReports={handleNavigateToWorkReports}
+            onClose={closeDialog}
+            showWorkReportsButton={true}
+            showEditButton={false}
+            showDeleteButton={false}
+          />
+        )}
+      </ContractDialog>
     </div>
   );
 }
