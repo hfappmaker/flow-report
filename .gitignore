@@ -28,13 +28,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env*.local
-.env
-.env.development
-.env.production
-.env.test
-.env.staging
-.env.preview
+.env*
 
 # keep these env files
 !.env.example
