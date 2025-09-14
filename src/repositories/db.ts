@@ -74,6 +74,24 @@ const extendedDb = baseDb.$extends({
 
         return result;
       },
+      async upsert({ args, query, model }) {
+        const user = await currentUser();
+        const result = await query(args);
+        if (model !== "AuditLog") {
+          await baseDb.auditLog.create({
+            data: {
+              tableName: model,
+              recordId: result.id ?? "",
+              action: result.id ? "UPDATE" : "CREATE",
+              changedFields: result, // You can compute diff as needed.
+              createdAt: new Date(),
+              userId: user?.id ?? null,
+            },
+          });
+        }
+
+        return result;
+      },
     },
   },
 }).$extends(withAccelerate());
