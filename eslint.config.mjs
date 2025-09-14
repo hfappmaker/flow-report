@@ -70,7 +70,8 @@ export default tseslint.config(
       "@typescript-eslint/require-await": "warn",
       "@typescript-eslint/no-unnecessary-type-conversion": "warn",
       "@typescript-eslint/prefer-optional-chain": "warn",
-      "@typescript-eslint/no-unnecessary-condition": "warn"
+      "@typescript-eslint/no-unnecessary-condition": "warn",
+      "@typescript-eslint/no-confusing-void-expression": "warn"
     },
   },
   {
