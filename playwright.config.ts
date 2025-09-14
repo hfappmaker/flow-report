@@ -1,8 +1,4 @@
 import { defineConfig, devices } from '@playwright/test';
-import * as dotenv from 'dotenv';
-
-// .env ファイルから環境変数を読み込みます
-dotenv.config({path: '.env.test'});
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -80,7 +76,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run dev:test',
+    command: 'npm run dev',
     url: process.env.NEXT_PUBLIC_APP_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000, // 2 minutes

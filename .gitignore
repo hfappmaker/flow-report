@@ -30,6 +30,7 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+.env.development
 .env.production
 .env.test
 .env.staging
@@ -37,7 +38,6 @@ yarn-error.log*
 
 # keep these env files
 !.env.example
-!.env.development
 
 # vercel
 .vercel
