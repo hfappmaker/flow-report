@@ -31,44 +31,9 @@ export const createWorkReportAction = async (
     throw new Error("契約が見つかりません");
   }
 
-  // 契約期間のバリデーション
+  // サーバーサイドでの重複チェック
   const targetYear = targetDate.getFullYear();
   const targetMonth = targetDate.getMonth() + 1;
-  const contractStart = new Date(contract.startDate);
-  const contractEnd = contract.endDate ? new Date(contract.endDate) : null;
-
-  // 対象年月の最初の日で比較
-  const targetFirstDay = new Date(targetYear, targetDate.getMonth(), 1);
-  const contractStartFirstDay = new Date(
-    contractStart.getFullYear(),
-    contractStart.getMonth(),
-    1,
-  );
-
-  if (targetFirstDay < contractStartFirstDay) {
-    const contractStartYear = contractStart.getFullYear();
-    const contractStartMonth = contractStart.getMonth() + 1;
-    throw new Error(
-      `契約開始日より前の作業報告書は作成できません。契約開始: ${contractStartYear}年${contractStartMonth}月`,
-    );
-  }
-
-  if (contractEnd) {
-    const contractEndFirstDay = new Date(
-      contractEnd.getFullYear(),
-      contractEnd.getMonth(),
-      1,
-    );
-    if (targetFirstDay > contractEndFirstDay) {
-      const contractEndYear = contractEnd.getFullYear();
-      const contractEndMonth = contractEnd.getMonth() + 1;
-      throw new Error(
-        `契約終了日より後の作業報告書は作成できません。契約終了: ${contractEndYear}年${contractEndMonth}月`,
-      );
-    }
-  }
-
-  // サーバーサイドでの重複チェック
   const exists = await checkWorkReportExists(contractId, targetDate);
   if (exists) {
     throw new Error(

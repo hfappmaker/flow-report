@@ -189,7 +189,7 @@ export const ContractForm = ({
             name="endDate"
             label="終了日"
             placeholder="終了日を選択（任意）"
-            disabled={isEditing}
+            disabled={false}
           />
         </div>
 
