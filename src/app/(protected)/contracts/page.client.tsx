@@ -133,7 +133,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
       } catch (error: unknown) {
         console.error(error);
         showError(
-          "契約の削除に失敗しました。関連する作業報告書が存在する可能性があります。",
+          "契約の削除に失敗しました。",
         );
       } finally {
         closeDialog();
@@ -411,7 +411,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
         <div>
           <p>本当に契約 &quot;{activeContract?.name}&quot; を削除しますか？</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            この操作は元に戻すことができません。
+            関連する作業報告書も削除されます。この操作は元に戻すことができません。
           </p>
         </div>
         <DialogFooter sticky className="p-6">
