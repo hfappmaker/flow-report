@@ -9,7 +9,13 @@ import {
   errorRoutes,
 } from "@/app/routes";
 import authConfig from "@/features/auth/lib/auth.config";
-import { SubscriptionInfo } from "@/features/subscription/types/subscription";
+
+// prismaの型定義をいれてしまうと、middlewareが容量オーバーでビルドできないため、SubscriptionStatusを直書きしています。
+// import type { SubscriptionStatus } from "@prisma/client";
+type SubscriptionInfo = {
+  status: "TRIAL" | "ACTIVE" | "CANCELED" | null;
+  currentPeriodEnd: Date | null;
+};
 
 const { auth } = NextAuth(authConfig);
 
@@ -27,7 +33,11 @@ async function getSubscriptionInfo(
   });
 
   if (response.ok) {
-    return await response.json();
+    const data = (await response.json()) as SubscriptionInfo | null;
+    if (!data) {
+      return null;
+    }
+    return data;
   }
 
   console.error("Failed to fetch subscription status:", response.statusText);
