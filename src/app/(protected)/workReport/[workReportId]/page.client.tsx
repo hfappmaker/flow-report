@@ -182,7 +182,7 @@ export default function ClientWorkReportPage({
 
   // 一括編集用フォーム
   const bulkEditForm = useForm<BulkEditFormValues>({
-    resolver: zodResolver(bulkEditFormSchema),
+    resolver: zodResolver(bulkEditFormSchema) as any,
     defaultValues: getBulkEditFormDefaults(
       basicStartTime,
       basicEndTime,
