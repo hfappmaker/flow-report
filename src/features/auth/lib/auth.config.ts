@@ -1,4 +1,5 @@
-import { User } from "@prisma/client";
+// prismaの型定義をいれてしまうと、middlewareが容量オーバーでビルドできないため、Userを直書きしています。
+// import type { User } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
@@ -6,6 +7,16 @@ import Google from "next-auth/providers/google";
 
 import { getUserByEmail } from "@/features/auth/repositories/user-repository";
 import { LoginSchema } from "@/features/auth/schemas/login";
+
+interface User {
+  id: string;
+  name: string | null;
+  email: string | null;
+  password: string | null;
+  emailVerified: Date | null;
+  image: string | null;
+  role: "USER" | "ADMIN";
+};
 
 export default {
   providers: [
