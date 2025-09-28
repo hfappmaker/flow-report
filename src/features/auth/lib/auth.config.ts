@@ -16,6 +16,7 @@ interface User {
   emailVerified: Date | null;
   image: string | null;
   role: "USER" | "ADMIN";
+  isTwoFactorEnabled: boolean;
 };
 
 export default {
