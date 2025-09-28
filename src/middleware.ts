@@ -9,13 +9,7 @@ import {
   errorRoutes,
 } from "@/app/routes";
 import authConfig from "@/features/auth/lib/auth.config";
-
-// prismaの型定義をいれてしまうと、middlewareが容量オーバーでビルドできないため、SubscriptionStatusを直書きしています。
-// import type { SubscriptionStatus } from "@prisma/client";
-type SubscriptionInfo = {
-  status: "TRIAL" | "ACTIVE" | "CANCELED" | null;
-  currentPeriodEnd: Date | null;
-};
+import { SubscriptionInfo } from "@/features/subscription/types/subscription";
 
 const { auth } = NextAuth(authConfig);
 
