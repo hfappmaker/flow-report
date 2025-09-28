@@ -69,7 +69,7 @@ export const ContractForm = ({
   isEditing,
 }: ContractFormProps) => {
   const form = useForm<ContractFormValues>({
-    resolver: zodResolver(contractFormSchema),
+    resolver: zodResolver(contractFormSchema) as any,
     defaultValues: defaultValues ?? {
       name: "",
       startDate: new Date(),
