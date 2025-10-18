@@ -1,3 +1,4 @@
+// Use type-only import to avoid bundling Prisma Client in middleware
 import type { SubscriptionStatus } from "@prisma/client";
 
 export interface SubscriptionInfo {
