@@ -44,28 +44,8 @@
       "mcp__serena__check_onboarding_performed",
       "mcp__serena__read_memory"
     ],
-    "deny": [
-      "Read(.env*)",
-      "Write(.env*)"
-    ]
+    "deny": ["Read(.env*)", "Write(.env*)"]
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": [
-    "playwright",
-    "postgresql",
-    "serena"
-  ],
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "jq -r '.tool_input.file_path | select(endswith(\".js\") or endswith(\".ts\") or endswith(\".jsx\") or endswith(\".tsx\"))' | xargs -r npx prettier --write"
-          }
-        ]
-      }
-    ]
-  }
+  "enabledMcpjsonServers": ["playwright", "postgresql", "serena"]
 }
