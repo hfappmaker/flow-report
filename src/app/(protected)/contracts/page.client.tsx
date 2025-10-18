@@ -132,9 +132,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
         await fetchContracts();
       } catch (error: unknown) {
         console.error(error);
-        showError(
-          "契約の削除に失敗しました。",
-        );
+        showError("契約の削除に失敗しました。");
       } finally {
         closeDialog();
       }
@@ -191,7 +189,11 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
   // 契約ステータスの取得
   const getContractStatus = (contract: ContractOutput) => {
     const now = new Date();
+    now.setHours(0, 0, 0, 0); // 時刻を00:00:00に設定して日付のみで比較
     const endDate = contract.endDate ? new Date(contract.endDate) : null;
+    if (endDate) {
+      endDate.setHours(0, 0, 0, 0); // 時刻を00:00:00に設定して日付のみで比較
+    }
 
     if (endDate && endDate < now) {
       return { status: "終了", color: "text-red-600" };
@@ -362,8 +364,12 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
           <ContractDetailsContent
             contract={activeContract}
             onNavigateToWorkReports={handleNavigateToWorkReports}
-            onEdit={() => { setActiveDialog("edit"); }}
-            onDelete={() => { setActiveDialog("delete"); }}
+            onEdit={() => {
+              setActiveDialog("edit");
+            }}
+            onDelete={() => {
+              setActiveDialog("delete");
+            }}
             onClose={closeDialog}
             showWorkReportsButton
             showEditButton
