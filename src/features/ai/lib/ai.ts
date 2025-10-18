@@ -5,23 +5,23 @@ import OpenAI from "openai";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { z } from "zod";
 
-type OllamaConfig = {
+interface OllamaConfig {
   model?: string;
   temperature?: number;
   max_tokens?: number;
-};
+}
 
-export type GenerateRequest = {
+export interface GenerateRequest {
   system: string;
   prompt: string;
   schema: z.ZodTypeAny;
-};
+}
 
-export type GenerateResult<T = unknown> = {
+export interface GenerateResult<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
-};
+}
 
 export async function generateWithOllama(
   prompt: string,

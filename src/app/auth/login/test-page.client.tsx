@@ -56,7 +56,7 @@ export default function TestLoginPage() {
 
   return (
     <main className="flex h-full flex-col items-center justify-center">
-      <div className="flex flex-col items-center justify-center gap-y-4 rounded-md border-2 p-6 w-full max-w-md">
+      <div className="flex w-full max-w-md flex-col items-center justify-center gap-y-4 rounded-md border-2 p-6">
         <div className="flex items-center justify-center gap-x-2">
           <BsCalendarCheck className="text-3xl text-sky-400" />
           <h1 className="text-3xl font-semibold text-primary drop-shadow-md">
@@ -64,8 +64,8 @@ export default function TestLoginPage() {
           </h1>
         </div>
 
-        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 w-full">
-          <p className="text-sm text-yellow-800 text-center">
+        <div className="w-full rounded-md border border-yellow-200 bg-yellow-50 p-3">
+          <p className="text-center text-sm text-yellow-800">
             テスト環境 - 開発用ログイン
           </p>
         </div>
@@ -122,7 +122,7 @@ export default function TestLoginPage() {
         </Form>
 
         <div className="w-full space-y-2">
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-center text-sm text-muted-foreground">
             クイックログイン
           </p>
           <div className="grid grid-cols-1 gap-2">

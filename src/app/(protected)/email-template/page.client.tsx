@@ -12,18 +12,21 @@ import {
   deleteEmailTemplateAction,
   getEmailTemplatesByCreateUserIdAction,
 } from "@/features/email/actions/email-template";
-import {
-  EmailTemplateDialog,
-} from "@/features/email/components/email-template-dialog";
+import { EmailTemplateDialog } from "@/features/email/components/email-template-dialog";
 import { type EmailTemplateFormValues } from "@/features/email/schemas/email-template-form-schema";
 import { DialogType } from "@/features/email/types/dialog";
 import { EmailTemplate } from "@/features/email/types/email-template";
 import { useMessageState } from "@/hooks/use-message-state";
 
-export default function EmailTemplateClientPage({ userId }: { userId: string }) {
+export default function EmailTemplateClientPage({
+  userId,
+}: {
+  userId: string;
+}) {
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [activeDialog, setActiveDialog] = useState<DialogType>(null);
-  const [activeEmailTemplate, setActiveEmailTemplate] = useState<EmailTemplate | null>(null);
+  const [activeEmailTemplate, setActiveEmailTemplate] =
+    useState<EmailTemplate | null>(null);
   const { error, success, showError, showSuccess } = useMessageState();
   const { startTransition } = useTransitionContext();
 
@@ -48,7 +51,10 @@ export default function EmailTemplateClientPage({ userId }: { userId: string }) 
   };
 
   // メールテンプレートデータを変換する関数
-  const convertEmailTemplateData = (data: EmailTemplateFormValues, userId: string) => {
+  const convertEmailTemplateData = (
+    data: EmailTemplateFormValues,
+    userId: string,
+  ) => {
     return {
       name: data.name,
       subject: data.subject,
@@ -96,7 +102,9 @@ export default function EmailTemplateClientPage({ userId }: { userId: string }) 
     startTransition(async () => {
       try {
         await deleteEmailTemplateAction(activeEmailTemplate.id);
-        showSuccess(`メールテンプレート '${activeEmailTemplate.name}' を削除しました`);
+        showSuccess(
+          `メールテンプレート '${activeEmailTemplate.name}' を削除しました`,
+        );
         closeDialog();
         await refreshTemplates();
       } catch (err) {
@@ -109,21 +117,54 @@ export default function EmailTemplateClientPage({ userId }: { userId: string }) 
   return (
     <div className="p-4">
       <h1 className="mb-4 text-2xl font-bold">メールテンプレート一覧</h1>
-      <div className="mb-4"><FormError message={error.message} resetSignal={error.date.getTime()} /></div>
-      <div className="mb-4"><FormSuccess message={success.message} resetSignal={success.date.getTime()} /></div>
       <div className="mb-4">
-        <Button onClick={() => { setActiveDialog("create"); }}>新規作成</Button>
+        <FormError message={error.message} resetSignal={error.date.getTime()} />
+      </div>
+      <div className="mb-4">
+        <FormSuccess
+          message={success.message}
+          resetSignal={success.date.getTime()}
+        />
+      </div>
+      <div className="mb-4">
+        <Button
+          onClick={() => {
+            setActiveDialog("create");
+          }}
+        >
+          新規作成
+        </Button>
       </div>
       {templates.length > 0 ? (
         <ul>
           {templates.map((template) => (
-            <li key={template.id} className="mb-2 flex items-center justify-between border p-3">
-              <div className="cursor-pointer" onClick={() => { setActiveEmailTemplate(template); setActiveDialog("details"); }}>
+            <li
+              key={template.id}
+              className="mb-2 flex items-center justify-between border p-3"
+            >
+              <div
+                className="cursor-pointer"
+                onClick={() => {
+                  setActiveEmailTemplate(template);
+                  setActiveDialog("details");
+                }}
+              >
                 <div className="font-medium">{template.name}</div>
-                <div className="text-sm text-muted-foreground">Subject: {template.subject}</div>
+                <div className="text-sm text-muted-foreground">
+                  Subject: {template.subject}
+                </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => { setActiveEmailTemplate(template); setActiveDialog("details"); }}>詳細</Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setActiveEmailTemplate(template);
+                    setActiveDialog("details");
+                  }}
+                >
+                  詳細
+                </Button>
               </div>
             </li>
           ))}
@@ -139,7 +180,11 @@ export default function EmailTemplateClientPage({ userId }: { userId: string }) 
           if (!open) closeDialog();
         }}
         template={activeEmailTemplate}
-        onSubmit={activeDialog === "create" ? onCreateEmailTemplate : onEditEmailTemplate}
+        onSubmit={
+          activeDialog === "create"
+            ? onCreateEmailTemplate
+            : onEditEmailTemplate
+        }
         onDelete={onDeleteEmailTemplate}
         onCancel={closeDialog}
       />

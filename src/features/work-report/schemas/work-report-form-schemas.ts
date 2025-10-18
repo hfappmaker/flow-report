@@ -3,12 +3,12 @@ import { z } from "zod";
 export const dateRangeModes = ["all", "weekday", "custom", "prompt"] as const;
 export type DateRangeMode = (typeof dateRangeModes)[number];
 
-export type ExcelRange = {
+export interface ExcelRange {
   startRow: number;
   startCol: number;
   endRow: number;
   endCol: number;
-};
+}
 
 export const createWorkReportFormSchema = z.object({
   yearMonth: z.date(),

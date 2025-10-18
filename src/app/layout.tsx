@@ -15,8 +15,7 @@ export const metadata: Metadata = {
     template: "%s | 勤怠管理システム",
     default: "勤怠管理システム",
   },
-  description:
-    "勤怠管理システム",
+  description: "勤怠管理システム",
   icons: {
     icon: [
       {
@@ -49,10 +48,7 @@ export default function RootLayout({
           <ClientLayout>
             <TransitionProvider>
               {children}
-              <Toaster
-                richColors
-                closeButton
-              />
+              <Toaster richColors closeButton />
             </TransitionProvider>
           </ClientLayout>
         </ThemeProvider>

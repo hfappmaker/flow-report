@@ -7,8 +7,8 @@ import { TrialSubscriptionPrompt } from "@/features/subscription/components/tria
 export default function SubscriptionPage() {
   useEffect(() => {
     // URLが正しくない場合は修正
-    if (window.location.pathname !== '/subscription') {
-      window.history.replaceState(null, '', '/subscription');
+    if (window.location.pathname !== "/subscription") {
+      window.history.replaceState(null, "", "/subscription");
     }
   }, []);
 
@@ -17,4 +17,4 @@ export default function SubscriptionPage() {
       <TrialSubscriptionPrompt />
     </div>
   );
-} 
+}

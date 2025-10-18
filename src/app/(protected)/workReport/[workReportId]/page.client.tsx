@@ -800,7 +800,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
         </div>
 
         {/* Header for desktop view */}
-        <div className="hidden lg:grid lg:grid-cols-[minmax(0,_1fr)_120px_120px_120px_minmax(0,_2fr)_100px] lg:gap-4 items-center mb-2 px-3 text-sm font-medium text-muted-foreground">
+        <div className="mb-2 hidden items-center px-3 text-sm font-medium text-muted-foreground lg:grid lg:grid-cols-[minmax(0,_1fr)_120px_120px_120px_minmax(0,_2fr)_100px] lg:gap-4">
           <span>日付</span>
           <span>出勤時間</span>
           <span>退勤時間</span>
@@ -812,7 +812,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
         {currentAttendances.map((day) => (
           <div
             key={day.date.toISOString()}
-            className="mb-4 border rounded-lg p-3 lg:grid lg:grid-cols-[minmax(0,_1fr)_120px_120px_120px_minmax(0,_2fr)_100px] lg:gap-4 lg:items-center"
+            className="mb-4 rounded-lg border p-3 lg:grid lg:grid-cols-[minmax(0,_1fr)_120px_120px_120px_minmax(0,_2fr)_100px] lg:items-center lg:gap-4"
           >
             {/* Date */}
             <div className="flex items-center justify-between lg:col-span-1">
@@ -845,11 +845,11 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
             </div>
 
             {/* Inputs */}
-            <div className="space-y-3 mt-3 lg:mt-0 lg:contents">
+            <div className="mt-3 space-y-3 lg:mt-0 lg:contents">
               <div className="flex gap-2 lg:contents">
                 {/* Start time */}
-                <div className="w-1/3 lg:w-auto lg:col-span-1">
-                  <label className="block text-xs font-medium text-muted-foreground mb-1 lg:hidden">
+                <div className="w-1/3 lg:col-span-1 lg:w-auto">
+                  <label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
                     出勤時間
                   </label>
                   <Input
@@ -867,8 +867,8 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                   />
                 </div>
                 {/* End time */}
-                <div className="w-1/3 lg:w-auto lg:col-span-1">
-                  <label className="block text-xs font-medium text-muted-foreground mb-1 lg:hidden">
+                <div className="w-1/3 lg:col-span-1 lg:w-auto">
+                  <label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
                     退勤時間
                   </label>
                   <Input
@@ -886,8 +886,8 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                   />
                 </div>
                 {/* Break time */}
-                <div className="w-1/3 lg:w-auto lg:col-span-1">
-                  <label className="block text-xs font-medium text-muted-foreground mb-1 lg:hidden">
+                <div className="w-1/3 lg:col-span-1 lg:w-auto">
+                  <label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
                     休憩時間
                   </label>
                   <Input
@@ -909,7 +909,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
               </div>
               {/* Memo */}
               <div className="lg:col-span-1">
-                <label className="block text-xs font-medium text-muted-foreground mb-1 lg:hidden">
+                <label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
                   作業内容
                 </label>
                 <Input
@@ -921,7 +921,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
               </div>
             </div>
             {/* Edit Button (Desktop) */}
-            <div className="hidden lg:block lg:col-span-1 text-center">
+            <div className="hidden text-center lg:col-span-1 lg:block">
               <Button
                 type="button"
                 variant="outline"

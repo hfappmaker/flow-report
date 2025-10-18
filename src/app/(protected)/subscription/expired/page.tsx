@@ -17,8 +17,8 @@ export default function SubscriptionExpiredPage() {
 
   useEffect(() => {
     // URLが正しくない場合は修正
-    if (window.location.pathname !== '/subscription/expired') {
-      window.history.replaceState(null, '', '/subscription/expired');
+    if (window.location.pathname !== "/subscription/expired") {
+      window.history.replaceState(null, "", "/subscription/expired");
     }
   }, []);
 
@@ -26,7 +26,9 @@ export default function SubscriptionExpiredPage() {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[425px]" showCloseButton>
         <DialogHeader>
-          <DialogTitle className="text-center">プレミアムプランが期限切れになりました</DialogTitle>
+          <DialogTitle className="text-center">
+            プレミアムプランが期限切れになりました
+          </DialogTitle>
           <DialogDescription>
             プレミアムプランの利用期限が切れています。サービスを継続してご利用いただくには、プランを再開してください。
           </DialogDescription>
@@ -50,4 +52,4 @@ export default function SubscriptionExpiredPage() {
       </DialogContent>
     </Dialog>
   );
-} 
+}

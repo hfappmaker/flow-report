@@ -57,10 +57,10 @@ export const searchContractsAction = async (
 ): Promise<ContractOutput[]> => {
   try {
     const contracts = await searchContracts(
-      userId, 
-      searchQuery, 
-      periodFrom, 
-      periodTo
+      userId,
+      searchQuery,
+      periodFrom,
+      periodTo,
     );
     return contracts;
   } catch (error) {
@@ -80,7 +80,6 @@ export const getContractsByUserIdAction = async (
     throw new Error("Failed to fetch contracts");
   }
 };
-
 
 export const getContractByIdAction = async (
   contractId: string,

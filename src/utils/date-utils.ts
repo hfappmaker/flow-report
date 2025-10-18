@@ -9,14 +9,17 @@
  * @param locale ロケール（デフォルト: 'ja-JP'）
  * @returns フォーマットされた日付文字列
  */
-export function formatDateAsUTC(date: string | Date, locale = 'ja-JP'): string {
-  const d = typeof date === 'string' ? new Date(date + 'T00:00:00.000Z') : new Date(date);
-  
+export function formatDateAsUTC(date: string | Date, locale = "ja-JP"): string {
+  const d =
+    typeof date === "string"
+      ? new Date(date + "T00:00:00.000Z")
+      : new Date(date);
+
   return d.toLocaleDateString(locale, {
-    timeZone: 'UTC',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
+    timeZone: "UTC",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
   });
 }
 
@@ -26,14 +29,20 @@ export function formatDateAsUTC(date: string | Date, locale = 'ja-JP'): string {
  * @param locale ロケール（デフォルト: 'ja-JP'）
  * @returns フォーマットされた日付文字列（年月日）
  */
-export function formatDateLongAsUTC(date: string | Date, locale = 'ja-JP'): string {
-  const d = typeof date === 'string' ? new Date(date + 'T00:00:00.000Z') : new Date(date);
-  
+export function formatDateLongAsUTC(
+  date: string | Date,
+  locale = "ja-JP",
+): string {
+  const d =
+    typeof date === "string"
+      ? new Date(date + "T00:00:00.000Z")
+      : new Date(date);
+
   return d.toLocaleDateString(locale, {
-    timeZone: 'UTC',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+    timeZone: "UTC",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 }
 
@@ -45,7 +54,11 @@ export function formatDateLongAsUTC(date: string | Date, locale = 'ja-JP'): stri
  */
 export function getMonthListBetween(startDate: Date, endDate: Date): Date[] {
   const monthList: Date[] = [];
-  const currentDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+  const currentDate = new Date(
+    startDate.getFullYear(),
+    startDate.getMonth(),
+    1,
+  );
 
   while (currentDate <= endDate) {
     monthList.push(new Date(currentDate));

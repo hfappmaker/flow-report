@@ -8,7 +8,6 @@ import {
 import { db } from "@/repositories/db";
 import { Serialize } from "@/utils/serialization/serialization-utils";
 
-
 const transformContractData = (
   values: ContractInput,
 ): StrictOmit<PrismaContract, "id"> => {
@@ -70,7 +69,6 @@ export async function getContractsByUserId(userId: string) {
   return contracts.map(Serialize);
 }
 
-
 export async function getContractById(contractId: string) {
   const contract = await db.contract.findUnique({
     where: { id: contractId },
@@ -85,10 +83,7 @@ export async function createContract(values: ContractInput) {
 
   const contract = await db.contract.create({
     data: {
-      ...(processedRest as StrictOmit<
-        ContractOutput,
-        "id" | "userId"
-      >),
+      ...(processedRest as StrictOmit<ContractOutput, "id" | "userId">),
       user: {
         connect: {
           id: userId,
@@ -97,20 +92,19 @@ export async function createContract(values: ContractInput) {
     },
   });
 
-
   return contract;
 }
 
 export async function searchContracts(
-  userId: string, 
-  searchQuery?: string, 
-  periodFrom?: string, 
-  periodTo?: string
+  userId: string,
+  searchQuery?: string,
+  periodFrom?: string,
+  periodTo?: string,
 ) {
   const whereConditions: any[] = [{ userId: userId }];
 
   // 契約名とクライアント名のOR検索
-  if (searchQuery && searchQuery.trim()) {
+  if (searchQuery?.trim()) {
     whereConditions.push({
       OR: [
         { name: { contains: searchQuery, mode: "insensitive" } },
@@ -133,23 +127,20 @@ export async function searchContracts(
           {
             OR: [
               { endDate: { gte: searchStart } },
-              { endDate: null }  // 終了日未設定の契約は無期限とみなす
-            ]
-          }
-        ]
+              { endDate: null }, // 終了日未設定の契約は無期限とみなす
+            ],
+          },
+        ],
       });
     } else if (searchStart) {
       // 検索開始日のみ指定：契約が検索開始日以降に重複するもの
       whereConditions.push({
-        OR: [
-          { endDate: { gte: searchStart } },
-          { endDate: null }
-        ]
+        OR: [{ endDate: { gte: searchStart } }, { endDate: null }],
       });
     } else if (searchEnd) {
       // 検索終了日のみ指定：契約が検索終了日以前に重複するもの
       whereConditions.push({
-        startDate: { lte: searchEnd }
+        startDate: { lte: searchEnd },
       });
     }
   }
@@ -170,10 +161,7 @@ export async function updateContract(id: string, values: ContractInput) {
   await db.contract.update({
     where: { id },
     data: {
-      ...(processedRest as StrictOmit<
-        ContractOutput,
-        "id" | "userId"
-      >),
+      ...(processedRest as StrictOmit<ContractOutput, "id" | "userId">),
       user: {
         connect: {
           id: userId,

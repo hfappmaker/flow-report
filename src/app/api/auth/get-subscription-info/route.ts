@@ -7,7 +7,7 @@ export async function GET() {
   try {
     console.log("=== Checking subscription status ===");
     const user = await currentUser();
-    
+
     if (!user?.id) {
       console.log("No user found in getSubscriptionInfo");
       throw new Error("User not authenticated");
@@ -17,9 +17,11 @@ export async function GET() {
     const subscriptionInfo = await getSubscriptionInfoByUserId(user.id);
     console.log("Subscription info retrieved:", subscriptionInfo);
     return NextResponse.json(subscriptionInfo);
-
   } catch (error) {
     console.error("Error checking subscription:", error);
-    return NextResponse.json({ error: "Failed to check subscription status: " + error }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to check subscription status: " + error },
+      { status: 500 },
+    );
   }
-} 
+}

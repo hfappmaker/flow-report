@@ -247,7 +247,9 @@ export const ContractDetailsContent = ({
         {showWorkReportsButton && onNavigateToWorkReports && (
           <Button
             variant="outline"
-            onClick={() => { onNavigateToWorkReports(contract.id); }}
+            onClick={() => {
+              onNavigateToWorkReports(contract.id);
+            }}
           >
             作業報告書一覧
           </Button>

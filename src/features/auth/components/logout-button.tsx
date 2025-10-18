@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 
-import { logout } from "@/features/auth/actions/logout";
 import { useTransitionContext } from "@/contexts/transition-context";
+import { logout } from "@/features/auth/actions/logout";
 
 const LogoutButton = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();

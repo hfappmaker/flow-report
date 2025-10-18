@@ -7,7 +7,7 @@ import { db } from "@/repositories/db";
 export async function upsertStripeCustomer(
   userId: string,
   stripeCustomerId: string,
-  created: Date
+  created: Date,
 ) {
   const user = await getUserById(userId);
   if (!user) {
@@ -15,7 +15,7 @@ export async function upsertStripeCustomer(
   }
 
   const stripeCustomer = await getStripeCustomerByUserId(userId);
-  if(stripeCustomer && created < stripeCustomer.created) {
+  if (stripeCustomer && created < stripeCustomer.created) {
     return stripeCustomer; // 既存のレコードが新しい場合は何もしない
   }
 
@@ -24,11 +24,11 @@ export async function upsertStripeCustomer(
     create: {
       userId,
       stripeCustomerId,
-      created
+      created,
     },
     update: {
       stripeCustomerId,
-      created
+      created,
     },
   });
 }
@@ -46,13 +46,13 @@ export async function upsertUserSubscription(
     status: SubscriptionStatus;
     currentPeriodEnd?: Date | null;
   },
-  created: Date
+  created: Date,
 ) {
   const stripeSubscription = await db.subscription.findUnique({
     where: { stripeSubscriptionId: data.stripeSubscriptionId },
   });
 
-  if(stripeSubscription && created < stripeSubscription.created) {
+  if (stripeSubscription && created < stripeSubscription.created) {
     return stripeSubscription; // 既存のレコードが新しい場合は何もしない
   }
 
@@ -63,7 +63,7 @@ export async function upsertUserSubscription(
       created,
       ...data,
     },
-    update: {created, ...data},
+    update: { created, ...data },
   });
 }
 

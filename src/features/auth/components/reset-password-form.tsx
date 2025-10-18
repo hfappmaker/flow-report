@@ -16,10 +16,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useMessageState } from "@/hooks/use-message-state";
 import { reset } from "@/features/auth/actions/reset";
 import CardWrapper from "@/features/auth/components/card-wrapper";
 import { ResetSchema } from "@/features/auth/schemas/reset";
+import { useMessageState } from "@/hooks/use-message-state";
 
 const ResetPasswordForm = () => {
   const { error, success, showError, showSuccess } = useMessageState();
@@ -53,10 +53,7 @@ const ResetPasswordForm = () => {
       backButtonHref="/auth/login"
     >
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
             <FormField
               control={form.control}

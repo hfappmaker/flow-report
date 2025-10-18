@@ -75,7 +75,7 @@ const TestPageClient = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">サブスクリプション修正テスト</h1>
+      <h1 className="mb-6 text-2xl font-bold">サブスクリプション修正テスト</h1>
 
       <div className="space-y-4">
         <p className="text-muted-foreground">

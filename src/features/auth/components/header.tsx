@@ -1,8 +1,8 @@
 import { MdOutlineSecurity } from "react-icons/md";
 
-type HeaderProps = {
+interface HeaderProps {
   label: string;
-};
+}
 
 const Header = ({ label }: HeaderProps) => {
   return (

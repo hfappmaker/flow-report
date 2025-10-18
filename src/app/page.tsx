@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
-import { currentUser } from "@/features/auth/lib/auth";
+
 import { DEFAULT_LOGIN_REDIRECT } from "@/app/routes";
+import { currentUser } from "@/features/auth/lib/auth";
 
 export default async function Home() {
   const user = await currentUser();

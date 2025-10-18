@@ -17,13 +17,13 @@ export type ContractDashboard = RenameProperty<
   clientName: string;
 };
 
-export type ClientDashboard = {
+export interface ClientDashboard {
   clientName: string;
   contracts: Record<string, ContractDashboard>;
-};
+}
 
-export type DashboardClientPageProps = {
+export interface DashboardClientPageProps {
   draftWorkReports: Record<string, ContractDashboard>;
   submittedWorkReportsLast3Months: Record<string, ContractDashboard>;
   subscriptionInfo: SubscriptionInfo | null;
-};
+}

@@ -4,7 +4,6 @@ import { WorkReport as PrismaWorkReport } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 import { getContractById } from "@/features/contract/repositories/contract-repository";
-import { getMonthListBetween } from "@/utils/date-utils";
 import {
   checkWorkReportExists,
   createWorkReport,
@@ -20,6 +19,7 @@ import {
   WorkReportWithAttendances,
 } from "@/features/work-report/types/work-report";
 import type { WorkReportStatus } from "@/features/work-report/types/work-report";
+import { getMonthListBetween } from "@/utils/date-utils";
 
 export const createWorkReportAction = async (
   contractId: string,

@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { SubscriptionInfo } from "@/features/subscription/types/subscription";
 
 export const useSubscription = () => {
-  const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
+  const [subscriptionInfo, setSubscriptionInfo] =
+    useState<SubscriptionInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,7 +15,7 @@ export const useSubscription = () => {
       try {
         setIsLoading(true);
         const response = await fetch("/api/auth/get-subscription-info");
-        
+
         if (response.ok) {
           const data = await response.json();
           setSubscriptionInfo(data);
@@ -49,4 +50,4 @@ export const useSubscription = () => {
     error,
     refreshSubscription,
   };
-}; 
+};

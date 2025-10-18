@@ -30,7 +30,7 @@ export function SubscriptionPromptButton() {
   };
 
   return (
-    <Button 
+    <Button
       onClick={handleSubscribe}
       disabled={isLoading}
       className="w-full"
@@ -39,4 +39,4 @@ export function SubscriptionPromptButton() {
       {isLoading ? "処理中..." : "プレミアムプランに登録"}
     </Button>
   );
-} 
+}

@@ -72,7 +72,7 @@ export const DatePicker: FC<DatePickerProps> = ({
 
 DatePicker.displayName = "DatePicker";
 
-type DatePickerFieldProps<T extends FieldValues> = {
+interface DatePickerFieldProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T> &
     {
@@ -81,9 +81,8 @@ type DatePickerFieldProps<T extends FieldValues> = {
   label: string;
   placeholder?: string;
   disabled?: boolean;
-};
+}
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const DatePickerFieldContent = ({
   field,
   label,
@@ -142,13 +141,13 @@ export const DatePickerField = <T extends FieldValues>(
   );
 };
 
-type CommonSelectProps = {
+interface CommonSelectProps {
   value?: string;
   onValueChange: (value: string) => void;
   placeholder: React.ReactNode;
   className?: string;
   options: { value: string; label: string }[];
-};
+}
 
 const CommonSelect = React.memo(
   ({
@@ -205,7 +204,7 @@ const MONTH_OPTIONS = [
   { value: "11", label: "12月" },
 ];
 
-type YearMonthPickerFieldProps<T extends FieldValues> = {
+interface YearMonthPickerFieldProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T> &
     {
@@ -217,9 +216,9 @@ type YearMonthPickerFieldProps<T extends FieldValues> = {
   showClearButton?: boolean;
   yearTriggerClassName?: string;
   monthTriggerClassName?: string;
-};
+}
 
-type YearMonthPickerContentProps = {
+interface YearMonthPickerContentProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   field: any;
   yearPlaceholder: string;
@@ -228,7 +227,7 @@ type YearMonthPickerContentProps = {
   showClearButton: boolean;
   yearTriggerClassName?: string;
   monthTriggerClassName?: string;
-};
+}
 
 const YearMonthPickerContent = ({
   field,

@@ -10,7 +10,10 @@ import {
   getAttendancesByWorkReportId,
   updateWorkReportAttendance,
 } from "@/features/work-report/repositories/attendance-repository";
-import { AttendanceData, AttendanceDto } from "@/features/work-report/types/attendance";
+import {
+  AttendanceData,
+  AttendanceDto,
+} from "@/features/work-report/types/attendance";
 
 export const getAttendancesByWorkReportIdAction = async (
   workReportId: string,
@@ -170,7 +173,9 @@ export const createAttendancesByPromptAction = async (
     memo: attendance.memo ?? undefined,
   }));
   return currentAttendances.map((day) => {
-    const attendance = attendances.find((a) => a.date.getDate() === new Date(day.date).getDate());
+    const attendance = attendances.find(
+      (a) => a.date.getDate() === new Date(day.date).getDate(),
+    );
     if (!attendance) {
       // 該当日が生成されていない場合は、基本値を使用
       return {

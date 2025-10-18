@@ -1,4 +1,4 @@
-import { Suspense } from 'react'
+import { Suspense } from "react";
 
 import NewPasswordForm from "@/features/auth/components/new-password-form";
 
@@ -7,5 +7,9 @@ export const metadata = {
 };
 
 export default function NewPasswordPage() {
-  return <Suspense><NewPasswordForm /></Suspense>;
+  return (
+    <Suspense>
+      <NewPasswordForm />
+    </Suspense>
+  );
 }

@@ -12,7 +12,7 @@ import { type EmailTemplateFormValues } from "@/features/email/schemas/email-tem
 import { type DialogType } from "@/features/email/types/dialog";
 import { EmailTemplate } from "@/features/email/types/email-template";
 
-type EmailTemplateDialogProps = {
+interface EmailTemplateDialogProps {
   type: DialogType;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -20,7 +20,7 @@ type EmailTemplateDialogProps = {
   onSubmit: (values: EmailTemplateFormValues) => void;
   onDelete?: () => void;
   onCancel: () => void;
-};
+}
 
 export const EmailTemplateDialog = ({
   type,

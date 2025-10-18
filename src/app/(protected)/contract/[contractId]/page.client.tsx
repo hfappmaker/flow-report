@@ -37,11 +37,11 @@ import {
 } from "@/features/work-report/actions/work-report";
 import { WorkReportDialog } from "@/features/work-report/components/work-report-dialog";
 import { WorkReportWithAttendances } from "@/features/work-report/types/work-report";
-import { useMessageState } from "@/hooks/use-message-state";
 import {
   getWorkReportStatusColor,
   getWorkReportStatusDisplayText,
 } from "@/features/work-report/utils/status-utils";
+import { useMessageState } from "@/hooks/use-message-state";
 
 // 作業報告書作成用のスキーマ
 const createWorkReportSchema = z.object({
@@ -265,7 +265,7 @@ export default function ContractClientPage({
       </div>
 
       {workReports.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
+        <div className="py-12 text-center text-muted-foreground">
           <p>作業報告書がありません</p>
         </div>
       ) : (
@@ -306,16 +306,16 @@ export default function ContractClientPage({
             return (
               <div
                 key={workReport.id}
-                className="border border-gray-200 rounded-lg p-4 hover:border-gray-400 hover:bg-muted/50 hover:shadow-sm transition-all duration-200 w-full"
+                className="w-full rounded-lg border border-gray-200 p-4 transition-all duration-200 hover:border-gray-400 hover:bg-muted/50 hover:shadow-sm"
               >
-                <div className="flex items-center justify-between w-full">
+                <div className="flex w-full items-center justify-between">
                   <div
                     className="flex-1 cursor-pointer"
                     onClick={() => {
                       handleNavigation(workReport.id);
                     }}
                   >
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                    <h3 className="mb-2 text-lg font-semibold text-foreground">
                       {workReport.targetDate.getFullYear()}年
                       {workReport.targetDate.getMonth() + 1}月分
                     </h3>
@@ -341,7 +341,7 @@ export default function ContractClientPage({
                       </div>
                     </div>
                   </div>
-                  <div className="ml-4 flex items-center gap-3 flex-shrink-0">
+                  <div className="ml-4 flex shrink-0 items-center gap-3">
                     <Badge
                       className={`${getWorkReportStatusColor(workReport.status)} pointer-events-none`}
                     >
@@ -355,12 +355,12 @@ export default function ContractClientPage({
                         }}
                         size="sm"
                         variant="ghost"
-                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        className="size-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="size-4" />
                       </Button>
                     ) : (
-                      <div className="h-8 w-8" />
+                      <div className="size-8" />
                     )}
                   </div>
                 </div>
@@ -419,7 +419,7 @@ export default function ContractClientPage({
         {deleteTarget && (
           <div className="space-y-4">
             <div>
-              <p className="text-sm text-muted-foreground mb-2">削除対象:</p>
+              <p className="mb-2 text-sm text-muted-foreground">削除対象:</p>
               <p className="font-medium">
                 {deleteTarget.targetDate.getFullYear()}年
                 {deleteTarget.targetDate.getMonth() + 1}月分の作業報告書

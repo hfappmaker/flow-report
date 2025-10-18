@@ -5,10 +5,10 @@ import { toast } from "sonner";
 import { useTransitionContext } from "@/contexts/transition-context";
 import { createCustomerPortalSession } from "@/features/subscription/actions/create-customer-portal-session";
 
-type CancelSubscriptionButtonProps = {
+interface CancelSubscriptionButtonProps {
   children: React.ReactNode;
   onSuccess?: () => void;
-};
+}
 
 const CancelSubscriptionButton = ({
   children,

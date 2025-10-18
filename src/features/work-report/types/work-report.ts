@@ -3,10 +3,10 @@ import {
   Attendance as PrismaAttendance,
 } from "@prisma/client";
 
+import { Holiday } from "@/features/holidays/types/holiday";
 import { SerializedType } from "@/utils/serialization/serialization-utils";
 
 import { AttendanceDto } from "./attendance";
-import { Holiday } from "@/features/holidays/types/holiday";
 
 export type WorkReport = SerializedType<PrismaWorkReport>;
 
@@ -18,7 +18,7 @@ export type WorkReportWithAttendances = SerializedType<
 
 export type WorkReportStatus = WorkReport["status"];
 
-export type WorkReportClientProps = {
+export interface WorkReportClientProps {
   contractId: string;
   workReportId: string;
   attendances: AttendanceDto[];
@@ -46,4 +46,4 @@ export type WorkReportClientProps = {
   taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
   taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
   rateType: "upperLower" | "middle";
-};
+}

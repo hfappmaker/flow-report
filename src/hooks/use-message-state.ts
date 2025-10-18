@@ -1,9 +1,9 @@
 import { useState } from "react";
 
-type MessageState = {
+interface MessageState {
   message: string;
   date: Date;
-};
+}
 
 type MessageType = "error" | "success";
 
@@ -25,7 +25,13 @@ export const useMessageState = () => {
     setSuccess({ message, date: new Date() });
   };
 
-  const setMessage = ({ type, message }: { type: MessageType; message: string }) => {
+  const setMessage = ({
+    type,
+    message,
+  }: {
+    type: MessageType;
+    message: string;
+  }) => {
     if (type === "error") {
       showError(message);
     } else if (type === "success") {
@@ -39,4 +45,4 @@ export const useMessageState = () => {
   };
 
   return { error, success, showError, showSuccess, setMessage, clearMessages };
-}; 
+};

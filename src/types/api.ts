@@ -1,7 +1,7 @@
 // API レスポンス型定義
 
 // 基本エラーレスポンス
-export type ErrorResponse = {
+export interface ErrorResponse {
   message: string;
   errors?: {
     field: string;
@@ -10,7 +10,7 @@ export type ErrorResponse = {
 }
 
 // ページネーション付きレスポンス
-export type PaginatedResponse<T> = {
+export interface PaginatedResponse<T> {
   data: T[];
   pagination: {
     page: number;

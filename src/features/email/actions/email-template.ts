@@ -3,11 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { StrictOmit } from "ts-essentials";
 
-import { EmailTemplate } from "@/features/email/types/email-template";
 import {
   EmailTemplateRepository,
   EmailTemplateError,
 } from "@/features/email/repositories/email-template-repository";
+import { EmailTemplate } from "@/features/email/types/email-template";
 
 const repository = new EmailTemplateRepository();
 

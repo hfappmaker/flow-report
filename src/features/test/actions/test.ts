@@ -2,9 +2,12 @@
 
 import { Prisma } from "@prisma/client";
 
-import { Serialize, SerializedType } from "@/utils/serialization/serialization-utils";
+import {
+  Serialize,
+  SerializedType,
+} from "@/utils/serialization/serialization-utils";
 
-export type Test = {
+export interface Test {
   test: string;
   testDate: Date;
   testDecimal: Prisma.Decimal;
@@ -14,7 +17,7 @@ export type Test = {
     age: Prisma.Decimal;
     isActive: boolean;
   };
-};
+}
 
 export const getTestAction = async (): Promise<SerializedType<Test>> => {
   const test = await new Promise<SerializedType<Test>>((resolve) => {

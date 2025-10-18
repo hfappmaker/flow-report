@@ -5,21 +5,18 @@ import { toast } from "sonner";
 import { useTransitionContext } from "@/contexts/transition-context";
 import { createCustomerPortalSession } from "@/features/subscription/actions/create-customer-portal-session";
 
-type ResubscribeButtonProps = {
+interface ResubscribeButtonProps {
   children: React.ReactNode;
   onSuccess?: () => void;
 }
 
-const ResubscribeButton = ({ 
-  children, 
-  onSuccess 
-}: ResubscribeButtonProps) => {
+const ResubscribeButton = ({ children, onSuccess }: ResubscribeButtonProps) => {
   const { startTransition } = useTransitionContext();
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     startTransition(async () => {
       await createCustomerPortalSession().then((data) => {
         if (data.error) {

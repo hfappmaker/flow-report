@@ -15,4 +15,4 @@ export default function ClientLayout({
   }, [theme]);
 
   return children;
-} 
+}

@@ -33,8 +33,14 @@ const LoginForm = () => {
 
   const [showTwoFactor, setShowTwoFactor] = useState(false);
 
-  const [error, setError] = useState<{ message: string, date: Date }>({ message: "", date: new Date() });
-  const [success, setSuccess] = useState<{ message: string, date: Date }>({ message: "", date: new Date() });
+  const [error, setError] = useState<{ message: string; date: Date }>({
+    message: "",
+    date: new Date(),
+  });
+  const [success, setSuccess] = useState<{ message: string; date: Date }>({
+    message: "",
+    date: new Date(),
+  });
 
   const [isPending, startTransition] = useTransition();
 
@@ -67,7 +73,10 @@ const LoginForm = () => {
           setShowTwoFactor(true);
         }
       } catch (err) {
-        setError({ message: `Something went wrong! Error:${err}`, date: new Date() });
+        setError({
+          message: `Something went wrong! Error:${err}`,
+          date: new Date(),
+        });
       } finally {
         setShowTwoFactor(false);
         setSuccess({ message: "", date: new Date() });
@@ -86,10 +95,7 @@ const LoginForm = () => {
       showSocial
     >
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
             {showTwoFactor && (
               <FormField
@@ -161,8 +167,14 @@ const LoginForm = () => {
               </>
             )}
           </div>
-          <FormError message={error.message} resetSignal={error.date.getTime()} />
-          <FormSuccess message={success.message} resetSignal={success.date.getTime()} />
+          <FormError
+            message={error.message}
+            resetSignal={error.date.getTime()}
+          />
+          <FormSuccess
+            message={success.message}
+            resetSignal={success.date.getTime()}
+          />
           <Button
             type="submit"
             disabled={isPending}

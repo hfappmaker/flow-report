@@ -35,33 +35,33 @@ export function calculateWorkAmount(
   const settlementMax = params.settlementMax;
 
   if (workHours < settlementMin) {
-    if(params.rateType === "upperLower" && !params.lowerRate){
+    if (params.rateType === "upperLower" && !params.lowerRate) {
       return null;
     }
-    if(params.rateType === "middle" && !params.middleRate){
+    if (params.rateType === "middle" && !params.middleRate) {
       return null;
     }
     // 稼働時間が精算下限を下回る場合：控除処理
     const shortfallHours = settlementMin - workHours;
     const deductionRate =
       params.rateType === "middle"
-        ? params.middleRate ?? 0
-        : params.lowerRate ?? 0;
+        ? (params.middleRate ?? 0)
+        : (params.lowerRate ?? 0);
 
     contractAmount = contractAmount - shortfallHours * deductionRate;
   } else if (workHours > settlementMax) {
-    if(params.rateType === "upperLower" && !params.upperRate){
+    if (params.rateType === "upperLower" && !params.upperRate) {
       return null;
     }
-    if(params.rateType === "middle" && !params.middleRate){
+    if (params.rateType === "middle" && !params.middleRate) {
       return null;
     }
     // 稼働時間が精算上限を上回る場合：超過処理
     const excessHours = workHours - settlementMax;
     const excessRate =
       params.rateType === "middle"
-        ? params.middleRate ?? 0
-        : params.upperRate ?? 0;
+        ? (params.middleRate ?? 0)
+        : (params.upperRate ?? 0);
 
     contractAmount = contractAmount + excessHours * excessRate;
   }

@@ -10,8 +10,14 @@ import { newVerification } from "@/features/auth/actions/new-verification";
 import CardWrapper from "@/features/auth/components/card-wrapper";
 
 const NewVerificationForm = () => {
-  const [error, setError] = useState<{ message: string, date: Date }>({ message: "", date: new Date() });
-  const [success, setSuccess] = useState<{ message: string, date: Date }>({ message: "", date: new Date() });
+  const [error, setError] = useState<{ message: string; date: Date }>({
+    message: "",
+    date: new Date(),
+  });
+  const [success, setSuccess] = useState<{ message: string; date: Date }>({
+    message: "",
+    date: new Date(),
+  });
 
   const searchParams = useSearchParams();
 
@@ -48,7 +54,10 @@ const NewVerificationForm = () => {
       <div className="flex w-full items-center justify-center">
         {success.message === "" && error.message === "" && <Spinner />}
         <FormError message={error.message} resetSignal={error.date.getTime()} />
-        <FormSuccess message={success.message} resetSignal={success.date.getTime()} />
+        <FormSuccess
+          message={success.message}
+          resetSignal={success.date.getTime()}
+        />
       </div>
     </CardWrapper>
   );

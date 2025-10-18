@@ -4,10 +4,10 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 
-type BackButtonProps = {
+interface BackButtonProps {
   href: string;
   label: string;
-};
+}
 
 const BackButton = ({ href, label }: BackButtonProps) => {
   return (

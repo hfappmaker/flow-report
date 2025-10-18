@@ -2,9 +2,7 @@
 
 import { currentUser } from "@/features/auth/lib/auth";
 import { stripe } from "@/features/subscription/libs/stripe";
-import {
-  getStripeCustomerByUserId,
-} from "@/features/subscription/repositories/subscription-repository";
+import { getStripeCustomerByUserId } from "@/features/subscription/repositories/subscription-repository";
 import { CustomerPortalSessionResult } from "@/features/subscription/types/subscription";
 
 export async function createCustomerPortalSession(): Promise<CustomerPortalSessionResult> {

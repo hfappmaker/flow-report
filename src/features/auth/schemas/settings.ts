@@ -1,11 +1,11 @@
 import { UserRole } from "@prisma/client";
 import * as z from "zod";
 
-type UserData = {
+interface UserData {
   password?: string;
   newPassword?: string;
   newPasswordConfirmation?: string;
-};
+}
 
 const passwordRequired = (
   data: UserData,
@@ -58,4 +58,4 @@ export const SettingsSchema = z
   .refine((data) => data.newPassword === data.newPasswordConfirmation, {
     message: "Passwords do not match.",
     path: ["newPasswordConfirmation"],
-  }); 
+  });

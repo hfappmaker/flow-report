@@ -53,13 +53,13 @@ export const contractFormSchema = z.object({
 
 export type ContractFormValues = z.infer<typeof contractFormSchema>;
 
-type ContractFormProps = {
+interface ContractFormProps {
   defaultValues?: ContractFormValues;
   onSubmit: (values: ContractFormValues) => void;
   onCancel: () => void;
   submitButtonText: string;
   isEditing?: boolean;
-};
+}
 
 export const ContractForm = ({
   defaultValues,

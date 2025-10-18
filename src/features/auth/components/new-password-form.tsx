@@ -16,11 +16,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useMessageState } from "@/hooks/use-message-state";
 import { newPassword } from "@/features/auth/actions/new-password";
 import CardWrapper from "@/features/auth/components/card-wrapper";
 import { PasswordInput } from "@/features/auth/components/password-input";
 import { NewPasswordSchema } from "@/features/auth/schemas/new-password";
+import { useMessageState } from "@/hooks/use-message-state";
 
 const NewPasswordForm = () => {
   const searchParams = useSearchParams();
@@ -59,10 +59,7 @@ const NewPasswordForm = () => {
       backButtonHref="/auth/login"
     >
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
             <FormField
               control={form.control}
