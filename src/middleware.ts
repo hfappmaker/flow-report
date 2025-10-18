@@ -8,8 +8,13 @@ import {
   authRoutes,
   errorRoutes,
 } from "@/app/routes";
-import authConfig from "@/features/auth/lib/auth.config";
-import { SubscriptionInfo } from "@/features/subscription/types/subscription";
+import authConfig from "@/features/auth/lib/auth-edge.config";
+
+// Inline type to avoid importing Prisma Client in middleware
+interface SubscriptionInfo {
+  status: "ACTIVE" | "CANCELED" | "TRIAL" | null;
+  currentPeriodEnd: Date | null;
+}
 
 const { auth } = NextAuth(authConfig);
 

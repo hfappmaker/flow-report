@@ -1,24 +1,24 @@
 import type { SubscriptionStatus } from "@prisma/client";
 
-export type SubscriptionInfo = {
+export interface SubscriptionInfo {
   status: SubscriptionStatus | null;
   currentPeriodEnd: Date | null;
-};
+}
 
-export type CreateSubscriptionResult = {
+export interface CreateSubscriptionResult {
   success?: boolean;
   error?: string;
   subscriptionId?: string;
   clientSecret?: string;
-};
+}
 
-export type CheckoutSessionResult = {
+export interface CheckoutSessionResult {
   sessionId?: string;
   url?: string;
   error?: string;
-};
+}
 
-export type CustomerPortalSessionResult = {
+export interface CustomerPortalSessionResult {
   url?: string;
   error?: string;
-};
+}
