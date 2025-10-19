@@ -40,6 +40,8 @@ interface NumberInputFieldProps<T extends FieldValues> {
   label: string;
   placeholder?: string;
   disabled?: boolean;
+  min?: number;
+  max?: number;
 }
 
 const NumberInput = memo(
@@ -49,18 +51,23 @@ const NumberInput = memo(
     onKeyDown,
     placeholder,
     disabled,
+    min = 0,
+    max,
   }: {
     value: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     placeholder?: string;
     disabled?: boolean;
+    min?: number;
+    max?: number;
   }) => (
     <Input
       type="number"
       placeholder={placeholder}
       value={value}
-      min="0"
+      min={min}
+      max={max}
       step="1"
       onChange={onChange}
       onKeyDown={onKeyDown}
@@ -71,17 +78,20 @@ const NumberInput = memo(
 
 NumberInput.displayName = "NumberInput";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const NumberInputFieldContent = ({
   field,
   label,
   placeholder,
   disabled,
+  min,
+  max,
 }: {
   field: any;
   label: string;
   placeholder?: string;
   disabled?: boolean;
+  min?: number;
+  max?: number;
 }) => {
   const [localValue, setLocalValue] = useState<string>(
     field.value?.toString() ?? "",
@@ -122,6 +132,8 @@ const NumberInputFieldContent = ({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
+          min={min}
+          max={max}
         />
       </FormControl>
       <FormMessage />
@@ -134,7 +146,7 @@ NumberInputFieldContent.displayName = "NumberInputFieldContent";
 export const NumberInputField = <T extends FieldValues>(
   props: NumberInputFieldProps<T>,
 ) => {
-  const { control, name, label, placeholder, disabled } = props;
+  const { control, name, label, placeholder, disabled, min, max } = props;
   return (
     <FormField
       control={control}
@@ -145,6 +157,8 @@ export const NumberInputField = <T extends FieldValues>(
           label={label}
           placeholder={placeholder}
           disabled={disabled}
+          min={min}
+          max={max}
         />
       )}
     />
