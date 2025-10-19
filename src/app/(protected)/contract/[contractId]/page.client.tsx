@@ -66,6 +66,8 @@ export default function ContractClientPage({
     new Date().getFullYear(),
   );
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isNoMonthAvailableDialogOpen, setIsNoMonthAvailableDialogOpen] =
+    useState(false);
   const [deleteTarget, setDeleteTarget] =
     useState<WorkReportWithAttendances | null>(null);
 
@@ -284,6 +286,16 @@ export default function ContractClientPage({
     return hasExistingReport;
   };
 
+  // 指定された年に作成可能な月があるかチェックする関数
+  const hasAvailableMonthsInYear = (year: number): boolean => {
+    for (let month = 0; month < 12; month++) {
+      if (!isYearMonthDisabled(year, month)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   return (
     <div className="p-4">
       <h1 className="mb-4 text-xl font-bold">
@@ -319,7 +331,11 @@ export default function ContractClientPage({
           </div>
           <Button
             onClick={() => {
-              setIsCreateDialogOpen(true);
+              if (!hasAvailableMonthsInYear(selectedYear)) {
+                setIsNoMonthAvailableDialogOpen(true);
+              } else {
+                setIsCreateDialogOpen(true);
+              }
             }}
           >
             作業報告書を作成
@@ -499,6 +515,31 @@ export default function ContractClientPage({
             </div>
           </div>
         )}
+      </WorkReportDialog>
+
+      {/* 作成可能な月がない場合のエラーダイアログ */}
+      <WorkReportDialog
+        isOpen={isNoMonthAvailableDialogOpen}
+        onClose={() => {
+          setIsNoMonthAvailableDialogOpen(false);
+        }}
+        title="作業報告書を作成できません"
+      >
+        <div className="space-y-4">
+          <p>{selectedYear}年には作成可能な月がありません。</p>
+          <p className="text-sm text-muted-foreground">
+            他の年を選択するか、既存の作業報告書を削除してください。
+          </p>
+          <div className="flex justify-end pt-4">
+            <Button
+              onClick={() => {
+                setIsNoMonthAvailableDialogOpen(false);
+              }}
+            >
+              閉じる
+            </Button>
+          </div>
+        </div>
       </WorkReportDialog>
     </div>
   );
