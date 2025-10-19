@@ -46,7 +46,6 @@ src/
 ### 2.3 Coding Standards
 - Use TypeScript strict mode
 - Follow ESLint and Prettier configurations
-- Always run linting and type checking after code changes
 - Prefer function components
 - Explicitly define Props types
 - Avoid `any` type (except when using libraries where unavoidable - add comments explaining why)
