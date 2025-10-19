@@ -782,22 +782,22 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
               variant="outline"
               disabled={status !== "SUBMITTED"}
               onClick={() => {
-                setIsInvoiceDialogOpen(true);
-              }}
-            >
-              請求書作成
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={status !== "SUBMITTED"}
-              onClick={() => {
                 startTransition(async () => {
                   await handleConfirmCreateReport();
                 });
               }}
             >
               作業報告書を作成
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={status !== "SUBMITTED"}
+              onClick={() => {
+                setIsInvoiceDialogOpen(true);
+              }}
+            >
+              請求書作成
             </Button>
             <Button
               type="button"
