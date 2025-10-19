@@ -364,6 +364,7 @@ export const ContractForm = ({
             placeholder="（例）15"
             label="1日あたりの作業単位(分)"
             disabled={isEditing}
+            showClearButton={false}
           />
 
           <ComboBoxField
@@ -376,6 +377,7 @@ export const ContractForm = ({
             placeholder="（例）15"
             label="1ヶ月あたりの作業単位(分)"
             disabled={isEditing}
+            showClearButton={false}
           />
         </div>
 

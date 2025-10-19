@@ -3,7 +3,6 @@
 ## 1. Development Environment
 - Node.js 18+ required
 - Use npm as package manager (converted from Yarn)
-- Claude Code as the primary development assistant
 - DevContainer for unified development environment
 
 ## 2. Code Standards
@@ -43,16 +42,11 @@ src/
 - Directory/file names: kebab-case (e.g., `user-info/`, `user-profile.tsx`, `user-type.ts`)
 - Constants: UPPER_SNAKE_CASE
 - Variables/functions: camelCase
-  - Use short, intuitive, descriptive names (S-I-D principle)
-  - Avoid contractions
-  - Context order affects variable meaning
-  - Function verb pairs: get/set, remove/add, delete/create, handle (for event handlers)
-  - Use singular/plural appropriately
-  - Use prefixes only when they emphasize variable meaning
 
 ### 2.3 Coding Standards
 - Use TypeScript strict mode
 - Follow ESLint and Prettier configurations
+- Always run linting and type checking after code changes
 - Prefer function components
 - Explicitly define Props types
 - Avoid `any` type (except when using libraries where unavoidable - add comments explaining why)
@@ -60,17 +54,12 @@ src/
 - Use TailwindCSS classes instead of custom CSS
 - Define reusable styles in tailwind.config
 - Don't use `<br />` for line breaks
-- Manage environment variables in `.env` files
+- Manage environment variables in `.env` files (never commit sensitive information)
 - Don't import Prisma runtime libraries (e.g., `import { Decimal } from "@prisma/client/runtime/library"`)
+- Don't use Tailwind classes for element selection in tests
 
-## 3. Git Workflow
-### 3.1 Branch Strategy
-- `main`: Production branch
-- `develop`: Development branch
-- `feature/*`: Feature development branches
-- `hotfix/*`: Emergency bug fix branches
-
-### 3.2 Commit Messages
+## 3. Commit Messages
+Use conventional commit prefixes:
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation only changes
@@ -79,48 +68,11 @@ src/
 - `test`: Adding or modifying test code
 - `chore`: Build process or tool changes
 
-### 3.3 Pull Requests
-- Review required
-- Ensure tests pass
-- Resolve conflicts
-- Include appropriate descriptions and screenshots
-
-## 4. Security
-- Manage environment variables in `.env` files
-- Never commit sensitive information to Git
-- Properly encrypt and store authentication credentials
-- Prioritize security updates
-
-## 5. Performance
-- Optimize images
-- Use code splitting
-- Prevent unnecessary re-renders
-- Optimize bundle size
-
-## 6. Testing
-- Write at least one test case per function
-- Don't use Tailwind classes for element selection in tests
-- Implement component tests whenever possible
-- Implement E2E tests for critical user flows
-
-## 7. Deployment
-- Production deployments require approval process
-- Run tests before deployment
-- Prepare rollback procedures
-
-## 8. Documentation
-- Keep README updated
-- Update API specifications
-- Record important changes in CHANGELOG
-- Add comments when necessary
-
-## Claude Code Specific Instructions
-- Always run linting and type checking after code changes
-- Use the project's existing testing framework (check package.json or codebase)
+## 4. Claude Code Specific Instructions
 - Maintain the existing code style and patterns
 - Follow the folder structure when creating new files
-- Use TypeScript strict mode and avoid `any` types
 - Prioritize editing existing files over creating new ones
+- Use the project's existing testing framework (check package.json or codebase)
 
 ### MCP Settings Management
 - **ALWAYS** manage MCP permissions and settings in `.claude/settings.json` for repository-wide sharing
@@ -143,9 +95,8 @@ Claude Code should avoid processing these files and directories:
 - `prisma/migrations/` - Database migration files
 - `.git/` - Git repository data
 - `*.lock` - Lock files (package-lock.json, yarn.lock)
-- `.claude/settings.local.json` - Individual MCP settings (use .claude/settings.json instead)
 
-# important-instruction-reminders
+# Important Instruction Reminders
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.

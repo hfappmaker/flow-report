@@ -147,6 +147,7 @@ interface CommonSelectProps {
   placeholder: React.ReactNode;
   className?: string;
   options: { value: string; label: string }[];
+  disabledValues?: string[];
 }
 
 const CommonSelect = React.memo(
@@ -156,15 +157,20 @@ const CommonSelect = React.memo(
     placeholder,
     className,
     options,
+    disabledValues = [],
   }: CommonSelectProps) => {
     const items = React.useMemo(
       () =>
         options.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
+          <SelectItem
+            key={option.value}
+            value={option.value}
+            disabled={disabledValues.includes(option.value)}
+          >
             {option.label}
           </SelectItem>
         )),
-      [options],
+      [options, disabledValues],
     );
 
     return (
@@ -216,6 +222,7 @@ interface YearMonthPickerFieldProps<T extends FieldValues> {
   showClearButton?: boolean;
   yearTriggerClassName?: string;
   monthTriggerClassName?: string;
+  isYearMonthDisabled?: (year: number, month: number) => boolean;
 }
 
 interface YearMonthPickerContentProps {
@@ -227,6 +234,7 @@ interface YearMonthPickerContentProps {
   showClearButton: boolean;
   yearTriggerClassName?: string;
   monthTriggerClassName?: string;
+  isYearMonthDisabled?: (year: number, month: number) => boolean;
 }
 
 const YearMonthPickerContent = ({
@@ -237,6 +245,7 @@ const YearMonthPickerContent = ({
   showClearButton,
   yearTriggerClassName,
   monthTriggerClassName,
+  isYearMonthDisabled,
 }: YearMonthPickerContentProps) => {
   const date = field.value as Date | null;
   const selectedYear = date?.getFullYear().toString();
@@ -264,6 +273,31 @@ const YearMonthPickerContent = ({
     field.onChange(null);
   };
 
+  // 年の無効化リストを計算（その年のすべての月が無効な場合のみ無効化）
+  const disabledYears = React.useMemo(() => {
+    if (!isYearMonthDisabled) return [];
+
+    return YEAR_OPTIONS.filter((yearOption) => {
+      const year = parseInt(yearOption.value);
+      // その年の全ての月が無効化されているかチェック
+      return MONTH_OPTIONS.every((monthOption) => {
+        const month = parseInt(monthOption.value);
+        return isYearMonthDisabled(year, month);
+      });
+    }).map((option) => option.value);
+  }, [isYearMonthDisabled]);
+
+  // 月の無効化リストを計算（選択された年に基づく）
+  const disabledMonths = React.useMemo(() => {
+    if (!isYearMonthDisabled || !selectedYear) return [];
+
+    const year = parseInt(selectedYear);
+    return MONTH_OPTIONS.filter((monthOption) => {
+      const month = parseInt(monthOption.value);
+      return isYearMonthDisabled(year, month);
+    }).map((option) => option.value);
+  }, [isYearMonthDisabled, selectedYear]);
+
   const yearPlaceholderElement = React.useMemo(
     () => <span className="text-muted-foreground">{yearPlaceholder}</span>,
     [yearPlaceholder],
@@ -284,6 +318,7 @@ const YearMonthPickerContent = ({
           placeholder={yearPlaceholderElement}
           className={yearTriggerClassName}
           options={YEAR_OPTIONS}
+          disabledValues={disabledYears}
         />
         <CommonSelect
           value={selectedMonth ?? ""}
@@ -291,6 +326,7 @@ const YearMonthPickerContent = ({
           placeholder={monthPlaceholderElement}
           className={monthTriggerClassName}
           options={MONTH_OPTIONS}
+          disabledValues={disabledMonths}
         />
       </div>
       {showClearButton && (
@@ -323,6 +359,7 @@ export const YearMonthPickerField = <T extends FieldValues>(
     showClearButton = true,
     yearTriggerClassName,
     monthTriggerClassName,
+    isYearMonthDisabled,
   } = props;
 
   return (
@@ -338,6 +375,7 @@ export const YearMonthPickerField = <T extends FieldValues>(
           showClearButton={showClearButton}
           yearTriggerClassName={yearTriggerClassName}
           monthTriggerClassName={monthTriggerClassName}
+          isYearMonthDisabled={isYearMonthDisabled}
         />
       )}
     />

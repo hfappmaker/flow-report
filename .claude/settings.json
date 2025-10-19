@@ -42,7 +42,8 @@
       "mcp__serena__find_file",
       "mcp__serena__find_symbol",
       "mcp__serena__check_onboarding_performed",
-      "mcp__serena__read_memory"
+      "mcp__serena__read_memory",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": ["Read(.env*)", "Write(.env*)"]
   },

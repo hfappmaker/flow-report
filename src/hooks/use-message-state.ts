@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 interface MessageState {
   message: string;
@@ -17,32 +17,29 @@ export const useMessageState = () => {
     date: new Date(),
   });
 
-  const showError = (message: string) => {
+  const showError = useCallback((message: string) => {
     setError({ message, date: new Date() });
-  };
+  }, []);
 
-  const showSuccess = (message: string) => {
+  const showSuccess = useCallback((message: string) => {
     setSuccess({ message, date: new Date() });
-  };
+  }, []);
 
-  const setMessage = ({
-    type,
-    message,
-  }: {
-    type: MessageType;
-    message: string;
-  }) => {
-    if (type === "error") {
-      showError(message);
-    } else if (type === "success") {
-      showSuccess(message);
-    }
-  };
+  const setMessage = useCallback(
+    ({ type, message }: { type: MessageType; message: string }) => {
+      if (type === "error") {
+        showError(message);
+      } else if (type === "success") {
+        showSuccess(message);
+      }
+    },
+    [showError, showSuccess],
+  );
 
-  const clearMessages = () => {
+  const clearMessages = useCallback(() => {
     setError({ message: "", date: new Date() });
     setSuccess({ message: "", date: new Date() });
-  };
+  }, []);
 
   return { error, success, showError, showSuccess, setMessage, clearMessages };
 };

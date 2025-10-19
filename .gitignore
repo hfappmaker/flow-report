@@ -50,3 +50,6 @@ work-time-management-user-deploy_accessKeys.csv
 
 # serena cache
 .serena/cache/
+
+# Claude Code
+.claude/settings.local.json

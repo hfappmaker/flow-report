@@ -80,12 +80,20 @@ export default function ContractClientPage({
     },
   });
 
-  // 年の選択肢を生成（過去5年から未来2年まで）
+  // 年の選択肢を生成（契約期間内のみ）
   const generateYearOptions = () => {
-    const currentYear = new Date().getFullYear();
+    if (!contract) {
+      return [];
+    }
+
+    const startYear = new Date(contract.startDate).getFullYear();
+    const endYear = contract.endDate
+      ? new Date(contract.endDate).getFullYear()
+      : new Date().getFullYear() + 2; // 終了日がない場合は未来2年まで
+
     const years = [];
-    for (let year = currentYear - 5; year <= currentYear + 2; year++) {
-      years.push({ label: `${year}年`, value: year });
+    for (let year = startYear; year <= endYear; year++) {
+      years.push({ label: `${year.toString()}年`, value: year });
     }
     return years;
   };
@@ -99,16 +107,34 @@ export default function ContractClientPage({
 
   // コントラクト情報を取得
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     startTransition(async () => {
       try {
         const contractData = await getContractByIdAction(contractId);
+        if (!contractData) {
+          showError("契約情報が見つかりません");
+          return;
+        }
         setContract(contractData);
+
+        // 契約期間内に現在の選択年が収まっているかチェック
+        const startYear = new Date(contractData.startDate).getFullYear();
+        const endYear = contractData.endDate
+          ? new Date(contractData.endDate).getFullYear()
+          : new Date().getFullYear() + 2;
+
+        setSelectedYear((currentYear) => {
+          if (currentYear < startYear || currentYear > endYear) {
+            return startYear;
+          }
+          return currentYear;
+        });
       } catch (error: unknown) {
         console.error(error);
         showError("契約情報の取得に失敗しました");
       }
     });
-  }, [contractId]);
+  }, [contractId, showError, startTransition]);
 
   // Fetch work time reports for the project
   const fetchReports = useCallback(
@@ -126,7 +152,7 @@ export default function ContractClientPage({
         showError("作業報告書の取得に失敗しました");
       }
     },
-    [contractId],
+    [contractId, showError],
   );
 
   // 年選択の変更ハンドラ
@@ -136,6 +162,7 @@ export default function ContractClientPage({
     const yearRange = getYearRange(year);
 
     // 年変更時に即座にデータを取得
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     startTransition(async () => {
       await fetchReports(yearRange.from, yearRange.to);
     });
@@ -145,18 +172,15 @@ export default function ContractClientPage({
   useEffect(() => {
     const currentYear = new Date().getFullYear();
     const yearRange = getYearRange(currentYear);
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     startTransition(async () => {
       await fetchReports(yearRange.from, yearRange.to);
     });
-  }, [contractId, fetchReports]);
-
-  // 作成完了状態（SUBMITTEDステータス）でも削除可能にする
-  const isDeletable = (_workReport: WorkReportWithAttendances): boolean => {
-    return true;
-  };
+  }, [contractId, fetchReports, startTransition]);
 
   // 作業報告書作成処理
   const handleCreateWorkReport = (data: CreateWorkReportValues) => {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     startTransition(async () => {
       try {
         const createdWorkReport = await createWorkReportAction(
@@ -197,11 +221,12 @@ export default function ContractClientPage({
   const executeDelete = () => {
     if (!deleteTarget) return;
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     startTransition(async () => {
       try {
         await deleteWorkReportAction(deleteTarget.id);
         showSuccess(
-          `${deleteTarget.targetDate.getFullYear()}年${deleteTarget.targetDate.getMonth() + 1}月の作業報告書を削除しました`,
+          `${deleteTarget.targetDate.getFullYear().toString()}年${(deleteTarget.targetDate.getMonth() + 1).toString()}月の作業報告書を削除しました`,
         );
 
         // 現在表示中の年の作業報告書を再取得
@@ -219,6 +244,44 @@ export default function ContractClientPage({
     startTransition(() => {
       router.push(`/workReport/${workReportId}`);
     });
+  };
+
+  // 年月が無効かどうかを判定する関数
+  const isYearMonthDisabled = (year: number, month: number): boolean => {
+    if (!contract) return true;
+
+    // 契約範囲外の年月をチェック
+    const targetDate = new Date(Date.UTC(year, month, 1));
+    const contractStart = new Date(contract.startDate);
+    const contractStartMonth = new Date(
+      Date.UTC(contractStart.getFullYear(), contractStart.getMonth(), 1),
+    );
+
+    // 契約開始月より前は無効
+    if (targetDate < contractStartMonth) {
+      return true;
+    }
+
+    // 契約終了日が設定されている場合、終了月より後は無効
+    if (contract.endDate) {
+      const contractEnd = new Date(contract.endDate);
+      const contractEndMonth = new Date(
+        Date.UTC(contractEnd.getFullYear(), contractEnd.getMonth(), 1),
+      );
+      if (targetDate > contractEndMonth) {
+        return true;
+      }
+    }
+
+    // 既存の作業報告書がある年月は無効
+    const hasExistingReport = workReports.some((report) => {
+      const reportDate = new Date(report.targetDate);
+      return (
+        reportDate.getFullYear() === year && reportDate.getMonth() === month
+      );
+    });
+
+    return hasExistingReport;
   };
 
   return (
@@ -347,21 +410,17 @@ export default function ContractClientPage({
                     >
                       {getWorkReportStatusDisplayText(workReport.status)}
                     </Badge>
-                    {isDeletable(workReport) ? (
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openDeleteDialog(workReport);
-                        }}
-                        size="sm"
-                        variant="ghost"
-                        className="size-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    ) : (
-                      <div className="size-8" />
-                    )}
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openDeleteDialog(workReport);
+                      }}
+                      size="sm"
+                      variant="ghost"
+                      className="size-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -381,6 +440,7 @@ export default function ContractClientPage({
       >
         <Form {...createForm}>
           <form
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             onSubmit={createForm.handleSubmit(handleCreateWorkReport)}
             className="space-y-4"
           >
@@ -391,6 +451,7 @@ export default function ContractClientPage({
               yearTriggerClassName="w-24"
               monthTriggerClassName="w-20"
               showClearButton={false}
+              isYearMonthDisabled={isYearMonthDisabled}
             />
 
             <div className="flex justify-end gap-2 pt-4">
