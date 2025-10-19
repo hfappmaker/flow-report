@@ -44,7 +44,12 @@ export const contractFormSchema = z.object({
   basicStartTime: z.date().optional(),
   basicEndTime: z.date().optional(),
   basicBreakDuration: z.number().optional(),
-  closingDay: z.number().optional(),
+  closingDay: z
+    .number()
+    .int("整数で入力してください")
+    .min(1, "締め日は1日以上である必要があります")
+    .max(31, "締め日は31日以下である必要があります")
+    .optional(),
   taxInclusiveType: z.enum(["INCLUSIVE", "EXCLUSIVE"]).default("EXCLUSIVE"),
   taxRoundingType: z
     .enum(["ROUND_DOWN", "ROUND_UP", "ROUND"])
@@ -406,12 +411,33 @@ export const ContractForm = ({
         </div>
 
         {/* Closing Day */}
-        <NumberInputField
+        <FormField
           control={form.control}
           name="closingDay"
-          label="締め日"
-          placeholder="（例）20（未入力の場合は末日）"
-          disabled={isEditing}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>締め日</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  type="number"
+                  value={field.value ?? ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    field.onChange(value === "" ? undefined : Number(value));
+                  }}
+                  placeholder="（例）20（未入力の場合は末日）"
+                  disabled={isEditing}
+                  min={1}
+                  max={31}
+                />
+              </FormControl>
+              <p className="text-sm text-muted-foreground">
+                月末日がない場合（例：2月31日）は、その月の最終日が締め日となります
+              </p>
+              <FormMessage />
+            </FormItem>
+          )}
         />
 
         <DialogFooter sticky className="p-6">

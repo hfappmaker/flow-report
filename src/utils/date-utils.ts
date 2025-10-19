@@ -67,3 +67,57 @@ export function getMonthListBetween(startDate: Date, endDate: Date): Date[] {
 
   return monthList;
 }
+
+/**
+ * 指定された年月と締め日から実際の締め日を返す
+ * 締め日がその月に存在しない場合は月末日を返す
+ * @param year 年
+ * @param month 月（1-12）
+ * @param closingDay 締め日（1-31）。null/undefinedの場合は月末日を返す
+ * @returns 実際の締め日
+ */
+export function getClosingDate(
+  year: number,
+  month: number,
+  closingDay: number | null | undefined,
+): Date {
+  // 月末日を取得（次の月の0日目 = 今月の最終日）
+  const lastDayOfMonth = new Date(year, month, 0).getDate();
+
+  // closingDayがnull/undefinedの場合、または指定された日がその月に存在しない場合は月末日を返す
+  const actualClosingDay =
+    !closingDay || closingDay > lastDayOfMonth ? lastDayOfMonth : closingDay;
+
+  return new Date(year, month - 1, actualClosingDay);
+}
+
+/**
+ * 指定された年月と締め日から請求期間を返す
+ * @param year 年
+ * @param month 月（1-12）
+ * @param closingDay 締め日（1-31）。null/undefinedの場合は月末締めとして扱う
+ * @returns 請求期間（開始日と終了日）
+ */
+export function getBillingPeriod(
+  year: number,
+  month: number,
+  closingDay: number | null | undefined,
+): { startDate: Date; endDate: Date } {
+  // 当月の実際の締め日を取得
+  const endDate = getClosingDate(year, month, closingDay);
+
+  // 前月の実際の締め日を取得
+  const previousMonth = month === 1 ? 12 : month - 1;
+  const previousYear = month === 1 ? year - 1 : year;
+  const previousClosingDate = getClosingDate(
+    previousYear,
+    previousMonth,
+    closingDay,
+  );
+
+  // 前月の締め日の翌日を開始日とする
+  const startDate = new Date(previousClosingDate);
+  startDate.setDate(startDate.getDate() + 1);
+
+  return { startDate, endDate };
+}

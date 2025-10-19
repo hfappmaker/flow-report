@@ -3,6 +3,7 @@ import {
   ExcelRange,
 } from "@/features/work-report/schemas/work-report-form-schemas";
 import { AttendanceData } from "@/features/work-report/types/attendance";
+import { getBillingPeriod } from "@/utils/date-utils";
 
 export function generateDefaultAttendances(
   year: number,
@@ -11,35 +12,50 @@ export function generateDefaultAttendances(
 ): AttendanceData[] {
   const defaults: AttendanceData[] = [];
 
-  const adjustedYearClosingDay = monthIndex === 0 ? year - 1 : year;
-  const adjustedMonthIndexClosingDay = monthIndex === 0 ? 11 : monthIndex - 1;
+  let startDate: Date;
+  let endDate: Date;
 
-  const adjustedYear = monthIndex === 11 ? year + 1 : year;
-  const adjustedMonthIndex = monthIndex === 11 ? 0 : monthIndex + 1;
+  if (closingDay) {
+    // 締め日が指定されている場合、getBillingPeriodを使用して正確な期間を取得
+    const period = getBillingPeriod(year, monthIndex + 1, closingDay);
+    // getBillingPeriodが返すDateをUTC時刻に変換
+    startDate = new Date(
+      Date.UTC(
+        period.startDate.getFullYear(),
+        period.startDate.getMonth(),
+        period.startDate.getDate(),
+      ),
+    );
+    endDate = new Date(
+      Date.UTC(
+        period.endDate.getFullYear(),
+        period.endDate.getMonth(),
+        period.endDate.getDate(),
+      ),
+    );
+  } else {
+    // 締め日が指定されていない場合、月初から月末まで
+    startDate = new Date(Date.UTC(year, monthIndex, 1));
+    const adjustedYear = monthIndex === 11 ? year + 1 : year;
+    const adjustedMonthIndex = monthIndex === 11 ? 0 : monthIndex + 1;
+    endDate = new Date(Date.UTC(adjustedYear, adjustedMonthIndex, 0)); // 月末
+  }
 
-  let current = closingDay
-    ? new Date(
-        Date.UTC(
-          adjustedYearClosingDay,
-          adjustedMonthIndexClosingDay,
-          closingDay + 1,
-        ),
-      )
-    : new Date(Date.UTC(year, monthIndex, 1));
-  const end = closingDay
-    ? new Date(Date.UTC(year, monthIndex, closingDay + 1))
-    : new Date(Date.UTC(adjustedYear, adjustedMonthIndex, 1));
+  const current = new Date(startDate);
+  const end = new Date(endDate);
+  end.setDate(end.getDate() + 1); // 終了日を含めるため、終了日の次の日まで
 
   while (current < end) {
     defaults.push({
-      date: current,
+      date: new Date(current),
       startTime: undefined,
       endTime: undefined,
       breakDuration: undefined,
       memo: undefined,
     });
-    current = new Date(current.getTime() + 24 * 60 * 60 * 1000);
+    current.setDate(current.getDate() + 1);
   }
+
   return defaults;
 }
 
