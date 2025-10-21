@@ -75,6 +75,15 @@ export const ContractDetailsContent = ({
         <div className="grid grid-cols-3 gap-3">
           <div className="col-span-3">
             <label className="text-sm font-medium text-muted-foreground">
+              精算方式
+            </label>
+            <p className="mt-1">
+              {contract.rateType === "upperLower" && "上下割"}
+              {contract.rateType === "middle" && "中間割"}
+            </p>
+          </div>
+          <div className="col-span-3">
+            <label className="text-sm font-medium text-muted-foreground">
               月単価
               {contract.taxInclusiveType === "INCLUSIVE"
                 ? "（税込）"
@@ -104,39 +113,45 @@ export const ContractDetailsContent = ({
                 : "なし"}
             </p>
           </div>
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">
-              超過単価
-              {contract.taxInclusiveType === "INCLUSIVE"
-                ? "（税込）"
-                : "（税抜）"}
-            </label>
-            <p className="mt-1">
-              {contract.upperRate ? `${contract.upperRate}円` : "なし"}
-            </p>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">
-              控除単価
-              {contract.taxInclusiveType === "INCLUSIVE"
-                ? "（税込）"
-                : "（税抜）"}
-            </label>
-            <p className="mt-1">
-              {contract.lowerRate ? `${contract.lowerRate}円` : "なし"}
-            </p>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">
-              中間単価
-              {contract.taxInclusiveType === "INCLUSIVE"
-                ? "（税込）"
-                : "（税抜）"}
-            </label>
-            <p className="mt-1">
-              {contract.middleRate ? `${contract.middleRate}円` : "なし"}
-            </p>
-          </div>
+          {contract.rateType === "upperLower" && (
+            <>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">
+                  超過単価
+                  {contract.taxInclusiveType === "INCLUSIVE"
+                    ? "（税込）"
+                    : "（税抜）"}
+                </label>
+                <p className="mt-1">
+                  {contract.upperRate ? `${contract.upperRate}円` : "なし"}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">
+                  控除単価
+                  {contract.taxInclusiveType === "INCLUSIVE"
+                    ? "（税込）"
+                    : "（税抜）"}
+                </label>
+                <p className="mt-1">
+                  {contract.lowerRate ? `${contract.lowerRate}円` : "なし"}
+                </p>
+              </div>
+            </>
+          )}
+          {contract.rateType === "middle" && (
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                中間単価
+                {contract.taxInclusiveType === "INCLUSIVE"
+                  ? "（税込）"
+                  : "（税抜）"}
+              </label>
+              <p className="mt-1">
+                {contract.middleRate ? `${contract.middleRate}円` : "なし"}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
