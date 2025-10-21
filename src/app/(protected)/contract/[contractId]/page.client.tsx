@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Badge } from "@/components/ui/badge";
@@ -81,20 +81,6 @@ export default function ContractClientPage({
       targetDate: new Date(Date.UTC(selectedYear, new Date().getMonth(), 1)), // 初期値は選択年の1月1日
     },
   });
-
-  // 選択された年月を監視
-  const selectedTargetDate = useWatch({
-    control: createForm.control,
-    name: "targetDate",
-  });
-
-  // 選択された年月が無効かどうかを判定
-  const isCreateButtonDisabled = selectedTargetDate
-    ? isYearMonthDisabled(
-        selectedTargetDate.getFullYear(),
-        selectedTargetDate.getMonth(),
-      )
-    : true;
 
   // 年の選択肢を生成（契約期間内のみ）
   const generateYearOptions = () => {
@@ -495,9 +481,7 @@ export default function ContractClientPage({
               >
                 キャンセル
               </Button>
-              <Button type="submit" disabled={isCreateButtonDisabled}>
-                作成
-              </Button>
+              <Button type="submit">作成</Button>
             </div>
           </form>
         </Form>
