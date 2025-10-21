@@ -180,6 +180,16 @@ export default function ContractClientPage({
     });
   }, [contractId, fetchReports, startTransition]);
 
+  // 作成ダイアログが開かれたときに最も古い有効な年月をデフォルトに設定
+  useEffect(() => {
+    if (isCreateDialogOpen && contract) {
+      const oldestDate = getOldestAvailableYearMonth();
+      createForm.reset({
+        targetDate: oldestDate,
+      });
+    }
+  }, [isCreateDialogOpen, contract, workReports]);
+
   // 作業報告書作成処理
   const handleCreateWorkReport = (data: CreateWorkReportValues) => {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -294,6 +304,38 @@ export default function ContractClientPage({
       }
     }
     return false;
+  };
+
+  // 作成可能な最も古い年月を取得する関数
+  const getOldestAvailableYearMonth = (): Date => {
+    if (!contract) {
+      return new Date(Date.UTC(selectedYear, new Date().getMonth(), 1));
+    }
+
+    const contractStart = new Date(contract.startDate);
+    const startYear = contractStart.getFullYear();
+    const startMonth = contractStart.getMonth();
+
+    const contractEnd = contract.endDate
+      ? new Date(contract.endDate)
+      : new Date(Date.UTC(new Date().getFullYear() + 2, 11, 1));
+    const endYear = contractEnd.getFullYear();
+    const endMonth = contractEnd.getMonth();
+
+    // 契約開始月から終了月まで順にチェック
+    for (let year = startYear; year <= endYear; year++) {
+      const monthStart = year === startYear ? startMonth : 0;
+      const monthEnd = year === endYear ? endMonth : 11;
+
+      for (let month = monthStart; month <= monthEnd; month++) {
+        if (!isYearMonthDisabled(year, month)) {
+          return new Date(Date.UTC(year, month, 1));
+        }
+      }
+    }
+
+    // 作成可能な月がない場合は現在月を返す
+    return new Date(Date.UTC(selectedYear, new Date().getMonth(), 1));
   };
 
   return (
