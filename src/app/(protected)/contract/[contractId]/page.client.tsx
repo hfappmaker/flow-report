@@ -331,12 +331,9 @@ export default function ContractClientPage({
           </div>
           <Button
             onClick={() => {
-              if (!hasAvailableMonthsInYear(selectedYear)) {
-                setIsNoMonthAvailableDialogOpen(true);
-              } else {
-                setIsCreateDialogOpen(true);
-              }
+              setIsCreateDialogOpen(true);
             }}
+            disabled={!hasAvailableMonthsInYear(selectedYear)}
           >
             作業報告書を作成
           </Button>
