@@ -39,7 +39,7 @@ export async function getStripeCustomerByUserId(userId: string) {
     where: { userId },
     cacheStrategy: {
       ttl: 60,
-      tags: ["subscription", `subscription:user:${userId}`],
+      tags: ["subscription", `subscription_user_${userId}`],
     },
   });
 }
@@ -97,7 +97,7 @@ export async function getSubscriptionInfoByUserId(userId: string) {
     },
     cacheStrategy: {
       ttl: 60,
-      tags: ["subscription", `subscription:user:${userId}`],
+      tags: ["subscription", `subscription_user_${userId}`],
     },
   });
 
