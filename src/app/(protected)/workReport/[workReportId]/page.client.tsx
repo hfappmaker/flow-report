@@ -42,10 +42,7 @@ import {
 import { checkFreeeConnectionAction } from "@/features/freee/actions/freee-auth-actions";
 import { createFreeeInvoiceFromWorkReportAction } from "@/features/freee/actions/freee-invoice-actions";
 import { Holiday } from "@/features/holidays/types/holiday";
-import {
-  createAttendancesByPromptAction,
-  updateWorkReportAttendanceAction,
-} from "@/features/work-report/actions/attendance";
+import { updateWorkReportAttendanceAction } from "@/features/work-report/actions/attendance";
 import {
   updateWorkReportAttendancesAction,
   updateWorkReportStatusAction,
@@ -216,38 +213,27 @@ export default function ClientWorkReportPage({
   // 一括編集を適用する
   const applyBulkEdit = (data: BulkEditFormValues) => {
     startTransition(async () => {
-      const updatedValues =
-        data.dateRangeMode == "prompt"
-          ? await createAttendancesByPromptAction(
-              workReportId,
-              targetDate,
-              basicStartTime,
-              basicEndTime,
-              basicBreakDuration,
-              currentAttendances,
-              data.prompt ?? "",
-            )
-          : currentAttendances.map((attendance) => {
-              const shouldUpdate = shouldUpdateDate(
-                attendance.date,
-                data.dateRangeMode,
-                data.selectedDays,
-                data.startDate,
-                data.endDate,
-                data.excludeHolidays,
-                holidays,
-              );
-              if (shouldUpdate) {
-                return {
-                  ...attendance,
-                  startTime: data.startTime,
-                  endTime: data.endTime,
-                  breakDuration: data.breakDuration,
-                  memo: data.memo,
-                };
-              }
-              return attendance;
-            });
+      const updatedValues = currentAttendances.map((attendance) => {
+        const shouldUpdate = shouldUpdateDate(
+          attendance.date,
+          data.dateRangeMode,
+          data.selectedDays,
+          data.startDate,
+          data.endDate,
+          data.excludeHolidays,
+          holidays,
+        );
+        if (shouldUpdate) {
+          return {
+            ...attendance,
+            startTime: data.startTime,
+            endTime: data.endTime,
+            breakDuration: data.breakDuration,
+            memo: data.memo,
+          };
+        }
+        return attendance;
+      });
       await updateWorkReportAttendancesAction(
         workReportId,
         updatedValues.map((attendance) => ({
@@ -1177,7 +1163,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                   />
                 </div>
               )}
-
+              {/* 
               {bulkEditForm.watch("dateRangeMode") === "prompt" && (
                 <div className="py-2">
                   <FormField
@@ -1194,18 +1180,12 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                             {...field}
                           />
                         </FormControl>
-                        <div className="mt-1 text-xs text-muted-foreground">
-                          💡 その他の例:
-                          &quot;フレックスタイム制で10:00-19:00&quot; /
-                          &quot;短時間勤務で9:30-15:30、休憩30分&quot; /
-                          &quot;リモートワークで自由な時間&quot;
-                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-              )}
+              )} */}
 
               {(bulkEditForm.watch("dateRangeMode") === "weekday" ||
                 bulkEditForm.watch("dateRangeMode") === "custom" ||

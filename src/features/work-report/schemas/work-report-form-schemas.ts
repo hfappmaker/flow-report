@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const dateRangeModes = ["all", "weekday", "custom", "prompt"] as const;
+export const dateRangeModes = ["all", "weekday", "custom"] as const;
 export type DateRangeMode = (typeof dateRangeModes)[number];
 
 export interface ExcelRange {
