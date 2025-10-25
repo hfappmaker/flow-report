@@ -10,6 +10,7 @@ import { getFreeeToken } from "@/features/freee/repositories/freee-token-reposit
 import { mapWorkReportToFreeeInvoice } from "@/features/freee/utils/invoice-data-mapper";
 import { getAttendancesByWorkReportId } from "@/features/work-report/repositories/attendance-repository";
 import { getWorkReportById } from "@/features/work-report/repositories/work-report-repository";
+import axios from "axios";
 
 export interface CreateFreeeInvoiceOptions {
   billingDate?: string; // 請求日 YYYY-MM-DD
@@ -26,6 +27,7 @@ export interface CreateFreeeInvoiceResult {
   message: string;
   invoiceId?: number;
   invoiceUrl?: string;
+  requiresReauth?: boolean;
 }
 
 /**
@@ -115,6 +117,16 @@ export async function createFreeeInvoiceFromWorkReportAction(
     };
   } catch (error) {
     console.error("Failed to create freee invoice:", error);
+
+    // 403 or 401エラーの場合は再認可が必要
+    if (axios.isAxiosError(error) && (error.response?.status === 403 || error.response?.status === 401)) {
+      return {
+        success: false,
+        message: "freee連携の有効期限が切れています。再度連携してください。",
+        requiresReauth: true,
+      };
+    }
+
     const errorMessage =
       error instanceof Error ? error.message : "請求書の作成に失敗しました";
     return {

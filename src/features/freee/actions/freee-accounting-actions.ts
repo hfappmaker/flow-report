@@ -55,7 +55,7 @@ export async function getFreeePartnersAction(options?: {
   } catch (error) {
     console.error("Failed to get freee partners:", error);
 
-    // 403エラーの場合は再認可が必要
+    // 403 or 401エラーの場合は再認可が必要
     if (axios.isAxiosError(error) && (error.response?.status === 403 || error.response?.status === 401)) {
       return {
         success: false,
