@@ -39,8 +39,15 @@ export function SubscriptionStatus({
       case "ACTIVE":
         return (
           <Badge variant="success" className="pointer-events-none">
-            ご利用中 (次回更新日:{" "}
-            {subscriptionInfo.currentPeriodEnd?.toLocaleDateString() ?? "不明"})
+            ご利用中 (次回更新日時:{" "}
+            {subscriptionInfo.currentPeriodEnd?.toLocaleString("ja-JP", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            }) ?? "不明"}
+            )
           </Badge>
         );
       case "CANCELED":
