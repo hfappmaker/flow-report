@@ -43,9 +43,10 @@
       "mcp__serena__find_symbol",
       "mcp__serena__check_onboarding_performed",
       "mcp__serena__read_memory",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Read(.env.example)"
     ],
-    "deny": ["Read(.env)", "Read(.env*.local)", "Write(.env*)"]
+    "deny": ["Read(.env*)", "Write(.env*)"]
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": ["playwright", "postgresql", "serena"]
