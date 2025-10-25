@@ -32,6 +32,7 @@ yarn-error.log*
 
 # keep these env files
 !.env.example
+!.env.development
 
 # vercel
 .vercel
