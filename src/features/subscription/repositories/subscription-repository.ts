@@ -1,6 +1,7 @@
 import type { SubscriptionStatus } from "@prisma/client";
 
 import { getUserById } from "@/features/auth/repositories/user-repository";
+import { invalidateSubscriptionCache } from "@/repositories/cache-invalidation";
 import { db } from "@/repositories/db";
 
 // StripeCustomer関連の操作
@@ -36,6 +37,10 @@ export async function upsertStripeCustomer(
 export async function getStripeCustomerByUserId(userId: string) {
   return await db.stripeCustomer.findUnique({
     where: { userId },
+    cacheStrategy: {
+      ttl: 60,
+      tags: ["subscription", `subscription:user:${userId}`],
+    },
   });
 }
 
@@ -56,7 +61,7 @@ export async function upsertUserSubscription(
     return stripeSubscription; // 既存のレコードが新しい場合は何もしない
   }
 
-  return await db.subscription.upsert({
+  const result = await db.subscription.upsert({
     where: { stripeSubscriptionId: data.stripeSubscriptionId },
     create: {
       stripeCustomerId,
@@ -65,6 +70,14 @@ export async function upsertUserSubscription(
     },
     update: { created, ...data },
   });
+
+  // Subscription更新後、該当ユーザーのキャッシュを無効化
+  const user = await getUserByStripeCustomerId(stripeCustomerId);
+  if (user) {
+    await invalidateSubscriptionCache(user.id);
+  }
+
+  return result;
 }
 
 export async function getSubscriptionInfoByUserId(userId: string) {
@@ -81,6 +94,10 @@ export async function getSubscriptionInfoByUserId(userId: string) {
         orderBy: { createdAt: "desc" },
         take: 1, // 最新のサブスクリプションを取得
       },
+    },
+    cacheStrategy: {
+      ttl: 60,
+      tags: ["subscription", `subscription:user:${userId}`],
     },
   });
 
