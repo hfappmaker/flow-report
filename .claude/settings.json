@@ -45,7 +45,7 @@
       "mcp__serena__read_memory",
       "mcp__ide__getDiagnostics"
     ],
-    "deny": ["Read(.env*)", "Write(.env*)"]
+    "deny": ["Read(.env)", "Read(.env*.local)", "Write(.env*)"]
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": ["playwright", "postgresql", "serena"]
