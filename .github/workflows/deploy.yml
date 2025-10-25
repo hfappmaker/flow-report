@@ -59,7 +59,7 @@ jobs:
       # - name: Apply all pending migrations to the database
       #   run: npx prisma migrate deploy
       #   env:
-      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      #     PRISMA_DATABASE_URL: ${{ secrets.PRISMA_DATABASE_URL }}
   deploy:
     runs-on: ubuntu-latest
     needs: build-and-push

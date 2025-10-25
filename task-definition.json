@@ -47,7 +47,7 @@
             "environment": [
             ],
             "command": [
-                "export DATABASE_URL=\"$DATABASE_ENGINE://$DATABASE_USERNAME:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT/$DATABASE_IDENTIFIER?schema=public&connection_limit=1\" && exec npm run start"
+                "export PRISMA_DATABASE_URL=\"$DATABASE_ENGINE://$DATABASE_USERNAME:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT/$DATABASE_IDENTIFIER?schema=public&connection_limit=1\" && exec npm run start"
             ],
             "environmentFiles": [],
             "mountPoints": [],
