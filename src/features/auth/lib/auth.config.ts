@@ -10,7 +10,7 @@ import { LoginSchema } from "@/features/auth/schemas/login";
 export default {
   providers: [
     // テスト環境ではOAuth認証を無効化
-    ...(process.env.LOCAL_NODE_ENV === "test" ? [] : [Google]),
+    ...(process.env.NODE_ENV === "test" ? [] : [Google]),
     Credentials({
       async authorize(credentials): Promise<User | null> {
         const validatedFields = LoginSchema.safeParse(credentials);

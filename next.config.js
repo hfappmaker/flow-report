@@ -16,7 +16,7 @@ const nextConfig = {
       }
       
       // Optimize chunks
-      if (process.env.NODE_ENV === 'production') {
+      if (process.env.VERCEL_ENV === 'production') {
         config.optimization = {
           ...config.optimization,
           splitChunks: {
@@ -43,9 +43,6 @@ const nextConfig = {
       }
       
       return config
-    },
-    env: {
-      LOCAL_NODE_ENV: process.env.NODE_ENV,
     }
   }
   

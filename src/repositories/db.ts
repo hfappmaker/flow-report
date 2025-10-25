@@ -103,4 +103,4 @@ type ExtendedPrismaClient = typeof extendedDb;
 const db = globalThis.prisma ?? extendedDb;
 
 export { db };
-if (process.env.NODE_ENV !== "production") globalThis.prisma = db;
+if (process.env.VERCEL_ENV !== "production") globalThis.prisma = db;

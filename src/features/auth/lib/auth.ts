@@ -93,7 +93,7 @@ export const {
 
   debug:
     process.env.NODE_ENV === "development" ||
-    process.env.LOCAL_NODE_ENV === "test",
+    process.env.NODE_ENV === "test",
   ...authConfig,
 } satisfies NextAuthConfig);
 
