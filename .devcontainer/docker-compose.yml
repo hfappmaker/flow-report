@@ -20,7 +20,7 @@ services:
     #   POSTGRES_PORT: ${POSTGRES_PORT}
     #   POSTGRES_DB: ${POSTGRES_DB}
     #   POSTGRES_HOST_AUTH_METHOD: ${POSTGRES_HOST_AUTH_METHOD}
-    #   PRISMA_DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+    #   DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
     # env_file:
     #     # Ensure that the variables in .env match the same variables in devcontainer.json
     #     - ../.env.local

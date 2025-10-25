@@ -22,7 +22,7 @@ image:
     context: ./
     dockerfile: ./Dockerfile 
     args:
-      PRISMA_DATABASE_URL: postgresql://postgres:@localhost:5432/worktime_management?schema=public&connection_limit=1 # prod環境用の値だとする
+      DATABASE_URL: postgresql://postgres:@localhost:5432/worktime_management?schema=public&connection_limit=1 # prod環境用の値だとする
   # Port exposed through your container to route traffic to it.
 
 cpu: 256       # Number of CPU units for the task.
