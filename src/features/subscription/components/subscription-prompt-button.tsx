@@ -36,7 +36,7 @@ export function SubscriptionPromptButton() {
       className="w-full"
       size="lg"
     >
-      {isLoading ? "処理中..." : "プレミアムプランに登録"}
+      {isLoading ? "処理中..." : "有料プランに登録"}
     </Button>
   );
 }

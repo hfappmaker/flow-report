@@ -61,26 +61,6 @@ export function TrialSubscriptionPrompt() {
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="rounded-lg border p-4">
-            <h4 className="mb-2 font-semibold">
-              プレミアムプランに含まれる機能:
-            </h4>
-            <ul className="space-y-1 text-sm text-muted-foreground">
-              <li>✓ 全ての機能への無制限アクセス</li>
-              <li>✓ 優先サポート</li>
-              <li>✓ データの自動バックアップ</li>
-              <li>✓ 高度なレポート機能</li>
-            </ul>
-          </div>
-
-          <div className="rounded-lg bg-blue-50 p-3 text-sm">
-            <p className="text-blue-900">
-              <strong>特別オファー:</strong>{" "}
-              今なら30日間無料でお試しいただけます。
-              クレジットカードの登録は必要ですが、トライアル期間中はいつでもキャンセル可能です。
-            </p>
-          </div>
-
           {error && (
             <div className="rounded-lg bg-red-50 p-3 text-sm">
               <p className="text-red-900">{error}</p>

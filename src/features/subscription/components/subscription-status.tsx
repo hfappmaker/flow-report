@@ -24,9 +24,9 @@ export function SubscriptionStatus({
       const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 
       const parts = [];
-      if (days > 0) parts.push(`${days}日`);
-      if (hours > 0) parts.push(`${hours}時間`);
-      if (minutes > 0) parts.push(`${minutes}分`);
+      if (days > 0) parts.push(`${String(days)}日`);
+      if (hours > 0) parts.push(`${String(hours)}時間`);
+      if (minutes > 0) parts.push(`${String(minutes)}分`);
 
       return parts.length > 0 ? parts.join("") : "1分未満";
     };
@@ -39,7 +39,8 @@ export function SubscriptionStatus({
       case "ACTIVE":
         return (
           <Badge variant="success" className="pointer-events-none">
-            プレミアムプラン
+            ご利用中 (次回更新日:{" "}
+            {subscriptionInfo.currentPeriodEnd?.toLocaleDateString() ?? "不明"})
           </Badge>
         );
       case "CANCELED":
