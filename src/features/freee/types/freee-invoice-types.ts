@@ -7,7 +7,7 @@
  */
 export interface FreeeInvoiceCreateRequest {
   company_id: number; // 必須: 事業所ID
-  template_id: number; // 必須: 帳票テンプレートID
+  template_id?: number; // 帳票テンプレートID（指定しない場合、事業所の既定のテンプレートが指定されます。）
   invoice_number?: string; // 請求書番号（自動採番の場合は不要）
   branch_no?: number; // 枝番
   billing_date: string; // 必須: 請求日 YYYY-MM-DD
@@ -18,7 +18,7 @@ export interface FreeeInvoiceCreateRequest {
   tax_entry_method: "in" | "out"; // 必須: 税込/税抜（in=税込、out=税抜）
   tax_fraction: "omit" | "roundoff" | "cut_up"; // 必須: 消費税端数処理
   line_amount_fraction: "omit" | "roundoff" | "round_up" | "cut_up"; // 必須: 明細金額端数処理
-  withholding_tax_entry_method?: "in" | "out"; // 源泉徴収税処理方法
+  withholding_tax_entry_method: "in" | "out"; // 源泉徴収税処理方法
   include_amount_brought_forward?: boolean; // 繰越金額を含むか
   amount_brought_forward?: number; // 繰越金額
   invoice_note?: string; // 備考

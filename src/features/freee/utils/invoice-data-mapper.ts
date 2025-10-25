@@ -2,16 +2,15 @@ import {
   calculateTotalWorkMinutes,
   calculateWorkAmount,
 } from "@/features/contract/utils/contract-calculation-utils";
-import type { AttendanceData } from "@/features/work-report/types/attendance";
 import type {
   FreeeInvoiceCreateRequest,
   FreeeInvoiceLine,
 } from "@/features/freee/types/freee-invoice-types";
+import type { AttendanceData } from "@/features/work-report/types/attendance";
 
 export interface WorkReportInvoiceData {
   targetDate: Date;
   contractName: string;
-  clientName: string;
   attendances: AttendanceData[];
   unitPrice: number | undefined;
   settlementMin: number | undefined;
@@ -29,7 +28,7 @@ export interface WorkReportInvoiceData {
  */
 export function mapWorkReportToFreeeInvoice(
   companyId: number,
-  templateId: number,
+  partnerId: number,
   workReportData: WorkReportInvoiceData,
   options?: {
     billingDate?: string; // 請求日 YYYY-MM-DD
@@ -40,7 +39,7 @@ export function mapWorkReportToFreeeInvoice(
     partnerTitle?: string; // 敬称（デフォルト: "御中"）
   },
 ): FreeeInvoiceCreateRequest {
-  const { targetDate, contractName, clientName, attendances } = workReportData;
+  const { targetDate, contractName, attendances } = workReportData;
 
   // 稼働時間と金額を計算
   const totalWorkMinutes = calculateTotalWorkMinutes(attendances);
@@ -85,18 +84,15 @@ export function mapWorkReportToFreeeInvoice(
   // 消費税端数処理のマッピング
   const taxFraction = mapTaxRounding(workReportData.taxRoundingType);
 
-  // 単価を計算（小数点3桁まで対応）
-  const unitPrice = (amountCalculation.baseAmount / totalWorkHours).toFixed(3);
-
   // 明細作成
   const lines: FreeeInvoiceLine[] = [
     {
       type: "item",
       description: `${targetDate.getFullYear()}年${targetDate.getMonth() + 1}月度 ${contractName}`,
       sales_date: issueDate,
-      unit: "時間",
-      quantity: parseFloat(totalWorkHours.toFixed(2)), // 数値型
-      unit_price: unitPrice, // 文字列型
+      unit: "点",
+      quantity: 1, // 数値型
+      unit_price: amountCalculation.baseAmount.toFixed(3), // 文字列型
       tax_rate: 10, // 標準税率10%
       reduced_tax_rate: false,
     },
@@ -104,17 +100,17 @@ export function mapWorkReportToFreeeInvoice(
 
   const invoiceRequest: FreeeInvoiceCreateRequest = {
     company_id: companyId,
-    template_id: templateId,
+    partner_id: partnerId,
     billing_date: billingDate,
     issue_date: issueDate,
     payment_date: paymentDate,
     subject:
-      options?.subject ||
+      options?.subject ??
       `${targetDate.getFullYear()}年${targetDate.getMonth() + 1}月度 ${contractName}`,
     tax_entry_method: taxEntryMethod,
     tax_fraction: taxFraction,
     line_amount_fraction: "round_up", // 明細金額は切り上げ
-    partner_display_name: clientName,
+    withholding_tax_entry_method: "in", // 源泉徴収なし
     partner_title: options?.partnerTitle ?? "御中",
     invoice_note: options?.invoiceNote,
     lines: lines,

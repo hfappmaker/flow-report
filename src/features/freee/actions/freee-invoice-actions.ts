@@ -18,6 +18,7 @@ export interface CreateFreeeInvoiceOptions {
   subject?: string; // 件名
   invoiceNote?: string; // 備考
   partnerTitle?: string; // 敬称
+  partnerId?: number; // 取引先ID（非推奨: 直接パラメータとして渡すことを推奨）
 }
 
 export interface CreateFreeeInvoiceResult {
@@ -32,7 +33,7 @@ export interface CreateFreeeInvoiceResult {
  */
 export async function createFreeeInvoiceFromWorkReportAction(
   workReportId: string,
-  templateId: number,
+  partnerId: number,
   options?: CreateFreeeInvoiceOptions,
 ): Promise<CreateFreeeInvoiceResult> {
   try {
@@ -77,11 +78,10 @@ export async function createFreeeInvoiceFromWorkReportAction(
     // 作業報告書データをfreee請求書データに変換
     const invoiceRequest = mapWorkReportToFreeeInvoice(
       tokenData.companyId,
-      templateId,
+      partnerId,
       {
         targetDate: workReport.targetDate,
         contractName: contract.name,
-        clientName: contract.clientName,
         attendances: attendances,
         unitPrice: contract.unitPrice ? Number(contract.unitPrice) : undefined,
         settlementMin: contract.settlementMin
@@ -105,10 +105,7 @@ export async function createFreeeInvoiceFromWorkReportAction(
     // freee請求書を作成
     const response = await createFreeeInvoice(user.id, invoiceRequest);
 
-    const invoiceUrl = getFreeeInvoiceWebUrl(
-      tokenData.companyId,
-      response.invoice.id,
-    );
+    const invoiceUrl = getFreeeInvoiceWebUrl(response.invoice.id);
 
     return {
       success: true,
