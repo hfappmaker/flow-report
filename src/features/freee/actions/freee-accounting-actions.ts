@@ -56,7 +56,7 @@ export async function getFreeePartnersAction(options?: {
     console.error("Failed to get freee partners:", error);
 
     // 403エラーの場合は再認可が必要
-    if (axios.isAxiosError(error) && error.response?.status === 403) {
+    if (axios.isAxiosError(error) && (error.response?.status === 403 || error.response?.status === 401)) {
       return {
         success: false,
         message: "freee連携の有効期限が切れています。再度連携してください。",
