@@ -1,25 +1,26 @@
-import { Attendance as PrismaAttendance } from "@prisma/client";
+import type { Attendance as PrismaAttendance } from "@prisma/client";
 
-import { AttendanceDto } from "@/features/work-report/types/attendance";
+import type { AttendanceDto } from "@/features/work-report/types/attendance";
 import { db } from "@/repositories/db";
+import { Serialize } from "@/utils/serialization/serialization-utils";
 
 export async function getAttendancesByWorkReportId(
   workReportId: string,
-): Promise<PrismaAttendance[]> {
+): Promise<AttendanceDto[]> {
   const attendances = await db.attendance.findMany({
     where: {
       workReportId: workReportId,
     },
   });
 
-  return attendances;
+  return Serialize(attendances);
 }
 
 export async function updateWorkReportAttendance(
   workReportId: string,
   date: Date,
   attendance: AttendanceDto,
-): Promise<PrismaAttendance> {
+): Promise<AttendanceDto> {
   const updatedAttendance = await db.attendance.upsert({
     where: { date_workReportId: { date, workReportId } },
     update: {
@@ -38,5 +39,5 @@ export async function updateWorkReportAttendance(
     },
   });
 
-  return updatedAttendance;
+  return Serialize(updatedAttendance);
 }

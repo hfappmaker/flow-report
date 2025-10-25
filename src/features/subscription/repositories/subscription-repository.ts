@@ -1,4 +1,4 @@
-import { SubscriptionStatus } from "@prisma/client";
+import type { SubscriptionStatus } from "@prisma/client";
 
 import { getUserById } from "@/features/auth/repositories/user-repository";
 import { db } from "@/repositories/db";

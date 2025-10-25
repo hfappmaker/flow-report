@@ -28,6 +28,7 @@ export function generateFreeeAuthUrl(
     client_id: clientId,
     redirect_uri: redirectUri,
     state,
+    prompt: "select_company",
   });
 
   return `${baseUrl}/authorize?${params.toString()}`;
@@ -49,18 +50,20 @@ export async function exchangeCodeForToken(
   }
 
   try {
+    const params = new URLSearchParams({
+      grant_type: "authorization_code",
+      client_id: clientId,
+      client_secret: clientSecret,
+      code,
+      redirect_uri: redirectUri,
+    });
+
     const response = await axios.post<FreeeTokenResponse>(
       `${baseUrl}/token`,
-      {
-        grant_type: "authorization_code",
-        client_id: clientId,
-        client_secret: clientSecret,
-        code,
-        redirect_uri: redirectUri,
-      },
+      params,
       {
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
         },
       },
     );
@@ -106,17 +109,19 @@ export async function refreshAccessToken(
   }
 
   try {
+    const params = new URLSearchParams({
+      grant_type: "refresh_token",
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+    });
+
     const response = await axios.post<FreeeTokenResponse>(
       `${baseUrl}/token`,
-      {
-        grant_type: "refresh_token",
-        client_id: clientId,
-        client_secret: clientSecret,
-        refresh_token: refreshToken,
-      },
+      params,
       {
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
         },
       },
     );

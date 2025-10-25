@@ -1,6 +1,5 @@
 "use server";
 
-import { Attendance as PrismaAttendance } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -20,7 +19,7 @@ export const getAttendancesByWorkReportIdAction = async (
 ): Promise<AttendanceDto[]> => {
   try {
     const attendances = await getAttendancesByWorkReportId(workReportId);
-    return attendances.map(convertPrismaAttendanceToAttendanceDto);
+    return attendances;
   } catch (error) {
     console.error("Error fetching attendances:", error);
     throw new Error("Failed to fetch attendances");
@@ -38,7 +37,7 @@ export const updateWorkReportAttendanceAction = async (
     attendance,
   );
   revalidatePath(`/workReport/${workReportId}`);
-  return convertPrismaAttendanceToAttendanceDto(updatedAttendance);
+  return updatedAttendance;
 };
 
 export const createAttendancesByPromptAction = async (
@@ -115,9 +114,7 @@ export const createAttendancesByPromptAction = async (
 
   💡 **プロンプト例**
   - "9:00-18:00の勤務で、昼休憩は60分"
-  - "フレックスタイム制で10:00-19:00"
-  - "短時間勤務で9:30-15:30、休憩30分"
-  - "リモートワークで自由な時間"`;
+  - "短時間勤務で9:30-15:30、休憩30分"`;
 
   console.log(systemPrompt);
 
@@ -190,15 +187,3 @@ export const createAttendancesByPromptAction = async (
     return attendance;
   });
 };
-
-function convertPrismaAttendanceToAttendanceDto(
-  attendance: PrismaAttendance,
-): AttendanceDto {
-  return {
-    ...attendance,
-    startTime: attendance.startTime ?? undefined,
-    endTime: attendance.endTime ?? undefined,
-    breakDuration: attendance.breakDuration ?? undefined,
-    memo: attendance.memo ?? undefined,
-  };
-}

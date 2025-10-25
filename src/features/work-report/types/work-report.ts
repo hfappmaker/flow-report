@@ -1,4 +1,4 @@
-import {
+import type {
   WorkReport as PrismaWorkReport,
   Attendance as PrismaAttendance,
 } from "@prisma/client";

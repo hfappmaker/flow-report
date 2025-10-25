@@ -1,6 +1,6 @@
 "use server";
 
-import { WorkReport as PrismaWorkReport } from "@prisma/client";
+import type { WorkReport as PrismaWorkReport } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 import { getContractById } from "@/features/contract/repositories/contract-repository";

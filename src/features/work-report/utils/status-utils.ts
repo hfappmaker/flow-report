@@ -1,4 +1,4 @@
-import { WorkReportStatus } from "@prisma/client";
+import type { WorkReportStatus } from "@prisma/client";
 
 export const getWorkReportStatusColor = (status: WorkReportStatus): string => {
   switch (status) {

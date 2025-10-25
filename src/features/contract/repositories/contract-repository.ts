@@ -1,5 +1,6 @@
-import { Contract as PrismaContract, Prisma } from "@prisma/client";
-import { StrictOmit } from "ts-essentials";
+import type { Contract as PrismaContract } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import type { StrictOmit } from "ts-essentials";
 
 import {
   ContractOutput,

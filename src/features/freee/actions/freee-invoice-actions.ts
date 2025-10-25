@@ -8,6 +8,7 @@ import {
 } from "@/features/freee/lib/freee-invoice-api-client";
 import { getFreeeToken } from "@/features/freee/repositories/freee-token-repository";
 import { mapWorkReportToFreeeInvoice } from "@/features/freee/utils/invoice-data-mapper";
+import { getAttendancesByWorkReportId } from "@/features/work-report/repositories/attendance-repository";
 import { getWorkReportById } from "@/features/work-report/repositories/work-report-repository";
 
 export interface CreateFreeeInvoiceOptions {
@@ -62,6 +63,8 @@ export async function createFreeeInvoiceFromWorkReportAction(
       };
     }
 
+    const attendances = await getAttendancesByWorkReportId(workReportId);
+
     // 契約情報を取得
     const contract = await getContractById(workReport.contractId);
     if (!contract) {
@@ -79,7 +82,7 @@ export async function createFreeeInvoiceFromWorkReportAction(
         targetDate: workReport.targetDate,
         contractName: contract.name,
         clientName: contract.clientName,
-        attendances: workReport.attendances,
+        attendances: attendances,
         unitPrice: contract.unitPrice ? Number(contract.unitPrice) : undefined,
         settlementMin: contract.settlementMin
           ? Number(contract.settlementMin)
