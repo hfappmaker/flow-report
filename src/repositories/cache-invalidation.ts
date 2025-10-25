@@ -9,7 +9,7 @@ export async function invalidateSubscriptionCache(
 ): Promise<void> {
   try {
     await db.$accelerate.invalidate({
-      tags: [`subscription:user:${userId}`],
+      tags: [`subscription_user_${userId}`],
     });
   } catch (error) {
     console.error("Failed to invalidate subscription cache:", error);
