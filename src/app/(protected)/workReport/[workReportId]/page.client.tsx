@@ -1321,8 +1321,7 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                 <>
                   <div className="space-y-4">
                     <h3 className="text-sm font-medium">勤怠情報</h3>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="flex flex-col gap-2">
+                    <div className="flex flex-wrap gap-4">
                         <TimePickerFieldForDate
                           control={bulkEditForm.control}
                           name="startTime"
@@ -1330,8 +1329,6 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                           minuteStep={dailyWorkMinutes}
                           label="出勤時間"
                         />
-                      </div>
-                      <div className="flex flex-col gap-2">
                         <TimePickerFieldForDate
                           control={bulkEditForm.control}
                           name="endTime"
@@ -1339,8 +1336,6 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                           minuteStep={dailyWorkMinutes}
                           label="退勤時間"
                         />
-                      </div>
-                      <div className="flex flex-col gap-2">
                         <TimePickerFieldForNumber
                           control={bulkEditForm.control}
                           name="breakDuration"
@@ -1348,9 +1343,6 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                           minuteStep={dailyWorkMinutes}
                           label="休憩時間"
                         />
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <div>作業内容</div>
                         <FormField
                           control={bulkEditForm.control}
                           name="memo"
@@ -1368,7 +1360,6 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                             </FormItem>
                           )}
                         />
-                      </div>
                     </div>
                   </div>
                 </>
