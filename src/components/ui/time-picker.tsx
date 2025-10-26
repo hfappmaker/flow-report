@@ -158,7 +158,9 @@ const TimePickerFieldContent = ({
   );
 
   const handleClear = useCallback(() => {
-    field.onChange(undefined);
+    setTimeout(() => {
+      field.onChange(undefined);
+    }, 0);
   }, [field]);
 
   return (
