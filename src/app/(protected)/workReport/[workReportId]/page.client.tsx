@@ -418,6 +418,31 @@ export default function ClientWorkReportPage({
     setEditingDate(null);
   };
 
+  // 基本時間を入力
+  const fillBasicTime = () => {
+    if (basicStartTime) {
+      editForm.setValue("startTime", new Date(basicStartTime.toISOString()), {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+    }
+    if (basicEndTime) {
+      editForm.setValue("endTime", new Date(basicEndTime.toISOString()), {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+    }
+    if (basicBreakDuration !== undefined) {
+      editForm.setValue("breakDuration", basicBreakDuration, {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+    }
+  };
+
   // ミリ秒からシリアル値に変換
   const msToSerial = (ms: number) => ms / (24 * 60 * 60 * 1000);
 
@@ -1017,6 +1042,7 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                 variant="outline"
                 size="sm"
                 className="lg:hidden"
+                disabled={status === "SUBMITTED"}
                 onClick={() => {
                   openEditDialog(day.date);
                 }}
@@ -1107,6 +1133,7 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                 type="button"
                 variant="outline"
                 size="sm"
+                disabled={status === "SUBMITTED"}
                 onClick={() => {
                   openEditDialog(day.date);
                 }}
@@ -1390,6 +1417,19 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                       return `${formatDateAsUTC(editingDate)} (${dayNames[dayOfWeek]})の勤怠情報を編集`;
                     })()}
                   </h3>
+                </div>
+                <div className="mb-2 flex justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={fillBasicTime}
+                    disabled={
+                      !basicStartTime && !basicEndTime && !basicBreakDuration
+                    }
+                  >
+                    基本時間を入力
+                  </Button>
                 </div>
                   <div className="flex flex-wrap gap-4">
                       <TimePickerFieldForDate
