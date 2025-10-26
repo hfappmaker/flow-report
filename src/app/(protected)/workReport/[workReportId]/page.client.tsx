@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import ExcelJS from "exceljs";
-import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
@@ -136,12 +135,12 @@ export default function ClientWorkReportPage({
 }: WorkReportClientProps) {
   const { error, success, showError, showSuccess } = useMessageState();
   const { startTransition } = useTransitionContext();
-  const router = useRouter();
 
   // モーダルの状態管理
   const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
   const [editingDate, setEditingDate] = useState<Date | null>(null);
   const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
+  const [showReauthDialog, setShowReauthDialog] = useState(false);
 
   // freee連携状態
   const [isFreeeConnected, setIsFreeeConnected] = useState(false);
@@ -157,11 +156,14 @@ export default function ClientWorkReportPage({
   const [isLoadingPartners, setIsLoadingPartners] = useState(false);
 
   // New state for holding the uploaded template file
-  const [uploadedTemplateFile, setUploadedTemplateFile] = useState<File | null>(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [uploadedTemplateFile, _setUploadedTemplateFile] = useState<File | null>(
     null,
   );
-  const [templateOption, setTemplateOption] = useState("default"); // 'default' or 'upload'
-  const [extensionOption, setExtensionOption] = useState("excel"); // 'excel' or 'pdf'
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [templateOption, _setTemplateOption] = useState("default"); // 'default' or 'upload'
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [extensionOption, _setExtensionOption] = useState("excel"); // 'excel' or 'pdf'
   const [status, setStatus] = useState<WorkReportStatus>(initialStatus);
 
   // Compute default attendance values for each day in the range…
@@ -207,7 +209,7 @@ export default function ClientWorkReportPage({
 
   // 一括編集用フォーム
   const bulkEditForm = useForm<BulkEditFormValues>({
-    resolver: zodResolver(bulkEditFormSchema) as any,
+    resolver: zodResolver(bulkEditFormSchema),
     defaultValues: getBulkEditFormDefaults(
       basicStartTime,
       basicEndTime,
@@ -228,47 +230,19 @@ export default function ClientWorkReportPage({
 
   // 一括編集を適用する
   const applyBulkEdit = (data: BulkEditFormValues) => {
-    startTransition(async () => {
-      const updatedValues = currentAttendances.map((attendance) => {
-        const shouldUpdate = shouldUpdateDate(
-          attendance.date,
-          data.dateRangeMode,
-          data.selectedDays,
-          data.startDate,
-          data.endDate,
-          data.excludeHolidays,
-          holidays,
-        );
-        if (shouldUpdate) {
-          return {
-            ...attendance,
-            startTime: data.startTime,
-            endTime: data.endTime,
-            breakDuration: data.breakDuration,
-            memo: data.memo,
-          };
-        }
-        return attendance;
-      });
-      await updateWorkReportAttendancesAction(
-        workReportId,
-        updatedValues.map((attendance) => ({
-          ...attendance,
-          workReportId: workReportId,
-        })),
-      );
-      setCurrentAttendances(updatedValues);
-      resetBulkEditForm();
-      showSuccess("一括編集を適用しました");
-    });
-  };
-
-  // 編集フォームの送信処理
-  const onEditSubmit = (data: EditFormValues) => {
-    try {
-      startTransition(async () => {
+    startTransition(() => {
+      void (async () => {
         const updatedValues = currentAttendances.map((attendance) => {
-          if (attendance.date.getTime() === editingDate?.getTime()) {
+          const shouldUpdate = shouldUpdateDate(
+            attendance.date,
+            data.dateRangeMode,
+            data.selectedDays,
+            data.startDate,
+            data.endDate,
+            data.excludeHolidays,
+            holidays,
+          );
+          if (shouldUpdate) {
             return {
               ...attendance,
               startTime: data.startTime,
@@ -279,24 +253,57 @@ export default function ClientWorkReportPage({
           }
           return attendance;
         });
-        // フォームの値を更新
-        if (editingDate) {
-          const attendance = updatedValues.find(
-            (attendance) => attendance.date.getTime() === editingDate.getTime(),
-          );
-          if (attendance) {
-            await updateWorkReportAttendanceAction(
-              workReportId,
-              attendance.date,
-              {
-                ...attendance,
-                workReportId: workReportId,
-              },
-            );
-          }
-        }
+        await updateWorkReportAttendancesAction(
+          workReportId,
+          updatedValues.map((attendance) => ({
+            ...attendance,
+            workReportId: workReportId,
+          })),
+        );
         setCurrentAttendances(updatedValues);
-        setEditingDate(null);
+        resetBulkEditForm();
+        showSuccess("一括編集を適用しました");
+      })();
+    });
+  };
+
+  // 編集フォームの送信処理
+  const onEditSubmit = (data: EditFormValues) => {
+    try {
+      startTransition(() => {
+        void (async () => {
+          const updatedValues = currentAttendances.map((attendance) => {
+            if (attendance.date.getTime() === editingDate?.getTime()) {
+              return {
+                ...attendance,
+                startTime: data.startTime,
+                endTime: data.endTime,
+                breakDuration: data.breakDuration,
+                memo: data.memo,
+              };
+            }
+            return attendance;
+          });
+          // フォームの値を更新
+          if (editingDate) {
+            const attendance = updatedValues.find(
+              (attendance) =>
+                attendance.date.getTime() === editingDate.getTime(),
+            );
+            if (attendance) {
+              await updateWorkReportAttendanceAction(
+                workReportId,
+                attendance.date,
+                {
+                  ...attendance,
+                  workReportId: workReportId,
+                },
+              );
+            }
+          }
+          setCurrentAttendances(updatedValues);
+          setEditingDate(null);
+        })();
       });
       showSuccess("編集を適用しました");
     } catch (error) {
@@ -343,7 +350,7 @@ export default function ClientWorkReportPage({
       }
     };
 
-    checkConnection();
+    void checkConnection();
 
     // OAuth コールバックから戻ってきた場合の処理
     const params = new URLSearchParams(window.location.search);
@@ -382,9 +389,8 @@ export default function ClientWorkReportPage({
             if (result.requiresReauth) {
               setIsFreeeConnected(false);
               showError(result.message);
-              // 自動的に再認可フローへ遷移
-              const returnTo = encodeURIComponent(window.location.pathname);
-              window.location.href = `/api/auth/freee/authorize?returnTo=${returnTo}`;
+              setIsInvoiceDialogOpen(false);
+              setShowReauthDialog(true);
             } else {
               showError(result.message);
             }
@@ -397,7 +403,7 @@ export default function ClientWorkReportPage({
         }
       };
 
-      fetchPartners();
+      void fetchPartners();
     }
   }, [
     isInvoiceDialogOpen,
@@ -491,7 +497,7 @@ export default function ClientWorkReportPage({
           const workReportMonthCell = targetWorkReportMonthSheet.getCell(
             workReportMonthRangeAddress,
           );
-          workReportMonthCell.value = `${targetDate.getFullYear()}年${targetDate.getMonth() + 1}月度作業報告書`;
+          workReportMonthCell.value = `${String(targetDate.getFullYear())}年${String(targetDate.getMonth() + 1)}月度作業報告書`;
         }
       }
 
@@ -589,7 +595,7 @@ export default function ClientWorkReportPage({
             const dailyWorkMinutesCell = targetDailyWorkMinutesSheet.getCell(
               dailyWorkMinutesRangeAddress,
             );
-            dailyWorkMinutesCell.value = `${dailyWorkMinutes}分`;
+            dailyWorkMinutesCell.value = `${String(dailyWorkMinutes)}分`;
           }
         }
       }
@@ -609,7 +615,7 @@ export default function ClientWorkReportPage({
               targetMonthlyWorkMinutesSheet.getCell(
                 monthlyWorkMinutesRangeAddress,
               );
-            monthlyWorkMinutesCell.value = `${monthlyWorkMinutes}分`;
+            monthlyWorkMinutesCell.value = `${String(monthlyWorkMinutes)}分`;
           }
         }
       }
@@ -703,7 +709,7 @@ export default function ClientWorkReportPage({
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${targetDate.getFullYear()}年${targetDate.getMonth() + 1}月度作業報告書_${userName}.xlsx`;
+      link.download = `${String(targetDate.getFullYear())}年${String(targetDate.getMonth() + 1)}月度作業報告書_${userName}.xlsx`;
       link.click();
       window.URL.revokeObjectURL(url);
       showSuccess("テンプレートからの作業報告書作成が完了しました");
@@ -726,14 +732,14 @@ export default function ClientWorkReportPage({
       // メーラーを起動
       const recipient = clientEmail; // 送信先
       const subject = encodeURIComponent(
-        `【作業報告書】${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分_${userName}`,
+        `【作業報告書】${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}月分_${userName}`,
       );
       const body = encodeURIComponent(`
 ${contactName ? contactName : clientName}様
-   
+
 お世話になっております。${userName}です。
 
-${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業報告書を送付いたします。
+${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}月分の作業報告書を送付いたします。
 ご確認のほど、よろしくお願いいたします。
 `);
       window.open(
@@ -789,16 +795,20 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
   // 月締め処理を実行
   const handleConfirmStatusChange = () => {
     const nextStatus = status === "DRAFT" ? "SUBMITTED" : "DRAFT";
-    startTransition(async () => {
-      try {
-        await updateWorkReportStatusAction(workReportId, nextStatus);
-        setStatus(nextStatus);
-        showSuccess(
-          nextStatus === "SUBMITTED" ? "月締めしました" : "月締め解除しました",
-        );
-      } catch {
-        showError("月締めステータスの変更に失敗しました");
-      }
+    startTransition(() => {
+      void (async () => {
+        try {
+          await updateWorkReportStatusAction(workReportId, nextStatus);
+          setStatus(nextStatus);
+          showSuccess(
+            nextStatus === "SUBMITTED"
+              ? "月締めしました"
+              : "月締め解除しました",
+          );
+        } catch {
+          showError("月締めステータスの変更に失敗しました");
+        }
+      })();
     });
     setStatus(nextStatus);
   };
@@ -846,9 +856,8 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
         if (result.requiresReauth) {
           setIsFreeeConnected(false);
           showError(result.message);
-          // 自動的に再認可フローへ遷移
-          const returnTo = encodeURIComponent(window.location.pathname);
-          window.location.href = `/api/auth/freee/authorize?returnTo=${returnTo}`;
+          setIsInvoiceDialogOpen(false);
+          setShowReauthDialog(true);
         } else {
           showError(result.message);
         }
@@ -931,12 +940,23 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
               variant="outline"
               disabled={status !== "SUBMITTED"}
               onClick={() => {
-                startTransition(async () => {
-                  await handleConfirmCreateReport();
+                startTransition(() => {
+                  void handleConfirmCreateReport();
                 });
               }}
             >
               作業報告書を作成
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={status !== "SUBMITTED"}
+              onClick={() => {
+                const returnTo = encodeURIComponent(window.location.pathname);
+                window.location.href = `/api/auth/freee/authorize?returnTo=${returnTo}`;
+              }}
+            >
+              freee認可
             </Button>
             <Button
               type="button"
@@ -1112,7 +1132,9 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
           </DialogHeader>
           <Form {...bulkEditForm}>
             <form
-              onSubmit={bulkEditForm.handleSubmit(applyBulkEdit)}
+              onSubmit={(e) => {
+                void bulkEditForm.handleSubmit(applyBulkEdit)(e);
+              }}
               className="space-y-4"
             >
               <div>
@@ -1142,10 +1164,10 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                             <RadioGroupItem value="custom" id="custom" />
                             <label htmlFor="custom">期間指定</label>
                           </div>
-                          <div className="flex items-center space-x-2">
+                          {/* <div className="flex items-center space-x-2">
                             <RadioGroupItem value="prompt" id="prompt" />
                             <label htmlFor="prompt">プロンプト指定</label>
-                          </div>
+                          </div> */}
                         </RadioGroup>
                       </FormControl>
                       <FormMessage />
@@ -1171,7 +1193,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                                   className="flex items-center space-x-2"
                                 >
                                   <Checkbox
-                                    id={`day-${index}`}
+                                    id={`day-${String(index)}`}
                                     checked={field.value?.includes(index)}
                                     onCheckedChange={(checked) => {
                                       const currentValue = field.value ?? [];
@@ -1189,7 +1211,9 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                                       }
                                     }}
                                   />
-                                  <Label htmlFor={`day-${index}`}>{day}</Label>
+                                  <Label htmlFor={`day-${String(index)}`}>
+                                    {day}
+                                  </Label>
                                 </div>
                               ))}
                             </div>
@@ -1352,7 +1376,9 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
           {editingDate && (
             <Form {...editForm}>
               <form
-                onSubmit={editForm.handleSubmit(onEditSubmit)}
+                onSubmit={(e) => {
+                  void editForm.handleSubmit(onEditSubmit)(e);
+                }}
                 className="space-y-4"
               >
                 <div>
@@ -1453,7 +1479,12 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                   >
                     キャンセル
                   </Button>
-                  <Button type="button" onClick={handleCreateFreeeInvoice}>
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      void handleCreateFreeeInvoice();
+                    }}
+                  >
                     freeeと連携
                   </Button>
                 </div>
@@ -1537,7 +1568,9 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                   </Button>
                   <Button
                     type="button"
-                    onClick={handleCreateFreeeInvoice}
+                    onClick={() => {
+                      void handleCreateFreeeInvoice();
+                    }}
                     disabled={isCreatingInvoice || !selectedPartnerId}
                   >
                     {isCreatingInvoice ? "作成中..." : "作成"}
@@ -1545,6 +1578,30 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                 </div>
               </>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* freee再認可促進ダイアログ */}
+      <Dialog open={showReauthDialog} onOpenChange={setShowReauthDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>freee再認可が必要です</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-muted-foreground">
+              freee連携の有効期限が切れています。左側の「freee認可」ボタンから再度連携してください。
+            </p>
+          </div>
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              onClick={() => {
+                setShowReauthDialog(false);
+              }}
+            >
+              閉じる
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
