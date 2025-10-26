@@ -391,7 +391,7 @@ export const ContractForm = ({
         </div>
 
         {/* Basic Start Time, Basic End Time, and Basic Break Duration in the same row */}
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
           <TimePickerFieldForDate
             control={form.control}
             name="basicStartTime"
