@@ -1390,33 +1390,25 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                     })()}
                   </h3>
                 </div>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                    <div className="flex flex-col gap-2">
+                  <div className="flex flex-wrap gap-4">
                       <TimePickerFieldForDate
                         control={editForm.control}
                         name="startTime"
                         label="出勤時間"
                         minuteStep={dailyWorkMinutes}
                       />
-                    </div>
-                    <div className="flex flex-col gap-2">
                       <TimePickerFieldForDate
                         control={editForm.control}
                         name="endTime"
                         label="退勤時間"
                         minuteStep={dailyWorkMinutes}
                       />
-                    </div>
-                    <div className="flex flex-col gap-2">
                       <TimePickerFieldForNumber
                         control={editForm.control}
                         name="breakDuration"
                         label="休憩時間"
                         minuteStep={dailyWorkMinutes}
                       />
-                    </div>
-                    <div className="flex flex-col gap-2">
                       <FormField
                         control={editForm.control}
                         name="memo"
@@ -1435,9 +1427,7 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                           </FormItem>
                         )}
                       />
-                    </div>
                   </div>
-                </div>
                 <div className="mt-4 flex justify-end space-x-2">
                   <Button type="button" variant="outline" onClick={cancelEdit}>
                     キャンセル
