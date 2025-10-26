@@ -87,7 +87,7 @@ export async function getSubscriptionInfoByUserId(userId: string) {
     where: { userId },
     include: {
       subscriptions: {
-        orderBy: { createdAt: "desc" },
+        orderBy: { created: "desc" },
         take: 1, // 最新のサブスクリプションを取得
       },
     },
