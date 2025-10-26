@@ -222,18 +222,10 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
     contract: ContractOutput,
   ): ContractFormValues => {
     const baseValues = convertContractToFormValues(contract);
-
+    const today = new Date();
     // 開始日の設定
-    let newStartDate: Date;
-    if (contract.endDate) {
-      // 終了日がある場合、その翌日を開始日とする
-      newStartDate = new Date(contract.endDate);
-      newStartDate.setDate(newStartDate.getDate() + 1);
-    } else {
-      // 終了日がない場合、今日の日付を開始日とする
-      newStartDate = new Date();
-      newStartDate.setHours(0, 0, 0, 0);
-    }
+    const newStartDate = contract.endDate ? new Date(Date.UTC(contract.endDate.getFullYear(), contract.endDate.getMonth(), contract.endDate.getDate() + 1)) 
+    : new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
 
     return {
       ...baseValues,
