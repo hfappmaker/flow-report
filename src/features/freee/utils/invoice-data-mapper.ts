@@ -88,12 +88,15 @@ export function mapWorkReportToFreeeInvoice(
 
   const year = targetDate.getFullYear();
   const month = targetDate.getMonth() + 1;
+  const baseAmountStr = amountDetail.baseAmount.toLocaleString();
+  const excessRateStr = amountDetail.excessInfo.rate.toLocaleString();
+  const deductionRateStr = amountDetail.deductionInfo.rate.toLocaleString();
 
   // 基本単価明細
   // amountDetail.baseAmountは契約の基本単価（税込または税抜）
   lines.push({
     type: "item",
-    description: `${year}年${month}月度 ${contractName} 基本単価（@${amountDetail.baseAmount.toLocaleString()}円）`,
+    description: `${String(year)}年${String(month)}月度 ${contractName} 基本単価（@${baseAmountStr}円）`,
     sales_date: issueDate,
     unit: "点",
     quantity: 1,
@@ -105,7 +108,7 @@ export function mapWorkReportToFreeeInvoice(
   // 超過単価明細（常に追加、0時間の場合もあり）
   lines.push({
     type: "item",
-    description: `${year}年${month}月度 ${contractName} 超過単価（@${amountDetail.excessInfo.rate.toLocaleString()}円/h）`,
+    description: `${String(year)}年${String(month)}月度 ${contractName} 超過単価（@${excessRateStr}円/h）`,
     sales_date: issueDate,
     unit: "時間",
     quantity: Math.round(amountDetail.excessInfo.hours * 100) / 100, // 小数点2桁
@@ -117,7 +120,7 @@ export function mapWorkReportToFreeeInvoice(
   // 控除単価明細（常に追加、0時間の場合もあり、マイナス金額）
   lines.push({
     type: "item",
-    description: `${year}年${month}月度 ${contractName} 控除単価（@${amountDetail.deductionInfo.rate.toLocaleString()}円/h）`,
+    description: `${String(year)}年${String(month)}月度 ${contractName} 控除単価（@${deductionRateStr}円/h）`,
     sales_date: issueDate,
     unit: "時間",
     quantity: Math.round(amountDetail.deductionInfo.hours * 100) / 100, // 小数点2桁
@@ -133,8 +136,7 @@ export function mapWorkReportToFreeeInvoice(
     issue_date: issueDate,
     payment_date: paymentDate,
     subject:
-      options?.subject ??
-      `${targetDate.getFullYear()}年${targetDate.getMonth() + 1}月度 ${contractName}`,
+      options?.subject ?? `${String(year)}年${String(month)}月度 ${contractName}`,
     tax_entry_method: taxEntryMethod,
     tax_fraction: taxFraction,
     line_amount_fraction: "round_up", // 明細金額は切り上げ
@@ -181,5 +183,7 @@ export function generateInvoiceTitle(
   targetDate: Date,
   contractName: string,
 ): string {
-  return `${targetDate.getFullYear()}年${targetDate.getMonth() + 1}月度 ${contractName}`;
+  const year = targetDate.getFullYear();
+  const month = targetDate.getMonth() + 1;
+  return `${String(year)}年${String(month)}月度 ${contractName}`;
 }

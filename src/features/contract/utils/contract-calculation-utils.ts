@@ -282,11 +282,11 @@ export function formatWorkTime(minutes: number): string {
   const remainingMinutes = Math.floor(minutes % 60);
 
   if (hours === 0) {
-    return `${remainingMinutes}分`;
+    return `${String(remainingMinutes)}分`;
   } else if (remainingMinutes === 0) {
-    return `${hours}時間`;
+    return `${String(hours)}時間`;
   } else {
-    return `${hours}時間${remainingMinutes}分`;
+    return `${String(hours)}時間${String(remainingMinutes)}分`;
   }
 }
 
