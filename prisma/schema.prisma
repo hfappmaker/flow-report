@@ -62,7 +62,6 @@ model User {
   contracts             Contract[]
   auditLogs             AuditLog[]
   EmailTemplate         EmailTemplate[]
-  stripeCustomer        StripeCustomer?        // Stripe顧客情報への参照
 }
 
 
@@ -207,9 +206,7 @@ model AuditLog {
 model StripeCustomer {
   id               String         @id @default(cuid())
   userId           String         @unique
-  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   stripeCustomerId String         @unique
-  subscriptions    Subscription[]
   created          DateTime
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
@@ -218,7 +215,6 @@ model StripeCustomer {
 model Subscription {
   id                   String            @id @default(cuid())
   stripeCustomerId     String
-  stripeCustomer       StripeCustomer    @relation(fields: [stripeCustomerId], references: [stripeCustomerId], onDelete: Cascade)
   stripeSubscriptionId String            @unique
   status               SubscriptionStatus
   currentPeriodEnd     DateTime?         // 現在の請求期間の終了日時

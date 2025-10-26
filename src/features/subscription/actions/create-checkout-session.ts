@@ -41,11 +41,7 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
     try {
       subscriptionInfo = await getSubscriptionInfoByUserId(user.id);
     } catch (error) {
-      if (error instanceof Error && error.message.includes("does not exist")) {
-        return {
-          error: "ユーザー情報が見つかりません。再度ログインしてください。",
-        };
-      }
+      console.error("Error fetching subscription info:", error);
       throw error;
     }
 

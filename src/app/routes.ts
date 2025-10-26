@@ -1,4 +1,4 @@
-export const errorRoutes: string[] = ["/global-error", "/not-found"];
+export const errorRoutes: string[] = ["/not-found"];
 
 /**
  * An array of routes that are used for authentication

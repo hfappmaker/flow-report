@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
+import LogoutButton from "@/features/auth/components/logout-button";
 
 export default function ProtectedError({
   error,
@@ -44,15 +45,9 @@ export default function ProtectedError({
         )}
 
         <div className="space-x-4">
-          <Button onClick={reset} variant="default">
-            リトライ
-          </Button>
-          <Button
-            onClick={() => (window.location.href = "/dashboard")}
-            variant="outline"
-          >
-            ダッシュボードに戻る
-          </Button>
+          <LogoutButton>
+            <Button variant="outline">ログアウト</Button>
+          </LogoutButton>
         </div>
       </div>
     </div>

@@ -89,12 +89,9 @@ async function handleAuthenticatedUser(req: NextRequest) {
     // 認証済みユーザーのリクエストをそのまま通過
     return;
   } catch (error) {
-    console.log(
-      "Error occurred:",
-      error,
-      ", redirecting to global error page for security",
-    );
-    return Response.redirect(new URL("/global-error", nextUrl));
+    console.error("Error fetching subscription info:", error);
+    // リクエストを通過させ、Next.jsの通常のエラーハンドリングに任せる
+    throw error;
   }
 }
 
