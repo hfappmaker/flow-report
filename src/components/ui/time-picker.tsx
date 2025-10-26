@@ -145,7 +145,6 @@ const TimePickerFieldContent = ({
 
   const handleHourChange = useCallback(
     (newHour: string) => {
-      setSelectedHour(newHour);
       field.onChange(timeToValue(newHour, selectedMinute || "00"));
     },
     [selectedMinute, field, timeToValue],
@@ -153,16 +152,13 @@ const TimePickerFieldContent = ({
 
   const handleMinuteChange = useCallback(
     (newMinute: string) => {
-      setSelectedMinute(newMinute);
       field.onChange(timeToValue(selectedHour || "00", newMinute));
     },
     [selectedHour, field, timeToValue],
   );
 
   const handleClear = useCallback(() => {
-    setSelectedHour("");
-    setSelectedMinute("");
-    field.onChange(() => undefined);
+    field.onChange(undefined);
   }, [field]);
 
   return (
