@@ -26,4 +26,5 @@ export interface DashboardClientPageProps {
   draftWorkReports: Record<string, ContractDashboard>;
   submittedWorkReportsLast3Months: Record<string, ContractDashboard>;
   subscriptionInfo: SubscriptionInfo | null;
+  hasContracts: boolean;
 }

@@ -68,10 +68,10 @@ export async function upsertUserSubscription(
   });
 
   // Subscription更新後、該当ユーザーのキャッシュを無効化
-  const user = await getUserByStripeCustomerId(stripeCustomerId);
-  if (user) {
-    await invalidateSubscriptionCache(user.id);
-  }
+  // const user = await getUserByStripeCustomerId(stripeCustomerId);
+  // if (user) {
+  //   await invalidateSubscriptionCache(user.id);
+  // }
 
   return result;
 }
@@ -91,10 +91,10 @@ export async function getSubscriptionInfoByUserId(userId: string) {
         take: 1, // 最新のサブスクリプションを取得
       },
     },
-    cacheStrategy: {
-      ttl: 60,
-      tags: [`subscription_user_${userId}`],
-    },
+    // cacheStrategy: {
+    //   ttl: 60,
+    //   tags: [`subscription_user_${userId}`],
+    // },
   });
 
   return stripeCustomer?.subscriptions[0] ?? null;

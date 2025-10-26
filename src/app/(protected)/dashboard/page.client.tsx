@@ -1,10 +1,19 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import FormError from "@/components/ui/feedback/error-alert";
 import FormSuccess from "@/components/ui/feedback/success-alert";
 import { useTransitionContext } from "@/contexts/transition-context";
@@ -38,6 +47,7 @@ export default function DashboardClientPage({
   draftWorkReports,
   submittedWorkReportsLast3Months,
   subscriptionInfo,
+  hasContracts,
 }: DashboardClientPageProps) {
   const router = useRouter();
   const { startTransition } = useTransitionContext();
@@ -46,6 +56,8 @@ export default function DashboardClientPage({
     null,
   );
   const [activeDialog, setActiveDialog] = useState<DialogType>(null);
+  const [showContractPromptDialog, setShowContractPromptDialog] =
+    useState(false);
 
   const handleNavigation = (reportId: string) => {
     startTransition(() => {
@@ -97,6 +109,20 @@ export default function DashboardClientPage({
       } finally {
         closeDialog();
       }
+    });
+  };
+
+  // 契約がない場合、契約作成を促すダイアログを表示
+  useEffect(() => {
+    if (!hasContracts) {
+      setShowContractPromptDialog(true);
+    }
+  }, [hasContracts]);
+
+  // 契約一覧ページへ遷移
+  const handleNavigateToContracts = () => {
+    startTransition(() => {
+      router.push("/contracts");
     });
   };
 
@@ -257,6 +283,32 @@ export default function DashboardClientPage({
           isEditing
         />
       </ContractDialog>
+
+      {/* 契約作成促進ダイアログ */}
+      <Dialog
+        open={showContractPromptDialog}
+        onOpenChange={setShowContractPromptDialog}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>契約を作成してください</DialogTitle>
+            <DialogDescription>
+              作業報告書を作成するには、まず契約を登録する必要があります。契約一覧画面で契約を作成してください。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowContractPromptDialog(false);
+              }}
+            >
+              キャンセル
+            </Button>
+            <Button onClick={handleNavigateToContracts}>契約一覧へ</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
