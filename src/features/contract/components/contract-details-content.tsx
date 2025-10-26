@@ -7,10 +7,12 @@ interface ContractDetailsContentProps {
   contract: ContractOutput;
   onNavigateToWorkReports?: (contractId: string) => void;
   onEdit?: () => void;
+  onCopy?: () => void;
   onDelete?: () => void;
   onClose: () => void;
   showWorkReportsButton?: boolean;
   showEditButton?: boolean;
+  showCopyButton?: boolean;
   showDeleteButton?: boolean;
 }
 
@@ -18,10 +20,12 @@ export const ContractDetailsContent = ({
   contract,
   onNavigateToWorkReports,
   onEdit,
+  onCopy,
   onDelete,
   onClose,
   showWorkReportsButton = true,
   showEditButton = false,
+  showCopyButton = false,
   showDeleteButton = false,
 }: ContractDetailsContentProps) => {
   return (
@@ -272,6 +276,11 @@ export const ContractDetailsContent = ({
         {showEditButton && onEdit && (
           <Button variant="outline" onClick={onEdit}>
             編集
+          </Button>
+        )}
+        {showCopyButton && onCopy && (
+          <Button variant="outline" onClick={onCopy}>
+            コピー
           </Button>
         )}
         {showDeleteButton && onDelete && (

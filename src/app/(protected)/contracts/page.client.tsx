@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -51,7 +51,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
   const router = useRouter();
 
   // 契約一覧を取得
-  const fetchContracts = async () => {
+  const fetchContracts = useCallback(async () => {
     try {
       const contractsData = await getContractsByUserIdAction(userId);
       setContracts(contractsData);
@@ -59,7 +59,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
       console.error(error);
       showError("契約の取得に失敗しました");
     }
-  };
+  }, [userId, showError]);
 
   // 検索処理
   const handleSearch = () => {
@@ -68,26 +68,28 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
 
     if (!hasSearchQuery && !hasPeriodFilters) {
       setIsSearching(false);
-      startTransition(async () => {
-        await fetchContracts();
+      startTransition(() => {
+        void fetchContracts();
       });
       return;
     }
 
     setIsSearching(true);
-    startTransition(async () => {
-      try {
-        const searchResults = await searchContractsAction(
-          userId,
-          searchQuery || undefined,
-          periodFrom || undefined,
-          periodTo || undefined,
-        );
-        setContracts(searchResults);
-      } catch (error: unknown) {
-        console.error(error);
-        showError("検索に失敗しました");
-      }
+    startTransition(() => {
+      void (async () => {
+        try {
+          const searchResults = await searchContractsAction(
+            userId,
+            searchQuery || undefined,
+            periodFrom || undefined,
+            periodTo || undefined,
+          );
+          setContracts(searchResults);
+        } catch (error: unknown) {
+          console.error(error);
+          showError("検索に失敗しました");
+        }
+      })();
     });
   };
 
@@ -97,8 +99,8 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
     setPeriodFrom("");
     setPeriodTo("");
     setIsSearching(false);
-    startTransition(async () => {
-      await fetchContracts();
+    startTransition(() => {
+      void fetchContracts();
     });
   };
 
@@ -125,61 +127,120 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
   // 契約削除
   const onDeleteContract = () => {
     if (!activeContract) return;
-    startTransition(async () => {
-      try {
-        await deleteContractAction(activeContract.id);
-        showSuccess(`契約 '${activeContract.name}' を削除しました`);
-        await fetchContracts();
-      } catch (error: unknown) {
-        console.error(error);
-        showError("契約の削除に失敗しました。");
-      } finally {
-        closeDialog();
-      }
+    startTransition(() => {
+      void (async () => {
+        try {
+          await deleteContractAction(activeContract.id);
+          showSuccess(`契約 '${activeContract.name}' を削除しました`);
+          await fetchContracts();
+        } catch (error: unknown) {
+          console.error(error);
+          showError("契約の削除に失敗しました。");
+        } finally {
+          closeDialog();
+        }
+      })();
     });
   };
 
   // 契約作成
   const onCreateContract = (data: ContractFormValues) => {
-    startTransition(async () => {
-      try {
-        const contractData = convertContractFormValuesToContract(data, userId);
-        await createContractAction(contractData);
-        showSuccess(`契約 '${data.name}' を作成しました`);
-        await fetchContracts();
-      } catch (error: unknown) {
-        console.error(error);
-        showError("契約の作成に失敗しました");
-      } finally {
-        closeDialog();
-      }
+    startTransition(() => {
+      void (async () => {
+        try {
+          const contractData = convertContractFormValuesToContract(
+            data,
+            userId,
+          );
+          await createContractAction(contractData);
+          showSuccess(`契約 '${data.name}' を作成しました`);
+          await fetchContracts();
+        } catch (error: unknown) {
+          console.error(error);
+          showError("契約の作成に失敗しました");
+        } finally {
+          closeDialog();
+        }
+      })();
     });
   };
 
   // 契約編集
   const onEditContract = (data: ContractFormValues) => {
     if (!activeContract) return;
-    startTransition(async () => {
-      try {
-        const contractData = convertContractFormValuesToContract(data, userId);
-        await updateContractAction(activeContract.id, contractData);
-        showSuccess(`契約 '${data.name}' を編集しました`);
-        await fetchContracts();
-      } catch (error: unknown) {
-        console.error(error);
-        showError("契約の更新に失敗しました");
-      } finally {
-        closeDialog();
-      }
+    startTransition(() => {
+      void (async () => {
+        try {
+          const contractData = convertContractFormValuesToContract(
+            data,
+            userId,
+          );
+          await updateContractAction(activeContract.id, contractData);
+          showSuccess(`契約 '${data.name}' を編集しました`);
+          await fetchContracts();
+        } catch (error: unknown) {
+          console.error(error);
+          showError("契約の更新に失敗しました");
+        } finally {
+          closeDialog();
+        }
+      })();
+    });
+  };
+
+  // 契約コピー
+  const onCopyContract = (data: ContractFormValues) => {
+    startTransition(() => {
+      void (async () => {
+        try {
+          const contractData = convertContractFormValuesToContract(
+            data,
+            userId,
+          );
+          await createContractAction(contractData);
+          showSuccess(`契約 '${data.name}' をコピーして作成しました`);
+          await fetchContracts();
+        } catch (error: unknown) {
+          console.error(error);
+          showError("契約のコピーに失敗しました");
+        } finally {
+          closeDialog();
+        }
+      })();
     });
   };
 
   // 初期データ読み込み
   useEffect(() => {
-    startTransition(async () => {
-      await fetchContracts();
+    startTransition(() => {
+      void fetchContracts();
     });
-  }, [userId]);
+  }, [fetchContracts, startTransition]);
+
+  // 契約コピー用の変換関数
+  const convertContractToCopyFormValues = (
+    contract: ContractOutput,
+  ): ContractFormValues => {
+    const baseValues = convertContractToFormValues(contract);
+
+    // 開始日の設定
+    let newStartDate: Date;
+    if (contract.endDate) {
+      // 終了日がある場合、その翌日を開始日とする
+      newStartDate = new Date(contract.endDate);
+      newStartDate.setDate(newStartDate.getDate() + 1);
+    } else {
+      // 終了日がない場合、今日の日付を開始日とする
+      newStartDate = new Date();
+      newStartDate.setHours(0, 0, 0, 0);
+    }
+
+    return {
+      ...baseValues,
+      startDate: newStartDate,
+      endDate: undefined,
+    };
+  };
 
   // 日付フォーマット関数
   const formatDate = (date: string | Date) => {
@@ -367,12 +428,16 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
             onEdit={() => {
               setActiveDialog("edit");
             }}
+            onCopy={() => {
+              setActiveDialog("copy");
+            }}
             onDelete={() => {
               setActiveDialog("delete");
             }}
             onClose={closeDialog}
             showWorkReportsButton
             showEditButton
+            showCopyButton
             showDeleteButton
           />
         )}
@@ -428,6 +493,23 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
             削除
           </Button>
         </DialogFooter>
+      </ContractDialog>
+
+      <ContractDialog
+        type="copy"
+        isOpen={activeDialog === "copy"}
+        onClose={closeDialog}
+      >
+        <ContractForm
+          defaultValues={
+            activeContract
+              ? convertContractToCopyFormValues(activeContract)
+              : undefined
+          }
+          onSubmit={onCopyContract}
+          onCancel={closeDialog}
+          submitButtonText="作成"
+        />
       </ContractDialog>
     </div>
   );

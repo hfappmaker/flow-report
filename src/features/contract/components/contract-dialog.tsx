@@ -7,7 +7,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-export type DialogType = "create" | "edit" | "delete" | "details" | null;
+export type DialogType =
+  | "create"
+  | "edit"
+  | "delete"
+  | "details"
+  | "copy"
+  | null;
 
 interface ContractDialogProps {
   type: DialogType;
@@ -39,6 +45,7 @@ export const ContractDialog = ({
             {type === "edit" && "契約を編集"}
             {type === "delete" && "契約の削除確認"}
             {type === "details" && "契約詳細"}
+            {type === "copy" && "契約をコピー"}
           </DialogTitle>
         </DialogHeader>
         <div className="flex-1 overflow-y-auto p-6 pb-0 pt-4">{children}</div>
