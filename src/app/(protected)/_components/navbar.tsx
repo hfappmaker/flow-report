@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import { MdMenu } from "react-icons/md";
 
 import { Button } from "@/components/ui/button";
@@ -21,8 +22,10 @@ const Navbar = () => {
   const { startTransition } = useTransitionContext();
   const router = useRouter();
   const pathName = usePathname();
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const handleNavigation = (path: string) => {
+    setIsSheetOpen(false);
     startTransition(() => {
       router.push(path);
     });
@@ -55,7 +58,7 @@ const Navbar = () => {
       </nav>
 
       <nav className="flex items-center justify-between bg-secondary p-4 shadow-md lg:hidden">
-        <Sheet>
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
           <SheetTrigger>
             <Button
               asChild
