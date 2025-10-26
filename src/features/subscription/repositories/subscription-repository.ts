@@ -36,11 +36,7 @@ export async function upsertStripeCustomer(
 
 export async function getStripeCustomerByUserId(userId: string) {
   return await db.stripeCustomer.findUnique({
-    where: { userId },
-    cacheStrategy: {
-      ttl: 60,
-      tags: ["subscription", `subscription_user_${userId}`],
-    },
+    where: { userId }
   });
 }
 
@@ -97,7 +93,7 @@ export async function getSubscriptionInfoByUserId(userId: string) {
     },
     cacheStrategy: {
       ttl: 60,
-      tags: ["subscription", `subscription_user_${userId}`],
+      tags: [`subscription_user_${userId}`],
     },
   });
 
