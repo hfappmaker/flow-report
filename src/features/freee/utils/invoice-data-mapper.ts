@@ -43,7 +43,6 @@ export function mapWorkReportToFreeeInvoice(
 
   // 稼働時間と金額を計算
   const totalWorkMinutes = calculateTotalWorkMinutes(attendances);
-  const totalWorkHours = totalWorkMinutes / 60;
 
   const amountCalculation = calculateWorkAmount(totalWorkMinutes, {
     unitPrice: workReportData.unitPrice,
@@ -92,7 +91,7 @@ export function mapWorkReportToFreeeInvoice(
       sales_date: issueDate,
       unit: "点",
       quantity: 1, // 数値型
-      unit_price: amountCalculation.baseAmount.toFixed(3), // 文字列型
+      unit_price: (taxEntryMethod === "in" ? (amountCalculation.baseAmount + amountCalculation.taxAmount) : amountCalculation.baseAmount).toFixed(3), // 文字列型
       tax_rate: 10, // 標準税率10%
       reduced_tax_rate: false,
     },

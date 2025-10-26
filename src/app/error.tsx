@@ -25,8 +25,6 @@ export default function Error({
         </h2>
         <p className="mb-8 text-muted-foreground">
           申し訳ございません。予期しないエラーが発生しました。
-          <br />
-          リトライするか、ホームに戻ってください。
         </p>
 
         {process.env.NODE_ENV === "development" && (
@@ -44,9 +42,6 @@ export default function Error({
         )}
 
         <div className="space-x-4">
-          <Button onClick={reset} variant="default">
-            リトライ
-          </Button>
           <Button
             onClick={() => (window.location.href = "/")}
             variant="outline"

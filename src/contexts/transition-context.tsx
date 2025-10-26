@@ -5,6 +5,7 @@ import React, {
   useContext,
   useTransition,
   useEffect,
+  useState,
 } from "react";
 import { createPortal } from "react-dom";
 
@@ -14,6 +15,7 @@ import { useIsClient } from "@/hooks/use-is-client";
 interface TransitionContextType {
   startTransition: (callback: () => void) => void;
   isPending: boolean;
+  setManualPending: (pending: boolean) => void;
 }
 
 const TransitionContext = createContext<TransitionContextType | null>(null);
@@ -80,11 +82,15 @@ export function TransitionProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [isPending, startTransition] = useTransition();
+  const [reactPending, startTransition] = useTransition();
+  const [manualPending, setManualPending] = useState(false);
+  const isPending = reactPending || manualPending;
   const isClient = useIsClient();
 
   return (
-    <TransitionContext.Provider value={{ isPending, startTransition }}>
+    <TransitionContext.Provider
+      value={{ isPending, startTransition, setManualPending }}
+    >
       {isClient ? children : <LoadingSpinner />}
       <LoadingOverlay />
     </TransitionContext.Provider>

@@ -134,7 +134,7 @@ export default function ClientWorkReportPage({
   rateType,
 }: WorkReportClientProps) {
   const { error, success, showError, showSuccess } = useMessageState();
-  const { startTransition } = useTransitionContext();
+  const { startTransition, setManualPending } = useTransitionContext();
 
   // モーダルの状態管理
   const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
@@ -385,7 +385,7 @@ export default function ClientWorkReportPage({
               setSelectedPartnerId(matchingPartner.id);
             }
           } else {
-            // 再認可が必要な場合
+            // 再連携が必要な場合
             if (result.requiresReauth) {
               setIsFreeeConnected(false);
               showError(result.message);
@@ -852,7 +852,7 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
         }
         setIsInvoiceDialogOpen(false);
       } else {
-        // 再認可が必要な場合
+        // 再連携が必要な場合
         if (result.requiresReauth) {
           setIsFreeeConnected(false);
           showError(result.message);
@@ -953,10 +953,11 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
               disabled={status !== "SUBMITTED"}
               onClick={() => {
                 const returnTo = encodeURIComponent(window.location.pathname);
+                setManualPending(true);
                 window.location.href = `/api/auth/freee/authorize?returnTo=${returnTo}`;
               }}
             >
-              freee認可
+              freee連携
             </Button>
             <Button
               type="button"
@@ -1457,7 +1458,7 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                   freeeとの連携が必要です。
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  freeeアカウントと連携すると、作業報告書から自動的に請求書を作成できます。
+                  freeeアカウントと連携すると、作業報告書から請求書を作成できます。
                 </p>
                 <div className="flex justify-end space-x-2">
                   <Button
@@ -1468,14 +1469,6 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                     }}
                   >
                     キャンセル
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      void handleCreateFreeeInvoice();
-                    }}
-                  >
-                    freeeと連携
                   </Button>
                 </div>
               </>
@@ -1559,7 +1552,9 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                   <Button
                     type="button"
                     onClick={() => {
-                      void handleCreateFreeeInvoice();
+                      startTransition(() => {
+                        void handleCreateFreeeInvoice();
+                      });
                     }}
                     disabled={isCreatingInvoice || !selectedPartnerId}
                   >
@@ -1572,15 +1567,15 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
         </DialogContent>
       </Dialog>
 
-      {/* freee再認可促進ダイアログ */}
+      {/* freee再連携促進ダイアログ */}
       <Dialog open={showReauthDialog} onOpenChange={setShowReauthDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>freee再認可が必要です</DialogTitle>
+            <DialogTitle>freee再連携が必要です</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <p className="text-muted-foreground">
-              freee連携の有効期限が切れています。左側の「freee認可」ボタンから再度連携してください。
+              freee連携の有効期限が切れています。左側の「freee連携」ボタンから再度連携してください。
             </p>
           </div>
           <div className="flex justify-end">
