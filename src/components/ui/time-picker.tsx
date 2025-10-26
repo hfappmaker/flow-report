@@ -1,4 +1,4 @@
-import { useState, memo, useCallback } from "react";
+import { useState, memo, useCallback, useEffect } from "react";
 import { Control, Path, FieldValues } from "react-hook-form";
 
 import {
@@ -133,6 +133,15 @@ const TimePickerFieldContent = ({
     : { hour: "", minute: "" };
   const [selectedHour, setSelectedHour] = useState(defaultValueTime.hour);
   const [selectedMinute, setSelectedMinute] = useState(defaultValueTime.minute);
+
+  // field.valueが外部から変更された時にselectedHour, selectedMinuteを同期
+  useEffect(() => {
+    const newTime = field.value
+      ? valueToTime(field.value)
+      : { hour: "", minute: "" };
+    setSelectedHour(newTime.hour);
+    setSelectedMinute(newTime.minute);
+  }, [field.value, valueToTime]);
 
   const handleHourChange = useCallback(
     (newHour: string) => {
