@@ -1,4 +1,103 @@
 /**
+ * 作業時間（分）から契約に基づく金額の詳細を計算する（明細分割用）
+ */
+export function calculateWorkAmountDetailed(
+  workMinutes: number,
+  params: {
+    unitPrice?: number | null;
+    settlementMin?: number | null;
+    settlementMax?: number | null;
+    upperRate?: number | null;
+    lowerRate?: number | null;
+    middleRate?: number | null;
+    taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
+    taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
+    rateType?: "middle" | "upperLower";
+  },
+): {
+  baseAmount: number;
+  excessInfo: {
+    hours: number;
+    rate: number;
+    amount: number;
+  };
+  deductionInfo: {
+    hours: number;
+    rate: number;
+    amount: number;
+  };
+  taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
+  taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
+} | null {
+  // 単価が設定されていない場合、または精算上限・下限の両方が設定されていない場合はnullを返す
+  if (!params.unitPrice || !(params.settlementMin && params.settlementMax)) {
+    return null;
+  }
+
+  const workHours = workMinutes / 60;
+  const settlementMin = params.settlementMin;
+  const settlementMax = params.settlementMax;
+
+  const baseAmount = params.unitPrice; // 基本単価
+
+  // 超過単価と控除単価を取得（設定されていない場合は0）
+  const excessRate =
+    params.rateType === "upperLower"
+      ? (params.upperRate ?? 0)
+      : (params.middleRate ?? 0);
+  const deductionRate =
+    params.rateType === "upperLower"
+      ? (params.lowerRate ?? 0)
+      : (params.middleRate ?? 0);
+
+  // 超過・控除時間を計算
+  let excessHours = 0;
+  let deductionHours = 0;
+
+  if (workHours < settlementMin) {
+    // 控除処理
+    if (params.rateType === "upperLower" && !params.lowerRate) {
+      return null;
+    }
+    if (params.rateType === "middle" && !params.middleRate) {
+      return null;
+    }
+    deductionHours = settlementMin - workHours;
+  } else if (workHours > settlementMax) {
+    // 超過処理
+    if (params.rateType === "upperLower" && !params.upperRate) {
+      return null;
+    }
+    if (params.rateType === "middle" && !params.middleRate) {
+      return null;
+    }
+    excessHours = workHours - settlementMax;
+  }
+
+  // 超過情報（常に設定）
+  const excessInfo = {
+    hours: excessHours,
+    rate: excessRate,
+    amount: excessHours * excessRate,
+  };
+
+  // 控除情報（常に設定）
+  const deductionInfo = {
+    hours: deductionHours,
+    rate: deductionRate,
+    amount: deductionHours * deductionRate,
+  };
+
+  return {
+    baseAmount,
+    excessInfo,
+    deductionInfo,
+    taxInclusiveType: params.taxInclusiveType,
+    taxRoundingType: params.taxRoundingType,
+  };
+}
+
+/**
  * 作業時間（分）から契約に基づく金額を計算する
  */
 export function calculateWorkAmount(

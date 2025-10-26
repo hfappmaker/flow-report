@@ -1,6 +1,6 @@
 import {
   calculateTotalWorkMinutes,
-  calculateWorkAmount,
+  calculateWorkAmountDetailed,
 } from "@/features/contract/utils/contract-calculation-utils";
 import type {
   FreeeInvoiceCreateRequest,
@@ -44,7 +44,7 @@ export function mapWorkReportToFreeeInvoice(
   // 稼働時間と金額を計算
   const totalWorkMinutes = calculateTotalWorkMinutes(attendances);
 
-  const amountCalculation = calculateWorkAmount(totalWorkMinutes, {
+  const amountDetail = calculateWorkAmountDetailed(totalWorkMinutes, {
     unitPrice: workReportData.unitPrice,
     settlementMin: workReportData.settlementMin,
     settlementMax: workReportData.settlementMax,
@@ -56,7 +56,7 @@ export function mapWorkReportToFreeeInvoice(
     rateType: workReportData.rateType,
   });
 
-  if (!amountCalculation) {
+  if (!amountDetail) {
     throw new Error("契約情報が不足しているため、請求書を作成できません");
   }
 
@@ -78,24 +78,53 @@ export function mapWorkReportToFreeeInvoice(
 
   // 税処理設定
   const taxEntryMethod =
-    workReportData.taxInclusiveType === "INCLUSIVE" ? "in" : "out";
+    amountDetail.taxInclusiveType === "INCLUSIVE" ? "in" : "out";
 
   // 消費税端数処理のマッピング
-  const taxFraction = mapTaxRounding(workReportData.taxRoundingType);
+  const taxFraction = mapTaxRounding(amountDetail.taxRoundingType);
 
   // 明細作成
-  const lines: FreeeInvoiceLine[] = [
-    {
-      type: "item",
-      description: `${targetDate.getFullYear()}年${targetDate.getMonth() + 1}月度 ${contractName}`,
-      sales_date: issueDate,
-      unit: "点",
-      quantity: 1, // 数値型
-      unit_price: (taxEntryMethod === "in" ? (amountCalculation.baseAmount + amountCalculation.taxAmount) : amountCalculation.baseAmount).toFixed(3), // 文字列型
-      tax_rate: 10, // 標準税率10%
-      reduced_tax_rate: false,
-    },
-  ];
+  const lines: FreeeInvoiceLine[] = [];
+
+  const year = targetDate.getFullYear();
+  const month = targetDate.getMonth() + 1;
+
+  // 基本単価明細
+  // amountDetail.baseAmountは契約の基本単価（税込または税抜）
+  lines.push({
+    type: "item",
+    description: `${year}年${month}月度 ${contractName} 基本単価（@${amountDetail.baseAmount.toLocaleString()}円）`,
+    sales_date: issueDate,
+    unit: "点",
+    quantity: 1,
+    unit_price: amountDetail.baseAmount.toFixed(3),
+    tax_rate: 10,
+    reduced_tax_rate: false,
+  });
+
+  // 超過単価明細（常に追加、0時間の場合もあり）
+  lines.push({
+    type: "item",
+    description: `${year}年${month}月度 ${contractName} 超過単価（@${amountDetail.excessInfo.rate.toLocaleString()}円/h）`,
+    sales_date: issueDate,
+    unit: "時間",
+    quantity: Math.round(amountDetail.excessInfo.hours * 100) / 100, // 小数点2桁
+    unit_price: amountDetail.excessInfo.rate.toFixed(3),
+    tax_rate: 10,
+    reduced_tax_rate: false,
+  });
+
+  // 控除単価明細（常に追加、0時間の場合もあり、マイナス金額）
+  lines.push({
+    type: "item",
+    description: `${year}年${month}月度 ${contractName} 控除単価（@${amountDetail.deductionInfo.rate.toLocaleString()}円/h）`,
+    sales_date: issueDate,
+    unit: "時間",
+    quantity: Math.round(amountDetail.deductionInfo.hours * 100) / 100, // 小数点2桁
+    unit_price: (-amountDetail.deductionInfo.rate).toFixed(3), // マイナス値
+    tax_rate: 10,
+    reduced_tax_rate: false,
+  });
 
   const invoiceRequest: FreeeInvoiceCreateRequest = {
     company_id: companyId,
