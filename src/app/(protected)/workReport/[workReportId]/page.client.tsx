@@ -334,7 +334,8 @@ export default function ClientWorkReportPage({
         memo: entry?.memo,
       });
     }
-  }, [editingDate, currentAttendances, editForm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingDate]);
 
   // freee連携状態をチェック
   useEffect(() => {
