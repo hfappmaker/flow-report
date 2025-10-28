@@ -70,7 +70,7 @@ const TimeSelect = memo(
     <div className="flex items-center space-x-2">
       <FormControl>
         <Select
-          value={!selectedHour && selectedMinute ? "00" : selectedHour ?? ""}
+          value={!selectedHour && selectedMinute ? "00" : selectedHour}
           onValueChange={onHourChange}
         >
           <SelectTrigger className="w-[80px]">
@@ -88,7 +88,7 @@ const TimeSelect = memo(
       <span className="self-center">:</span>
       <FormControl>
         <Select
-          value={!selectedMinute && selectedHour ? "00" : selectedMinute ?? ""}
+          value={!selectedMinute && selectedHour ? "00" : selectedMinute}
           onValueChange={onMinuteChange}
         >
           <SelectTrigger className="w-[80px]">
@@ -158,7 +158,7 @@ const TimePickerFieldContent = ({
   );
 
   const handleClear = useCallback(() => {
-    field.onChange(undefined);
+    field.onChange(null);
   }, [field]);
 
   return (
