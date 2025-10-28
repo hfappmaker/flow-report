@@ -170,8 +170,8 @@ const TimePickerFieldContent = ({
   const handleClear = useCallback(() => {
     setSelectedHour("");
     setSelectedMinute("");
-    prevValueRef.current = null;
-    field.onChange(null);
+    prevValueRef.current = undefined;
+    field.onChange(undefined);
   }, [field]);
 
   return (
