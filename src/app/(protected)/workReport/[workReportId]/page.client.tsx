@@ -199,8 +199,8 @@ export default function ClientWorkReportPage({
     defaultValues: {
       startTime: basicStartTime
         ? new Date(basicStartTime.toISOString())
-        : undefined,
-      endTime: basicEndTime ? new Date(basicEndTime.toISOString()) : undefined,
+        : null,
+      endTime: basicEndTime ? new Date(basicEndTime.toISOString()) : null,
       breakDuration: basicBreakDuration,
       memo: "",
     },
@@ -424,7 +424,7 @@ export default function ClientWorkReportPage({
     if (basicEndTime) {
       editForm.setValue("endTime", new Date(basicEndTime.toISOString()));
     }
-    if (basicBreakDuration !== undefined) {
+    if (basicBreakDuration !== null) {
       editForm.setValue("breakDuration", basicBreakDuration);
     }
   };

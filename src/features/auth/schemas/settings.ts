@@ -2,9 +2,9 @@ import { UserRole } from "@prisma/client";
 import * as z from "zod";
 
 interface UserData {
-  password?: string | null;
-  newPassword?: string | null;
-  newPasswordConfirmation?: string | null;
+  password: string | null;
+  newPassword: string | null;
+  newPasswordConfirmation: string | null;
 }
 
 const passwordRequired = (
@@ -13,8 +13,8 @@ const passwordRequired = (
   newPasswordField: keyof UserData,
   newPasswordConfirmationField: keyof UserData = "newPasswordConfirmation",
 ) => {
-  const newPasswordEntered = data[newPasswordField] !== undefined;
-  const confirmationEntered = data[newPasswordConfirmationField] !== undefined;
+  const newPasswordEntered = data[newPasswordField] !== null;
+  const confirmationEntered = data[newPasswordConfirmationField] !== null;
 
   if (newPasswordEntered && !confirmationEntered) {
     return false;

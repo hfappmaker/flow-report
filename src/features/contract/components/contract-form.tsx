@@ -78,7 +78,7 @@ export const ContractForm = ({
     defaultValues: defaultValues ?? {
       name: "",
       startDate: new Date(),
-      endDate: undefined,
+      endDate: null,
       clientName: "",
       clientContactName: "",
       clientEmail: "",

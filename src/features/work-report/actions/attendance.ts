@@ -43,9 +43,9 @@ export const updateWorkReportAttendanceAction = async (
 export const createAttendancesByPromptAction = async (
   workReportId: string,
   targetDate: Date,
-  basicStartTime: Date | undefined,
-  basicEndTime: Date | undefined,
-  basicBreakDuration: number | undefined,
+  basicStartTime: Date | null,
+  basicEndTime: Date | null,
+  basicBreakDuration: number | null,
   currentAttendances: AttendanceData[],
   prompt: string,
 ): Promise<AttendanceDto[]> => {
@@ -109,7 +109,7 @@ export const createAttendancesByPromptAction = async (
   - date: 日付（YYYY-MM-DDTHH:mm:ss.sssZ形式）
   - startTime: 出勤時間（YYYY-MM-DDTHH:mm:ss.sssZ形式、休日はnull）${basicStartTime ? `\n- 基本出勤時間: ${new Date(basicStartTime).toISOString().split("T")[1]}` : ""}
   - endTime: 退勤時間（YYYY-MM-DDTHH:mm:ss.sssZ形式、休日はnull）${basicEndTime ? `\n- 基本退勤時間: ${new Date(basicEndTime).toISOString().split("T")[1]}` : ""}
-  - breakDuration: 休憩時間（分単位、休日はnull）${basicBreakDuration !== undefined ? `\n- 基本休憩時間: ${String(basicBreakDuration)}分` : ""}
+  - breakDuration: 休憩時間（分単位、休日はnull）${basicBreakDuration !== null ? `\n- 基本休憩時間: ${String(basicBreakDuration)}分` : ""}
   - memo: 作業内容（休日は"休日"、平日は"通常業務"など）
 
   💡 **プロンプト例**

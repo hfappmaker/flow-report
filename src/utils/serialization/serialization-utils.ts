@@ -79,7 +79,7 @@ export function Serialize<T, UseBranded extends boolean = true>(
   value: T,
 ): SerializedType<T, UseBranded> {
   if (value === null) {
-    return undefined as SerializedType<T, UseBranded>;
+    return null as SerializedType<T, UseBranded>;
   }
 
   if (isPrimitive(value) || isStandardBuiltInObject(value)) {

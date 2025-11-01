@@ -53,10 +53,10 @@ export default async function WorkReportPage({
       clientEmail={contract.clientEmail}
       dailyWorkMinutes={contract.dailyWorkMinutes ?? 1}
       monthlyWorkMinutes={contract.monthlyWorkMinutes ?? 1}
-      basicStartTime={Serialize(contract.basicStartTime ?? null)}
-      basicEndTime={Serialize(contract.basicEndTime ?? null)}
-      basicBreakDuration={Serialize(contract.basicBreakDuration ?? null)}
-      closingDay={Serialize(contract.closingDay ?? null)}
+      basicStartTime={Serialize(contract.basicStartTime)}
+      basicEndTime={Serialize(contract.basicEndTime)}
+      basicBreakDuration={Serialize(contract.basicBreakDuration)}
+      closingDay={Serialize(contract.closingDay)}
       status={workReport.status}
       holidays={holidayData}
       unitPrice={contract.unitPrice ? Number(contract.unitPrice) : null}

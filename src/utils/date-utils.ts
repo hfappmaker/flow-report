@@ -84,7 +84,7 @@ export function getClosingDate(
   // 月末日を取得（次の月の0日目 = 今月の最終日）
   const lastDayOfMonth = new Date(year, month, 0).getDate();
 
-  // closingDayがnull/undefinedの場合、または指定された日がその月に存在しない場合は月末日を返す
+  // closingDayがnullの場合、または指定された日がその月に存在しない場合は月末日を返す
   const actualClosingDay =
     !closingDay || closingDay > lastDayOfMonth ? lastDayOfMonth : closingDay;
 
