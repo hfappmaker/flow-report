@@ -40,7 +40,7 @@ export const convertContractToFormValues = (
   return {
     name: contract.name,
     startDate: new Date(contract.startDate),
-    endDate: contract.endDate ? new Date(contract.endDate) : null,
+    endDate: new Date(contract.endDate),
     clientName: contract.clientName,
     clientContactName: contract.clientContactName,
     clientEmail: contract.clientEmail,
