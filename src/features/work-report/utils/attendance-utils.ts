@@ -8,7 +8,7 @@ import { getBillingPeriod } from "@/utils/date-utils";
 export function generateDefaultAttendances(
   year: number,
   monthIndex: number,
-  closingDay: number | undefined,
+  closingDay: number | null,
 ): AttendanceData[] {
   const defaults: AttendanceData[] = [];
 
@@ -174,22 +174,20 @@ export function shouldUpdateDate(
 }
 
 export function getBulkEditFormDefaults(
-  basicStartTime: Date | undefined,
-  basicEndTime: Date | undefined,
-  basicBreakDuration: number | undefined,
+  basicStartTime: Date | null,
+  basicEndTime: Date | null,
+  basicBreakDuration: number | null,
 ) {
   return {
     dateRangeMode: "weekday" as DateRangeMode,
     selectedDays: [1, 2, 3, 4, 5],
     excludeHolidays: true,
-    startTime: basicStartTime
-      ? new Date(basicStartTime.toISOString())
-      : undefined,
-    endTime: basicEndTime ? new Date(basicEndTime.toISOString()) : undefined,
-    breakDuration: basicBreakDuration,
-    memo: "",
-    startDate: undefined,
-    endDate: undefined,
-    prompt: "",
+    startTime: basicStartTime ? new Date(basicStartTime.toISOString()) : null,
+    endTime: basicEndTime ? new Date(basicEndTime.toISOString()) : null,
+    breakDuration: basicBreakDuration ?? null,
+    memo: null,
+    startDate: null,
+    endDate: null,
+    prompt: null,
   };
 }

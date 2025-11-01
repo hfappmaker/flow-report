@@ -53,22 +53,22 @@ export default async function WorkReportPage({
       clientEmail={contract.clientEmail}
       dailyWorkMinutes={contract.dailyWorkMinutes ?? 1}
       monthlyWorkMinutes={contract.monthlyWorkMinutes ?? 1}
-      basicStartTime={Serialize(contract.basicStartTime ?? undefined)}
-      basicEndTime={Serialize(contract.basicEndTime ?? undefined)}
-      basicBreakDuration={Serialize(contract.basicBreakDuration ?? undefined)}
-      closingDay={Serialize(contract.closingDay ?? undefined)}
+      basicStartTime={Serialize(contract.basicStartTime ?? null)}
+      basicEndTime={Serialize(contract.basicEndTime ?? null)}
+      basicBreakDuration={Serialize(contract.basicBreakDuration ?? null)}
+      closingDay={Serialize(contract.closingDay ?? null)}
       status={workReport.status}
       holidays={holidayData}
-      unitPrice={contract.unitPrice ? Number(contract.unitPrice) : undefined}
+      unitPrice={contract.unitPrice ? Number(contract.unitPrice) : null}
       settlementMin={
-        contract.settlementMin ? Number(contract.settlementMin) : undefined
+        contract.settlementMin ? Number(contract.settlementMin) : null
       }
       settlementMax={
-        contract.settlementMax ? Number(contract.settlementMax) : undefined
+        contract.settlementMax ? Number(contract.settlementMax) : null
       }
-      upperRate={contract.upperRate ? Number(contract.upperRate) : undefined}
-      lowerRate={contract.lowerRate ? Number(contract.lowerRate) : undefined}
-      middleRate={contract.middleRate ? Number(contract.middleRate) : undefined}
+      upperRate={contract.upperRate ? Number(contract.upperRate) : null}
+      lowerRate={contract.lowerRate ? Number(contract.lowerRate) : null}
+      middleRate={contract.middleRate ? Number(contract.middleRate) : null}
       taxInclusiveType={contract.taxInclusiveType}
       taxRoundingType={contract.taxRoundingType}
       rateType={contract.rateType}

@@ -35,7 +35,7 @@ export const bulkEditFormSchema = z.object({
   startTime: z.date().nullable(),
   endTime: z.date().nullable(),
   breakDuration: z.number().nullable(),
-  memo: z.string(),
+  memo: z.string().nullable(),
   prompt: z.string().nullable(),
 });
 
