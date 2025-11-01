@@ -20,10 +20,10 @@ export const searchFormSchema = z.object({
 });
 
 export const editFormSchema = z.object({
-  startTime: z.date().optional(),
-  endTime: z.date().optional(),
-  breakDuration: z.number().optional(),
-  memo: z.string().optional(),
+  startTime: z.date().nullable(),
+  endTime: z.date().nullable(),
+  breakDuration: z.number().nullable(),
+  memo: z.string().nullable(),
 });
 
 export const bulkEditFormSchema = z.object({
@@ -32,9 +32,9 @@ export const bulkEditFormSchema = z.object({
   startDate: z.date().optional(),
   endDate: z.date().optional(),
   excludeHolidays: z.boolean().default(true).optional(),
-  startTime: z.date().optional(),
-  endTime: z.date().optional(),
-  breakDuration: z.number().optional(),
+  startTime: z.date().nullable(),
+  endTime: z.date().nullable(),
+  breakDuration: z.number().nullable(),
   memo: z.string(),
   prompt: z.string().optional(),
 });

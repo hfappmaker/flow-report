@@ -1,5 +1,5 @@
-import { useState, memo, useCallback, useLayoutEffect, useRef } from "react";
-import { Control, Path, FieldValues } from "react-hook-form";
+import { useState, memo, useLayoutEffect } from "react";
+import { Control, Path, FieldValues, ControllerRenderProps } from "react-hook-form";
 
 import {
   FormControl,
@@ -23,7 +23,7 @@ interface TimePickerFieldProps<T extends FieldValues, V> {
   control: Control<T>;
   name: Path<T> &
     {
-      [P in Path<T>]: T[P] extends V | undefined ? P : never;
+      [P in Path<T>]: T[P] extends V | null ? P : never;
     }[Path<T>];
   minuteStep?: number;
   showClearButton?: boolean;
@@ -109,7 +109,7 @@ const TimeSelect = memo(
 
 TimeSelect.displayName = "TimeSelect";
 
-const TimePickerFieldContent = ({
+const TimePickerFieldContent = <T extends FieldValues, V extends number | Date>({
   field,
   minuteStep,
   showClearButton,
@@ -117,14 +117,11 @@ const TimePickerFieldContent = ({
   timeToValue,
   label,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  field: any;
+  field: ControllerRenderProps<T, Path<T> & { [P in Path<T>]: T[P] extends V | null ? P : never; }[Path<T>]>;
   minuteStep: number;
   showClearButton: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  valueToTime: (value: any) => { hour: string; minute: string };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  timeToValue: (hour: string, minute: string) => any;
+  valueToTime: (value: V) => { hour: string; minute: string };
+  timeToValue: (hour: string, minute: string) => V;
   label: string;
 }) => {
   const { hourOptions, minuteOptions } = createTimeOptions(minuteStep);
@@ -134,45 +131,30 @@ const TimePickerFieldContent = ({
   const [selectedHour, setSelectedHour] = useState(defaultValueTime.hour);
   const [selectedMinute, setSelectedMinute] = useState(defaultValueTime.minute);
 
-  // 前回のfield.valueを保存するref
-  const prevValueRef = useRef(field.value);
-
-  // field.valueが外部から変更された時にselectedHour, selectedMinuteを同期
   useLayoutEffect(() => {
-    // field.valueが本当に変更された場合のみ更新
-    if (prevValueRef.current === field.value) {
-      return;
-    }
-
-    prevValueRef.current = field.value;
-
-    const newTime = field.value
-      ? valueToTime(field.value)
-      : { hour: "", minute: "" };
-    setSelectedHour(newTime.hour);
-    setSelectedMinute(newTime.minute);
+    // 外部からの変更のみ同期
+    const time = field.value ? valueToTime(field.value) : { hour: "", minute: "" };
+    setSelectedHour(time.hour);
+    setSelectedMinute(time.minute);
   }, [field.value, valueToTime]);
 
-  const handleHourChange = useCallback(
-    (newHour: string) => {
-      field.onChange(timeToValue(newHour, selectedMinute || "00"));
-    },
-    [selectedMinute, field, timeToValue],
-  );
+  const handleHourChange = (newHour: string) => {
+    setSelectedHour(newHour);
+    const newFieldValue = timeToValue(newHour, selectedMinute || "00");
+    field.onChange(newFieldValue);
+  };
 
-  const handleMinuteChange = useCallback(
-    (newMinute: string) => {
-      field.onChange(timeToValue(selectedHour || "00", newMinute));
-    },
-    [selectedHour, field, timeToValue],
-  );
+  const handleMinuteChange = (newMinute: string) => {
+    setSelectedMinute(newMinute);
+    const newFieldValue = timeToValue(selectedHour || "00", newMinute);
+    field.onChange(newFieldValue);
+  };
 
-  const handleClear = useCallback(() => {
+  const handleClear = () => {
     setSelectedHour("");
     setSelectedMinute("");
-    prevValueRef.current = undefined;
-    field.onChange(undefined);
-  }, [field]);
+    field.onChange(null);
+  };
 
   return (
     <FormItem className="flex flex-col space-y-2">

@@ -47,7 +47,7 @@ type IsUndefinedUnion<T> = [T] extends [undefined]
 
 // シリアライズされた型
 export type SerializedType<T, UseBranded = true> = T extends null
-  ? undefined
+  ? null
   : T extends Primitive
     ? T
     : T extends StandardBuiltInObject

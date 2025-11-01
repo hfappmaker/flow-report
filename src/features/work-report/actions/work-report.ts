@@ -140,7 +140,6 @@ function convertPrismaWorkReportToWorkReportDto(
 ): WorkReport {
   return {
     ...workReport,
-    memo: workReport.memo ?? undefined,
   };
 }
 
@@ -149,7 +148,6 @@ function convertPrismaWorkReportWithAttendancesToWorkReportDto(
 ): WorkReportWithAttendances {
   return {
     ...workReport,
-    memo: workReport.memo ?? undefined,
     attendances: workReport.attendances,
   };
 }

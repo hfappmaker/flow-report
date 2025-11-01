@@ -20,6 +20,7 @@ import {
   TimePickerFieldForDate,
   TimePickerFieldForNumber,
 } from "@/components/ui/time-picker";
+import { Resolver } from "react-hook-form";
 
 export const contractFormSchema = z.object({
   name: z.string().min(1, "契約名は必須です"),
@@ -41,9 +42,9 @@ export const contractFormSchema = z.object({
   middleRate: z.number().optional(),
   dailyWorkMinutes: z.number().optional(),
   monthlyWorkMinutes: z.number().optional(),
-  basicStartTime: z.date().optional(),
-  basicEndTime: z.date().optional(),
-  basicBreakDuration: z.number().optional(),
+  basicStartTime: z.date().nullable(),
+  basicEndTime: z.date().nullable(),
+  basicBreakDuration: z.number().nullable(),
   closingDay: z
     .number()
     .int("整数で入力してください")
@@ -74,7 +75,7 @@ export const ContractForm = ({
   isEditing,
 }: ContractFormProps) => {
   const form = useForm<ContractFormValues>({
-    resolver: zodResolver(contractFormSchema) as any,
+    resolver: zodResolver(contractFormSchema) as Resolver<ContractFormValues>,
     defaultValues: defaultValues ?? {
       name: "",
       startDate: new Date(),

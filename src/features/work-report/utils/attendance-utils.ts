@@ -48,10 +48,10 @@ export function generateDefaultAttendances(
   while (current < end) {
     defaults.push({
       date: new Date(current),
-      startTime: undefined,
-      endTime: undefined,
-      breakDuration: undefined,
-      memo: undefined,
+      startTime: null,
+      endTime: null,
+      breakDuration: null,
+      memo: null,
     });
     current.setDate(current.getDate() + 1);
   }

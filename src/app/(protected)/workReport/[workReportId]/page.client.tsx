@@ -326,12 +326,12 @@ export default function ClientWorkReportPage({
       editForm.reset({
         startTime: entry?.startTime
           ? new Date(entry.startTime.toISOString())
-          : undefined,
+          : null,
         endTime: entry?.endTime
           ? new Date(entry.endTime.toISOString())
-          : undefined,
+          : null,
         breakDuration: entry?.breakDuration,
-        memo: entry?.memo,
+        memo: entry?.memo ?? null,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -422,25 +422,13 @@ export default function ClientWorkReportPage({
   // 基本時間を入力
   const fillBasicTime = () => {
     if (basicStartTime) {
-      editForm.setValue("startTime", new Date(basicStartTime.toISOString()), {
-        shouldValidate: true,
-        shouldDirty: true,
-        shouldTouch: true,
-      });
+      editForm.setValue("startTime", new Date(basicStartTime.toISOString()));
     }
     if (basicEndTime) {
-      editForm.setValue("endTime", new Date(basicEndTime.toISOString()), {
-        shouldValidate: true,
-        shouldDirty: true,
-        shouldTouch: true,
-      });
+      editForm.setValue("endTime", new Date(basicEndTime.toISOString()));
     }
     if (basicBreakDuration !== undefined) {
-      editForm.setValue("breakDuration", basicBreakDuration, {
-        shouldValidate: true,
-        shouldDirty: true,
-        shouldTouch: true,
-      });
+      editForm.setValue("breakDuration", basicBreakDuration);
     }
   };
 
