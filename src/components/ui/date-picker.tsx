@@ -268,7 +268,7 @@ const YearMonthPickerContent = ({
   monthTriggerClassName,
   isYearMonthDisabled,
 }: YearMonthPickerContentProps) => {
-  const date = field.value as Date | null;
+  const date = field.value;
   const selectedYear = date?.getFullYear().toString();
   const selectedMonth = date?.getMonth().toString();
 
