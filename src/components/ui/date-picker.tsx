@@ -27,11 +27,13 @@ import {
 type DatePickerProps = {
   value?: string;
   onChange?: (date: string) => void;
+  enableClear?: boolean;
 } & StrictOmit<React.ComponentPropsWithRef<"input">, "onChange" | "value">;
 
 export const DatePicker: FC<DatePickerProps> = ({
   className,
   onChange,
+  enableClear = true,
   ...props
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -55,6 +57,7 @@ export const DatePicker: FC<DatePickerProps> = ({
           type="date"
           className={cn(
             "flex h-9 w-full rounded-md bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 border border-input focus-visible:ring-ring",
+            !enableClear && "[&::-webkit-clear-button]:hidden [&::-ms-clear]:hidden",
             className,
           )}
           onChange={handleChange}
@@ -83,6 +86,7 @@ interface DatePickerFieldProps<T extends FieldValues> {
   disabled?: boolean;
   min?: string;
   max?: string;
+  enableClear?: boolean;
 }
 
 const DatePickerFieldContent = ({
@@ -92,6 +96,7 @@ const DatePickerFieldContent = ({
   disabled,
   min,
   max,
+  enableClear = true,
 }: {
   field: any;
   label: string;
@@ -99,6 +104,7 @@ const DatePickerFieldContent = ({
   disabled?: boolean;
   min?: string;
   max?: string;
+  enableClear?: boolean;
 }) => {
   const [selectedDate, setSelectedDate] = useState<string>(
     field.value ? new Date(field.value).toISOString().split("T")[0] : "",
@@ -118,6 +124,7 @@ const DatePickerFieldContent = ({
           disabled={disabled}
           min={min}
           max={max}
+          enableClear={enableClear}
         />
       </FormControl>
       <FormMessage />
@@ -130,7 +137,7 @@ DatePickerFieldContent.displayName = "DatePickerFieldContent";
 export const DatePickerField = <T extends FieldValues>(
   props: DatePickerFieldProps<T>,
 ) => {
-  const { control, name, label, placeholder, disabled, min, max } = props;
+  const { control, name, label, placeholder, disabled, min, max, enableClear } = props;
   return (
     <FormField
       control={control}
@@ -143,6 +150,7 @@ export const DatePickerField = <T extends FieldValues>(
           disabled={disabled}
           min={min}
           max={max}
+          enableClear={enableClear}
         />
       )}
     />
