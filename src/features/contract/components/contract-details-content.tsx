@@ -68,7 +68,7 @@ export const ContractDetailsContent = ({
               終了日
             </label>
             <p className="mt-1">
-              {contract.endDate ? formatDateAsUTC(contract.endDate) : "なし"}
+              {formatDateAsUTC(contract.endDate)}
             </p>
           </div>
         </div>
