@@ -222,7 +222,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
     contract: ContractOutput,
   ): ContractFormValues => {
     const baseValues = convertContractToFormValues(contract);
-    // 開始日の設定
+    // 開始日の設定（コピー元の終了日の翌日）
     const newStartDate = new Date(
       Date.UTC(
         contract.endDate.getFullYear(),
@@ -231,13 +231,14 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
       ),
     );
 
-    // コピー元の契約期間を計算
-    const originalStartDate = new Date(contract.startDate);
-    const originalEndDate = new Date(contract.endDate);
-    const periodInMs = originalEndDate.getTime() - originalStartDate.getTime();
-
-    // 新しい終了日 = 新しい開始日 + 契約期間
-    const newEndDate = new Date(newStartDate.getTime() + periodInMs);
+    // 新しい終了日 = 開始日の3ヶ月後
+    const newEndDate = new Date(
+      Date.UTC(
+        newStartDate.getUTCFullYear(),
+        newStartDate.getUTCMonth() + 3,
+        newStartDate.getUTCDate() - 1,
+      ),
+    );
 
     return {
       ...baseValues,
