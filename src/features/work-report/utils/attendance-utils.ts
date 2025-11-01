@@ -1,7 +1,4 @@
-import {
-  DateRangeMode,
-  ExcelRange,
-} from "@/features/work-report/schemas/work-report-form-schemas";
+import { ExcelRange } from "@/features/work-report/schemas/work-report-form-schemas";
 import { AttendanceData } from "@/features/work-report/types/attendance";
 import { getBillingPeriod } from "@/utils/date-utils";
 
@@ -134,31 +131,20 @@ export function formatMonthDay(dateStr: string): string {
 
 export function shouldUpdateDate(
   date: Date,
-  dateRangeMode: DateRangeMode,
   selectedDays: number[] | null,
-  startDate: Date | null,
-  endDate: Date | null,
+  startDate: Date,
+  endDate: Date,
   excludeHolidays: boolean | null,
   holidays: { date: string }[] | null,
 ): boolean {
   const dayOfWeek = date.getDay();
 
-  // 基本的な条件チェック
-  let shouldUpdate = false;
-  switch (dateRangeMode) {
-    case "all":
-      shouldUpdate = true;
-      break;
-    case "weekday":
-      shouldUpdate = selectedDays?.includes(dayOfWeek) ?? false;
-      break;
-    case "custom":
-      if (startDate && endDate) {
-        shouldUpdate = date >= startDate && date <= endDate;
-      }
-      break;
-    default:
-      shouldUpdate = false;
+  // 期間チェック
+  let shouldUpdate = date >= startDate && date <= endDate;
+
+  // 曜日チェック
+  if (shouldUpdate && selectedDays && selectedDays.length > 0) {
+    shouldUpdate = selectedDays.includes(dayOfWeek);
   }
 
   // 祝日除外オプションが有効で、かつ祝日の場合は除外
@@ -177,17 +163,18 @@ export function getBulkEditFormDefaults(
   basicStartTime: Date | null,
   basicEndTime: Date | null,
   basicBreakDuration: number | null,
+  startDate: Date,
+  endDate: Date,
 ) {
   return {
-    dateRangeMode: "weekday" as DateRangeMode,
+    startDate: startDate,
+    endDate: endDate,
     selectedDays: [1, 2, 3, 4, 5],
     excludeHolidays: true,
     startTime: basicStartTime ? new Date(basicStartTime.toISOString()) : null,
     endTime: basicEndTime ? new Date(basicEndTime.toISOString()) : null,
     breakDuration: basicBreakDuration ?? null,
     memo: null,
-    startDate: null,
-    endDate: null,
     prompt: null,
   };
 }

@@ -1,8 +1,5 @@
 import { z } from "zod";
 
-export const dateRangeModes = ["all", "weekday", "custom"] as const;
-export type DateRangeMode = (typeof dateRangeModes)[number];
-
 export interface ExcelRange {
   startRow: number;
   startCol: number;
@@ -27,10 +24,9 @@ export const editFormSchema = z.object({
 });
 
 export const bulkEditFormSchema = z.object({
-  dateRangeMode: z.enum(dateRangeModes),
+  startDate: z.date(),
+  endDate: z.date(),
   selectedDays: z.number().array().nullable(),
-  startDate: z.date().nullable(),
-  endDate: z.date().nullable(),
   excludeHolidays: z.boolean().default(true).nullable(),
   startTime: z.date().nullable(),
   endTime: z.date().nullable(),

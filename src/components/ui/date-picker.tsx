@@ -81,6 +81,8 @@ interface DatePickerFieldProps<T extends FieldValues> {
   label: string;
   placeholder?: string;
   disabled?: boolean;
+  min?: string;
+  max?: string;
 }
 
 const DatePickerFieldContent = ({
@@ -88,11 +90,15 @@ const DatePickerFieldContent = ({
   label,
   placeholder,
   disabled,
+  min,
+  max,
 }: {
   field: any;
   label: string;
   placeholder?: string;
   disabled?: boolean;
+  min?: string;
+  max?: string;
 }) => {
   const [selectedDate, setSelectedDate] = useState<string>(
     field.value ? new Date(field.value).toISOString().split("T")[0] : "",
@@ -110,6 +116,8 @@ const DatePickerFieldContent = ({
           }}
           placeholder={placeholder}
           disabled={disabled}
+          min={min}
+          max={max}
         />
       </FormControl>
       <FormMessage />
@@ -122,7 +130,7 @@ DatePickerFieldContent.displayName = "DatePickerFieldContent";
 export const DatePickerField = <T extends FieldValues>(
   props: DatePickerFieldProps<T>,
 ) => {
-  const { control, name, label, placeholder, disabled } = props;
+  const { control, name, label, placeholder, disabled, min, max } = props;
   return (
     <FormField
       control={control}
@@ -133,6 +141,8 @@ export const DatePickerField = <T extends FieldValues>(
           label={label}
           placeholder={placeholder}
           disabled={disabled}
+          min={min}
+          max={max}
         />
       )}
     />
