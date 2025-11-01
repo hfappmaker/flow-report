@@ -119,24 +119,15 @@ export async function searchContracts(
       whereConditions.push({
         AND: [
           { startDate: { lte: searchEnd } },
-          {
-            OR: [
-              { endDate: { gte: searchStart } },
-              { endDate: null }, // 終了日未設定の契約は無期限とみなす
-            ],
-          },
+          { endDate: { gte: searchStart } },
         ],
       });
     } else if (searchStart) {
       // 検索開始日のみ指定：契約が検索開始日以降に重複するもの
-      whereConditions.push({
-        OR: [{ endDate: { gte: searchStart } }, { endDate: null }],
-      });
+      whereConditions.push({ endDate: { gte: searchStart } });
     } else if (searchEnd) {
       // 検索終了日のみ指定：契約が検索終了日以前に重複するもの
-      whereConditions.push({
-        startDate: { lte: searchEnd },
-      });
+      whereConditions.push({ startDate: { lte: searchEnd } });
     }
   }
 
