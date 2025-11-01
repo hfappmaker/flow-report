@@ -115,6 +115,7 @@ const LoginForm = () => {
                         disabled={isPending}
                         placeholder="123456"
                         type="text"
+                        value={field.value ?? ""}
                       />
                     </FormControl>
                     <FormMessage />

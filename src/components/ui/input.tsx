@@ -12,7 +12,7 @@ import {
   FormItem,
 } from "./form";
 
-const Input: FC<Omit<React.ComponentPropsWithRef<"input">, "value"> & { value?: string | number | readonly string[] | null }> = ({
+const Input: FC<React.ComponentPropsWithRef<"input">> = ({
   className,
   type,
   ...props
@@ -24,7 +24,7 @@ const Input: FC<Omit<React.ComponentPropsWithRef<"input">, "value"> & { value?: 
         "flex h-9 w-full rounded-md border border-input bg-input px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
-      {...{...props, value: props.value ?? undefined}}
+      {...props}
     />
   );
 };
