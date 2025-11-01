@@ -129,17 +129,17 @@ export function columnNameToNumber(name: string): number {
 
 export function formatMonthDay(dateStr: string): string {
   const d = new Date(dateStr);
-  return `${d.getMonth() + 1}月${d.getDate()}日`;
+  return `${String(d.getMonth() + 1)}月${String(d.getDate())}日`;
 }
 
 export function shouldUpdateDate(
   date: Date,
   dateRangeMode: DateRangeMode,
-  selectedDays?: number[],
-  startDate?: Date,
-  endDate?: Date,
-  excludeHolidays?: boolean,
-  holidays?: { date: string }[],
+  selectedDays: number[] | null,
+  startDate: Date | null,
+  endDate: Date | null,
+  excludeHolidays: boolean | null,
+  holidays: { date: string }[] | null,
 ): boolean {
   const dayOfWeek = date.getDay();
 

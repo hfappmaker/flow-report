@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import ExcelJS from "exceljs";
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Resolver, useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -157,9 +157,8 @@ export default function ClientWorkReportPage({
 
   // New state for holding the uploaded template file
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [uploadedTemplateFile, _setUploadedTemplateFile] = useState<File | null>(
-    null,
-  );
+  const [uploadedTemplateFile, _setUploadedTemplateFile] =
+    useState<File | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [templateOption, _setTemplateOption] = useState("default"); // 'default' or 'upload'
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -209,7 +208,7 @@ export default function ClientWorkReportPage({
 
   // 一括編集用フォーム
   const bulkEditForm = useForm<BulkEditFormValues>({
-    resolver: zodResolver(bulkEditFormSchema),
+    resolver: zodResolver(bulkEditFormSchema) as Resolver<BulkEditFormValues>,
     defaultValues: getBulkEditFormDefaults(
       basicStartTime,
       basicEndTime,
@@ -327,9 +326,7 @@ export default function ClientWorkReportPage({
         startTime: entry?.startTime
           ? new Date(entry.startTime.toISOString())
           : null,
-        endTime: entry?.endTime
-          ? new Date(entry.endTime.toISOString())
-          : null,
+        endTime: entry?.endTime ? new Date(entry.endTime.toISOString()) : null,
         breakDuration: entry?.breakDuration,
         memo: entry?.memo ?? null,
       });
@@ -1311,44 +1308,44 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                   <div className="space-y-4">
                     <h3 className="text-sm font-medium">勤怠情報</h3>
                     <div className="flex flex-wrap gap-4">
-                        <TimePickerFieldForDate
-                          control={bulkEditForm.control}
-                          name="startTime"
-                          showClearButton={false}
-                          minuteStep={dailyWorkMinutes}
-                          label="出勤時間"
-                        />
-                        <TimePickerFieldForDate
-                          control={bulkEditForm.control}
-                          name="endTime"
-                          showClearButton={false}
-                          minuteStep={dailyWorkMinutes}
-                          label="退勤時間"
-                        />
-                        <TimePickerFieldForNumber
-                          control={bulkEditForm.control}
-                          name="breakDuration"
-                          showClearButton={false}
-                          minuteStep={dailyWorkMinutes}
-                          label="休憩時間"
-                        />
-                        <FormField
-                          control={bulkEditForm.control}
-                          name="memo"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>作業内容</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="text"
-                                  className="w-[400px]"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                      <TimePickerFieldForDate
+                        control={bulkEditForm.control}
+                        name="startTime"
+                        showClearButton={false}
+                        minuteStep={dailyWorkMinutes}
+                        label="出勤時間"
+                      />
+                      <TimePickerFieldForDate
+                        control={bulkEditForm.control}
+                        name="endTime"
+                        showClearButton={false}
+                        minuteStep={dailyWorkMinutes}
+                        label="退勤時間"
+                      />
+                      <TimePickerFieldForNumber
+                        control={bulkEditForm.control}
+                        name="breakDuration"
+                        showClearButton={false}
+                        minuteStep={dailyWorkMinutes}
+                        label="休憩時間"
+                      />
+                      <FormField
+                        control={bulkEditForm.control}
+                        name="memo"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>作業内容</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="text"
+                                className="w-[400px]"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </div>
                 </>
@@ -1411,44 +1408,44 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                     基本時間を入力
                   </Button>
                 </div>
-                  <div className="flex flex-wrap gap-4">
-                      <TimePickerFieldForDate
-                        control={editForm.control}
-                        name="startTime"
-                        label="出勤時間"
-                        minuteStep={dailyWorkMinutes}
-                      />
-                      <TimePickerFieldForDate
-                        control={editForm.control}
-                        name="endTime"
-                        label="退勤時間"
-                        minuteStep={dailyWorkMinutes}
-                      />
-                      <TimePickerFieldForNumber
-                        control={editForm.control}
-                        name="breakDuration"
-                        label="休憩時間"
-                        minuteStep={dailyWorkMinutes}
-                      />
-                      <FormField
-                        control={editForm.control}
-                        name="memo"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>作業内容</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="text"
-                                className="w-[400px]"
-                                {...field}
-                                value={field.value ?? ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                  </div>
+                <div className="flex flex-wrap gap-4">
+                  <TimePickerFieldForDate
+                    control={editForm.control}
+                    name="startTime"
+                    label="出勤時間"
+                    minuteStep={dailyWorkMinutes}
+                  />
+                  <TimePickerFieldForDate
+                    control={editForm.control}
+                    name="endTime"
+                    label="退勤時間"
+                    minuteStep={dailyWorkMinutes}
+                  />
+                  <TimePickerFieldForNumber
+                    control={editForm.control}
+                    name="breakDuration"
+                    label="休憩時間"
+                    minuteStep={dailyWorkMinutes}
+                  />
+                  <FormField
+                    control={editForm.control}
+                    name="memo"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>作業内容</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            className="w-[400px]"
+                            {...field}
+                            value={field.value ?? ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 <div className="mt-4 flex justify-end space-x-2">
                   <Button type="button" variant="outline" onClick={cancelEdit}>
                     キャンセル
