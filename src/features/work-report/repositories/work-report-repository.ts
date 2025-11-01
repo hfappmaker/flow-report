@@ -88,10 +88,17 @@ export async function getWorkReportsByContractIdAndYearMonthDateRange(
   return workReports;
 }
 
-export async function getDraftWorkReports(userId?: string) {
+export async function getDraftWorkReportsUpToCurrentMonth(userId?: string) {
+  // 現在の年月の1日を計算（例: 2025-11-01）
+  const now = new Date();
+  const currentMonthFirstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+
   const workReports = await db.workReport.findMany({
     where: {
       status: WorkReportStatus.DRAFT,
+      targetDate: {
+        lte: currentMonthFirstDay,
+      },
       ...(userId && {
         contract: {
           userId: userId,

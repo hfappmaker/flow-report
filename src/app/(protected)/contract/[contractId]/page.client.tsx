@@ -1,18 +1,11 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { YearMonthPickerField } from "@/components/ui/date-picker";
 import FormError from "@/components/ui/feedback/error-alert";
 import FormSuccess from "@/components/ui/feedback/success-alert";
-import { Form } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -30,12 +23,7 @@ import {
   formatWorkTime,
   formatAmount,
 } from "@/features/contract/utils/contract-calculation-utils";
-import {
-  getWorkReportsByContractIdAndYearMonthDateRangeAction,
-  createWorkReportAction,
-  deleteWorkReportAction,
-} from "@/features/work-report/actions/work-report";
-import { WorkReportDialog } from "@/features/work-report/components/work-report-dialog";
+import { getWorkReportsByContractIdAndYearMonthDateRangeAction } from "@/features/work-report/actions/work-report";
 import { WorkReportWithAttendances } from "@/features/work-report/types/work-report";
 import {
   getWorkReportStatusColor,
@@ -43,21 +31,12 @@ import {
 } from "@/features/work-report/utils/status-utils";
 import { useMessageState } from "@/hooks/use-message-state";
 
-// 作業報告書作成用のスキーマ
-const createWorkReportSchema = z.object({
-  targetDate: z.date({
-    required_error: "対象年月は必須です",
-  }),
-});
-
-type CreateWorkReportValues = z.infer<typeof createWorkReportSchema>;
-
 export default function ContractClientPage({
   contractId,
 }: {
   contractId: string;
 }) {
-  const { error, success, showError, showSuccess } = useMessageState();
+  const { error, success, showError } = useMessageState();
   const [workReports, setWorkReports] = useState<WorkReportWithAttendances[]>(
     [],
   );
@@ -65,22 +44,9 @@ export default function ContractClientPage({
   const [selectedYear, setSelectedYear] = useState<number>(
     new Date().getFullYear(),
   );
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isNoMonthAvailableDialogOpen, setIsNoMonthAvailableDialogOpen] =
-    useState(false);
-  const [deleteTarget, setDeleteTarget] =
-    useState<WorkReportWithAttendances | null>(null);
 
   const { startTransition } = useTransitionContext();
   const router = useRouter();
-
-  // 作成フォーム
-  const createForm = useForm<CreateWorkReportValues>({
-    resolver: zodResolver(createWorkReportSchema),
-    defaultValues: {
-      targetDate: new Date(Date.UTC(selectedYear, new Date().getMonth(), 1)), // 初期値は選択年の1月1日
-    },
-  });
 
   // 年の選択肢を生成（契約期間内のみ）
   const generateYearOptions = () => {
@@ -89,9 +55,7 @@ export default function ContractClientPage({
     }
 
     const startYear = new Date(contract.startDate).getFullYear();
-    const endYear = contract.endDate
-      ? new Date(contract.endDate).getFullYear()
-      : new Date().getFullYear() + 2; // 終了日がない場合は未来2年まで
+    const endYear = new Date(contract.endDate).getFullYear();
 
     const years = [];
     for (let year = startYear; year <= endYear; year++) {
@@ -121,9 +85,7 @@ export default function ContractClientPage({
 
         // 契約期間内に現在の選択年が収まっているかチェック
         const startYear = new Date(contractData.startDate).getFullYear();
-        const endYear = contractData.endDate
-          ? new Date(contractData.endDate).getFullYear()
-          : new Date().getFullYear() + 2;
+        const endYear = new Date(contractData.endDate).getFullYear();
 
         setSelectedYear((currentYear) => {
           if (currentYear < startYear || currentYear > endYear) {
@@ -161,181 +123,21 @@ export default function ContractClientPage({
   const handleYearChange = (yearStr: string) => {
     const year = parseInt(yearStr, 10);
     setSelectedYear(year);
-    const yearRange = getYearRange(year);
-
-    // 年変更時に即座にデータを取得
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    startTransition(async () => {
-      await fetchReports(yearRange.from, yearRange.to);
-    });
   };
 
   // Load the reports on initial render
   useEffect(() => {
-    const currentYear = new Date().getFullYear();
-    const yearRange = getYearRange(currentYear);
+    const selectedYearRange = getYearRange(selectedYear);
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     startTransition(async () => {
-      await fetchReports(yearRange.from, yearRange.to);
+      await fetchReports(selectedYearRange.from, selectedYearRange.to);
     });
-  }, [contractId, fetchReports, startTransition]);
-
-  // 作成ダイアログが開かれたときに最も古い有効な年月をデフォルトに設定
-  useEffect(() => {
-    if (isCreateDialogOpen && contract) {
-      const oldestDate = getOldestAvailableYearMonth();
-      createForm.reset({
-        targetDate: oldestDate,
-      });
-    }
-  }, [isCreateDialogOpen, contract, workReports]);
-
-  // 作業報告書作成処理
-  const handleCreateWorkReport = (data: CreateWorkReportValues) => {
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    startTransition(async () => {
-      try {
-        const createdWorkReport = await createWorkReportAction(
-          contractId,
-          data.targetDate,
-        );
-        setIsCreateDialogOpen(false);
-        createForm.reset();
-
-        // 作成された作業報告書の画面に遷移
-        router.push(`/workReport/${createdWorkReport.id}`);
-      } catch (error) {
-        console.error("Failed to create work report:", error);
-        // サーバーエラーメッセージを表示（重複エラーを含む）
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : "作業報告書の作成に失敗しました";
-        createForm.setError("targetDate", {
-          type: "manual",
-          message: errorMessage,
-        });
-      }
-    });
-  };
-
-  // 削除確認ダイアログを開く
-  const openDeleteDialog = (workReport: WorkReportWithAttendances) => {
-    setDeleteTarget(workReport);
-  };
-
-  // 削除確認ダイアログを閉じる
-  const closeDeleteDialog = () => {
-    setDeleteTarget(null);
-  };
-
-  // 作業報告書削除実行
-  const executeDelete = () => {
-    if (!deleteTarget) return;
-
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    startTransition(async () => {
-      try {
-        await deleteWorkReportAction(deleteTarget.id);
-        showSuccess(
-          `${deleteTarget.targetDate.getFullYear().toString()}年${(deleteTarget.targetDate.getMonth() + 1).toString()}月の作業報告書を削除しました`,
-        );
-
-        // 現在表示中の年の作業報告書を再取得
-        const yearRange = getYearRange(selectedYear);
-        await fetchReports(yearRange.from, yearRange.to);
-        closeDeleteDialog();
-      } catch (error) {
-        console.error("Failed to delete work report:", error);
-        showError("作業報告書の削除に失敗しました");
-      }
-    });
-  };
+  }, [contractId, fetchReports, startTransition, selectedYear]);
 
   const handleNavigation = (workReportId: string) => {
     startTransition(() => {
       router.push(`/workReport/${workReportId}`);
     });
-  };
-
-  // 年月が無効かどうかを判定する関数
-  const isYearMonthDisabled = (year: number, month: number): boolean => {
-    if (!contract) return true;
-
-    // 契約範囲外の年月をチェック
-    const targetDate = new Date(Date.UTC(year, month, 1));
-    const contractStart = new Date(contract.startDate);
-    const contractStartMonth = new Date(
-      Date.UTC(contractStart.getFullYear(), contractStart.getMonth(), 1),
-    );
-
-    // 契約開始月より前は無効
-    if (targetDate < contractStartMonth) {
-      return true;
-    }
-
-    // 契約終了日が設定されている場合、終了月より後は無効
-    if (contract.endDate) {
-      const contractEnd = new Date(contract.endDate);
-      const contractEndMonth = new Date(
-        Date.UTC(contractEnd.getFullYear(), contractEnd.getMonth(), 1),
-      );
-      if (targetDate > contractEndMonth) {
-        return true;
-      }
-    }
-
-    // 既存の作業報告書がある年月は無効
-    const hasExistingReport = workReports.some((report) => {
-      const reportDate = new Date(report.targetDate);
-      return (
-        reportDate.getFullYear() === year && reportDate.getMonth() === month
-      );
-    });
-
-    return hasExistingReport;
-  };
-
-  // 指定された年に作成可能な月があるかチェックする関数
-  const hasAvailableMonthsInYear = (year: number): boolean => {
-    for (let month = 0; month < 12; month++) {
-      if (!isYearMonthDisabled(year, month)) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  // 作成可能な最も古い年月を取得する関数
-  const getOldestAvailableYearMonth = (): Date => {
-    if (!contract) {
-      return new Date(Date.UTC(selectedYear, new Date().getMonth(), 1));
-    }
-
-    const contractStart = new Date(contract.startDate);
-    const startYear = contractStart.getFullYear();
-    const startMonth = contractStart.getMonth();
-
-    const contractEnd = contract.endDate
-      ? new Date(contract.endDate)
-      : new Date(Date.UTC(new Date().getFullYear() + 2, 11, 1));
-    const endYear = contractEnd.getFullYear();
-    const endMonth = contractEnd.getMonth();
-
-    // 契約開始月から終了月まで順にチェック
-    for (let year = startYear; year <= endYear; year++) {
-      const monthStart = year === startYear ? startMonth : 0;
-      const monthEnd = year === endYear ? endMonth : 11;
-
-      for (let month = monthStart; month <= monthEnd; month++) {
-        if (!isYearMonthDisabled(year, month)) {
-          return new Date(Date.UTC(year, month, 1));
-        }
-      }
-    }
-
-    // 作成可能な月がない場合は現在月を返す
-    return new Date(Date.UTC(selectedYear, new Date().getMonth(), 1));
   };
 
   return (
@@ -371,17 +173,6 @@ export default function ContractClientPage({
               </SelectContent>
             </Select>
           </div>
-          <Button
-            onClick={() => {
-              if (!hasAvailableMonthsInYear(selectedYear)) {
-                setIsNoMonthAvailableDialogOpen(true);
-              } else {
-                setIsCreateDialogOpen(true);
-              }
-            }}
-          >
-            作業報告書を作成
-          </Button>
         </div>
       </div>
 
@@ -468,17 +259,6 @@ export default function ContractClientPage({
                     >
                       {getWorkReportStatusDisplayText(workReport.status)}
                     </Badge>
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openDeleteDialog(workReport);
-                      }}
-                      size="sm"
-                      variant="ghost"
-                      className="size-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
                   </div>
                 </div>
               </div>
@@ -486,103 +266,6 @@ export default function ContractClientPage({
           })}
         </div>
       )}
-
-      {/* 作業報告書作成ダイアログ */}
-      <WorkReportDialog
-        isOpen={isCreateDialogOpen}
-        onClose={() => {
-          setIsCreateDialogOpen(false);
-          createForm.reset();
-        }}
-        title="作業報告書を作成"
-      >
-        <Form {...createForm}>
-          <form
-            // eslint-disable-next-line @typescript-eslint/no-misused-promises
-            onSubmit={createForm.handleSubmit(handleCreateWorkReport)}
-            className="space-y-4"
-          >
-            <YearMonthPickerField
-              control={createForm.control}
-              name="targetDate"
-              label="対象年月"
-              yearTriggerClassName="w-24"
-              monthTriggerClassName="w-20"
-              showClearButton={false}
-              isYearMonthDisabled={isYearMonthDisabled}
-            />
-
-            <div className="flex justify-end gap-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setIsCreateDialogOpen(false);
-                  createForm.reset();
-                }}
-              >
-                キャンセル
-              </Button>
-              <Button type="submit">作成</Button>
-            </div>
-          </form>
-        </Form>
-      </WorkReportDialog>
-
-      {/* 作業報告書削除確認ダイアログ */}
-      <WorkReportDialog
-        isOpen={!!deleteTarget}
-        onClose={closeDeleteDialog}
-        title="作業報告書を削除"
-      >
-        {deleteTarget && (
-          <div className="space-y-4">
-            <div>
-              <p className="mb-2 text-sm text-muted-foreground">削除対象:</p>
-              <p className="font-medium">
-                {deleteTarget.targetDate.getFullYear()}年
-                {deleteTarget.targetDate.getMonth() + 1}月分の作業報告書
-              </p>
-            </div>
-            <p className="text-sm text-red-600">
-              この操作は元に戻すことができません。
-            </p>
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={closeDeleteDialog}>
-                キャンセル
-              </Button>
-              <Button variant="destructive" onClick={executeDelete}>
-                削除
-              </Button>
-            </div>
-          </div>
-        )}
-      </WorkReportDialog>
-
-      {/* 作成可能な月がない場合のエラーダイアログ */}
-      <WorkReportDialog
-        isOpen={isNoMonthAvailableDialogOpen}
-        onClose={() => {
-          setIsNoMonthAvailableDialogOpen(false);
-        }}
-        title="作業報告書を作成できません"
-      >
-        <div className="space-y-4">
-          <p>{selectedYear}年には作成可能な月がありません。</p>
-          <p className="text-sm text-muted-foreground">
-            他の年を選択するか、既存の作業報告書を削除してください。
-          </p>
-          <div className="flex justify-end pt-4">
-            <Button
-              onClick={() => {
-                setIsNoMonthAvailableDialogOpen(false);
-              }}
-            >
-              閉じる
-            </Button>
-          </div>
-        </div>
-      </WorkReportDialog>
     </div>
   );
 }

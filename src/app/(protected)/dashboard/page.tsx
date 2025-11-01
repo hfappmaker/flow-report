@@ -3,10 +3,9 @@ import { notFound } from "next/navigation";
 
 import { currentUser } from "@/features/auth/lib/auth";
 import { getContractsByUserId } from "@/features/contract/repositories/contract-repository";
-import { ensureMonthlyWorkReportsExistForUser } from "@/features/dashboard/actions/dashboard";
 import { getSubscriptionInfoByUserId } from "@/features/subscription/repositories/subscription-repository";
 import {
-  getDraftWorkReports,
+  getDraftWorkReportsUpToCurrentMonth,
   getSubmittedWorkReportsByRecentMonths,
 } from "@/features/work-report/repositories/work-report-repository";
 
@@ -24,15 +23,13 @@ export default async function DashboardPage() {
     return notFound();
   }
 
-  await ensureMonthlyWorkReportsExistForUser(userId);
-
   const [
     draftWorkReports,
     submittedWorkReportsLast3Months,
     subscriptionInfo,
     contracts,
   ] = await Promise.all([
-    getDraftWorkReports(userId),
+    getDraftWorkReportsUpToCurrentMonth(userId),
     getSubmittedWorkReportsByRecentMonths(userId),
     getSubscriptionInfoByUserId(userId),
     getContractsByUserId(userId),

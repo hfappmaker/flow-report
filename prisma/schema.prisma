@@ -69,7 +69,7 @@ model Contract {
   id            String           @id @default(cuid())
   name          String
   startDate     DateTime
-  endDate       DateTime?
+  endDate       DateTime
   
   // クライアント情報（契約時点のスナップショット）
   clientName         String

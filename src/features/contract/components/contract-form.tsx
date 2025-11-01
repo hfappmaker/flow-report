@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import dayjs from "dayjs";
 import { useForm, Resolver } from "react-hook-form";
 import * as z from "zod";
 
@@ -21,40 +22,105 @@ import {
   TimePickerFieldForNumber,
 } from "@/components/ui/time-picker";
 
-export const contractFormSchema = z.object({
-  name: z.string().min(1, "契約名は必須です"),
-  startDate: z.date(),
-  endDate: z.date().nullable(),
-  clientName: z.string().min(1, "クライアント名は必須です"),
-  clientContactName: z.string(),
-  clientEmail: z
-    .string()
-    .refine((v) => v === "" || z.string().email().safeParse(v).success, {
-      message: "有効なメールアドレスを入力してください",
+export const contractFormSchema = z
+  .object({
+    name: z.string().min(1, "契約名は必須です"),
+    startDate: z.date({
+      required_error: "開始日は必須です",
+      invalid_type_error: "有効な日付を入力してください",
     }),
-  unitPrice: z.number().nullable(),
-  settlementMin: z.number().nullable(),
-  settlementMax: z.number().nullable(),
-  rateType: z.enum(["upperLower", "middle"]).default("upperLower"),
-  upperRate: z.number().nullable(),
-  lowerRate: z.number().nullable(),
-  middleRate: z.number().nullable(),
-  dailyWorkMinutes: z.number().nullable(),
-  monthlyWorkMinutes: z.number().nullable(),
-  basicStartTime: z.date().nullable(),
-  basicEndTime: z.date().nullable(),
-  basicBreakDuration: z.number().nullable(),
-  closingDay: z
-    .number()
-    .int("整数で入力してください")
-    .min(1, "締め日は1日以上である必要があります")
-    .max(31, "締め日は31日以下である必要があります")
-    .nullable(),
-  taxInclusiveType: z.enum(["INCLUSIVE", "EXCLUSIVE"]).default("EXCLUSIVE"),
-  taxRoundingType: z
-    .enum(["ROUND_DOWN", "ROUND_UP", "ROUND"])
-    .default("ROUND_DOWN"),
-});
+    endDate: z.date({
+      required_error: "終了日は必須です",
+      invalid_type_error: "有効な日付を入力してください",
+    }),
+    clientName: z.string().min(1, "クライアント名は必須です"),
+    clientContactName: z.string(),
+    clientEmail: z.union([
+      z.string().email("有効なメールアドレスを入力してください"),
+      z.literal(""),
+    ]),
+    unitPrice: z.number().nullable(),
+    settlementMin: z.number().nullable(),
+    settlementMax: z.number().nullable(),
+    rateType: z.enum(["upperLower", "middle"]).default("upperLower"),
+    upperRate: z.number().nullable(),
+    lowerRate: z.number().nullable(),
+    middleRate: z.number().nullable(),
+    dailyWorkMinutes: z.number().nullable(),
+    monthlyWorkMinutes: z.number().nullable(),
+    basicStartTime: z.date().nullable(),
+    basicEndTime: z.date().nullable(),
+    basicBreakDuration: z.number().nullable(),
+    closingDay: z
+      .number()
+      .int("整数で入力してください")
+      .min(1, "締め日は1日以上である必要があります")
+      .max(31, "締め日は31日以下である必要があります")
+      .nullable(),
+    taxInclusiveType: z.enum(["INCLUSIVE", "EXCLUSIVE"]).default("EXCLUSIVE"),
+    taxRoundingType: z
+      .enum(["ROUND_DOWN", "ROUND_UP", "ROUND"])
+      .default("ROUND_DOWN"),
+  })
+  .refine(
+    (data) => {
+      if (data.rateType === "upperLower" && data.upperRate === null) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "超過単価を入力してください",
+      path: ["upperRate"],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.rateType === "upperLower" && data.lowerRate === null) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "控除単価を入力してください",
+      path: ["lowerRate"],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.rateType === "middle" && data.middleRate === null) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "中間単価を入力してください",
+      path: ["middleRate"],
+    },
+  )
+  .refine(
+    (data) => {
+      const s = dayjs(data.startDate);
+      const e = dayjs(data.endDate);
+      return !s.isAfter(e);
+    },
+    {
+      message: "終了日は開始日以降の日付を選択してください",
+      path: ["endDate"],
+    },
+  )
+  .refine(
+    (data) => {
+      const s = dayjs(data.startDate);
+      const e = dayjs(data.endDate);
+      const oneYearLater = s.add(1, "year");
+      return e.isBefore(oneYearLater);
+    },
+    {
+      message: "契約期間は最長1年以内にしてください",
+      path: ["endDate"],
+    },
+  );
 
 export type ContractFormValues = z.infer<typeof contractFormSchema>;
 
@@ -78,7 +144,7 @@ export const ContractForm = ({
     defaultValues: defaultValues ?? {
       name: "",
       startDate: new Date(),
-      endDate: null,
+      endDate: new Date(new Date().setMonth(new Date().getMonth() + 3)),
       clientName: "",
       clientContactName: "",
       clientEmail: "",
@@ -197,8 +263,8 @@ export const ContractForm = ({
             control={form.control}
             name="endDate"
             label="終了日"
-            placeholder="終了日を選択（任意）"
-            disabled={false}
+            placeholder="終了日を選択"
+            disabled={isEditing}
           />
         </div>
 
@@ -240,6 +306,13 @@ export const ContractForm = ({
                 <RadioGroup
                   onValueChange={(value: "upperLower" | "middle") => {
                     form.setValue("rateType", value);
+                    // 非表示になる項目の値をクリア
+                    if (value === "upperLower") {
+                      form.setValue("middleRate", null);
+                    } else if (value === "middle") {
+                      form.setValue("upperRate", null);
+                      form.setValue("lowerRate", null);
+                    }
                   }}
                   defaultValue={form.getValues("rateType")}
                   className="flex flex-row space-x-4"

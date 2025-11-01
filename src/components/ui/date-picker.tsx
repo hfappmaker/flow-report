@@ -2,7 +2,12 @@
 
 import * as React from "react";
 import { FC, useRef, useState } from "react";
-import { FieldValues, Control, Path } from "react-hook-form";
+import {
+  FieldValues,
+  Control,
+  Path,
+  ControllerRenderProps,
+} from "react-hook-form";
 import { FaCalendarAlt } from "react-icons/fa";
 import { StrictOmit } from "ts-essentials";
 
@@ -85,7 +90,7 @@ interface DatePickerFieldProps<T extends FieldValues> {
   max?: string;
 }
 
-const DatePickerFieldContent = ({
+const DatePickerFieldContent = <T extends FieldValues>({
   field,
   label,
   placeholder,
@@ -93,7 +98,10 @@ const DatePickerFieldContent = ({
   min,
   max,
 }: {
-  field: any;
+  field: ControllerRenderProps<
+    T,
+    Path<T> & { [P in Path<T>]: T[P] extends Date | null ? P : never }[Path<T>]
+  >;
   label: string;
   placeholder?: string;
   disabled?: boolean;
@@ -197,10 +205,13 @@ const CommonSelect = React.memo(
 CommonSelect.displayName = "CommonSelect";
 
 // 年の選択肢を生成 (2025年から2099年までの範囲)
-const YEAR_OPTIONS = Array.from({ length: 75 }, (_, i) => ({
-  value: (2025 + i).toString(),
-  label: `${2025 + i}年`,
-}));
+const YEAR_OPTIONS = Array.from({ length: 75 }, (_, i) => {
+  const year = 2025 + i;
+  return {
+    value: year.toString(),
+    label: `${year.toString()}年`,
+  };
+});
 
 // 月の選択肢を生成
 const MONTH_OPTIONS = [
@@ -234,8 +245,10 @@ interface YearMonthPickerFieldProps<T extends FieldValues> {
 }
 
 interface YearMonthPickerContentProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  field: any;
+  field: {
+    value: Date | null;
+    onChange: (value: Date | null) => void;
+  };
   yearPlaceholder: string;
   monthPlaceholder: string;
   label?: string;

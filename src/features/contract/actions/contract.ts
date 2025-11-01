@@ -20,16 +20,12 @@ export const createContractAction = async (
   values: ContractInput,
 ): Promise<void> => {
   const contract = await createContract(values);
-  const today = new Date();
 
-  const endDate = contract.endDate ? new Date(contract.endDate) : null;
-
-  const reportEndDate = endDate && endDate < today ? endDate : today;
-
+  // 契約期間全体の作業報告書を作成
   await createMonthlyWorkReportsAction(
     contract.id,
     new Date(contract.startDate),
-    reportEndDate,
+    new Date(contract.endDate),
   );
 
   revalidatePath("/dashboard");

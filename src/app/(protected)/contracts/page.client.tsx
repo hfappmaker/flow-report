@@ -222,24 +222,27 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
     contract: ContractOutput,
   ): ContractFormValues => {
     const baseValues = convertContractToFormValues(contract);
-    const today = new Date();
     // 開始日の設定
-    const newStartDate = contract.endDate
-      ? new Date(
-          Date.UTC(
-            contract.endDate.getFullYear(),
-            contract.endDate.getMonth(),
-            contract.endDate.getDate() + 1,
-          ),
-        )
-      : new Date(
-          Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()),
-        );
+    const newStartDate = new Date(
+      Date.UTC(
+        contract.endDate.getFullYear(),
+        contract.endDate.getMonth(),
+        contract.endDate.getDate() + 1,
+      ),
+    );
+
+    // コピー元の契約期間を計算
+    const originalStartDate = new Date(contract.startDate);
+    const originalEndDate = new Date(contract.endDate);
+    const periodInMs = originalEndDate.getTime() - originalStartDate.getTime();
+
+    // 新しい終了日 = 新しい開始日 + 契約期間
+    const newEndDate = new Date(newStartDate.getTime() + periodInMs);
 
     return {
       ...baseValues,
       startDate: newStartDate,
-      endDate: null,
+      endDate: newEndDate,
     };
   };
 
@@ -252,17 +255,13 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
   const getContractStatus = (contract: ContractOutput) => {
     const now = new Date();
     now.setHours(0, 0, 0, 0); // 時刻を00:00:00に設定して日付のみで比較
-    const endDate = contract.endDate ? new Date(contract.endDate) : null;
-    if (endDate) {
-      endDate.setHours(0, 0, 0, 0); // 時刻を00:00:00に設定して日付のみで比較
-    }
+    const endDate = new Date(contract.endDate);
+    endDate.setHours(0, 0, 0, 0); // 時刻を00:00:00に設定して日付のみで比較
 
-    if (endDate && endDate < now) {
+    if (endDate < now) {
       return { status: "終了", color: "text-red-600" };
-    } else if (endDate) {
-      return { status: "進行中", color: "text-green-600" };
     } else {
-      return { status: "無期限", color: "text-blue-600" };
+      return { status: "進行中", color: "text-green-600" };
     }
   };
 
@@ -386,9 +385,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                       </div>
                       <div className="hidden items-center gap-4 text-sm text-muted-foreground sm:flex">
                         <div>開始: {formatDate(contract.startDate)}</div>
-                        {contract.endDate && (
-                          <div>終了: {formatDate(contract.endDate)}</div>
-                        )}
+                        <div>終了: {formatDate(contract.endDate)}</div>
                         <div>担当: {contract.clientContactName}</div>
                       </div>
                     </div>
@@ -450,7 +447,6 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
         onClose={closeDialog}
       >
         <ContractForm
-          defaultValues={undefined}
           onSubmit={onCreateContract}
           onCancel={closeDialog}
           submitButtonText="作成"

@@ -30,17 +30,11 @@ const transformContractData = (
       ? new Date(values.basicStartTime)
       : null,
     basicEndTime: values.basicEndTime ? new Date(values.basicEndTime) : null,
-    basicBreakDuration: values.basicBreakDuration
-      ? Number(values.basicBreakDuration)
-      : null,
-    closingDay: values.closingDay ? Number(values.closingDay) : null,
-    monthlyWorkMinutes: values.monthlyWorkMinutes
-      ? Number(values.monthlyWorkMinutes)
-      : null,
-    dailyWorkMinutes: values.dailyWorkMinutes
-      ? Number(values.dailyWorkMinutes)
-      : null,
-    endDate: values.endDate ? new Date(values.endDate) : null,
+    basicBreakDuration: values.basicBreakDuration ?? null,
+    closingDay: values.closingDay ?? null,
+    monthlyWorkMinutes: values.monthlyWorkMinutes ?? null,
+    dailyWorkMinutes: values.dailyWorkMinutes ?? null,
+    endDate: new Date(values.endDate),
   };
 };
 
@@ -102,7 +96,7 @@ export async function searchContracts(
   periodFrom?: string,
   periodTo?: string,
 ) {
-  const whereConditions: any[] = [{ userId: userId }];
+  const whereConditions: Prisma.ContractWhereInput[] = [{ userId: userId }];
 
   // 契約名とクライアント名のOR検索
   if (searchQuery?.trim()) {
