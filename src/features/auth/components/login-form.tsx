@@ -74,7 +74,7 @@ const LoginForm = () => {
         }
       } catch (err) {
         setError({
-          message: `Something went wrong! Error:${err}`,
+          message: `Something went wrong! Error: ${err instanceof Error ? err.message : String(err)}`,
           date: new Date(),
         });
       } finally {
@@ -95,7 +95,12 @@ const LoginForm = () => {
       showSocial
     >
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form
+          onSubmit={(e) => {
+            void form.handleSubmit(onSubmit)(e);
+          }}
+          className="space-y-6"
+        >
           <div className="space-y-4">
             {showTwoFactor && (
               <FormField
@@ -110,6 +115,7 @@ const LoginForm = () => {
                         disabled={isPending}
                         placeholder="123456"
                         type="text"
+                        value={field.value ?? ""}
                       />
                     </FormControl>
                     <FormMessage />
