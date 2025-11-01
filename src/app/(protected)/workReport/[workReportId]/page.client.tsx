@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import ExcelJS from "exceljs";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Resolver, useForm } from "react-hook-form";
 
@@ -105,6 +106,7 @@ function getDateColorClass(date: Date, holidays: Holiday[]): string {
 }
 
 export default function ClientWorkReportPage({
+  contractId,
   workReportId,
   attendances,
   contractName,
@@ -131,6 +133,7 @@ export default function ClientWorkReportPage({
   taxRoundingType,
   rateType,
 }: WorkReportClientProps) {
+  const router = useRouter();
   const { error, success, showError, showSuccess } = useMessageState();
   const { startTransition, setManualPending } = useTransitionContext();
 
@@ -220,6 +223,13 @@ export default function ClientWorkReportPage({
       workReportEndDate,
     ),
   });
+
+  // 作業報告書一覧画面へ遷移
+  const handleNavigateToList = () => {
+    startTransition(() => {
+      router.push(`/contract/${contractId}`);
+    });
+  };
 
   // 一括編集フォームをリセットする関数を追加
   const resetBulkEditForm = () => {
@@ -893,10 +903,15 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
 
   return (
     <div className="mx-auto">
-      <h1 className="mb-4 text-xl font-bold text-muted-foreground">
-        {contractName}の{targetDate.getFullYear()}年{targetDate.getMonth() + 1}
-        月度作業報告書
-      </h1>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-xl font-bold text-muted-foreground">
+          {contractName}の{targetDate.getFullYear()}年{targetDate.getMonth() + 1}
+          月度作業報告書
+        </h1>
+        <Button type="button" onClick={handleNavigateToList}>
+          作業報告書一覧へ
+        </Button>
+      </div>
       <FormError message={error.message} resetSignal={error.date.getTime()} />
       <FormSuccess
         message={success.message}
