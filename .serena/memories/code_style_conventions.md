@@ -13,6 +13,29 @@
 - Props型を明示的に定義
 - 関数コンポーネントを優先
 
+## オプショナル値の扱い
+- **`undefined` ではなく `null` を使用**
+- Zodスキーマでは `optional()` ではなく `nullable()` を使用
+- react-hook-formなどのフォームフィールド値も `null` で統一
+- 例: `z.string().nullable()`, `z.date().nullable()`
+- データベース型とフォーム型の一貫性を保つため
+
+## テンプレートリテラルでの型安全性
+- 数値を使用する場合は `String()` で明示的に変換
+- 例: `` `${String(month + 1)}月${String(day)}日` ``
+- ESLint警告 `@typescript-eslint/restrict-template-expressions` を回避
+
+## Promise処理のベストプラクティス
+- イベントハンドラでPromise返却関数を使う場合は `void` 演算子を使用
+- 例: `onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}`
+- react-hook-formは内部で `preventDefault()` を処理するため不要
+- ESLint警告 `@typescript-eslint/no-misused-promises` を回避
+
+## react-hook-formの型定義
+- `Resolver` 型を明示的にインポートして使用
+- 例: `import { useForm, Resolver } from "react-hook-form"`
+- 型キャスト: `resolver: zodResolver(schema) as Resolver<FormValues>`
+
 ## フォルダ構造
 ```
 src/

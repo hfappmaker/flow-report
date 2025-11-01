@@ -13,6 +13,8 @@
 ## コード品質
 - `npm run lint`: ESLintによるコード解析
 - `prettier --write .`: コードフォーマット
+- `npx eslint "<file>" --fix`: 特定ファイルのESLint自動修正
+- `npx prettier --write "<file>"`: 特定ファイルのフォーマット
 
 ## テスト
 - `npm run test:j`: Jest単体テスト
@@ -25,6 +27,13 @@
 - `npx prisma generate`: Prismaクライアント生成
 - `npx prisma migrate deploy`: マイグレーション実行
 - `npm run seed:test-users`: テストユーザーデータ挿入
+
+## Claude Codeカスタムコマンド
+- `/commit-push`: ESLint/Prettier自動フォーマット→警告修正→コミット→プッシュの一括実行
+  - Staging済みファイルに対して実行
+  - 警告が見つかった場合は修正案を提示
+  - コミットメッセージを自動生成
+  - リモートリポジトリへ自動プッシュ
 
 ## 基本コマンド（Linux）
 - `ls`: ファイル一覧
