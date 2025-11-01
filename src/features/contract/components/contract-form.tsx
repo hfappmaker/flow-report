@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, Resolver } from "react-hook-form";
 import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -20,12 +20,11 @@ import {
   TimePickerFieldForDate,
   TimePickerFieldForNumber,
 } from "@/components/ui/time-picker";
-import { Resolver } from "react-hook-form";
 
 export const contractFormSchema = z.object({
   name: z.string().min(1, "契約名は必須です"),
   startDate: z.date(),
-  endDate: z.date().optional(),
+  endDate: z.date().nullable(),
   clientName: z.string().min(1, "クライアント名は必須です"),
   clientContactName: z.string(),
   clientEmail: z
@@ -33,15 +32,15 @@ export const contractFormSchema = z.object({
     .refine((v) => v === "" || z.string().email().safeParse(v).success, {
       message: "有効なメールアドレスを入力してください",
     }),
-  unitPrice: z.number().optional(),
-  settlementMin: z.number().optional(),
-  settlementMax: z.number().optional(),
+  unitPrice: z.number().nullable(),
+  settlementMin: z.number().nullable(),
+  settlementMax: z.number().nullable(),
   rateType: z.enum(["upperLower", "middle"]).default("upperLower"),
-  upperRate: z.number().optional(),
-  lowerRate: z.number().optional(),
-  middleRate: z.number().optional(),
-  dailyWorkMinutes: z.number().optional(),
-  monthlyWorkMinutes: z.number().optional(),
+  upperRate: z.number().nullable(),
+  lowerRate: z.number().nullable(),
+  middleRate: z.number().nullable(),
+  dailyWorkMinutes: z.number().nullable(),
+  monthlyWorkMinutes: z.number().nullable(),
   basicStartTime: z.date().nullable(),
   basicEndTime: z.date().nullable(),
   basicBreakDuration: z.number().nullable(),
@@ -50,7 +49,7 @@ export const contractFormSchema = z.object({
     .int("整数で入力してください")
     .min(1, "締め日は1日以上である必要があります")
     .max(31, "締め日は31日以下である必要があります")
-    .optional(),
+    .nullable(),
   taxInclusiveType: z.enum(["INCLUSIVE", "EXCLUSIVE"]).default("EXCLUSIVE"),
   taxRoundingType: z
     .enum(["ROUND_DOWN", "ROUND_UP", "ROUND"])
@@ -107,7 +106,7 @@ export const ContractForm = ({
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
         noValidate
         className="space-y-4"
       >
@@ -429,7 +428,7 @@ export const ContractForm = ({
                   value={field.value ?? ""}
                   onChange={(e) => {
                     const value = e.target.value;
-                    field.onChange(value === "" ? undefined : Number(value));
+                    field.onChange(value === "" ? null : Number(value));
                   }}
                   placeholder="（例）20（未入力の場合は末日）"
                   disabled={isEditing}

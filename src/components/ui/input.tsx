@@ -35,7 +35,7 @@ interface NumberInputFieldProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T> &
     {
-      [P in Path<T>]: T[P] extends number | undefined ? P : never;
+      [P in Path<T>]: T[P] extends number | null ? P : never;
     }[Path<T>];
   label: string;
   placeholder?: string;
@@ -102,7 +102,7 @@ const NumberInputFieldContent = ({
       const value = e.target.value;
       setLocalValue(value);
       if (value === "") {
-        field.onChange(undefined);
+        field.onChange(null);
       } else {
         const numValue = Number(value);
         if (numValue >= 0) {

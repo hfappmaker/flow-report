@@ -224,13 +224,22 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
     const baseValues = convertContractToFormValues(contract);
     const today = new Date();
     // 開始日の設定
-    const newStartDate = contract.endDate ? new Date(Date.UTC(contract.endDate.getFullYear(), contract.endDate.getMonth(), contract.endDate.getDate() + 1)) 
-    : new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+    const newStartDate = contract.endDate
+      ? new Date(
+          Date.UTC(
+            contract.endDate.getFullYear(),
+            contract.endDate.getMonth(),
+            contract.endDate.getDate() + 1,
+          ),
+        )
+      : new Date(
+          Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()),
+        );
 
     return {
       ...baseValues,
       startDate: newStartDate,
-      endDate: undefined,
+      endDate: null,
     };
   };
 

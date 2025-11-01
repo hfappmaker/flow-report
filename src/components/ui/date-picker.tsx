@@ -76,7 +76,7 @@ interface DatePickerFieldProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T> &
     {
-      [P in Path<T>]: T[P] extends Date | undefined ? P : never;
+      [P in Path<T>]: T[P] extends Date | null ? P : never;
     }[Path<T>];
   label: string;
   placeholder?: string;
@@ -106,9 +106,7 @@ const DatePickerFieldContent = ({
           value={selectedDate}
           onChange={(date) => {
             setSelectedDate(date);
-            field.onChange(
-              date ? new Date(date + "T00:00:00.000Z") : undefined,
-            );
+            field.onChange(date ? new Date(date + "T00:00:00.000Z") : null);
           }}
           placeholder={placeholder}
           disabled={disabled}

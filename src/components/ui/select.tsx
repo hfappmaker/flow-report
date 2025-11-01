@@ -155,7 +155,7 @@ export interface ComboBoxFieldProps<T extends FieldValues, V> {
   control: Control<T>;
   name: Path<T> &
     {
-      [P in Path<T>]: T[P] extends V | undefined ? P : never;
+      [P in Path<T>]: T[P] extends V | null ? P : never;
     }[Path<T>];
   options: { label: string; value: V }[];
   placeholder?: string;
@@ -205,7 +205,6 @@ const ComboBoxSelect = memo(
 
 ComboBoxSelect.displayName = "ComboBoxSelect";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ComboBoxFieldContent = ({
   field,
   options,
@@ -230,7 +229,8 @@ const ComboBoxFieldContent = ({
   const handleValueChange = useCallback(
     (value: string) => {
       setLocalValue(value);
-      const option = options.find((opt) => opt.value.toString() === value);
+      const option =
+        options.find((opt) => opt.value.toString() === value) ?? null;
       if (option) {
         field.onChange(option.value);
       }
@@ -240,7 +240,7 @@ const ComboBoxFieldContent = ({
 
   const handleClear = useCallback(() => {
     setLocalValue("");
-    field.onChange(undefined);
+    field.onChange(null);
   }, [field]);
 
   return (

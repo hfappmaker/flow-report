@@ -28,15 +28,15 @@ export const editFormSchema = z.object({
 
 export const bulkEditFormSchema = z.object({
   dateRangeMode: z.enum(dateRangeModes),
-  selectedDays: z.number().array().optional(),
-  startDate: z.date().optional(),
-  endDate: z.date().optional(),
-  excludeHolidays: z.boolean().default(true).optional(),
+  selectedDays: z.number().array().nullable(),
+  startDate: z.date().nullable(),
+  endDate: z.date().nullable(),
+  excludeHolidays: z.boolean().default(true).nullable(),
   startTime: z.date().nullable(),
   endTime: z.date().nullable(),
   breakDuration: z.number().nullable(),
   memo: z.string(),
-  prompt: z.string().optional(),
+  prompt: z.string().nullable(),
 });
 
 export type CreateWorkReportFormValues = z.infer<

@@ -57,7 +57,7 @@ export default function TestPageClient({
   }, []);
 
   const editFormSchema = z.object({
-    targetDate: z.date().optional(),
+    targetDate: z.date().nullable(),
   });
 
   type EditFormValues = z.infer<typeof editFormSchema>;
@@ -104,7 +104,7 @@ export default function TestPageClient({
           </DialogHeader>
           <Form {...editForm}>
             <form
-              onSubmit={editForm.handleSubmit(onEditSubmit)}
+              onSubmit={(e) => void editForm.handleSubmit(onEditSubmit)(e)}
               onReset={() => {
                 editForm.reset({ targetDate: date });
               }}
