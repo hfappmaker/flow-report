@@ -24,8 +24,18 @@ export const editFormSchema = z.object({
 });
 
 export const bulkEditFormSchema = z.object({
-  startDate: z.date(),
-  endDate: z.date(),
+  startDate: z
+    .date()
+    .nullable()
+    .refine((val) => val !== null, {
+      message: "開始日を入力してください",
+    }),
+  endDate: z
+    .date()
+    .nullable()
+    .refine((val) => val !== null, {
+      message: "終了日を入力してください",
+    }),
   selectedDays: z.number().array().nullable(),
   excludeHolidays: z.boolean().default(true).nullable(),
   startTime: z.date().nullable(),
