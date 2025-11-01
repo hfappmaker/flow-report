@@ -27,10 +27,10 @@ export const settings = async (values: z.infer<typeof SettingsSchema>) => {
   }
 
   if (user.isOAuth) {
-    values.email = undefined;
-    values.password = undefined;
-    values.newPassword = undefined;
-    values.isTwoFactorEnabled = undefined;
+    values.email = null;
+    values.password = null;
+    values.newPassword = null;
+    values.isTwoFactorEnabled = null;
   }
 
   if (values.email && values.email !== user.email) {
@@ -61,13 +61,14 @@ export const settings = async (values: z.infer<typeof SettingsSchema>) => {
 
     const hashedPassword = await bcrypt.hash(values.newPassword, 10);
     values.password = hashedPassword;
-    values.newPassword = undefined;
+    values.newPassword = null;
   }
 
   const updatedUser = await db.user.update({
     where: { id: dbUser.id },
     data: {
       ...values,
+      isTwoFactorEnabled: values.isTwoFactorEnabled ?? undefined,
     },
   });
 
