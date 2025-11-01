@@ -1172,7 +1172,6 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                     placeholder="開始日を選択"
                     min={workReportStartDate.toISOString().split("T")[0]}
                     max={workReportEndDate.toISOString().split("T")[0]}
-                    enableClear={false}
                   />
                   <DatePickerField
                     control={bulkEditForm.control}
@@ -1181,7 +1180,6 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                     placeholder="終了日を選択"
                     min={workReportStartDate.toISOString().split("T")[0]}
                     max={workReportEndDate.toISOString().split("T")[0]}
-                    enableClear={false}
                   />
                 </div>
               </div>
