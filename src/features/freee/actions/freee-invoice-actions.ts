@@ -85,18 +85,18 @@ export async function createFreeeInvoiceFromWorkReportAction(
         targetDate: workReport.targetDate,
         contractName: contract.name,
         attendances: attendances,
-        unitPrice: contract.unitPrice ? Number(contract.unitPrice) : undefined,
+        unitPrice: contract.unitPrice ? Number(contract.unitPrice) : null,
         settlementMin: contract.settlementMin
           ? Number(contract.settlementMin)
-          : undefined,
+          : null,
         settlementMax: contract.settlementMax
           ? Number(contract.settlementMax)
-          : undefined,
-        upperRate: contract.upperRate ? Number(contract.upperRate) : undefined,
-        lowerRate: contract.lowerRate ? Number(contract.lowerRate) : undefined,
+          : null,
+        upperRate: contract.upperRate ? Number(contract.upperRate) : null,
+        lowerRate: contract.lowerRate ? Number(contract.lowerRate) : null,
         middleRate: contract.middleRate
           ? Number(contract.middleRate)
-          : undefined,
+          : null,
         taxInclusiveType: contract.taxInclusiveType,
         taxRoundingType: contract.taxRoundingType,
         rateType: contract.rateType,

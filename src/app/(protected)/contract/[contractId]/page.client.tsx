@@ -402,22 +402,22 @@ export default function ContractClientPage({
               ? calculateWorkAmount(totalWorkMinutes, {
                   unitPrice: contract.unitPrice
                     ? Number(contract.unitPrice)
-                    : undefined,
+                    : null,
                   settlementMin: contract.settlementMin
                     ? Number(contract.settlementMin)
-                    : undefined,
+                    : null,
                   settlementMax: contract.settlementMax
                     ? Number(contract.settlementMax)
-                    : undefined,
+                    : null,
                   upperRate: contract.upperRate
                     ? Number(contract.upperRate)
-                    : undefined,
+                    : null,
                   lowerRate: contract.lowerRate
                     ? Number(contract.lowerRate)
-                    : undefined,
+                    : null,
                   middleRate: contract.middleRate
                     ? Number(contract.middleRate)
-                    : undefined,
+                    : null,
                   taxInclusiveType: contract.taxInclusiveType,
                   taxRoundingType: contract.taxRoundingType,
                   rateType: contract.rateType,

@@ -73,13 +73,13 @@ export function getMonthListBetween(startDate: Date, endDate: Date): Date[] {
  * 締め日がその月に存在しない場合は月末日を返す
  * @param year 年
  * @param month 月（1-12）
- * @param closingDay 締め日（1-31）。null/undefinedの場合は月末日を返す
+ * @param closingDay 締め日（1-31）。nullの場合は月末日を返す
  * @returns 実際の締め日
  */
 export function getClosingDate(
   year: number,
   month: number,
-  closingDay: number | null | undefined,
+  closingDay: number | null,
 ): Date {
   // 月末日を取得（次の月の0日目 = 今月の最終日）
   const lastDayOfMonth = new Date(year, month, 0).getDate();
@@ -95,13 +95,13 @@ export function getClosingDate(
  * 指定された年月と締め日から請求期間を返す
  * @param year 年
  * @param month 月（1-12）
- * @param closingDay 締め日（1-31）。null/undefinedの場合は月末締めとして扱う
+ * @param closingDay 締め日（1-31）。nullの場合は月末締めとして扱う
  * @returns 請求期間（開始日と終了日）
  */
 export function getBillingPeriod(
   year: number,
   month: number,
-  closingDay: number | null | undefined,
+  closingDay: number | null,
 ): { startDate: Date; endDate: Date } {
   // 当月の実際の締め日を取得
   const endDate = getClosingDate(year, month, closingDay);

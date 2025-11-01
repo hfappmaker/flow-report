@@ -12,12 +12,12 @@ export interface WorkReportInvoiceData {
   targetDate: Date;
   contractName: string;
   attendances: AttendanceData[];
-  unitPrice: number | undefined;
-  settlementMin: number | undefined;
-  settlementMax: number | undefined;
-  upperRate: number | undefined;
-  lowerRate: number | undefined;
-  middleRate: number | undefined;
+  unitPrice: number | null;
+  settlementMin: number | null;
+  settlementMax: number | null;
+  upperRate: number | null;
+  lowerRate: number | null;
+  middleRate: number | null;
   taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
   taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
   rateType: "upperLower" | "middle";
