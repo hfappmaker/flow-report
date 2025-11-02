@@ -1291,12 +1291,12 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                     control={bulkEditForm.control}
                     name="memo"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="w-full">
                         <FormLabel>作業内容</FormLabel>
                         <FormControl>
                           <Input
                             type="text"
-                            className="w-[400px]"
+                            className="w-full max-w-[400px]"
                             {...field}
                             value={field.value ?? ""}
                           />
@@ -1307,15 +1307,18 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                   />
                 </div>
               </div>
-              <div className="mt-4 flex justify-end space-x-2">
+              <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={resetBulkEditForm}
+                  className="w-full sm:w-auto"
                 >
                   キャンセル
                 </Button>
-                <Button type="submit">適用</Button>
+                <Button type="submit" className="w-full sm:w-auto">
+                  適用
+                </Button>
               </div>
             </form>
           </Form>
@@ -1388,12 +1391,12 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                     control={editForm.control}
                     name="memo"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="w-full">
                         <FormLabel>作業内容</FormLabel>
                         <FormControl>
                           <Input
                             type="text"
-                            className="w-[400px]"
+                            className="w-full max-w-[400px]"
                             {...field}
                             value={field.value ?? ""}
                           />
@@ -1403,11 +1406,18 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                     )}
                   />
                 </div>
-                <div className="mt-4 flex justify-end space-x-2">
-                  <Button type="button" variant="outline" onClick={cancelEdit}>
+                <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={cancelEdit}
+                    className="w-full sm:w-auto"
+                  >
                     キャンセル
                   </Button>
-                  <Button type="submit">保存</Button>
+                  <Button type="submit" className="w-full sm:w-auto">
+                    保存
+                  </Button>
                 </div>
               </form>
             </Form>
