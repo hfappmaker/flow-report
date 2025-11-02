@@ -55,7 +55,16 @@ echo ""
 if [ -d "$REPO_ROOT/.devcontainer" ]; then
     echo "🔧 DevContainer設定をworktree用に調整中..."
 
-    # .devcontainerディレクトリをコピー
+    # .devcontainerをgitの追跡対象から除外（コピー前に設定）
+    # worktreeの実際のgit dirを取得
+    WORKTREE_GIT_DIR=$(cd "$WORKTREE_DIR" && git rev-parse --git-dir)
+    mkdir -p "$WORKTREE_GIT_DIR/info"
+    echo ".devcontainer/" >> "$WORKTREE_GIT_DIR/info/exclude"
+
+    echo "✓ .devcontainerをgit追跡対象から除外しました"
+
+    # 既存の.devcontainerを削除して、メインworktreeのものをコピー
+    rm -rf "$WORKTREE_DIR/.devcontainer"
     cp -r "$REPO_ROOT/.devcontainer" "$WORKTREE_DIR/.devcontainer"
 
     # コンテナ内のworkspaceFolder名を設定
@@ -79,9 +88,10 @@ if [ -d "$REPO_ROOT/.devcontainer" ]; then
     sed -i "s|- \\.\\./:/WorkTimeManagementV2:cached|- ../:/${WORKTREE_DIRNAME}:cached|g" \
         "$WORKTREE_DIR/.devcontainer/docker-compose.yml"
 
-    # .devcontainerをgitの追跡対象から除外（worktree固有の設定）
-    echo ".devcontainer/" >> "$WORKTREE_DIR/.git/info/exclude"
-    echo "✓ .devcontainerをgit追跡対象から除外しました"
+    # .devcontainerの変更を無視するよう設定（gitで追跡されているファイルのみ）
+    cd "$WORKTREE_DIR"
+    git ls-files .devcontainer | xargs -r git update-index --skip-worktree 2>/dev/null || true
+    echo "✓ .devcontainerの変更を無視するよう設定しました"
 
     echo "✓ DevContainer設定の調整完了"
     echo ""
