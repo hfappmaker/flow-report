@@ -45,7 +45,8 @@
       "mcp__serena__read_memory",
       "mcp__ide__getDiagnostics",
       "Read(.env.example)",
-      "Write(.env.example)"
+      "Write(.env.example)",
+      "WebFetch(domain:www.anthropic.com)"
     ],
     "deny": ["Read(.env*)", "Write(.env*)"]
   },
