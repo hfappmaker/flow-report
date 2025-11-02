@@ -251,7 +251,7 @@ export const ContractForm = ({
         />
 
         {/* Start Date and End Date in the same row */}
-        <div className="flex gap-6">
+        <div className="flex flex-col md:flex-row gap-6">
           <DatePickerField
             control={form.control}
             name="startDate"
@@ -269,7 +269,7 @@ export const ContractForm = ({
         </div>
 
         {/* Unit Price, Settlement Min, Settlement Max in the same row */}
-        <div className="flex gap-4">
+        <div className="flex flex-col md:flex-row gap-4">
           <NumberInputField
             control={form.control}
             name="unitPrice"
@@ -334,7 +334,7 @@ export const ContractForm = ({
         />
 
         {/* Rate fields - conditionally rendered based on rate type */}
-        <div className="flex gap-4">
+        <div className="flex flex-col md:flex-row gap-4">
           {rateType === "upperLower" && (
             <>
               <NumberInputField
@@ -435,7 +435,7 @@ export const ContractForm = ({
         />
 
         {/* Daily Work Minutes and Monthly Work Minutes in the same row */}
-        <div className="flex gap-4">
+        <div className="flex flex-col md:flex-row gap-4">
           <ComboBoxField
             control={form.control}
             name="dailyWorkMinutes"
