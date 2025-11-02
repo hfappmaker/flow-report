@@ -14,13 +14,15 @@ fi
 BRANCH_NAME="$1"
 BASE_BRANCH="${2:-develop}"  # デフォルトはdevelopブランチ
 
+# ブランチ名をファイルシステムに安全な形式に変換（/ → -）
+SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/\//-/g')
+
 # 現在のリポジトリのルートディレクトリを取得
 REPO_ROOT=$(git rev-parse --show-toplevel)
 REPO_NAME=$(basename "$REPO_ROOT")
 
 # worktreeのディレクトリ名を生成（親ディレクトリに作成）
-# ブランチ名にスラッシュが含まれる場合はサブディレクトリが作成される
-WORKTREE_DIR="$(dirname "$REPO_ROOT")/${REPO_NAME}-${BRANCH_NAME}"
+WORKTREE_DIR="$(dirname "$REPO_ROOT")/${REPO_NAME}-${SAFE_BRANCH_NAME}"
 
 # worktreeディレクトリが既に存在する場合はエラー
 if [ -d "$WORKTREE_DIR" ]; then
@@ -56,9 +58,7 @@ if [ -d "$REPO_ROOT/.devcontainer" ]; then
     # .devcontainerディレクトリをコピー
     cp -r "$REPO_ROOT/.devcontainer" "$WORKTREE_DIR/.devcontainer"
 
-    # ブランチ名をファイルシステムに安全な形式に変換（/ → -）
-    # コンテナ内のパスやボリューム名にはスラッシュが使えないため
-    SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/\//-/g')
+    # コンテナ内のworkspaceFolder名を設定
     WORKTREE_DIRNAME="${REPO_NAME}-${SAFE_BRANCH_NAME}"
 
     # devcontainer.jsonのworkspaceFolderを更新
