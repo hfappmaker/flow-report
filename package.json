@@ -17,7 +17,11 @@
     "test:p": "playwright test",
     "test:p:ui": "playwright test --ui",
     "test:p:debug": "playwright test --debug",
-    "test:p:headed": "playwright test --headed"
+    "test:p:headed": "playwright test --headed",
+    "worktree:create": "bash scripts/worktree-create.sh",
+    "worktree:setup": "bash scripts/worktree-setup.sh",
+    "worktree:list": "bash scripts/worktree-list.sh",
+    "worktree:remove": "bash scripts/worktree-remove.sh"
   },
   "dependencies": {
     "@anthropic-ai/claude-code": "^1.0.120",
