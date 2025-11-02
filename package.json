@@ -24,7 +24,7 @@
     "worktree:remove": "bash scripts/worktree-remove.sh"
   },
   "dependencies": {
-    "@anthropic-ai/claude-code": "^1.0.120",
+    "@anthropic-ai/claude-code": "^2.0.31",
     "@auth/prisma-adapter": "^2.7.4",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
