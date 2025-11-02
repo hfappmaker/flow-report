@@ -107,7 +107,7 @@ describe('get-app-url', () => {
       delete process.env.NEXT_PUBLIC_APP_URL;
       process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL = 'myapp.vercel.app';
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
       const result = getClientAppUrl();
 
       // Should not error since we have a fallback
@@ -118,7 +118,7 @@ describe('get-app-url', () => {
     });
 
     it('should log error and use window.location in production if no URLs configured', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
       process.env.NEXT_PUBLIC_VERCEL_ENV = 'production';
       delete process.env.NEXT_PUBLIC_APP_URL;
       delete process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL;
