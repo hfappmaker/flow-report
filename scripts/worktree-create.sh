@@ -19,6 +19,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 REPO_NAME=$(basename "$REPO_ROOT")
 
 # worktreeのディレクトリ名を生成（親ディレクトリに作成）
+# ブランチ名にスラッシュが含まれる場合はサブディレクトリが作成される
 WORKTREE_DIR="$(dirname "$REPO_ROOT")/${REPO_NAME}-${BRANCH_NAME}"
 
 # worktreeディレクトリが既に存在する場合はエラー
@@ -56,6 +57,7 @@ if [ -d "$REPO_ROOT/.devcontainer" ]; then
     cp -r "$REPO_ROOT/.devcontainer" "$WORKTREE_DIR/.devcontainer"
 
     # ブランチ名をファイルシステムに安全な形式に変換（/ → -）
+    # コンテナ内のパスやボリューム名にはスラッシュが使えないため
     SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/\//-/g')
     WORKTREE_DIRNAME="${REPO_NAME}-${SAFE_BRANCH_NAME}"
 
@@ -76,6 +78,10 @@ if [ -d "$REPO_ROOT/.devcontainer" ]; then
     # docker-compose.ymlのボリュームマウント先を更新
     sed -i "s|- \\.\\./:/WorkTimeManagementV2:cached|- ../:/${WORKTREE_DIRNAME}:cached|g" \
         "$WORKTREE_DIR/.devcontainer/docker-compose.yml"
+
+    # .devcontainerをgitの追跡対象から除外（worktree固有の設定）
+    echo ".devcontainer/" >> "$WORKTREE_DIR/.git/info/exclude"
+    echo "✓ .devcontainerをgit追跡対象から除外しました"
 
     echo "✓ DevContainer設定の調整完了"
     echo ""
