@@ -112,6 +112,69 @@ cd ../WorkTimeManagementV2
 # ターミナルを3つ開いて、それぞれで作業可能
 ```
 
+## DevContainerの使用
+
+各worktreeでDevContainerを使用できます。worktree作成時に、自動的にDevContainer設定が調整されます。
+
+### DevContainerで開く方法
+
+1. VS Codeでworktreeディレクトリを開く
+2. コマンドパレット（Ctrl+Shift+P / Cmd+Shift+P）を開く
+3. 「Dev Containers: Reopen in Container」を選択
+4. コンテナのビルドと起動を待つ
+
+```bash
+# worktreeを作成
+./scripts/worktree-create.sh feature/new-feature
+
+# VS Codeで開く
+code ../WorkTimeManagementV2-feature-new-feature
+# → VS Code内で「Reopen in Container」を実行
+```
+
+### DevContainerの特徴
+
+- **独立したコンテナ**: 各worktreeは独自のDockerコンテナを持ちます
+- **独立したボリューム**: `node_modules`や`dist`は各worktree専用のDockerボリュームに保存されます
+- **コンテナ名**: 自動的にブランチ名が付加されます（例: `app_container_feature-new-auth`）
+- **同時実行可能**: 複数worktreeで同時にDevContainerを起動できます
+
+### DevContainerでの開発サーバー起動
+
+各worktreeのコンテナ内で異なるポートを使用してください：
+
+```bash
+# worktree 1のコンテナ内
+npm run dev  # http://localhost:3000
+
+# worktree 2のコンテナ内（別VS Codeウィンドウ）
+PORT=3001 npm run dev  # http://localhost:3001
+
+# worktree 3のコンテナ内（別VS Codeウィンドウ）
+PORT=3002 npm run dev  # http://localhost:3002
+```
+
+### DevContainerのディスク使用量
+
+各worktreeで以下のDockerリソースが作成されます：
+- コンテナイメージ（共有）
+- 実行中のコンテナ
+- 名前付きボリューム（`node_modules`、`dist`）
+
+不要なworktreeを削除する際は、対応するDockerボリュームも削除することをお勧めします：
+
+```bash
+# worktreeを削除
+./scripts/worktree-remove.sh feature/old-feature
+
+# 対応するDockerボリュームを削除
+docker volume rm try-node-node_modules-feature-old-feature
+docker volume rm try-dist-feature-old-feature
+
+# または、未使用のボリュームをすべて削除
+docker volume prune
+```
+
 ## 注意事項
 
 ### データベース

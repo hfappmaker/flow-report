@@ -47,10 +47,48 @@ fi
 echo ""
 echo "✓ Worktreeが作成されました: $WORKTREE_DIR"
 echo ""
+
+# .devcontainerディレクトリをworktree用にコピー・調整
+if [ -d "$REPO_ROOT/.devcontainer" ]; then
+    echo "🔧 DevContainer設定をworktree用に調整中..."
+
+    # .devcontainerディレクトリをコピー
+    cp -r "$REPO_ROOT/.devcontainer" "$WORKTREE_DIR/.devcontainer"
+
+    # ブランチ名をファイルシステムに安全な形式に変換（/ → -）
+    SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/\//-/g')
+    WORKTREE_DIRNAME="${REPO_NAME}-${SAFE_BRANCH_NAME}"
+
+    # devcontainer.jsonのworkspaceFolderを更新
+    sed -i "s|\"workspaceFolder\": \"/WorkTimeManagementV2\"|\"workspaceFolder\": \"/${WORKTREE_DIRNAME}\"|g" \
+        "$WORKTREE_DIR/.devcontainer/devcontainer.json"
+
+    # devcontainer.jsonのボリューム名をworktree固有に変更
+    sed -i "s|try-node-node_modules|try-node-node_modules-${SAFE_BRANCH_NAME}|g" \
+        "$WORKTREE_DIR/.devcontainer/devcontainer.json"
+    sed -i "s|try-dist|try-dist-${SAFE_BRANCH_NAME}|g" \
+        "$WORKTREE_DIR/.devcontainer/devcontainer.json"
+
+    # docker-compose.ymlのコンテナ名をworktree固有に変更
+    sed -i "s|container_name: app_container|container_name: app_container_${SAFE_BRANCH_NAME}|g" \
+        "$WORKTREE_DIR/.devcontainer/docker-compose.yml"
+
+    # docker-compose.ymlのボリュームマウント先を更新
+    sed -i "s|- \\.\\./:/WorkTimeManagementV2:cached|- ../:/${WORKTREE_DIRNAME}:cached|g" \
+        "$WORKTREE_DIR/.devcontainer/docker-compose.yml"
+
+    echo "✓ DevContainer設定の調整完了"
+    echo ""
+fi
+
 echo "次のステップ:"
 echo "1. worktreeディレクトリに移動:"
 echo "   cd $WORKTREE_DIR"
 echo ""
 echo "2. 初期セットアップを実行:"
 echo "   ./scripts/worktree-setup.sh"
+echo ""
+echo "3. (オプション) DevContainerで開く:"
+echo "   VS Codeで $WORKTREE_DIR を開き、"
+echo "   「Reopen in Container」を選択"
 echo ""
