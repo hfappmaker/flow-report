@@ -268,13 +268,22 @@ export const ContractForm = ({
           />
         </div>
 
-        {/* Unit Price, Settlement Min, Settlement Max in the same row */}
+        {/* Unit Price */}
+        <NumberInputField
+          control={form.control}
+          name="unitPrice"
+          label={`月単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
+          placeholder="（例）500000"
+          disabled={isEditing}
+        />
+
+        {/* Settlement Max and Min in the same row */}
         <div className="flex flex-col md:flex-row gap-4">
           <NumberInputField
             control={form.control}
-            name="unitPrice"
-            label={`月単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
-            placeholder="（例）500000"
+            name="settlementMax"
+            label="精算上限（時間）"
+            placeholder="（例）180"
             disabled={isEditing}
           />
 
@@ -283,14 +292,6 @@ export const ContractForm = ({
             name="settlementMin"
             label="精算下限（時間）"
             placeholder="（例）140"
-            disabled={isEditing}
-          />
-
-          <NumberInputField
-            control={form.control}
-            name="settlementMax"
-            label="精算上限（時間）"
-            placeholder="（例）180"
             disabled={isEditing}
           />
         </div>
