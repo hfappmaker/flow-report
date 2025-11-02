@@ -1,6 +1,47 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
+ * Get the base URL for Playwright tests based on the environment
+ */
+function getTestBaseUrl(): string {
+  const vercelEnv = process.env.VERCEL_ENV;
+
+  // Production environment - use custom domain
+  if (vercelEnv === 'production') {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!appUrl) {
+      throw new Error('NEXT_PUBLIC_APP_URL is required in production');
+    }
+    // Ensure the URL has a protocol
+    if (!appUrl.startsWith('http://') && !appUrl.startsWith('https://')) {
+      return `https://${appUrl}`;
+    }
+    return appUrl;
+  }
+
+  // Preview environment - use Vercel's automatic preview URL
+  if (vercelEnv === 'preview') {
+    const vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL ?? process.env.VERCEL_URL;
+    if (vercelUrl) {
+      // Vercel URLs don't include protocol, add https://
+      return `https://${vercelUrl}`;
+    }
+  }
+
+  // Development environment or fallback
+  const customUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (customUrl) {
+    if (!customUrl.startsWith('http://') && !customUrl.startsWith('https://')) {
+      return `http://${customUrl}`;
+    }
+    return customUrl;
+  }
+
+  // Default fallback for local development
+  return 'http://localhost:3000';
+}
+
+/**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
@@ -23,7 +64,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: process.env.NEXT_PUBLIC_APP_URL,
+    baseURL: getTestBaseUrl(),
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -77,7 +118,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'npm run dev',
-    url: process.env.NEXT_PUBLIC_APP_URL,
+    url: getTestBaseUrl(),
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000, // 2 minutes
   },

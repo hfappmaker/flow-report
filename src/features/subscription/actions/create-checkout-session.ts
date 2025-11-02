@@ -12,6 +12,7 @@ import {
   getStripeCustomerByUserId,
 } from "@/features/subscription/repositories/subscription-repository";
 import { CheckoutSessionResult } from "@/features/subscription/types/subscription";
+import { getAppUrl } from "@/utils/get-app-url";
 
 export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
   try {
@@ -30,10 +31,12 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
       return { error: "サーバー設定エラーが発生しました" };
     }
 
-    // アプリケーションのベースURLを取得
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
-    if (!baseUrl) {
-      console.error("NEXT_PUBLIC_APP_URL is not defined");
+    // アプリケーションのベースURLを取得（環境に応じて自動決定）
+    let baseUrl: string;
+    try {
+      baseUrl = getAppUrl();
+    } catch (error) {
+      console.error("Failed to get application URL:", error);
       return { error: "サーバー設定エラーが発生しました" };
     }
 

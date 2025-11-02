@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { currentUser } from "@/features/auth/lib/auth";
 import { generateFreeeAuthUrl } from "@/features/freee/lib/freee-oauth";
+import { getAuthUrl } from "@/utils/get-app-url";
 
 /**
  * freee OAuth認可URLへリダイレクト
@@ -14,11 +15,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
     }
 
-    // リダイレクトURI
-    const authUrl = process.env.AUTH_URL;
-    if (!authUrl) {
+    // リダイレクトURI（環境に応じて自動決定）
+    let authUrl: string;
+    try {
+      authUrl = getAuthUrl();
+    } catch (error) {
+      console.error("Failed to get auth URL:", error);
       return NextResponse.json(
-        { error: "環境変数が設定されていません" },
+        { error: "認証URLの取得に失敗しました" },
         { status: 500 },
       );
     }
