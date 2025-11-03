@@ -170,7 +170,7 @@ export const ContractDetailsContent = ({
                 : "なし"}
             </p>
           </div>
-          <div className="col-span-2">
+          <div>
             <label className="text-sm font-medium text-muted-foreground">
               精算上限
             </label>
