@@ -140,6 +140,89 @@ export default function ContractClientPage({
     });
   };
 
+  // 作業報告書をステータスでフィルタリング
+  const draftWorkReports = workReports.filter(
+    (report) => report.status === "DRAFT",
+  );
+  const submittedWorkReports = workReports.filter(
+    (report) => report.status === "SUBMITTED",
+  );
+
+  // 作業報告書カードを生成する共通関数
+  const renderWorkReportCard = (workReport: WorkReportWithAttendances) => {
+    // 稼働時間と金額を計算
+    const totalWorkMinutes = calculateTotalWorkMinutes(
+      workReport.attendances,
+    );
+    const workTimeText = formatWorkTime(totalWorkMinutes);
+
+    const amountCalculation = contract
+      ? calculateWorkAmount(totalWorkMinutes, {
+          unitPrice: contract.unitPrice ? Number(contract.unitPrice) : null,
+          settlementMin: contract.settlementMin
+            ? Number(contract.settlementMin)
+            : null,
+          settlementMax: contract.settlementMax
+            ? Number(contract.settlementMax)
+            : null,
+          upperRate: contract.upperRate ? Number(contract.upperRate) : null,
+          lowerRate: contract.lowerRate ? Number(contract.lowerRate) : null,
+          middleRate: contract.middleRate ? Number(contract.middleRate) : null,
+          taxInclusiveType: contract.taxInclusiveType,
+          taxRoundingType: contract.taxRoundingType,
+          rateType: contract.rateType,
+        })
+      : null;
+
+    return (
+      <div
+        key={workReport.id}
+        className="w-full rounded-lg border border-gray-200 p-4 transition-all duration-200 hover:border-gray-400 hover:bg-muted/50 hover:shadow-sm"
+      >
+        <div className="flex w-full items-center justify-between">
+          <div
+            className="flex-1 cursor-pointer"
+            onClick={() => {
+              handleNavigation(workReport.id);
+            }}
+          >
+            <h3 className="mb-2 text-lg font-semibold text-foreground">
+              {workReport.targetDate.getFullYear()}年
+              {workReport.targetDate.getMonth() + 1}月分
+            </h3>
+            <div className="flex gap-4 text-sm text-muted-foreground">
+              <div>
+                <span className="font-medium">稼働時間:</span> {workTimeText}
+              </div>
+              <div>
+                <span className="font-medium">税抜:</span>{" "}
+                {amountCalculation
+                  ? formatAmount(amountCalculation.baseAmount)
+                  : "¥---,---"}
+              </div>
+              <div>
+                <span className="font-medium">税込:</span>{" "}
+                {amountCalculation
+                  ? formatAmount(
+                      amountCalculation.baseAmount +
+                        amountCalculation.taxAmount,
+                    )
+                  : "¥---,---"}
+              </div>
+            </div>
+          </div>
+          <div className="ml-4 flex shrink-0 items-center gap-3">
+            <Badge
+              className={`${getWorkReportStatusColor(workReport.status)} pointer-events-none`}
+            >
+              {getWorkReportStatusDisplayText(workReport.status)}
+            </Badge>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="p-4">
       <h1 className="mb-4 text-xl font-bold">
@@ -181,90 +264,31 @@ export default function ContractClientPage({
           <p>作業報告書がありません</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {workReports.map((workReport) => {
-            // 稼働時間と金額を計算
-            const totalWorkMinutes = calculateTotalWorkMinutes(
-              workReport.attendances,
-            );
-            const workTimeText = formatWorkTime(totalWorkMinutes);
-
-            const amountCalculation = contract
-              ? calculateWorkAmount(totalWorkMinutes, {
-                  unitPrice: contract.unitPrice
-                    ? Number(contract.unitPrice)
-                    : null,
-                  settlementMin: contract.settlementMin
-                    ? Number(contract.settlementMin)
-                    : null,
-                  settlementMax: contract.settlementMax
-                    ? Number(contract.settlementMax)
-                    : null,
-                  upperRate: contract.upperRate
-                    ? Number(contract.upperRate)
-                    : null,
-                  lowerRate: contract.lowerRate
-                    ? Number(contract.lowerRate)
-                    : null,
-                  middleRate: contract.middleRate
-                    ? Number(contract.middleRate)
-                    : null,
-                  taxInclusiveType: contract.taxInclusiveType,
-                  taxRoundingType: contract.taxRoundingType,
-                  rateType: contract.rateType,
-                })
-              : null;
-
-            return (
-              <div
-                key={workReport.id}
-                className="w-full rounded-lg border border-gray-200 p-4 transition-all duration-200 hover:border-gray-400 hover:bg-muted/50 hover:shadow-sm"
-              >
-                <div className="flex w-full items-center justify-between">
-                  <div
-                    className="flex-1 cursor-pointer"
-                    onClick={() => {
-                      handleNavigation(workReport.id);
-                    }}
-                  >
-                    <h3 className="mb-2 text-lg font-semibold text-foreground">
-                      {workReport.targetDate.getFullYear()}年
-                      {workReport.targetDate.getMonth() + 1}月分
-                    </h3>
-                    <div className="flex gap-4 text-sm text-muted-foreground">
-                      <div>
-                        <span className="font-medium">稼働時間:</span>{" "}
-                        {workTimeText}
-                      </div>
-                      <div>
-                        <span className="font-medium">税抜:</span>{" "}
-                        {amountCalculation
-                          ? formatAmount(amountCalculation.baseAmount)
-                          : "¥---,---"}
-                      </div>
-                      <div>
-                        <span className="font-medium">税込:</span>{" "}
-                        {amountCalculation
-                          ? formatAmount(
-                              amountCalculation.baseAmount +
-                                amountCalculation.taxAmount,
-                            )
-                          : "¥---,---"}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="ml-4 flex shrink-0 items-center gap-3">
-                    <Badge
-                      className={`${getWorkReportStatusColor(workReport.status)} pointer-events-none`}
-                    >
-                      {getWorkReportStatusDisplayText(workReport.status)}
-                    </Badge>
-                  </div>
-                </div>
+        <>
+          {/* 下書きの作業報告書セクション */}
+          {draftWorkReports.length > 0 && (
+            <div className="mb-12">
+              <h2 className="mb-4 text-xl font-bold">下書き</h2>
+              <div className="space-y-3">
+                {draftWorkReports.map((workReport) =>
+                  renderWorkReportCard(workReport),
+                )}
               </div>
-            );
-          })}
-        </div>
+            </div>
+          )}
+
+          {/* 提出済みの作業報告書セクション */}
+          {submittedWorkReports.length > 0 && (
+            <div>
+              <h2 className="mb-4 text-xl font-bold">提出済み</h2>
+              <div className="space-y-3">
+                {submittedWorkReports.map((workReport) =>
+                  renderWorkReportCard(workReport),
+                )}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
