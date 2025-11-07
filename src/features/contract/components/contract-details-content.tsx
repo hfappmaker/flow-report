@@ -75,6 +75,30 @@ export const ContractDetailsContent = ({
       </div>
 
       <div>
+        <h3 className="mb-3 text-lg font-medium">税務設定</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-sm font-medium text-muted-foreground">
+              税込・税抜設定
+            </label>
+            <p className="mt-1">
+              {contract.taxInclusiveType === "INCLUSIVE" ? "税込" : "税抜"}
+            </p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-muted-foreground">
+              消費税端数処理
+            </label>
+            <p className="mt-1">
+              {contract.taxRoundingType === "ROUND_DOWN" && "切り捨て"}
+              {contract.taxRoundingType === "ROUND_UP" && "切り上げ"}
+              {contract.taxRoundingType === "ROUND" && "四捨五入"}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div>
         <h3 className="mb-3 text-lg font-medium">精算情報</h3>
         <div className="grid grid-cols-3 gap-3">
           <div className="col-span-3">
@@ -95,26 +119,6 @@ export const ContractDetailsContent = ({
             </label>
             <p className="mt-1">
               {contract.unitPrice ? `${contract.unitPrice}円` : "なし"}
-            </p>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">
-              精算下限
-            </label>
-            <p className="mt-1">
-              {contract.settlementMin
-                ? `${contract.settlementMin}時間`
-                : "なし"}
-            </p>
-          </div>
-          <div className="col-span-2">
-            <label className="text-sm font-medium text-muted-foreground">
-              精算上限
-            </label>
-            <p className="mt-1">
-              {contract.settlementMax
-                ? `${contract.settlementMax}時間`
-                : "なし"}
             </p>
           </div>
           {contract.rateType === "upperLower" && (
@@ -156,28 +160,24 @@ export const ContractDetailsContent = ({
               </p>
             </div>
           )}
-        </div>
-      </div>
-
-      <div>
-        <h3 className="mb-3 text-lg font-medium">税務設定</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
+          <div className="col-start-1">
             <label className="text-sm font-medium text-muted-foreground">
-              税込・税抜設定
+              精算下限
             </label>
             <p className="mt-1">
-              {contract.taxInclusiveType === "INCLUSIVE" ? "税込" : "税抜"}
+              {contract.settlementMin
+                ? `${contract.settlementMin}時間`
+                : "なし"}
             </p>
           </div>
           <div>
             <label className="text-sm font-medium text-muted-foreground">
-              消費税端数処理
+              精算上限
             </label>
             <p className="mt-1">
-              {contract.taxRoundingType === "ROUND_DOWN" && "切り捨て"}
-              {contract.taxRoundingType === "ROUND_UP" && "切り上げ"}
-              {contract.taxRoundingType === "ROUND" && "四捨五入"}
+              {contract.settlementMax
+                ? `${contract.settlementMax}時間`
+                : "なし"}
             </p>
           </div>
         </div>
