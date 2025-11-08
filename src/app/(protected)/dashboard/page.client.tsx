@@ -145,7 +145,7 @@ export default function DashboardClientPage({
         </Card>
       )}
 
-      <h1 className="mb-6 text-2xl font-bold">現在の作業報告書一覧</h1>
+      <h1 className="mb-6 text-2xl font-bold">作成中の作業報告書一覧</h1>
 
       {Object.entries(draftWorkReports).map(([contractId, contract]) => (
         <Card key={contractId} className="mb-6">
@@ -195,7 +195,7 @@ export default function DashboardClientPage({
       ))}
 
       <h2 className="mb-6 mt-12 text-2xl font-bold">
-        提出済みの作業報告書一覧 (直近3ヶ月)
+        作成済みの作業報告書一覧 (直近3ヶ月)
       </h2>
       {Object.entries(submittedWorkReportsLast3Months).map(
         ([contractId, contract]) => (
