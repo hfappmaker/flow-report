@@ -9,9 +9,8 @@ import { LoginSchema } from "@/features/auth/schemas/login";
 
 export default {
   providers: [
-    // テスト環境ではOAuth認証を無効化
-    ...(process.env.NODE_ENV === "test" ? [] : [Google]),
-    Credentials({
+    Google,
+    ...(process.env.NODE_ENV === "production" ? [] : [Credentials({
       async authorize(credentials): Promise<User | null> {
         const validatedFields = LoginSchema.safeParse(credentials);
 
@@ -28,6 +27,6 @@ export default {
 
         return null;
       },
-    }),
+    })]),
   ],
 } satisfies NextAuthConfig;
