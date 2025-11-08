@@ -74,6 +74,30 @@ export const contractFormSchema = z
   )
   .refine(
     (data) => {
+      if (data.settlementMin === null) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "精算下限を入力してください",
+      path: ["settlementMin"],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.settlementMax === null) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "精算上限を入力してください",
+      path: ["settlementMax"],
+    },
+  )
+  .refine(
+    (data) => {
       if (data.rateType === "upperLower" && data.upperRate === null) {
         return false;
       }
@@ -130,7 +154,7 @@ export const contractFormSchema = z
       message: "契約期間は最長1年以内にしてください",
       path: ["endDate"],
     },
-  );
+  );;
 
 export type ContractFormValues = z.infer<typeof contractFormSchema>;
 
