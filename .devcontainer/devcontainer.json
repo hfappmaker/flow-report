@@ -25,7 +25,7 @@
         "Anthropic.claude-code",
         "ms-playwright.playwright",
         "Stripe.vscode-stripe",
-        "mhutchie.git-graph"
+        "eamodio.gitlens"
       ]
     }
   },
