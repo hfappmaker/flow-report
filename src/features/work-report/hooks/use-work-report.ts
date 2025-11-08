@@ -7,8 +7,8 @@ import {
   calculateTotalWorkMinutes,
   formatWorkTime,
 } from "@/features/contract/utils/contract-calculation-utils";
+import { updateWorkReportAttendanceAction } from "@/features/work-report/actions/attendance";
 import {
-  updateWorkReportAttendanceAction,
   updateWorkReportAttendancesAction,
   updateWorkReportStatusAction,
 } from "@/features/work-report/actions/work-report";
