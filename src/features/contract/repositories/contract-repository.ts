@@ -60,6 +60,7 @@ function processContractValues(values: StrictOmit<PrismaContract, "id">) {
 export async function getContractsByUserId(userId: string) {
   const contracts = await db.contract.findMany({
     where: { userId: userId },
+    orderBy: { startDate: "desc" },
   });
   return contracts.map(Serialize);
 }
@@ -135,6 +136,7 @@ export async function searchContracts(
     where: {
       AND: whereConditions,
     },
+    orderBy: { startDate: "desc" },
   });
   return contracts.map(Serialize);
 }

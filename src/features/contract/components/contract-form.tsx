@@ -26,12 +26,10 @@ export const contractFormSchema = z
   .object({
     name: z.string().min(1, "契約名は必須です"),
     startDate: z.date({
-      required_error: "開始日は必須です",
-      invalid_type_error: "有効な日付を入力してください",
+      message: "開始日は必須です",
     }),
     endDate: z.date({
-      required_error: "終了日は必須です",
-      invalid_type_error: "有効な日付を入力してください",
+      message: "終了日は必須です",
     }),
     clientName: z.string().min(1, "クライアント名は必須です"),
     clientContactName: z.string(),
@@ -268,105 +266,6 @@ export const ContractForm = ({
           />
         </div>
 
-        {/* Unit Price */}
-        <NumberInputField
-          control={form.control}
-          name="unitPrice"
-          label={`月単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
-          placeholder="（例）500000"
-          disabled={isEditing}
-        />
-
-        {/* Settlement Max and Min in the same row */}
-        <div className="flex flex-col md:flex-row gap-4">
-          <NumberInputField
-            control={form.control}
-            name="settlementMax"
-            label="精算上限（時間）"
-            placeholder="（例）180"
-            disabled={isEditing}
-          />
-
-          <NumberInputField
-            control={form.control}
-            name="settlementMin"
-            label="精算下限（時間）"
-            placeholder="（例）140"
-            disabled={isEditing}
-          />
-        </div>
-
-        {/* Rate Type Selection */}
-        <FormField
-          control={form.control}
-          name="rateType"
-          render={() => (
-            <FormItem className="space-y-3">
-              <FormLabel>精算方式</FormLabel>
-              <FormControl>
-                <RadioGroup
-                  onValueChange={(value: "upperLower" | "middle") => {
-                    form.setValue("rateType", value);
-                    // 非表示になる項目の値をクリア
-                    if (value === "upperLower") {
-                      form.setValue("middleRate", null);
-                    } else if (value === "middle") {
-                      form.setValue("upperRate", null);
-                      form.setValue("lowerRate", null);
-                    }
-                  }}
-                  defaultValue={form.getValues("rateType")}
-                  className="flex flex-row space-x-4"
-                  disabled={isEditing}
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="upperLower" id="upperLower" />
-                    <label htmlFor="upperLower">上下割</label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="middle" id="middle" />
-                    <label htmlFor="middle">中間割</label>
-                  </div>
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Rate fields - conditionally rendered based on rate type */}
-        <div className="flex flex-col md:flex-row gap-4">
-          {rateType === "upperLower" && (
-            <>
-              <NumberInputField
-                control={form.control}
-                name="upperRate"
-                label={`超過単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
-                placeholder="（例）5000"
-                disabled={isEditing}
-              />
-
-              <NumberInputField
-                control={form.control}
-                name="lowerRate"
-                label={`控除単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
-                placeholder="（例）5000"
-                disabled={isEditing}
-              />
-            </>
-          )}
-
-          {rateType === "middle" && (
-            <NumberInputField
-              control={form.control}
-              name="middleRate"
-              label={`中間単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
-              placeholder="（例）5000"
-              disabled={isEditing}
-            />
-          )}
-        </div>
-
         {/* Tax Inclusive Type Selection */}
         <FormField
           control={form.control}
@@ -434,6 +333,105 @@ export const ContractForm = ({
             </FormItem>
           )}
         />
+
+        {/* Rate Type Selection */}
+        <FormField
+          control={form.control}
+          name="rateType"
+          render={() => (
+            <FormItem className="space-y-3">
+              <FormLabel>精算方式</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  onValueChange={(value: "upperLower" | "middle") => {
+                    form.setValue("rateType", value);
+                    // 非表示になる項目の値をクリア
+                    if (value === "upperLower") {
+                      form.setValue("middleRate", null);
+                    } else if (value === "middle") {
+                      form.setValue("upperRate", null);
+                      form.setValue("lowerRate", null);
+                    }
+                  }}
+                  defaultValue={form.getValues("rateType")}
+                  className="flex flex-row space-x-4"
+                  disabled={isEditing}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="upperLower" id="upperLower" />
+                    <label htmlFor="upperLower">上下割</label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="middle" id="middle" />
+                    <label htmlFor="middle">中間割</label>
+                  </div>
+                </RadioGroup>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Unit Price */}
+        <NumberInputField
+          control={form.control}
+          name="unitPrice"
+          label={`月単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
+          placeholder="（例）500000"
+          disabled={isEditing}
+        />
+
+        {/* Rate fields - conditionally rendered based on rate type */}
+        <div className="flex flex-col md:flex-row gap-4">
+          {rateType === "upperLower" && (
+            <>
+              <NumberInputField
+                control={form.control}
+                name="upperRate"
+                label={`超過単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
+                placeholder="（例）5000"
+                disabled={isEditing}
+              />
+
+              <NumberInputField
+                control={form.control}
+                name="lowerRate"
+                label={`控除単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
+                placeholder="（例）5000"
+                disabled={isEditing}
+              />
+            </>
+          )}
+
+          {rateType === "middle" && (
+            <NumberInputField
+              control={form.control}
+              name="middleRate"
+              label={`中間単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
+              placeholder="（例）5000"
+              disabled={isEditing}
+            />
+          )}
+        </div>
+
+        {/* Settlement Min and Settlement Max in the same row */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <NumberInputField
+            control={form.control}
+            name="settlementMin"
+            label="精算下限（時間）"
+            placeholder="（例）140"
+            disabled={isEditing}
+          />
+
+          <NumberInputField
+            control={form.control}
+            name="settlementMax"
+            label="精算上限（時間）"
+            placeholder="（例）180"
+            disabled={isEditing}
+          />
+        </div>
 
         {/* Daily Work Minutes and Monthly Work Minutes in the same row */}
         <div className="flex flex-col md:flex-row gap-4">

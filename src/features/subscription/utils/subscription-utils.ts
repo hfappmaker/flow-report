@@ -17,9 +17,11 @@ export function getSubscriptionPeriodEnd(
 }
 
 /**
- * ステータスを決定する関数（改善版）
+ * Stripeのサブスクリプションステータスをアプリケーション側のステータスにマップ
+ * 複数のStripeステータス（paused, canceled, past_due等）は
+ * アプリケーションでは統一的に「CANCELED」として扱う
  * @param subscription Stripeサブスクリプション
- * @returns サブスクリプションステータス
+ * @returns サブスクリプションステータス (ACTIVE | TRIAL | CANCELED)
  */
 export function getSubscriptionStatus(
   subscription: Stripe.Subscription,
@@ -36,14 +38,12 @@ export function getSubscriptionStatus(
     case "trialing":
       return "TRIAL";
     case "paused":
-      return "CANCELED";
     case "canceled":
-      return "CANCELED";
     case "past_due":
-      return "CANCELED";
     case "unpaid":
     case "incomplete":
     case "incomplete_expired":
+      // これらのStripeステータスはすべて無効な契約として扱う
       return "CANCELED";
     default:
       console.warn("Unexpected subscription status:", subscription.status);

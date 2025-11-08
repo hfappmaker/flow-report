@@ -1,10 +1,29 @@
-export const Spinner = () => {
+interface SpinnerProps {
+  size?: "sm" | "md" | "lg";
+  color?: "blue" | "gray" | "primary";
+}
+
+const sizeClasses = {
+  sm: "size-4",
+  md: "size-8",
+  lg: "size-12",
+};
+
+const colorClasses = {
+  blue: "fill-sky-400 text-muted",
+  gray: "fill-gray-400 text-gray-200",
+  primary: "fill-primary text-primary/20",
+};
+
+export const Spinner = ({ size = "md", color = "blue" }: SpinnerProps = {}) => {
+  const sizeClass = sizeClasses[size];
+  const colorClass = colorClasses[color];
+
   return (
     <>
       <svg
         aria-hidden="true"
-        // TODO: In the future pass the color and size as a prop
-        className="inline size-8 animate-spin fill-sky-400 text-muted"
+        className={`inline animate-spin ${sizeClass} ${colorClass}`}
         viewBox="0 0 100 101"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

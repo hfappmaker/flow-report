@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@/features/auth/lib/auth";
 import { exchangeCodeForToken } from "@/features/freee/lib/freee-oauth";
 import { saveFreeeToken } from "@/features/freee/repositories/freee-token-repository";
+import { getAuthUrl } from "@/utils/get-app-url";
 
 /**
  * freee OAuth コールバック処理
@@ -48,9 +49,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // リダイレクトURI
-    const authUrl = process.env.AUTH_URL;
-    if (!authUrl) {
+    // リダイレクトURI（環境に応じて自動決定）
+    let authUrl: string;
+    try {
+      authUrl = getAuthUrl();
+    } catch (error) {
+      console.error("Failed to get auth URL:", error);
       return NextResponse.redirect(
         new URL("/?error=invalid_config", request.url),
       );

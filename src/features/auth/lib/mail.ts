@@ -1,8 +1,17 @@
 import { Resend } from "resend";
+import { getAppUrl } from "@/utils/get-app-url";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const domain = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+// Get the application URL dynamically based on environment
+const getDomain = () => {
+  try {
+    return getAppUrl();
+  } catch (error) {
+    console.error("Failed to get application URL, using fallback:", error);
+    return "http://localhost:3000";
+  }
+};
 
 export const sendTwoFactorTokenEmail = async (email: string, token: string) => {
   await resend.emails.send({
@@ -15,6 +24,7 @@ export const sendTwoFactorTokenEmail = async (email: string, token: string) => {
 };
 
 export const sendPasswordResetEmail = async (email: string, token: string) => {
+  const domain = getDomain();
   const resetLink = `${domain}/auth/new-password?token=${token}`;
 
   await resend.emails.send({
@@ -27,6 +37,7 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
 };
 
 export const sendVerificationEmail = async (email: string, token: string) => {
+  const domain = getDomain();
   const confirmLink = `${domain}/auth/new-verification?token=${token}`;
 
   await resend.emails.send({
