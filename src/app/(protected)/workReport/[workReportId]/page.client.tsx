@@ -252,12 +252,20 @@ export default function ClientWorkReportPage({
   const applyBulkEdit = (data: BulkEditFormValues) => {
     startTransition(() => {
       void (async () => {
+        // startDateとendDateはバリデーションで必須なので、ここではnullではない
+        if (!data.startDate || !data.endDate) {
+          return;
+        }
+
+        const startDate = data.startDate;
+        const endDate = data.endDate;
+
         const updatedValues = currentAttendances.map((attendance) => {
           const shouldUpdate = shouldUpdateDate(
             attendance.date,
             data.selectedDays,
-            data.startDate,
-            data.endDate,
+            startDate,
+            endDate,
             data.excludeHolidays,
             holidays,
           );

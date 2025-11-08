@@ -51,52 +51,6 @@ echo ""
 echo "✓ Worktreeが作成されました: $WORKTREE_DIR"
 echo ""
 
-# .devcontainerディレクトリをworktree用にコピー・調整
-if [ -d "$REPO_ROOT/.devcontainer" ]; then
-    echo "🔧 DevContainer設定をworktree用に調整中..."
-
-    # .devcontainerをgitの追跡対象から除外（コピー前に設定）
-    # worktreeの実際のgit dirを取得
-    WORKTREE_GIT_DIR=$(cd "$WORKTREE_DIR" && git rev-parse --git-dir)
-    mkdir -p "$WORKTREE_GIT_DIR/info"
-    echo ".devcontainer/" >> "$WORKTREE_GIT_DIR/info/exclude"
-
-    echo "✓ .devcontainerをgit追跡対象から除外しました"
-
-    # 既存の.devcontainerを削除して、メインworktreeのものをコピー
-    rm -rf "$WORKTREE_DIR/.devcontainer"
-    cp -r "$REPO_ROOT/.devcontainer" "$WORKTREE_DIR/.devcontainer"
-
-    # コンテナ内のworkspaceFolder名を設定
-    WORKTREE_DIRNAME="${REPO_NAME}-${SAFE_BRANCH_NAME}"
-
-    # devcontainer.jsonのworkspaceFolderを更新
-    sed -i "s|\"workspaceFolder\": \"/WorkTimeManagementV2\"|\"workspaceFolder\": \"/${WORKTREE_DIRNAME}\"|g" \
-        "$WORKTREE_DIR/.devcontainer/devcontainer.json"
-
-    # devcontainer.jsonのボリューム名をworktree固有に変更
-    sed -i "s|try-node-node_modules|try-node-node_modules-${SAFE_BRANCH_NAME}|g" \
-        "$WORKTREE_DIR/.devcontainer/devcontainer.json"
-    sed -i "s|try-dist|try-dist-${SAFE_BRANCH_NAME}|g" \
-        "$WORKTREE_DIR/.devcontainer/devcontainer.json"
-
-    # docker-compose.ymlのコンテナ名をworktree固有に変更
-    sed -i "s|container_name: app_container|container_name: app_container_${SAFE_BRANCH_NAME}|g" \
-        "$WORKTREE_DIR/.devcontainer/docker-compose.yml"
-
-    # docker-compose.ymlのボリュームマウント先を更新
-    sed -i "s|- \\.\\./:/WorkTimeManagementV2:cached|- ../:/${WORKTREE_DIRNAME}:cached|g" \
-        "$WORKTREE_DIR/.devcontainer/docker-compose.yml"
-
-    # .devcontainerの変更を無視するよう設定（gitで追跡されているファイルのみ）
-    cd "$WORKTREE_DIR"
-    git ls-files .devcontainer | xargs -r git update-index --skip-worktree 2>/dev/null || true
-    echo "✓ .devcontainerの変更を無視するよう設定しました"
-
-    echo "✓ DevContainer設定の調整完了"
-    echo ""
-fi
-
 echo "次のステップ:"
 echo "1. worktreeディレクトリに移動:"
 echo "   cd $WORKTREE_DIR"
