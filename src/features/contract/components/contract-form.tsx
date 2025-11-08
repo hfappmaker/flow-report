@@ -62,6 +62,18 @@ export const contractFormSchema = z
   })
   .refine(
     (data) => {
+      if (data.unitPrice === null) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "月単価を入力してください",
+      path: ["unitPrice"],
+    },
+  )
+  .refine(
+    (data) => {
       if (data.rateType === "upperLower" && data.upperRate === null) {
         return false;
       }
