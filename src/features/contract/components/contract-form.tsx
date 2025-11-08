@@ -26,12 +26,10 @@ export const contractFormSchema = z
   .object({
     name: z.string().min(1, "契約名は必須です"),
     startDate: z.date({
-      required_error: "開始日は必須です",
-      invalid_type_error: "有効な日付を入力してください",
+      message: "開始日は必須です",
     }),
     endDate: z.date({
-      required_error: "終了日は必須です",
-      invalid_type_error: "有効な日付を入力してください",
+      message: "終了日は必須です",
     }),
     clientName: z.string().min(1, "クライアント名は必須です"),
     clientContactName: z.string(),
