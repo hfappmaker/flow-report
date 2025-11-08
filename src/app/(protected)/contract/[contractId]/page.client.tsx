@@ -277,10 +277,10 @@ export default function ContractClientPage({
             </div>
           )}
 
-          {/* 提出済みの作業報告書セクション */}
+          {/* 作成済みの作業報告書セクション */}
           {submittedWorkReports.length > 0 && (
             <div>
-              <h2 className="mb-4 text-xl font-bold">提出済み</h2>
+              <h2 className="mb-4 text-xl font-bold">作成済み</h2>
               <div className="space-y-3">
                 {submittedWorkReports.map((workReport) =>
                   renderWorkReportCard(workReport),
