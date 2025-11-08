@@ -231,13 +231,27 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
       ),
     );
 
-    // 新しい終了日 = 開始日の3ヶ月後
+    // コピー元の契約期間の月数を計算
+    const originalMonthDiff =
+      (contract.endDate.getFullYear() - contract.startDate.getFullYear()) * 12 +
+      (contract.endDate.getMonth() - contract.startDate.getMonth());
+
+    // 新しい終了日 = 新しい開始日 + コピー元の契約期間の月数
+    // 日にちはコピー元の締め日（closingDayがnullの場合は月末）
+    const closingDay = contract.closingDay ?? 31;
+    const newEndYear = newStartDate.getUTCFullYear();
+    const newEndMonth = newStartDate.getUTCMonth() + originalMonthDiff;
+
+    // 指定された月の最終日を取得
+    const lastDayOfMonth = new Date(
+      Date.UTC(newEndYear, newEndMonth + 1, 0),
+    ).getUTCDate();
+
+    // 締め日と月の最終日のうち小さい方を使用
+    const actualEndDay = Math.min(closingDay, lastDayOfMonth);
+
     const newEndDate = new Date(
-      Date.UTC(
-        newStartDate.getUTCFullYear(),
-        newStartDate.getUTCMonth() + 3,
-        newStartDate.getUTCDate() - 1,
-      ),
+      Date.UTC(newEndYear, newEndMonth, actualEndDay),
     );
 
     return {
