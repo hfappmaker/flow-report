@@ -144,9 +144,9 @@ export default function ContractClientPage({
   const draftWorkReports = workReports.filter(
     (report) => report.status === "DRAFT",
   );
-  const submittedWorkReports = workReports.filter(
-    (report) => report.status === "SUBMITTED",
-  );
+  const submittedWorkReports = workReports
+    .filter((report) => report.status === "SUBMITTED")
+    .sort((a, b) => b.targetDate.getTime() - a.targetDate.getTime());
 
   // 作業報告書カードを生成する共通関数
   const renderWorkReportCard = (workReport: WorkReportWithAttendances) => {
@@ -265,10 +265,10 @@ export default function ContractClientPage({
         </div>
       ) : (
         <>
-          {/* 下書きの作業報告書セクション */}
+          {/* 作成中の作業報告書セクション */}
           {draftWorkReports.length > 0 && (
             <div className="mb-12">
-              <h2 className="mb-4 text-xl font-bold">下書き</h2>
+              <h2 className="mb-4 text-xl font-bold">作成中</h2>
               <div className="space-y-3">
                 {draftWorkReports.map((workReport) =>
                   renderWorkReportCard(workReport),
