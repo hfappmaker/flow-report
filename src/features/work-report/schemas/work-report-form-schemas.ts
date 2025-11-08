@@ -37,7 +37,7 @@ export const bulkEditFormSchema = z.object({
       message: "終了日を入力してください",
     }),
   selectedDays: z.number().array().nullable(),
-  excludeHolidays: z.boolean().default(true).nullable(),
+  excludeHolidays: z.boolean().nullable(),
   startTime: z.date().nullable(),
   endTime: z.date().nullable(),
   breakDuration: z.number().nullable(),

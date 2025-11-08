@@ -19,7 +19,10 @@ import { useWorkReport } from "@/features/work-report/hooks/use-work-report";
 import { useAttendanceForm } from "@/features/work-report/hooks/use-attendance-form";
 import { useFreeeIntegration } from "@/features/work-report/hooks/use-freee-integration";
 import type { WorkReportClientProps } from "@/features/work-report/types/work-report";
-import type { EditFormValues, BulkEditFormValues } from "@/features/work-report/schemas/work-report-form-schemas";
+import type {
+  EditFormValues,
+  BulkEditFormValues,
+} from "@/features/work-report/schemas/work-report-form-schemas";
 import {
   generateDefaultAttendances,
   mergeAttendances,
@@ -32,50 +35,66 @@ import { formatDateAsUTC } from "@/utils/date-utils";
 
 export default function ClientWorkReportPage({
   contractId,
+  workReportId,
   targetDate,
-  contractType,
+  userName,
+  attendances,
   contractName,
   clientName,
+  contactName,
   clientEmail,
+  dailyWorkMinutes,
+  monthlyWorkMinutes,
   basicStartTime,
   basicEndTime,
   basicBreakDuration,
-  basicHourlyRate,
-  basicFixedRate,
-  dailyWorkMinutes,
-  taxRate,
-  initialStatus,
-  workReportId,
-  clientId,
-  userId,
-  initialAttendances,
+  closingDay,
+  status,
   holidays,
-  templateOption: initialTemplateOption,
-  extensionOption: initialExtensionOption,
+  unitPrice,
+  settlementMin,
+  settlementMax,
+  upperRate,
+  lowerRate,
+  middleRate,
+  taxInclusiveType,
+  taxRoundingType,
+  rateType,
 }: WorkReportClientProps) {
   // Main hooks
   const { startTransition, setManualPending } = useTransitionContext();
 
   const workReport = useWorkReport({
     initialAttendances: mergeAttendances(
-      generateDefaultAttendances(targetDate),
-      initialAttendances
+      generateDefaultAttendances(
+        targetDate.getFullYear(),
+        targetDate.getMonth(),
+        closingDay,
+      ),
+      attendances,
     ),
-    initialStatus,
+    initialStatus: status,
     contractId,
     workReportId,
-    clientId,
     targetDate,
-    basicHourlyRate,
-    basicFixedRate,
     dailyWorkMinutes,
-    contractType,
+    unitPrice,
+    settlementMin,
+    settlementMax,
+    upperRate,
+    lowerRate,
+    middleRate,
+    taxInclusiveType,
+    taxRoundingType,
+    rateType,
   });
 
   const attendanceForm = useAttendanceForm({
-    basicStartTime,
-    basicEndTime,
-    basicBreakDuration,
+    basicStartTime: basicStartTime ?? undefined,
+    basicEndTime: basicEndTime ?? undefined,
+    basicBreakDuration: basicBreakDuration ?? undefined,
+    workReportStartDate: workReport.workReportStartDate,
+    workReportEndDate: workReport.workReportEndDate,
   });
 
   const freeeIntegration = useFreeeIntegration({
@@ -85,12 +104,14 @@ export default function ClientWorkReportPage({
   });
 
   // Template state for Excel export
-  const [uploadedTemplateFile, setUploadedTemplateFile] = useState<File | null>(null);
+  const [uploadedTemplateFile, setUploadedTemplateFile] = useState<File | null>(
+    null,
+  );
   const [templateOption, setTemplateOption] = useState<"standard" | "custom">(
-    initialTemplateOption || "standard"
+    "standard",
   );
   const [extensionOption, setExtensionOption] = useState<"xlsx" | "pdf">(
-    initialExtensionOption || "xlsx"
+    "xlsx",
   );
 
   // Handlers
@@ -98,7 +119,7 @@ export default function ClientWorkReportPage({
     if (!workReport.editingDate) return;
 
     const attendance = workReport.currentAttendances.find(
-      (a) => a.date.getTime() === workReport.editingDate?.getTime()
+      (a) => a.date.getTime() === workReport.editingDate?.getTime(),
     );
 
     if (!attendance) return;
@@ -120,13 +141,20 @@ export default function ClientWorkReportPage({
     const updatedAttendances = attendanceForm.applyBulkEdit(
       values,
       workReport.currentAttendances,
-      holidays
+      holidays,
     );
 
     // Filter attendances that should be updated based on date range
     const filteredAttendances = updatedAttendances.filter((attendance) => {
       if (!values.startDate || !values.endDate) return true;
-      return shouldUpdateDate(attendance.date, values.startDate, values.endDate);
+      return shouldUpdateDate(
+        attendance.date,
+        values.selectedDays,
+        values.startDate,
+        values.endDate,
+        values.excludeHolidays,
+        holidays,
+      );
     });
 
     workReport.setCurrentAttendances(filteredAttendances);
@@ -137,7 +165,7 @@ export default function ClientWorkReportPage({
 
   const handleOpenEditDialog = (date: Date) => {
     const attendance = workReport.currentAttendances.find(
-      (a) => a.date.getTime() === date.getTime()
+      (a) => a.date.getTime() === date.getTime(),
     );
 
     if (!attendance) return;
@@ -161,19 +189,26 @@ export default function ClientWorkReportPage({
 
     // Add basic data
     worksheet.addRow(["契約名", contractName]);
-    worksheet.addRow(["期間", `${targetDate.getFullYear()}年${targetDate.getMonth() + 1}月`]);
+    worksheet.addRow([
+      "期間",
+      `${targetDate.getFullYear()}年${targetDate.getMonth() + 1}月`,
+    ]);
     worksheet.addRow(["稼働時間", workReport.workTimeText]);
 
     if (workReport.amountCalculation) {
-      worksheet.addRow(["金額", formatAmount(
-        workReport.amountCalculation.baseAmount + workReport.amountCalculation.taxAmount
-      )]);
+      worksheet.addRow([
+        "金額",
+        formatAmount(
+          workReport.amountCalculation.baseAmount +
+            workReport.amountCalculation.taxAmount,
+        ),
+      ]);
     }
 
     // Download
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -200,7 +235,7 @@ export default function ClientWorkReportPage({
   useEffect(() => {
     if (workReport.editingDate) {
       const attendance = workReport.currentAttendances.find(
-        (a) => a.date.getTime() === workReport.editingDate?.getTime()
+        (a) => a.date.getTime() === workReport.editingDate?.getTime(),
       );
       if (attendance) {
         attendanceForm.editForm.reset({
@@ -211,13 +246,18 @@ export default function ClientWorkReportPage({
         });
       }
     }
-  }, [workReport.editingDate, workReport.currentAttendances, attendanceForm.editForm]);
+  }, [
+    workReport.editingDate,
+    workReport.currentAttendances,
+    attendanceForm.editForm,
+  ]);
 
   return (
     <div className="mx-auto">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-bold text-muted-foreground">
-          {contractName}の{targetDate.getFullYear()}年{targetDate.getMonth() + 1}
+          {contractName}の{targetDate.getFullYear()}年
+          {targetDate.getMonth() + 1}
           月度作業報告書
         </h1>
         <Button type="button" onClick={workReport.handleNavigateToList}>
@@ -288,7 +328,9 @@ export default function ClientWorkReportPage({
         onFillBasicTime={attendanceForm.fillBasicTime}
         editingDate={workReport.editingDate}
         dailyWorkMinutes={dailyWorkMinutes}
-        hasBasicTime={!!basicStartTime || !!basicEndTime || !!basicBreakDuration}
+        hasBasicTime={
+          !!basicStartTime || !!basicEndTime || !!basicBreakDuration
+        }
       />
 
       <InvoiceDialog

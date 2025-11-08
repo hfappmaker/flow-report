@@ -15,6 +15,8 @@ interface UseAttendanceFormProps {
   basicStartTime?: Date;
   basicEndTime?: Date;
   basicBreakDuration?: number;
+  workReportStartDate: Date;
+  workReportEndDate: Date;
 }
 
 interface UseAttendanceFormReturn {
@@ -25,7 +27,7 @@ interface UseAttendanceFormReturn {
   applyBulkEdit: (
     values: BulkEditFormValues,
     currentAttendances: AttendanceData[],
-    holidays: Holiday[]
+    holidays: Holiday[],
   ) => AttendanceData[];
 }
 
@@ -33,6 +35,8 @@ export function useAttendanceForm({
   basicStartTime,
   basicEndTime,
   basicBreakDuration,
+  workReportStartDate,
+  workReportEndDate,
 }: UseAttendanceFormProps): UseAttendanceFormReturn {
   const editForm = useForm<EditFormValues>({
     resolver: zodResolver(editFormSchema),
@@ -46,11 +50,13 @@ export function useAttendanceForm({
 
   const bulkEditForm = useForm<BulkEditFormValues>({
     resolver: zodResolver(bulkEditFormSchema),
-    defaultValues: getBulkEditFormDefaults({
-      basicStartTime,
-      basicEndTime,
-      basicBreakDuration,
-    }),
+    defaultValues: getBulkEditFormDefaults(
+      basicStartTime ?? null,
+      basicEndTime ?? null,
+      basicBreakDuration ?? null,
+      workReportStartDate,
+      workReportEndDate,
+    ),
   });
 
   // Fill basic time for edit form
@@ -68,22 +74,30 @@ export function useAttendanceForm({
 
   // Reset bulk edit form
   const resetBulkEditForm = useCallback(() => {
-    bulkEditForm.reset({
-      selectedDays: [1, 2, 3, 4, 5], // 平日
-      excludeHolidays: false,
-      startTime: basicStartTime,
-      endTime: basicEndTime,
-      breakDuration: basicBreakDuration,
-      memo: "",
-    });
-  }, [bulkEditForm, basicStartTime, basicEndTime, basicBreakDuration]);
+    bulkEditForm.reset(
+      getBulkEditFormDefaults(
+        basicStartTime ?? null,
+        basicEndTime ?? null,
+        basicBreakDuration ?? null,
+        workReportStartDate,
+        workReportEndDate,
+      ),
+    );
+  }, [
+    bulkEditForm,
+    basicStartTime,
+    basicEndTime,
+    basicBreakDuration,
+    workReportStartDate,
+    workReportEndDate,
+  ]);
 
   // Apply bulk edit
   const applyBulkEdit = useCallback(
     (
       values: BulkEditFormValues,
       currentAttendances: AttendanceData[],
-      holidays: Holiday[]
+      holidays: Holiday[],
     ): AttendanceData[] => {
       const isHoliday = (date: Date): boolean => {
         const dateStr = date.toISOString().split("T")[0];
@@ -112,7 +126,7 @@ export function useAttendanceForm({
         };
       });
     },
-    []
+    [],
   );
 
   return {

@@ -35,20 +35,23 @@ export function useFreeeIntegration({
   const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
   const [showReauthDialog, setShowReauthDialog] = useState(false);
   const [isFreeeConnected, setIsFreeeConnected] = useState(false);
-  const [isCheckingFreeeConnection, setIsCheckingFreeeConnection] = useState(false);
+  const [isCheckingFreeeConnection, setIsCheckingFreeeConnection] =
+    useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [partners, setPartners] = useState<FreeePartner[]>([]);
-  const [selectedPartnerId, setSelectedPartnerId] = useState<number | null>(null);
+  const [selectedPartnerId, setSelectedPartnerId] = useState<number | null>(
+    null,
+  );
   const [isLoadingPartners, setIsLoadingPartners] = useState(false);
 
   // Check freee connection status
   const checkFreeeConnection = useCallback(async () => {
     setIsCheckingFreeeConnection(true);
     try {
-      const result = await checkFreeeConnectionAction();
-      setIsFreeeConnected(result.success ?? false);
+      const isConnected = await checkFreeeConnectionAction();
+      setIsFreeeConnected(isConnected);
 
-      if (!result.success && result.needsReauth) {
+      if (!isConnected) {
         setShowReauthDialog(true);
       }
     } catch (error) {
@@ -66,12 +69,12 @@ export function useFreeeIntegration({
     setIsLoadingPartners(true);
     try {
       const result = await getFreeePartnersAction();
-      if (result.success && result.data) {
-        setPartners(result.data);
-        if (result.data.length > 0 && !selectedPartnerId) {
-          setSelectedPartnerId(result.data[0]?.id ?? null);
+      if (result.success && result.partners) {
+        setPartners(result.partners);
+        if (result.partners.length > 0 && !selectedPartnerId) {
+          setSelectedPartnerId(result.partners[0]?.id ?? null);
         }
-      } else if (result.needsReauth) {
+      } else if (result.requiresReauth) {
         setShowReauthDialog(true);
         setIsFreeeConnected(false);
       } else {
@@ -90,15 +93,15 @@ export function useFreeeIntegration({
 
     setIsCreatingInvoice(true);
     try {
-      const result = await createFreeeInvoiceFromWorkReportAction({
+      const result = await createFreeeInvoiceFromWorkReportAction(
         workReportId,
-        partnerId: selectedPartnerId,
-      });
+        selectedPartnerId,
+      );
 
       if (result.success) {
         onSuccess?.("請求書を作成しました");
         setIsInvoiceDialogOpen(false);
-      } else if (result.needsReauth) {
+      } else if (result.requiresReauth) {
         setShowReauthDialog(true);
         setIsFreeeConnected(false);
       } else {
@@ -113,10 +116,19 @@ export function useFreeeIntegration({
 
   // Check connection when dialog opens
   useEffect(() => {
-    if (isInvoiceDialogOpen && !isFreeeConnected && !isCheckingFreeeConnection) {
+    if (
+      isInvoiceDialogOpen &&
+      !isFreeeConnected &&
+      !isCheckingFreeeConnection
+    ) {
       void checkFreeeConnection();
     }
-  }, [isInvoiceDialogOpen, isFreeeConnected, isCheckingFreeeConnection, checkFreeeConnection]);
+  }, [
+    isInvoiceDialogOpen,
+    isFreeeConnected,
+    isCheckingFreeeConnection,
+    checkFreeeConnection,
+  ]);
 
   // Load partners when connected
   useEffect(() => {

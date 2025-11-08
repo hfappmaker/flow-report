@@ -21,19 +21,19 @@ export type WorkReportStatus = WorkReport["status"];
 export interface WorkReportClientProps {
   contractId: string;
   workReportId: string;
+  targetDate: Date;
+  userName: string;
   attendances: AttendanceDto[];
   contractName: string;
   clientName: string;
   contactName: string;
-  closingDay: number | null;
-  userName: string;
   clientEmail: string;
-  targetDate: Date;
   dailyWorkMinutes: number;
   monthlyWorkMinutes: number;
   basicStartTime: Date | null;
   basicEndTime: Date | null;
   basicBreakDuration: number | null;
+  closingDay: number | null;
   status: WorkReportStatus;
   holidays: Holiday[];
   // Contract settlement and tax information

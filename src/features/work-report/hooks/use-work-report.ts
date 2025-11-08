@@ -20,12 +20,17 @@ interface UseWorkReportProps {
   initialStatus: WorkReportStatus;
   contractId: string;
   workReportId: string;
-  clientId: string;
   targetDate: Date;
-  basicHourlyRate?: number;
-  basicFixedRate?: number;
   dailyWorkMinutes?: number;
-  contractType?: "HOURLY" | "FIXED";
+  unitPrice?: number | null;
+  settlementMin?: number | null;
+  settlementMax?: number | null;
+  upperRate?: number | null;
+  lowerRate?: number | null;
+  middleRate?: number | null;
+  taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
+  taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
+  rateType?: "middle" | "upperLower";
 }
 
 interface UseWorkReportReturn {
@@ -59,19 +64,25 @@ export function useWorkReport({
   initialStatus,
   contractId,
   workReportId,
-  clientId,
   targetDate,
-  basicHourlyRate,
-  basicFixedRate,
   dailyWorkMinutes,
-  contractType,
+  unitPrice,
+  settlementMin,
+  settlementMax,
+  upperRate,
+  lowerRate,
+  middleRate,
+  taxInclusiveType,
+  taxRoundingType,
+  rateType,
 }: UseWorkReportProps): UseWorkReportReturn {
   const router = useRouter();
   const { error, success, showError, showSuccess } = useMessageState();
   const { startTransition, setManualPending } = useTransitionContext();
 
   // State management
-  const [currentAttendances, setCurrentAttendances] = useState<AttendanceData[]>(initialAttendances);
+  const [currentAttendances, setCurrentAttendances] =
+    useState<AttendanceData[]>(initialAttendances);
   const [editingDate, setEditingDate] = useState<Date | null>(null);
   const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
   const [status, setStatus] = useState<WorkReportStatus>(initialStatus);
@@ -80,16 +91,17 @@ export function useWorkReport({
   const totalWorkMinutes = calculateTotalWorkMinutes(currentAttendances);
   const workTimeText = formatWorkTime(totalWorkMinutes);
 
-  const amountCalculation =
-    (basicHourlyRate !== undefined && basicHourlyRate !== null) ||
-    (basicFixedRate !== undefined && basicFixedRate !== null)
-      ? calculateWorkAmount({
-          totalWorkMinutes,
-          hourlyRate: basicHourlyRate ?? 0,
-          fixedRate: basicFixedRate ?? 0,
-          contractType: contractType ?? "HOURLY",
-        })
-      : null;
+  const amountCalculation = calculateWorkAmount(totalWorkMinutes, {
+    unitPrice,
+    settlementMin,
+    settlementMax,
+    upperRate,
+    lowerRate,
+    middleRate,
+    taxInclusiveType,
+    taxRoundingType,
+    rateType,
+  });
 
   // Date calculations
   const year = targetDate.getFullYear();
@@ -101,7 +113,9 @@ export function useWorkReport({
   const handleNavigateToList = useCallback(() => {
     const targetYear = targetDate.getFullYear();
     const targetMonth = targetDate.getMonth() + 1;
-    router.push(`/contracts?year=${targetYear}&month=${targetMonth}&contractId=${contractId}`);
+    router.push(
+      `/contracts?year=${targetYear}&month=${targetMonth}&contractId=${contractId}`,
+    );
   }, [router, targetDate, contractId]);
 
   // Status change handler
@@ -109,68 +123,62 @@ export function useWorkReport({
     const newStatus = status === "SUBMITTED" ? "DRAFT" : "SUBMITTED";
 
     try {
-      const result = await updateWorkReportStatusAction({
-        workReportId,
-        status: newStatus,
-      });
-
-      if (result.success) {
-        setStatus(newStatus);
-        showSuccess(
-          newStatus === "SUBMITTED"
-            ? "月締めを完了しました"
-            : "月締めを解除しました"
-        );
-      } else {
-        showError(result.message ?? "ステータスの更新に失敗しました");
-      }
+      await updateWorkReportStatusAction(workReportId, newStatus);
+      setStatus(newStatus);
+      showSuccess(
+        newStatus === "SUBMITTED"
+          ? "月締めを完了しました"
+          : "月締めを解除しました",
+      );
     } catch (err) {
       showError("ステータスの更新中にエラーが発生しました");
     }
   }, [status, workReportId, setStatus, showSuccess, showError]);
 
   // Update single attendance
-  const updateAttendance = useCallback(async (attendance: AttendanceData) => {
-    const result = await updateWorkReportAttendanceAction({
-      workReportId,
-      attendance: {
-        date: attendance.date,
-        startTime: attendance.startTime,
-        endTime: attendance.endTime,
-        breakDuration: attendance.breakDuration,
-        memo: attendance.memo || "",
-      },
-    });
+  const updateAttendance = useCallback(
+    async (attendance: AttendanceData) => {
+      try {
+        await updateWorkReportAttendanceAction(workReportId, attendance.date, {
+          workReportId,
+          date: attendance.date,
+          startTime: attendance.startTime,
+          endTime: attendance.endTime,
+          breakDuration: attendance.breakDuration,
+          memo: attendance.memo || "",
+        });
 
-    if (result.success) {
-      setCurrentAttendances((prev) =>
-        prev.map((a) =>
-          a.date.getTime() === attendance.date.getTime() ? attendance : a
-        )
-      );
-      showSuccess("勤怠情報を更新しました");
-    } else {
-      showError(result.message ?? "勤怠情報の更新に失敗しました");
-    }
-  }, [workReportId, setCurrentAttendances, showSuccess, showError]);
+        setCurrentAttendances((prev) =>
+          prev.map((a) =>
+            a.date.getTime() === attendance.date.getTime() ? attendance : a,
+          ),
+        );
+        showSuccess("勤怠情報を更新しました");
+      } catch (error) {
+        showError("勤怠情報の更新に失敗しました");
+      }
+    },
+    [workReportId, setCurrentAttendances, showSuccess, showError],
+  );
 
   // Update all attendances
   const updateAllAttendances = useCallback(async () => {
-    const result = await updateWorkReportAttendancesAction({
-      workReportId,
-      attendances: currentAttendances.map((attendance) => ({
-        date: attendance.date,
-        startTime: attendance.startTime,
-        endTime: attendance.endTime,
-        breakDuration: attendance.breakDuration,
-        memo: attendance.memo || "",
-      })),
-    });
+    try {
+      await updateWorkReportAttendancesAction(
+        workReportId,
+        currentAttendances.map((attendance) => ({
+          workReportId,
+          date: attendance.date,
+          startTime: attendance.startTime,
+          endTime: attendance.endTime,
+          breakDuration: attendance.breakDuration,
+          memo: attendance.memo || "",
+        })),
+      );
 
-    if (result.success) {
       showSuccess("すべての勤怠情報を更新しました");
-    } else {
-      showError(result.message ?? "勤怠情報の更新に失敗しました");
+    } catch (error) {
+      showError("勤怠情報の更新に失敗しました");
     }
   }, [workReportId, currentAttendances, showSuccess, showError]);
 

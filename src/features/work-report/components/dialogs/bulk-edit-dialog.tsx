@@ -75,15 +75,15 @@ export function BulkEditDialog({
                   control={form.control}
                   name="startDate"
                   label="開始日"
-                  minDate={workReportStartDate}
-                  maxDate={workReportEndDate}
+                  min={workReportStartDate.toISOString().split("T")[0]}
+                  max={workReportEndDate.toISOString().split("T")[0]}
                 />
                 <DatePickerField
                   control={form.control}
                   name="endDate"
                   label="終了日"
-                  minDate={workReportStartDate}
-                  maxDate={workReportEndDate}
+                  min={workReportStartDate.toISOString().split("T")[0]}
+                  max={workReportEndDate.toISOString().split("T")[0]}
                 />
               </div>
             </div>
