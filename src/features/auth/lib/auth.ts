@@ -92,7 +92,8 @@ export const {
   session: { strategy: "jwt" },
 
   debug:
-    process.env.NODE_ENV === "development",
+    process.env.VERCEL_TARGET_ENV === "development" ||
+    process.env.VERCEL_TARGET_ENV === "preview",
   ...authConfig,
 } satisfies NextAuthConfig);
 

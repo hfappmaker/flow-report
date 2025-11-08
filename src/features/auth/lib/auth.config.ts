@@ -10,7 +10,7 @@ import { LoginSchema } from "@/features/auth/schemas/login";
 export default {
   providers: [
     Google,
-    ...(process.env.NODE_ENV === "production" ? [] : [Credentials({
+    ...(process.env.VERCEL_TARGET_ENV === "production" ? [] : [Credentials({
       async authorize(credentials): Promise<User | null> {
         const validatedFields = LoginSchema.safeParse(credentials);
 
