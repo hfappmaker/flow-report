@@ -6,14 +6,6 @@ import { useState, useEffect, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import FormError from "@/components/ui/feedback/error-alert";
 import FormSuccess from "@/components/ui/feedback/success-alert";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useTransitionContext } from "@/contexts/transition-context";
 import { getContractByIdAction } from "@/features/contract/actions/contract";
 import { ContractOutput } from "@/features/contract/types/contract";
@@ -41,35 +33,9 @@ export default function ContractClientPage({
     [],
   );
   const [contract, setContract] = useState<ContractOutput | null>(null);
-  const [selectedYear, setSelectedYear] = useState<number>(
-    new Date().getFullYear(),
-  );
 
   const { startTransition } = useTransitionContext();
   const router = useRouter();
-
-  // 年の選択肢を生成（契約期間内のみ）
-  const generateYearOptions = () => {
-    if (!contract) {
-      return [];
-    }
-
-    const startYear = new Date(contract.startDate).getFullYear();
-    const endYear = new Date(contract.endDate).getFullYear();
-
-    const years = [];
-    for (let year = startYear; year <= endYear; year++) {
-      years.push({ label: `${year.toString()}年`, value: year });
-    }
-    return years;
-  };
-
-  // 選択された年に基づいて初期の検索範囲を設定
-  const getYearRange = (year: number) => {
-    const from = new Date(Date.UTC(year, 0, 1)); // 1月
-    const to = new Date(Date.UTC(year, 11, 1)); // 12月
-    return { from, to };
-  };
 
   // コントラクト情報を取得
   useEffect(() => {
@@ -82,17 +48,6 @@ export default function ContractClientPage({
           return;
         }
         setContract(contractData);
-
-        // 契約期間内に現在の選択年が収まっているかチェック
-        const startYear = new Date(contractData.startDate).getFullYear();
-        const endYear = new Date(contractData.endDate).getFullYear();
-
-        setSelectedYear((currentYear) => {
-          if (currentYear < startYear || currentYear > endYear) {
-            return startYear;
-          }
-          return currentYear;
-        });
       } catch (error: unknown) {
         console.error(error);
         showError("契約情報の取得に失敗しました");
@@ -119,20 +74,13 @@ export default function ContractClientPage({
     [contractId, showError],
   );
 
-  // 年選択の変更ハンドラ
-  const handleYearChange = (yearStr: string) => {
-    const year = parseInt(yearStr, 10);
-    setSelectedYear(year);
-  };
-
   // Load the reports on initial render
   useEffect(() => {
-    const selectedYearRange = getYearRange(selectedYear);
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     startTransition(async () => {
-      await fetchReports(selectedYearRange.from, selectedYearRange.to);
+      await fetchReports(null, null);
     });
-  }, [contractId, fetchReports, startTransition, selectedYear]);
+  }, [contractId, fetchReports, startTransition]);
 
   const handleNavigation = (workReportId: string) => {
     startTransition(() => {
@@ -233,31 +181,6 @@ export default function ContractClientPage({
         message={success.message}
         resetSignal={success.date.getTime()}
       />
-      <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <Label className="text-sm font-medium">表示年</Label>
-          <div className="w-32">
-            <Select
-              value={selectedYear.toString()}
-              onValueChange={handleYearChange}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {generateYearOptions().map((option) => (
-                  <SelectItem
-                    key={option.value}
-                    value={option.value.toString()}
-                  >
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
 
       {workReports.length === 0 ? (
         <div className="py-12 text-center text-muted-foreground">
