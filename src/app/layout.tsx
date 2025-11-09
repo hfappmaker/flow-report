@@ -12,10 +12,10 @@ const mono = Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | 勤怠管理システム",
-    default: "勤怠管理システム",
+    template: "%s | Flow Report",
+    default: "Flow Report",
   },
-  description: "勤怠管理システム",
+  description: "Flow Report",
   icons: {
     icon: [
       {
