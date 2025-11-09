@@ -2,7 +2,7 @@ import type { User } from "@prisma/client";
 
 import { baseDb } from "@/repositories/base-db";
 
-// Use type import to avoid bundling Prisma Client in middleware
+// Use type import to avoid bundling Prisma Client in proxy
 
 export const getUserByEmail = async (email: string): Promise<User | null> => {
   try {

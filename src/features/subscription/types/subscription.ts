@@ -1,4 +1,4 @@
-// Use type-only import to avoid bundling Prisma Client in middleware
+// Use type-only import to avoid bundling Prisma Client in proxy
 import type { SubscriptionStatus } from "@prisma/client";
 
 export interface SubscriptionInfo {

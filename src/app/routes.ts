@@ -17,7 +17,7 @@ export const authRoutes: string[] = [
  * An array of routes that are accessible to authenticated users
  * These routes require authentication
  */
-// export const privateRoutes = [""]; All routes are private by default, is defined the middleware.ts
+// export const privateRoutes = [""]; All routes are private by default, is defined the proxy.ts
 
 /**
  * The prefix for API authentication routes

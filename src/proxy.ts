@@ -13,8 +13,7 @@ import { SubscriptionInfo } from "@/features/subscription/types/subscription";
 
 const { auth } = NextAuth(authConfig);
 
-console.log("Middleware file is being loaded");
-
+console.log("proxy file is being loaded");
 // サブスクリプション情報を取得する関数
 async function getSubscriptionInfo(
   req: NextRequest,
@@ -123,10 +122,10 @@ function handleUnauthenticatedUser(req: NextRequest) {
 }
 
 export default auth(async (req) => {
-  console.log("Middleware Request URL:", req.nextUrl.toString());
-  console.log("Middleware Request Method:", req.method);
+  console.log("proxy Request URL:", req.nextUrl.toString());
+  console.log("proxy Request Method:", req.method);
   console.log(
-    "Middleware Request Headers:",
+    "proxy Request Headers:",
     Object.fromEntries(req.headers.entries()),
   );
 
@@ -139,14 +138,14 @@ export default auth(async (req) => {
   // エラールートの場合は何もしない
   if (isErrorRoute) {
     console.log(
-      "Request is for an error route, skipping middleware processing.",
+      "Request is for an error route, skipping proxy processing.",
     );
     return;
   }
 
   // APIルートの場合はスキップ
   if (isApiAuthRoute || isApiWebhookRoute) {
-    console.log("Request is for API route, skipping middleware processing.");
+    console.log("Request is for API route, skipping proxy processing.");
     return;
   }
 
@@ -159,7 +158,7 @@ export default auth(async (req) => {
   return handleUnauthenticatedUser(req);
 });
 
-// Optionally, don't invoke Middleware on some paths
+// Optionally, don't invoke proxy on some paths
 export const config = {
   matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
 };
