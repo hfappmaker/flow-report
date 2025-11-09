@@ -19,25 +19,36 @@ import { createMonthlyWorkReportsAction } from "@/features/work-report/actions/w
 
 export const createContractAction = async (
   values: ContractInput,
-): Promise<void> => {
-  // 契約数の上限チェック（最大20個）
-  const currentCount = await getContractCountByUserId(values.userId);
-  if (currentCount >= 20) {
-    throw new Error(
-      "契約の最大登録数（20個）に達しています。新しい契約を作成するには、既存の契約を削除してください。",
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    // 契約数の上限チェック（最大20個）
+    const currentCount = await getContractCountByUserId(values.userId);
+    if (currentCount >= 20) {
+      return {
+        success: false,
+        error:
+          "契約の最大登録数（20個）に達しています。新しい契約を作成するには、既存の契約を削除してください。",
+      };
+    }
+
+    const contract = await createContract(values);
+
+    // 契約期間全体の作業報告書を作成
+    await createMonthlyWorkReportsAction(
+      contract.id,
+      new Date(contract.startDate),
+      new Date(contract.endDate),
     );
+
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (error) {
+    console.error("Error creating contract:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "契約の作成に失敗しました",
+    };
   }
-
-  const contract = await createContract(values);
-
-  // 契約期間全体の作業報告書を作成
-  await createMonthlyWorkReportsAction(
-    contract.id,
-    new Date(contract.startDate),
-    new Date(contract.endDate),
-  );
-
-  revalidatePath("/dashboard");
 };
 
 export const updateContractAction = async (
