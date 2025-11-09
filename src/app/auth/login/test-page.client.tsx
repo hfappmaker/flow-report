@@ -1,9 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
-import { BsCalendarCheck } from "react-icons/bs";
 import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -57,11 +57,14 @@ export default function TestLoginPage() {
   return (
     <main className="flex h-full flex-col items-center justify-center">
       <div className="flex w-full max-w-md flex-col items-center justify-center gap-y-4 rounded-md border-2 p-6">
-        <div className="flex items-center justify-center gap-x-2">
-          <BsCalendarCheck className="text-3xl text-sky-400" />
-          <h1 className="text-3xl font-semibold text-primary drop-shadow-md">
-            勤怠管理システム
-          </h1>
+        <div className="flex items-center justify-center">
+          <Image
+            src="/flow-report.png"
+            alt="Flow Report"
+            width={200}
+            height={60}
+            priority
+          />
         </div>
 
         <div className="w-full rounded-md border border-yellow-200 bg-yellow-50 p-3">
