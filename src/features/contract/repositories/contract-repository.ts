@@ -65,6 +65,13 @@ export async function getContractsByUserId(userId: string) {
   return contracts.map(Serialize);
 }
 
+export async function getContractCountByUserId(userId: string) {
+  const count = await db.contract.count({
+    where: { userId: userId },
+  });
+  return count;
+}
+
 export async function getContractById(contractId: string) {
   const contract = await db.contract.findUnique({
     where: { id: contractId },
