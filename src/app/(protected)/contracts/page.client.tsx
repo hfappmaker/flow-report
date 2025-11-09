@@ -152,12 +152,20 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
             data,
             userId,
           );
-          await createContractAction(contractData);
+          const result = await createContractAction(contractData);
+
+          if (!result.success) {
+            showError(result.error || "契約の作成に失敗しました");
+            return;
+          }
+
           showSuccess(`契約 '${data.name}' を作成しました`);
           await fetchContracts();
         } catch (error: unknown) {
           console.error(error);
-          showError("契約の作成に失敗しました");
+          const errorMessage =
+            error instanceof Error ? error.message : "契約の作成に失敗しました";
+          showError(errorMessage);
         } finally {
           closeDialog();
         }
@@ -197,12 +205,20 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
             data,
             userId,
           );
-          await createContractAction(contractData);
+          const result = await createContractAction(contractData);
+
+          if (!result.success) {
+            showError(result.error || "契約のコピーに失敗しました");
+            return;
+          }
+
           showSuccess(`契約 '${data.name}' をコピーして作成しました`);
           await fetchContracts();
         } catch (error: unknown) {
           console.error(error);
-          showError("契約のコピーに失敗しました");
+          const errorMessage =
+            error instanceof Error ? error.message : "契約のコピーに失敗しました";
+          showError(errorMessage);
         } finally {
           closeDialog();
         }
