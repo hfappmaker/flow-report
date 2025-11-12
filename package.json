@@ -72,7 +72,7 @@
     "sonner": "^1.7.4",
     "stripe": "^19.3.0",
     "styled-components": "^6.1.15",
-    "tailwind-merge": "^2.2.2",
+    "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
     "ts-essentials": "^10.0.4",
     "uuid": "^13.0.0",
