@@ -6,6 +6,7 @@ import { z } from "zod";
 import { generateWithAI } from "@/features/ai/lib/ai";
 import { fetchHolidays } from "@/features/holidays/libs/google-calendar";
 import {
+  getAttendanceByWorkReportIdAndDate,
   getAttendancesByWorkReportId,
   updateWorkReportAttendance,
 } from "@/features/work-report/repositories/attendance-repository";
@@ -23,6 +24,22 @@ export const getAttendancesByWorkReportIdAction = async (
   } catch (error) {
     console.error("Error fetching attendances:", error);
     throw new Error("Failed to fetch attendances");
+  }
+};
+
+export const getAttendanceByWorkReportIdAndDateAction = async (
+  workReportId: string,
+  date: Date,
+): Promise<AttendanceDto | null> => {
+  try {
+    const attendance = await getAttendanceByWorkReportIdAndDate(
+      workReportId,
+      date,
+    );
+    return attendance;
+  } catch (error) {
+    console.error("Error fetching attendance:", error);
+    throw new Error("Failed to fetch attendance");
   }
 };
 

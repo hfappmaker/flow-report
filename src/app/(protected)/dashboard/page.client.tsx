@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { Clock } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,6 +40,12 @@ import {
 import { type DashboardClientPageProps } from "@/features/dashboard/types/dashboard";
 import { SubscriptionStatus } from "@/features/subscription/components/subscription-status";
 import {
+  getAttendanceByWorkReportIdAndDateAction,
+  updateWorkReportAttendanceAction,
+} from "@/features/work-report/actions/attendance";
+import { AttendanceEditDialog } from "@/features/work-report/components/attendance-edit-dialog";
+import { type EditFormValues } from "@/features/work-report/schemas/work-report-form-schemas";
+import {
   getWorkReportStatusColor,
   getWorkReportStatusDisplayText,
 } from "@/features/work-report/utils/status-utils";
@@ -48,6 +56,7 @@ export default function DashboardClientPage({
   submittedWorkReportsLast3Months,
   subscriptionInfo,
   hasContracts,
+  holidays,
 }: DashboardClientPageProps) {
   const router = useRouter();
   const { startTransition } = useTransitionContext();
@@ -58,6 +67,29 @@ export default function DashboardClientPage({
   const [activeDialog, setActiveDialog] = useState<DialogType>(null);
   const [showContractPromptDialog, setShowContractPromptDialog] =
     useState(false);
+
+  // 勤怠入力ダイアログの状態
+  const [attendanceDialogState, setAttendanceDialogState] = useState<{
+    isOpen: boolean;
+    contractId: string | null;
+    workReportId: string | null;
+    date: Date | null;
+    contract: ContractOutput | null;
+    startTime: Date | null;
+    endTime: Date | null;
+    breakDuration: number | null;
+    memo: string | null;
+  }>({
+    isOpen: false,
+    contractId: null,
+    workReportId: null,
+    date: null,
+    contract: null,
+    startTime: null,
+    endTime: null,
+    breakDuration: null,
+    memo: null,
+  });
 
   const handleNavigation = (reportId: string) => {
     startTransition(() => {
@@ -126,6 +158,87 @@ export default function DashboardClientPage({
     });
   };
 
+  // 勤怠入力ダイアログを開く
+  const openAttendanceDialog = async (
+    contractId: string,
+    workReportId: string,
+  ) => {
+    try {
+      const contractData = await getContractByIdAction(contractId);
+      if (contractData) {
+        const today = new Date();
+        const date = new Date(
+          Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()),
+        );
+        const attendanceData = await getAttendanceByWorkReportIdAndDateAction(
+          workReportId,
+          date,
+        );
+        setAttendanceDialogState({
+          isOpen: true,
+          contractId,
+          workReportId,
+          contract: contractData,
+          date,
+          startTime: attendanceData?.startTime
+            ? new Date(attendanceData.startTime)
+            : null,
+          endTime: attendanceData?.endTime
+            ? new Date(attendanceData.endTime)
+            : null,
+          breakDuration: attendanceData?.breakDuration ?? null,
+          memo: attendanceData?.memo ?? null,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching contract details:", error);
+      showError("契約情報の取得に失敗しました");
+    }
+  };
+
+  // 勤怠入力ダイアログを閉じる
+  const closeAttendanceDialog = () => {
+    setAttendanceDialogState({
+      isOpen: false,
+      contractId: null,
+      workReportId: null,
+      contract: null,
+      date: null,
+      startTime: null,
+      endTime: null,
+      breakDuration: null,
+      memo: null,
+    });
+  };
+
+  // 勤怠データを保存
+  const handleAttendanceSave = async (date: Date, data: EditFormValues) => {
+    const { workReportId } = attendanceDialogState;
+    if (!workReportId) return;
+
+    try {
+      startTransition(() => {
+        void (async () => {
+          await updateWorkReportAttendanceAction(workReportId, date, {
+            date,
+            startTime: data.startTime,
+            endTime: data.endTime,
+            breakDuration: data.breakDuration,
+            memo: data.memo,
+            workReportId,
+          });
+          showSuccess("勤怠情報を保存しました");
+          closeAttendanceDialog();
+          // ページをリフレッシュしてデータを更新
+          router.refresh();
+        })();
+      });
+    } catch (error) {
+      console.error("勤怠情報の保存に失敗しました", error);
+      showError("勤怠情報の保存に失敗しました");
+    }
+  };
+
   return (
     <div className="space-y-6 p-6">
       <FormError message={error.message} resetSignal={error.date.getTime()} />
@@ -150,19 +263,43 @@ export default function DashboardClientPage({
       {Object.entries(draftWorkReports).map(([contractId, contract]) => (
         <Card key={contractId} className="mb-6">
           <CardHeader>
-            <CardTitle
-              className="cursor-pointer transition-colors hover:text-blue-600"
-              onClick={() => {
-                startTransition(async () => {
-                  await openContractDetailsDialog(contractId);
-                });
-              }}
-            >
-              {contract.contractName}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {contract.clientName}
-            </p>
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <CardTitle
+                  className="cursor-pointer transition-colors hover:text-blue-600"
+                  onClick={() => {
+                    startTransition(async () => {
+                      await openContractDetailsDialog(contractId);
+                    });
+                  }}
+                >
+                  {contract.contractName}
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {contract.clientName}
+                </p>
+              </div>
+              {contract.workReports.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startTransition(async () => {
+                      // 最新の作業報告書を取得（通常は1件のはず）
+                      const latestWorkReport = contract.workReports[0];
+                      await openAttendanceDialog(
+                        contractId,
+                        latestWorkReport.id,
+                      );
+                    });
+                  }}
+                >
+                  <Clock className="mr-2 h-4 w-4" />
+                  勤怠入力
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -309,6 +446,43 @@ export default function DashboardClientPage({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 勤怠入力ダイアログ */}
+      {attendanceDialogState.contract && (
+        <AttendanceEditDialog
+          isOpen={attendanceDialogState.isOpen}
+          onClose={closeAttendanceDialog}
+          selectedDate={attendanceDialogState.date ?? new Date()}
+          onSubmit={handleAttendanceSave}
+          defaultValues={{
+            startTime: attendanceDialogState.startTime
+              ? new Date(attendanceDialogState.startTime)
+              : null,
+            endTime: attendanceDialogState.endTime
+              ? new Date(attendanceDialogState.endTime)
+              : null,
+            breakDuration: attendanceDialogState.breakDuration,
+            memo: null,
+          }}
+          basicStartTime={
+            attendanceDialogState.contract.basicStartTime
+              ? new Date(attendanceDialogState.contract.basicStartTime)
+              : null
+          }
+          basicEndTime={
+            attendanceDialogState.contract.basicEndTime
+              ? new Date(attendanceDialogState.contract.basicEndTime)
+              : null
+          }
+          basicBreakDuration={
+            attendanceDialogState.contract.basicBreakDuration ?? null
+          }
+          dailyWorkMinutes={
+            attendanceDialogState.contract.dailyWorkMinutes ?? 15
+          }
+          holidays={holidays}
+        />
+      )}
     </div>
   );
 }

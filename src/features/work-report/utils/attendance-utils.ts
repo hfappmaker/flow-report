@@ -38,9 +38,16 @@ export function generateDefaultAttendances(
     endDate = new Date(Date.UTC(adjustedYear, adjustedMonthIndex, 0)); // 月末
   }
 
-  const current = new Date(startDate);
-  const end = new Date(endDate);
-  end.setDate(end.getDate() + 1); // 終了日を含めるため、終了日の次の日まで
+  const current = new Date(
+    Date.UTC(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      startDate.getDate(),
+    ),
+  );
+  const end = new Date(
+    Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate() + 1),
+  );
 
   while (current < end) {
     defaults.push({

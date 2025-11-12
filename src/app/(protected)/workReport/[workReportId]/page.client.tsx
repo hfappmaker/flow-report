@@ -55,6 +55,7 @@ import {
   updateWorkReportAttendancesAction,
   updateWorkReportStatusAction,
 } from "@/features/work-report/actions/work-report";
+import { AttendanceEditDialog } from "@/features/work-report/components/attendance-edit-dialog";
 import {
   type EditFormValues,
   type BulkEditFormValues,
@@ -140,6 +141,9 @@ export default function ClientWorkReportPage({
   // モーダルの状態管理
   const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
   const [editingDate, setEditingDate] = useState<Date | null>(null);
+  const [defaultValuesForEdit, setDefaultValuesForEdit] = useState<
+    Partial<EditFormValues> | undefined
+  >(undefined);
   const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
   const [showReauthDialog, setShowReauthDialog] = useState(false);
 
@@ -197,19 +201,6 @@ export default function ClientWorkReportPage({
     taxInclusiveType,
     taxRoundingType,
     rateType,
-  });
-
-  // 編集用フォーム
-  const editForm = useForm<EditFormValues>({
-    resolver: zodResolver(editFormSchema),
-    defaultValues: {
-      startTime: basicStartTime
-        ? new Date(basicStartTime.toISOString())
-        : null,
-      endTime: basicEndTime ? new Date(basicEndTime.toISOString()) : null,
-      breakDuration: basicBreakDuration,
-      memo: "",
-    },
   });
 
   // 一括編集用フォーム
@@ -295,12 +286,12 @@ export default function ClientWorkReportPage({
   };
 
   // 編集フォームの送信処理
-  const onEditSubmit = (data: EditFormValues) => {
+  const onEditSubmit = async (date: Date, data: EditFormValues) => {
     try {
       startTransition(() => {
         void (async () => {
           const updatedValues = currentAttendances.map((attendance) => {
-            if (attendance.date.getTime() === editingDate?.getTime()) {
+            if (attendance.date.getTime() === date.getTime()) {
               return {
                 ...attendance,
                 startTime: data.startTime,
@@ -312,21 +303,18 @@ export default function ClientWorkReportPage({
             return attendance;
           });
           // フォームの値を更新
-          if (editingDate) {
-            const attendance = updatedValues.find(
-              (attendance) =>
-                attendance.date.getTime() === editingDate.getTime(),
+          const attendance = updatedValues.find(
+            (attendance) => attendance.date.getTime() === date.getTime(),
+          );
+          if (attendance) {
+            await updateWorkReportAttendanceAction(
+              workReportId,
+              attendance.date,
+              {
+                ...attendance,
+                workReportId: workReportId,
+              },
             );
-            if (attendance) {
-              await updateWorkReportAttendanceAction(
-                workReportId,
-                attendance.date,
-                {
-                  ...attendance,
-                  workReportId: workReportId,
-                },
-              );
-            }
           }
           setCurrentAttendances(updatedValues);
           setEditingDate(null);
@@ -341,26 +329,19 @@ export default function ClientWorkReportPage({
 
   // openEditDialog関数を簡略化
   const openEditDialog = (date: Date) => {
-    setEditingDate(date);
-  };
-
-  // editingDateの変更を監視してフォームをリセット
-  useEffect(() => {
-    if (editingDate) {
-      const entry = currentAttendances.find(
-        (attendance) => attendance.date === editingDate,
-      );
-      editForm.reset({
-        startTime: entry?.startTime
-          ? new Date(entry.startTime.toISOString())
-          : null,
-        endTime: entry?.endTime ? new Date(entry.endTime.toISOString()) : null,
-        breakDuration: entry?.breakDuration,
-        memo: entry?.memo ?? null,
+    const attendance = currentAttendances.find(
+      (att) => att.date.getTime() === date.getTime(),
+    );
+    if (attendance) {
+      setDefaultValuesForEdit({
+        startTime: attendance.startTime,
+        endTime: attendance.endTime,
+        breakDuration: attendance.breakDuration,
+        memo: attendance.memo,
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editingDate]);
+    setEditingDate(date);
+  };
 
   // freee連携状態をチェック
   useEffect(() => {
@@ -438,24 +419,6 @@ export default function ClientWorkReportPage({
     clientName,
     showError,
   ]);
-
-  // 編集をキャンセル
-  const cancelEdit = () => {
-    setEditingDate(null);
-  };
-
-  // 基本時間を入力
-  const fillBasicTime = () => {
-    if (basicStartTime) {
-      editForm.setValue("startTime", new Date(basicStartTime.toISOString()));
-    }
-    if (basicEndTime) {
-      editForm.setValue("endTime", new Date(basicEndTime.toISOString()));
-    }
-    if (basicBreakDuration !== null) {
-      editForm.setValue("breakDuration", basicBreakDuration);
-    }
-  };
 
   // ミリ秒からシリアル値に変換
   const msToSerial = (ms: number) => ms / (24 * 60 * 60 * 1000);
@@ -913,7 +876,8 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
     <div className="mx-auto">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-bold text-muted-foreground">
-          {contractName}の{targetDate.getFullYear()}年{targetDate.getMonth() + 1}
+          {contractName}の{targetDate.getFullYear()}年
+          {targetDate.getMonth() + 1}
           月度作業報告書
         </h1>
         <Button type="button" onClick={handleNavigateToList}>
@@ -1132,18 +1096,18 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                     }
                   />
                 </div>
-              </div>
-              {/* Memo */}
-              <div className="lg:col-span-1">
-                <label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
-                  作業内容
-                </label>
-                <Input
-                  type="text"
-                  id={`memo-${day.date.toISOString()}`}
-                  readOnly
-                  value={day.memo ?? ""}
-                />
+                {/* Memo */}
+                <div className="lg:col-span-1">
+                  <label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
+                    作業内容
+                  </label>
+                  <Input
+                    type="text"
+                    id={`memo-${day.date.toISOString()}`}
+                    readOnly
+                    value={day.memo ?? ""}
+                  />
+                </div>
               </div>
             </div>
             {/* Edit Button (Desktop) */}
@@ -1334,104 +1298,19 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
       </Dialog>
 
       {/* 編集用モーダルダイアログ */}
-      <Dialog
-        open={editingDate !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setEditingDate(null);
-          }
-        }}
-      >
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>勤怠情報の編集</DialogTitle>
-          </DialogHeader>
-          {editingDate && (
-            <Form {...editForm}>
-              <form
-                onSubmit={(e) => {
-                  void editForm.handleSubmit(onEditSubmit)(e);
-                }}
-                className="space-y-4"
-              >
-                <div>
-                  <h3 className="mb-2 text-sm font-medium">
-                    {(() => {
-                      const date = new Date(editingDate);
-                      const dayOfWeek = date.getDay();
-                      return `${formatDateAsUTC(editingDate)} (${dayNames[dayOfWeek]})の勤怠情報を編集`;
-                    })()}
-                  </h3>
-                </div>
-                <div className="mb-2 flex justify-end">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={fillBasicTime}
-                    disabled={
-                      !basicStartTime && !basicEndTime && !basicBreakDuration
-                    }
-                  >
-                    基本時間を入力
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-4">
-                  <TimePickerFieldForDate
-                    control={editForm.control}
-                    name="startTime"
-                    label="出勤時間"
-                    minuteStep={dailyWorkMinutes}
-                  />
-                  <TimePickerFieldForDate
-                    control={editForm.control}
-                    name="endTime"
-                    label="退勤時間"
-                    minuteStep={dailyWorkMinutes}
-                  />
-                  <TimePickerFieldForNumber
-                    control={editForm.control}
-                    name="breakDuration"
-                    label="休憩時間"
-                    minuteStep={dailyWorkMinutes}
-                  />
-                  <FormField
-                    control={editForm.control}
-                    name="memo"
-                    render={({ field }) => (
-                      <FormItem className="w-full">
-                        <FormLabel>作業内容</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="text"
-                            className="w-full max-w-[400px]"
-                            {...field}
-                            value={field.value ?? ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={cancelEdit}
-                    className="w-full sm:w-auto"
-                  >
-                    キャンセル
-                  </Button>
-                  <Button type="submit" className="w-full sm:w-auto">
-                    保存
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          )}
-        </DialogContent>
-      </Dialog>
+      <AttendanceEditDialog
+        key={editingDate?.toISOString() ?? "closed"}
+        isOpen={editingDate !== null}
+        onClose={() => setEditingDate(null)}
+        selectedDate={editingDate ?? new Date()}
+        onSubmit={onEditSubmit}
+        defaultValues={defaultValuesForEdit}
+        basicStartTime={basicStartTime}
+        basicEndTime={basicEndTime}
+        basicBreakDuration={basicBreakDuration}
+        dailyWorkMinutes={dailyWorkMinutes}
+        holidays={holidays}
+      />
 
       {/* 請求書作成ダイアログ */}
       <Dialog open={isInvoiceDialogOpen} onOpenChange={setIsInvoiceDialogOpen}>

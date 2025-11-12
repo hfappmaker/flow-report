@@ -1,5 +1,3 @@
-import type { Attendance as PrismaAttendance } from "@prisma/client";
-
 import type { AttendanceDto } from "@/features/work-report/types/attendance";
 import { db } from "@/repositories/db";
 import { Serialize } from "@/utils/serialization/serialization-utils";
@@ -14,6 +12,22 @@ export async function getAttendancesByWorkReportId(
   });
 
   return Serialize(attendances);
+}
+
+export async function getAttendanceByWorkReportIdAndDate(
+  workReportId: string,
+  date: Date,
+): Promise<AttendanceDto | null> {
+  const attendance = await db.attendance.findUnique({
+    where: {
+      date_workReportId: {
+        date,
+        workReportId,
+      },
+    },
+  });
+
+  return attendance ? Serialize(attendance) : null;
 }
 
 export async function updateWorkReportAttendance(

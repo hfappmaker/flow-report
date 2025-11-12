@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { currentUser } from "@/features/auth/lib/auth";
 import { getContractsByUserId } from "@/features/contract/repositories/contract-repository";
+import { fetchHolidays } from "@/features/holidays/libs/google-calendar";
 import { getSubscriptionInfoByUserId } from "@/features/subscription/repositories/subscription-repository";
 import {
   getDraftWorkReportsUpToCurrentMonth,
@@ -23,16 +24,20 @@ export default async function DashboardPage() {
     return notFound();
   }
 
+  const currentYear = new Date().getFullYear();
+
   const [
     draftWorkReports,
     submittedWorkReportsLast3Months,
     subscriptionInfo,
     contracts,
+    holidays,
   ] = await Promise.all([
     getDraftWorkReportsUpToCurrentMonth(userId),
     getSubmittedWorkReportsByRecentMonths(userId),
     getSubscriptionInfoByUserId(userId),
     getContractsByUserId(userId),
+    fetchHolidays(currentYear),
   ]);
 
   const hasContracts = contracts.length > 0;
@@ -43,6 +48,7 @@ export default async function DashboardPage() {
       submittedWorkReportsLast3Months={submittedWorkReportsLast3Months}
       subscriptionInfo={subscriptionInfo}
       hasContracts={hasContracts}
+      holidays={holidays}
     />
   );
 }
