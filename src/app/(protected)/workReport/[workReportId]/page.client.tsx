@@ -503,124 +503,68 @@ export default function ClientWorkReportPage({
         }
       }
 
-      // 作業者名の名前付き範囲を処理
-      const workerNameRanges = workbook.definedNames.getRanges("作業者名");
-      if (workerNameRanges.ranges.length > 0) {
-        const [workerNameSheetName, workerNameRangeAddress] =
-          parseRangeReference(workerNameRanges.ranges[0]);
-        if (workerNameSheetName && workerNameRangeAddress) {
-          const targetWorkerNameSheet =
-            workbook.getWorksheet(workerNameSheetName);
-          if (targetWorkerNameSheet) {
-            const workerNameCell = targetWorkerNameSheet.getCell(
-              workerNameRangeAddress,
-            );
-            workerNameCell.value = userName;
-          }
-        }
-      }
+      // 名前付き範囲に値を設定するヘルパー関数
+      type NamedRangeCellValue = {
+        value: string | number;
+        numFmt?: string;
+      };
 
-      // 基本開始時刻の名前付き範囲を処理
-      const basicStartTimeRanges =
-        workbook.definedNames.getRanges("基本開始時刻");
-      if (basicStartTimeRanges.ranges.length > 0 && basicStartTime) {
-        const [basicStartTimeSheetName, basicStartTimeRangeAddress] =
-          parseRangeReference(basicStartTimeRanges.ranges[0]);
-        if (basicStartTimeSheetName && basicStartTimeRangeAddress) {
-          const targetBasicStartTimeSheet = workbook.getWorksheet(
-            basicStartTimeSheetName,
-          );
-          if (targetBasicStartTimeSheet) {
-            const basicStartTimeCell = targetBasicStartTimeSheet.getCell(
-              basicStartTimeRangeAddress,
-            );
-            basicStartTimeCell.value = msToSerial(basicStartTime.getTime());
-            basicStartTimeCell.numFmt = "[h]:mm";
-          }
-        }
-      }
+      const setNamedRangeValue = (
+        rangeName: string,
+        getCellValue: () => NamedRangeCellValue | null,
+      ) => {
+        const ranges = workbook.definedNames.getRanges(rangeName);
+        if (ranges.ranges.length === 0) return;
 
-      // 基本終了時刻の名前付き範囲を処理
-      const basicEndTimeRanges =
-        workbook.definedNames.getRanges("基本終了時刻");
-      if (basicEndTimeRanges.ranges.length > 0 && basicEndTime) {
-        const [basicEndTimeSheetName, basicEndTimeRangeAddress] =
-          parseRangeReference(basicEndTimeRanges.ranges[0]);
-        if (basicEndTimeSheetName && basicEndTimeRangeAddress) {
-          const targetBasicEndTimeSheet = workbook.getWorksheet(
-            basicEndTimeSheetName,
-          );
-          if (targetBasicEndTimeSheet) {
-            const basicEndTimeCell = targetBasicEndTimeSheet.getCell(
-              basicEndTimeRangeAddress,
-            );
-            basicEndTimeCell.value = msToSerial(basicEndTime.getTime());
-            basicEndTimeCell.numFmt = "[h]:mm";
-          }
-        }
-      }
+        const cellValue = getCellValue();
+        if (!cellValue) return;
 
-      // 基本休憩時間の名前付き範囲を処理
-      const basicBreakDurationRanges =
-        workbook.definedNames.getRanges("基本休憩時間");
-      if (basicBreakDurationRanges.ranges.length > 0 && basicBreakDuration) {
-        const [basicBreakDurationSheetName, basicBreakDurationRangeAddress] =
-          parseRangeReference(basicBreakDurationRanges.ranges[0]);
-        if (basicBreakDurationSheetName && basicBreakDurationRangeAddress) {
-          const targetBasicBreakDurationSheet = workbook.getWorksheet(
-            basicBreakDurationSheetName,
-          );
-          if (targetBasicBreakDurationSheet) {
-            const basicBreakDurationCell =
-              targetBasicBreakDurationSheet.getCell(
-                basicBreakDurationRangeAddress,
-              );
-            basicBreakDurationCell.value = msToSerial(
-              basicBreakDuration * 60000,
-            );
-            basicBreakDurationCell.numFmt = "[h]:mm";
-          }
-        }
-      }
+        const [sheetName, rangeAddress] = parseRangeReference(ranges.ranges[0]);
+        if (!sheetName || !rangeAddress) return;
 
-      // 1日あたりの作業単位の名前付き範囲を処理
-      const dailyWorkMinutesRanges =
-        workbook.definedNames.getRanges("_１日あたりの作業単位");
-      if (dailyWorkMinutesRanges.ranges.length > 0 && dailyWorkMinutes) {
-        const [dailyWorkMinutesSheetName, dailyWorkMinutesRangeAddress] =
-          parseRangeReference(dailyWorkMinutesRanges.ranges[0]);
-        if (dailyWorkMinutesSheetName && dailyWorkMinutesRangeAddress) {
-          const targetDailyWorkMinutesSheet = workbook.getWorksheet(
-            dailyWorkMinutesSheetName,
-          );
-          if (targetDailyWorkMinutesSheet) {
-            const dailyWorkMinutesCell = targetDailyWorkMinutesSheet.getCell(
-              dailyWorkMinutesRangeAddress,
-            );
-            dailyWorkMinutesCell.value = `${String(dailyWorkMinutes)}分`;
-          }
-        }
-      }
+        const sheet = workbook.getWorksheet(sheetName);
+        if (!sheet) return;
 
-      // 1ヶ月あたりの作業単位の名前付き範囲を処理
-      const monthlyWorkMinutesRanges =
-        workbook.definedNames.getRanges("_１ヶ月あたりの作業単位");
-      if (monthlyWorkMinutesRanges.ranges.length > 0 && monthlyWorkMinutes) {
-        const [monthlyWorkMinutesSheetName, monthlyWorkMinutesRangeAddress] =
-          parseRangeReference(monthlyWorkMinutesRanges.ranges[0]);
-        if (monthlyWorkMinutesSheetName && monthlyWorkMinutesRangeAddress) {
-          const targetMonthlyWorkMinutesSheet = workbook.getWorksheet(
-            monthlyWorkMinutesSheetName,
-          );
-          if (targetMonthlyWorkMinutesSheet) {
-            const monthlyWorkMinutesCell =
-              targetMonthlyWorkMinutesSheet.getCell(
-                monthlyWorkMinutesRangeAddress,
-              );
-            monthlyWorkMinutesCell.value = `${String(monthlyWorkMinutes)}分`;
-          }
+        const cell = sheet.getCell(rangeAddress);
+        cell.value = cellValue.value;
+        if (cellValue.numFmt) {
+          cell.numFmt = cellValue.numFmt;
         }
-      }
+      };
+
+      // 各名前付き範囲に値を設定
+      setNamedRangeValue("作業者名", () => ({ value: userName }));
+
+      setNamedRangeValue("基本開始時刻", () =>
+        basicStartTime
+          ? { value: msToSerial(basicStartTime.getTime()), numFmt: "[h]:mm" }
+          : null,
+      );
+
+      setNamedRangeValue("基本終了時刻", () =>
+        basicEndTime
+          ? { value: msToSerial(basicEndTime.getTime()), numFmt: "[h]:mm" }
+          : null,
+      );
+
+      setNamedRangeValue("基本休憩時間", () =>
+        basicBreakDuration
+          ? {
+              value: msToSerial(basicBreakDuration * 60000),
+              numFmt: "[h]:mm",
+            }
+          : null,
+      );
+
+      setNamedRangeValue("_１日あたりの作業単位", () =>
+        dailyWorkMinutes ? { value: `${String(dailyWorkMinutes)}分` } : null,
+      );
+
+      setNamedRangeValue("_１ヶ月あたりの作業単位", () =>
+        monthlyWorkMinutes
+          ? { value: `${String(monthlyWorkMinutes)}分` }
+          : null,
+      );
 
       // ----- New code: Fill form data into the named ranges -----
       // Assume the named ranges '日付', '開始時刻', '終了時刻', '休憩時間' are each 31 cells vertically arranged
