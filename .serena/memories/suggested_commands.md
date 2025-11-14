@@ -4,7 +4,6 @@
 - `npm run dev`: 開発サーバー起動
 - `npm run dev:turbo`: Turboモードで開発サーバー起動
 - `npm run dev:inspect`: Node.jsインスペクターで開発サーバー起動
-- `npm run dev:test`: テスト環境で開発サーバー起動（ポート5000）
 
 ## ビルド・デプロイ
 - `npm run build`: プロダクションビルド

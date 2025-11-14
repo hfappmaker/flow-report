@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import LogoutButton from "@/features/auth/components/logout-button";
+import { isProduction } from "@utils/get-app-url";
 
 export default function ProtectedError({
   error,
@@ -30,7 +31,7 @@ export default function ProtectedError({
           リトライするか、ダッシュボードに戻ってください。
         </p>
 
-        {process.env.NODE_ENV === "development" && (
+        {!isProduction() && (
           <div className="mb-8 rounded-lg bg-muted p-4 text-left">
             <p className="mb-2 text-sm font-semibold">エラー詳細:</p>
             <p className="text-xs text-muted-foreground">

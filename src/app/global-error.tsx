@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
+import { isProduction } from "@utils/get-app-url";
 
 export default function GlobalError({
   error,
@@ -31,7 +32,7 @@ export default function GlobalError({
               問題が解決されない場合は、管理者にお問い合わせください。
             </p>
 
-            {process.env.NODE_ENV === "development" && (
+            {!isProduction() && (
               <div className="mb-8 rounded-lg bg-muted p-4 text-left">
                 <p className="mb-2 text-sm font-semibold">エラー詳細:</p>
                 <p className="text-xs text-muted-foreground">
