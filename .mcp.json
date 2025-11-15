@@ -6,7 +6,6 @@
       "args": [
         "-y",
         "@playwright/mcp@latest",
-        "--headless",
         "--no-sandbox",
         "--isolated"
       ],

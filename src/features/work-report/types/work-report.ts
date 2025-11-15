@@ -43,7 +43,8 @@ export interface WorkReportClientProps {
   upperRate: number | null;
   lowerRate: number | null;
   middleRate: number | null;
+  hourlyRate: number | null;
   taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
   taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
-  rateType: "upperLower" | "middle";
+  rateType: "upperLower" | "middle" | "fixed" | "hourlyRate";
 }

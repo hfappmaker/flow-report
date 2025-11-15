@@ -10,9 +10,10 @@ export function calculateWorkAmountDetailed(
     upperRate?: number | null;
     lowerRate?: number | null;
     middleRate?: number | null;
+    hourlyRate?: number | null;
     taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
     taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
-    rateType?: "middle" | "upperLower";
+    rateType?: "middle" | "upperLower" | "fixed" | "hourlyRate";
   },
 ): {
   baseAmount: number;
@@ -29,6 +30,37 @@ export function calculateWorkAmountDetailed(
   taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
   taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
 } | null {
+  // 固定精算の場合
+  if (params.rateType === "fixed") {
+    if (!params.unitPrice) {
+      return null;
+    }
+    return {
+      baseAmount: params.unitPrice,
+      excessInfo: { hours: 0, rate: 0, amount: 0 },
+      deductionInfo: { hours: 0, rate: 0, amount: 0 },
+      taxInclusiveType: params.taxInclusiveType,
+      taxRoundingType: params.taxRoundingType,
+    };
+  }
+
+  // 時間単価の場合
+  if (params.rateType === "hourlyRate") {
+    if (!params.hourlyRate) {
+      return null;
+    }
+    const workHours = workMinutes / 60;
+    const totalAmount = workHours * params.hourlyRate;
+    return {
+      baseAmount: totalAmount,
+      excessInfo: { hours: 0, rate: 0, amount: 0 },
+      deductionInfo: { hours: 0, rate: 0, amount: 0 },
+      taxInclusiveType: params.taxInclusiveType,
+      taxRoundingType: params.taxRoundingType,
+    };
+  }
+
+  // 上下割・中間割の場合（従来の処理）
   // 単価が設定されていない場合、または精算上限・下限の両方が設定されていない場合はnullを返す
   if (!params.unitPrice || !(params.settlementMin && params.settlementMax)) {
     return null;
@@ -109,9 +141,10 @@ export function calculateWorkAmount(
     upperRate?: number | null;
     lowerRate?: number | null;
     middleRate?: number | null;
+    hourlyRate?: number | null;
     taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
     taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
-    rateType?: "middle" | "upperLower";
+    rateType?: "middle" | "upperLower" | "fixed" | "hourlyRate";
   },
 ): {
   baseAmount: number;
@@ -119,52 +152,70 @@ export function calculateWorkAmount(
   displayAmount: number;
   displayLabel: string;
 } | null {
-  // 単価が設定されていない場合、または精算上限・下限の両方が設定されていない場合はnullを返す（ハイフン表示用）
-  if (!params.unitPrice || !(params.settlementMin && params.settlementMax)) {
-    return null;
-  }
-
   const workHours = workMinutes / 60;
+  let contractAmount: number;
 
-  // 契約の単価が税込か税抜かによって基準金額を決定
-  let contractAmount = params.unitPrice; // 契約上の月単価
-
-  // 精算処理（この時点で両方の値が設定されていることが保証されている）
-  const settlementMin = params.settlementMin;
-  const settlementMax = params.settlementMax;
-
-  if (workHours < settlementMin) {
-    if (params.rateType === "upperLower" && !params.lowerRate) {
+  // 固定精算の場合
+  if (params.rateType === "fixed") {
+    if (!params.unitPrice) {
       return null;
     }
-    if (params.rateType === "middle" && !params.middleRate) {
-      return null;
-    }
-    // 稼働時間が精算下限を下回る場合：控除処理
-    const shortfallHours = settlementMin - workHours;
-    const deductionRate =
-      params.rateType === "middle"
-        ? (params.middleRate ?? 0)
-        : (params.lowerRate ?? 0);
-
-    contractAmount = contractAmount - shortfallHours * deductionRate;
-  } else if (workHours > settlementMax) {
-    if (params.rateType === "upperLower" && !params.upperRate) {
-      return null;
-    }
-    if (params.rateType === "middle" && !params.middleRate) {
-      return null;
-    }
-    // 稼働時間が精算上限を上回る場合：超過処理
-    const excessHours = workHours - settlementMax;
-    const excessRate =
-      params.rateType === "middle"
-        ? (params.middleRate ?? 0)
-        : (params.upperRate ?? 0);
-
-    contractAmount = contractAmount + excessHours * excessRate;
+    contractAmount = params.unitPrice;
   }
-  // 精算範囲内の場合はunitPriceのまま
+  // 時間単価の場合
+  else if (params.rateType === "hourlyRate") {
+    if (!params.hourlyRate) {
+      return null;
+    }
+    contractAmount = workHours * params.hourlyRate;
+  }
+  // 上下割・中間割の場合（従来の処理）
+  else {
+    // 単価が設定されていない場合、または精算上限・下限の両方が設定されていない場合はnullを返す（ハイフン表示用）
+    if (!params.unitPrice || !(params.settlementMin && params.settlementMax)) {
+      return null;
+    }
+
+    // 契約の単価が税込か税抜かによって基準金額を決定
+    contractAmount = params.unitPrice; // 契約上の月単価
+
+    // 精算処理（この時点で両方の値が設定されていることが保証されている）
+    const settlementMin = params.settlementMin;
+    const settlementMax = params.settlementMax;
+
+    if (workHours < settlementMin) {
+      if (params.rateType === "upperLower" && !params.lowerRate) {
+        return null;
+      }
+      if (params.rateType === "middle" && !params.middleRate) {
+        return null;
+      }
+      // 稼働時間が精算下限を下回る場合：控除処理
+      const shortfallHours = settlementMin - workHours;
+      const deductionRate =
+        params.rateType === "middle"
+          ? (params.middleRate ?? 0)
+          : (params.lowerRate ?? 0);
+
+      contractAmount = contractAmount - shortfallHours * deductionRate;
+    } else if (workHours > settlementMax) {
+      if (params.rateType === "upperLower" && !params.upperRate) {
+        return null;
+      }
+      if (params.rateType === "middle" && !params.middleRate) {
+        return null;
+      }
+      // 稼働時間が精算上限を上回る場合：超過処理
+      const excessHours = workHours - settlementMax;
+      const excessRate =
+        params.rateType === "middle"
+          ? (params.middleRate ?? 0)
+          : (params.upperRate ?? 0);
+
+      contractAmount = contractAmount + excessHours * excessRate;
+    }
+    // 精算範囲内の場合はunitPriceのまま
+  }
 
   // マイナス金額を防ぐ
   contractAmount = Math.max(0, Math.round(contractAmount));

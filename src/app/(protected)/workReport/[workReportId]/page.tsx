@@ -69,6 +69,7 @@ export default async function WorkReportPage({
       upperRate={contract.upperRate ? Number(contract.upperRate) : null}
       lowerRate={contract.lowerRate ? Number(contract.lowerRate) : null}
       middleRate={contract.middleRate ? Number(contract.middleRate) : null}
+      hourlyRate={contract.hourlyRate ? Number(contract.hourlyRate) : null}
       taxInclusiveType={contract.taxInclusiveType}
       taxRoundingType={contract.taxRoundingType}
       rateType={contract.rateType}

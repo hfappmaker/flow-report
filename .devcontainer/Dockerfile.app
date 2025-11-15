@@ -31,6 +31,10 @@ RUN npm install -g vercel
 # Playwright browserのインストール
 # RUN npm install -g playwright --with-deps
 # RUN npm install -g @playwright/mcp@latest
+# RUN npx playwright install chrome
+# 日本語フォントのインストール
+# sudo apt update
+# sudo apt install -y fonts-noto-cjk fonts-ipafont-gothic fonts-ipafont-mincho
 # Playwright MCPのインストール
 # RUN claude mcp add playwright -s project -- npx  -y @playwright/mcp@latest --headless --no-sandbox --isolated
 # RUN claude mcp add postgresql -s project -- npx  -y @modelcontextprotocol/server-postgres@latest postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB

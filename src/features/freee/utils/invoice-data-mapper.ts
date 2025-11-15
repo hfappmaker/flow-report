@@ -18,9 +18,10 @@ export interface WorkReportInvoiceData {
   upperRate: number | null;
   lowerRate: number | null;
   middleRate: number | null;
+  hourlyRate: number | null;
   taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
   taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
-  rateType: "upperLower" | "middle";
+  rateType: "upperLower" | "middle" | "fixed" | "hourlyRate";
 }
 
 /**
@@ -51,6 +52,7 @@ export function mapWorkReportToFreeeInvoice(
     upperRate: workReportData.upperRate,
     lowerRate: workReportData.lowerRate,
     middleRate: workReportData.middleRate,
+    hourlyRate: workReportData.hourlyRate,
     taxInclusiveType: workReportData.taxInclusiveType,
     taxRoundingType: workReportData.taxRoundingType,
     rateType: workReportData.rateType,

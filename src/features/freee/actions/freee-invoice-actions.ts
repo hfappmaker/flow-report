@@ -97,6 +97,9 @@ export async function createFreeeInvoiceFromWorkReportAction(
         middleRate: contract.middleRate
           ? Number(contract.middleRate)
           : null,
+        hourlyRate: contract.hourlyRate
+          ? Number(contract.hourlyRate)
+          : null,
         taxInclusiveType: contract.taxInclusiveType,
         taxRoundingType: contract.taxRoundingType,
         rateType: contract.rateType,

@@ -108,19 +108,23 @@ export const ContractDetailsContent = ({
             <p className="mt-1">
               {contract.rateType === "upperLower" && "上下割"}
               {contract.rateType === "middle" && "中間割"}
+              {contract.rateType === "fixed" && "固定精算"}
+              {contract.rateType === "hourlyRate" && "時間単価"}
             </p>
           </div>
-          <div className="col-span-3">
-            <label className="text-sm font-medium text-muted-foreground">
-              月単価
-              {contract.taxInclusiveType === "INCLUSIVE"
-                ? "（税込）"
-                : "（税抜）"}
-            </label>
-            <p className="mt-1">
-              {contract.unitPrice ? `${contract.unitPrice}円` : "なし"}
-            </p>
-          </div>
+          {contract.rateType !== "hourlyRate" && (
+            <div className="col-span-3">
+              <label className="text-sm font-medium text-muted-foreground">
+                月単価
+                {contract.taxInclusiveType === "INCLUSIVE"
+                  ? "（税込）"
+                  : "（税抜）"}
+              </label>
+              <p className="mt-1">
+                {contract.unitPrice ? `${contract.unitPrice}円` : "なし"}
+              </p>
+            </div>
+          )}
           {contract.rateType === "upperLower" && (
             <>
               <div>
@@ -160,26 +164,44 @@ export const ContractDetailsContent = ({
               </p>
             </div>
           )}
-          <div className="col-start-1">
-            <label className="text-sm font-medium text-muted-foreground">
-              精算下限
-            </label>
-            <p className="mt-1">
-              {contract.settlementMin
-                ? `${contract.settlementMin}時間`
-                : "なし"}
-            </p>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">
-              精算上限
-            </label>
-            <p className="mt-1">
-              {contract.settlementMax
-                ? `${contract.settlementMax}時間`
-                : "なし"}
-            </p>
-          </div>
+          {contract.rateType === "hourlyRate" && (
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                時間単価
+                {contract.taxInclusiveType === "INCLUSIVE"
+                  ? "（税込）"
+                  : "（税抜）"}
+              </label>
+              <p className="mt-1">
+                {contract.hourlyRate ? `${contract.hourlyRate}円` : "なし"}
+              </p>
+            </div>
+          )}
+          {contract.rateType !== "hourlyRate" &&
+            contract.rateType !== "fixed" && (
+              <>
+                <div className="col-start-1">
+                  <label className="text-sm font-medium text-muted-foreground">
+                    精算下限
+                  </label>
+                  <p className="mt-1">
+                    {contract.settlementMin
+                      ? `${contract.settlementMin}時間`
+                      : "なし"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    精算上限
+                  </label>
+                  <p className="mt-1">
+                    {contract.settlementMax
+                      ? `${contract.settlementMax}時間`
+                      : "なし"}
+                  </p>
+                </div>
+              </>
+            )}
         </div>
       </div>
 

@@ -40,10 +40,11 @@ export const contractFormSchema = z
     unitPrice: z.number().nullable(),
     settlementMin: z.number().nullable(),
     settlementMax: z.number().nullable(),
-    rateType: z.enum(["upperLower", "middle"]).default("upperLower"),
+    rateType: z.enum(["upperLower", "middle", "fixed", "hourlyRate"]).default("upperLower"),
     upperRate: z.number().nullable(),
     lowerRate: z.number().nullable(),
     middleRate: z.number().nullable(),
+    hourlyRate: z.number().nullable(),
     dailyWorkMinutes: z.number().nullable(),
     monthlyWorkMinutes: z.number().nullable(),
     basicStartTime: z.date().nullable(),
@@ -62,8 +63,13 @@ export const contractFormSchema = z
   })
   .refine(
     (data) => {
-      if (data.unitPrice === null) {
-        return false;
+      // 固定精算と時間単価以外は月単価が必須
+      if (data.rateType !== "fixed" && data.rateType !== "hourlyRate") {
+        return data.unitPrice !== null;
+      }
+      // 固定精算の場合は月単価が必須
+      if (data.rateType === "fixed") {
+        return data.unitPrice !== null;
       }
       return true;
     },
@@ -74,6 +80,10 @@ export const contractFormSchema = z
   )
   .refine(
     (data) => {
+      // 固定精算と時間単価は精算下限が不要
+      if (data.rateType === "fixed" || data.rateType === "hourlyRate") {
+        return true;
+      }
       if (data.settlementMin === null) {
         return false;
       }
@@ -86,6 +96,10 @@ export const contractFormSchema = z
   )
   .refine(
     (data) => {
+      // 固定精算と時間単価は精算上限が不要
+      if (data.rateType === "fixed" || data.rateType === "hourlyRate") {
+        return true;
+      }
       if (data.settlementMax === null) {
         return false;
       }
@@ -130,6 +144,18 @@ export const contractFormSchema = z
     {
       message: "中間単価を入力してください",
       path: ["middleRate"],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.rateType === "hourlyRate" && data.hourlyRate === null) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "時間単価を入力してください",
+      path: ["hourlyRate"],
     },
   )
   .refine(
@@ -189,6 +215,7 @@ export const ContractForm = ({
       upperRate: null,
       lowerRate: null,
       middleRate: null,
+      hourlyRate: null,
       dailyWorkMinutes: 15,
       monthlyWorkMinutes: 15,
       basicStartTime: null,
@@ -379,14 +406,30 @@ export const ContractForm = ({
               <FormLabel>精算方式</FormLabel>
               <FormControl>
                 <RadioGroup
-                  onValueChange={(value: "upperLower" | "middle") => {
+                  onValueChange={(value: "upperLower" | "middle" | "fixed" | "hourlyRate") => {
                     form.setValue("rateType", value);
                     // 非表示になる項目の値をクリア
                     if (value === "upperLower") {
                       form.setValue("middleRate", null);
+                      form.setValue("hourlyRate", null);
                     } else if (value === "middle") {
                       form.setValue("upperRate", null);
                       form.setValue("lowerRate", null);
+                      form.setValue("hourlyRate", null);
+                    } else if (value === "fixed") {
+                      form.setValue("upperRate", null);
+                      form.setValue("lowerRate", null);
+                      form.setValue("middleRate", null);
+                      form.setValue("hourlyRate", null);
+                      form.setValue("settlementMin", null);
+                      form.setValue("settlementMax", null);
+                    } else if (value === "hourlyRate") {
+                      form.setValue("upperRate", null);
+                      form.setValue("lowerRate", null);
+                      form.setValue("middleRate", null);
+                      form.setValue("unitPrice", null);
+                      form.setValue("settlementMin", null);
+                      form.setValue("settlementMax", null);
                     }
                   }}
                   defaultValue={form.getValues("rateType")}
@@ -401,6 +444,14 @@ export const ContractForm = ({
                     <RadioGroupItem value="middle" id="middle" />
                     <label htmlFor="middle">中間割</label>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="fixed" id="fixed" />
+                    <label htmlFor="fixed">固定精算</label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="hourlyRate" id="hourlyRate" />
+                    <label htmlFor="hourlyRate">時間単価</label>
+                  </div>
                 </RadioGroup>
               </FormControl>
               <FormMessage />
@@ -408,14 +459,16 @@ export const ContractForm = ({
           )}
         />
 
-        {/* Unit Price */}
-        <NumberInputField
-          control={form.control}
-          name="unitPrice"
-          label={`月単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
-          placeholder="（例）500000"
-          disabled={isEditing}
-        />
+        {/* Unit Price - 時間単価方式では非表示 */}
+        {rateType !== "hourlyRate" && (
+          <NumberInputField
+            control={form.control}
+            name="unitPrice"
+            label={`月単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
+            placeholder="（例）500000"
+            disabled={isEditing}
+          />
+        )}
 
         {/* Rate fields - conditionally rendered based on rate type */}
         <div className="flex flex-col md:flex-row gap-4">
@@ -448,26 +501,38 @@ export const ContractForm = ({
               disabled={isEditing}
             />
           )}
+
+          {rateType === "hourlyRate" && (
+            <NumberInputField
+              control={form.control}
+              name="hourlyRate"
+              label={`時間単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
+              placeholder="（例）5000"
+              disabled={isEditing}
+            />
+          )}
         </div>
 
-        {/* Settlement Min and Settlement Max in the same row */}
-        <div className="flex flex-col md:flex-row gap-4">
-          <NumberInputField
-            control={form.control}
-            name="settlementMin"
-            label="精算下限（時間）"
-            placeholder="（例）140"
-            disabled={isEditing}
-          />
+        {/* Settlement Min and Settlement Max - 固定精算と時間単価方式では非表示 */}
+        {rateType !== "fixed" && rateType !== "hourlyRate" && (
+          <div className="flex flex-col md:flex-row gap-4">
+            <NumberInputField
+              control={form.control}
+              name="settlementMin"
+              label="精算下限（時間）"
+              placeholder="（例）140"
+              disabled={isEditing}
+            />
 
-          <NumberInputField
-            control={form.control}
-            name="settlementMax"
-            label="精算上限（時間）"
-            placeholder="（例）180"
-            disabled={isEditing}
-          />
-        </div>
+            <NumberInputField
+              control={form.control}
+              name="settlementMax"
+              label="精算上限（時間）"
+              placeholder="（例）180"
+              disabled={isEditing}
+            />
+          </div>
+        )}
 
         {/* Daily Work Minutes and Monthly Work Minutes in the same row */}
         <div className="flex flex-col md:flex-row gap-4">

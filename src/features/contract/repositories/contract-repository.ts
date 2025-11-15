@@ -26,6 +26,9 @@ const transformContractData = (
     middleRate: values.middleRate
       ? new Prisma.Decimal(values.middleRate)
       : null,
+    hourlyRate: values.hourlyRate
+      ? new Prisma.Decimal(values.hourlyRate)
+      : null,
     basicStartTime: values.basicStartTime
       ? new Date(values.basicStartTime)
       : null,

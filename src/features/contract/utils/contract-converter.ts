@@ -19,6 +19,7 @@ export const convertContractFormValuesToContract = (
     upperRate: data.upperRate?.toString() ?? null,
     lowerRate: data.lowerRate?.toString() ?? null,
     middleRate: data.middleRate?.toString() ?? null,
+    hourlyRate: data.hourlyRate?.toString() ?? null,
     dailyWorkMinutes: data.dailyWorkMinutes,
     monthlyWorkMinutes: data.monthlyWorkMinutes,
     basicStartTime: data.basicStartTime,
@@ -55,6 +56,7 @@ export const convertContractToFormValues = (
     upperRate: contract.upperRate ? Number(contract.upperRate) : null,
     lowerRate: contract.lowerRate ? Number(contract.lowerRate) : null,
     middleRate: contract.middleRate ? Number(contract.middleRate) : null,
+    hourlyRate: contract.hourlyRate ? Number(contract.hourlyRate) : null,
     dailyWorkMinutes: contract.dailyWorkMinutes ?? null,
     monthlyWorkMinutes: contract.monthlyWorkMinutes ?? null,
     basicStartTime: contract.basicStartTime

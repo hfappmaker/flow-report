@@ -27,6 +27,8 @@ enum AuditAction {
 enum ContractRateType {
   upperLower // 上下割
   middle // 中間割
+  fixed // 固定精算
+  hourlyRate // 時間単価
 }
 
 enum TaxInclusiveType {
@@ -86,6 +88,7 @@ model Contract {
   upperRate     Decimal? // 超過時間単価
   lowerRate     Decimal? // 控除時間単価
   middleRate    Decimal? // 中間割の時間単価
+  hourlyRate    Decimal? // 時間単価
 
   dailyWorkMinutes   Int? // 1日あたりの作業単位(分)
   monthlyWorkMinutes Int? // 1ヶ月あたりの作業単位(分)
