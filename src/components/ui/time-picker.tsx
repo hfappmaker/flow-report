@@ -1,6 +1,12 @@
 import { useState, memo, useLayoutEffect } from "react";
-import { Control, Path, FieldValues, ControllerRenderProps } from "react-hook-form";
+import {
+  Control,
+  Path,
+  FieldValues,
+  ControllerRenderProps,
+} from "react-hook-form";
 
+import { Button } from "./button";
 import {
   FormControl,
   FormField,
@@ -15,8 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-import { Button } from "./button";
 
 // 共通の型定義
 interface TimePickerFieldProps<T extends FieldValues, V> {
@@ -109,7 +113,10 @@ const TimeSelect = memo(
 
 TimeSelect.displayName = "TimeSelect";
 
-const TimePickerFieldContent = <T extends FieldValues, V extends number | Date>({
+const TimePickerFieldContent = <
+  T extends FieldValues,
+  V extends number | Date,
+>({
   field,
   minuteStep,
   showClearButton,
@@ -117,7 +124,10 @@ const TimePickerFieldContent = <T extends FieldValues, V extends number | Date>(
   timeToValue,
   label,
 }: {
-  field: ControllerRenderProps<T, Path<T> & { [P in Path<T>]: T[P] extends V | null ? P : never; }[Path<T>]>;
+  field: ControllerRenderProps<
+    T,
+    Path<T> & { [P in Path<T>]: T[P] extends V | null ? P : never }[Path<T>]
+  >;
   minuteStep: number;
   showClearButton: boolean;
   valueToTime: (value: V) => { hour: string; minute: string };
@@ -125,15 +135,19 @@ const TimePickerFieldContent = <T extends FieldValues, V extends number | Date>(
   label: string;
 }) => {
   const { hourOptions, minuteOptions } = createTimeOptions(minuteStep);
-  const defaultValueTime = field.value
-    ? valueToTime(field.value)
-    : { hour: "", minute: "" };
+  const defaultValueTime =
+    field.value !== null && field.value !== undefined
+      ? valueToTime(field.value)
+      : { hour: "", minute: "" };
   const [selectedHour, setSelectedHour] = useState(defaultValueTime.hour);
   const [selectedMinute, setSelectedMinute] = useState(defaultValueTime.minute);
 
   useLayoutEffect(() => {
     // 外部からの変更のみ同期
-    const time = field.value ? valueToTime(field.value) : { hour: "", minute: "" };
+    const time =
+      field.value !== null && field.value !== undefined
+        ? valueToTime(field.value)
+        : { hour: "", minute: "" };
     setSelectedHour(time.hour);
     setSelectedMinute(time.minute);
   }, [field.value, valueToTime]);
