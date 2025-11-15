@@ -55,8 +55,9 @@ export function formatWorkReportEmailMonth(date: Date): string {
  */
 export function formatTimeInput(date: Date | null): string {
   if (!date) return "";
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
+  // UTC時刻を使用（タイムゾーンの影響を受けないように）
+  const hours = String(date.getUTCHours()).padStart(2, "0");
+  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
   return `${hours}:${minutes}`;
 }
 
