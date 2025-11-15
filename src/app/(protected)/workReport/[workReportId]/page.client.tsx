@@ -171,6 +171,22 @@ export default function ClientWorkReportPage({
     [totalWorkMinutes],
   );
 
+  // Calculate work time for a single attendance in minutes
+  const calculateAttendanceWorkMinutes = useCallback(
+    (
+      startTime: Date | null,
+      endTime: Date | null,
+      breakDuration: number | null,
+    ): number | null => {
+      if (!startTime || !endTime) return null;
+      const workMinutes =
+        (endTime.getTime() - startTime.getTime()) / (1000 * 60);
+      const breakMinutes = breakDuration ?? 0;
+      return Math.max(0, workMinutes - breakMinutes);
+    },
+    [],
+  );
+
   const amountCalculation = useMemo(
     () =>
       calculateWorkAmount(totalWorkMinutes, {
@@ -707,11 +723,12 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
         </div>
 
         {/* Header for desktop view */}
-        <div className="mb-2 hidden items-center px-3 text-sm font-medium text-muted-foreground lg:grid lg:grid-cols-[minmax(0,_1fr)_120px_120px_120px_minmax(0,_2fr)_100px] lg:gap-4">
+        <div className="mb-2 hidden items-center px-3 text-sm font-medium text-muted-foreground lg:grid lg:grid-cols-[minmax(0,_1fr)_120px_120px_120px_120px_minmax(0,_2fr)_100px] lg:gap-4">
           <span>日付</span>
           <span>出勤時間</span>
           <span>退勤時間</span>
           <span>休憩時間</span>
+          <span>稼働時間</span>
           <span>作業内容</span>
           <span />
         </div>
@@ -719,7 +736,7 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
         {currentAttendances.map((day) => (
           <div
             key={day.date.toISOString()}
-            className="mb-4 rounded-lg border p-3 lg:grid lg:grid-cols-[minmax(0,_1fr)_120px_120px_120px_minmax(0,_2fr)_100px] lg:items-center lg:gap-4"
+            className="mb-4 rounded-lg border p-3 lg:grid lg:grid-cols-[minmax(0,_1fr)_120px_120px_120px_120px_minmax(0,_2fr)_100px] lg:items-center lg:gap-4"
           >
             {/* Date */}
             <div className="flex items-center justify-between lg:col-span-1">
@@ -754,9 +771,9 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
 
             {/* Inputs */}
             <div className="mt-3 space-y-3 lg:mt-0 lg:contents">
-              <div className="flex gap-2 lg:contents">
+              <div className="flex flex-wrap gap-2 lg:contents">
                 {/* Start time */}
-                <div className="w-1/3 lg:col-span-1 lg:w-auto">
+                <div className="w-[calc(50%-0.25rem)] lg:col-span-1 lg:w-auto">
                   <label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
                     出勤時間
                   </label>
@@ -768,7 +785,7 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
                   />
                 </div>
                 {/* End time */}
-                <div className="w-1/3 lg:col-span-1 lg:w-auto">
+                <div className="w-[calc(50%-0.25rem)] lg:col-span-1 lg:w-auto">
                   <label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
                     退勤時間
                   </label>
@@ -780,7 +797,7 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
                   />
                 </div>
                 {/* Break time */}
-                <div className="w-1/3 lg:col-span-1 lg:w-auto">
+                <div className="w-[calc(50%-0.25rem)] lg:col-span-1 lg:w-auto">
                   <label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
                     休憩時間
                   </label>
@@ -789,6 +806,24 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
                     id={`break-${day.date.toISOString()}`}
                     readOnly
                     value={formatBreakDuration(day.breakDuration)}
+                  />
+                </div>
+                {/* Work time */}
+                <div className="w-[calc(50%-0.25rem)] lg:col-span-1 lg:w-auto">
+                  <label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
+                    稼働時間
+                  </label>
+                  <Input
+                    type="time"
+                    id={`work-${day.date.toISOString()}`}
+                    readOnly
+                    value={formatBreakDuration(
+                      calculateAttendanceWorkMinutes(
+                        day.startTime,
+                        day.endTime,
+                        day.breakDuration,
+                      ),
+                    )}
                   />
                 </div>
                 {/* Memo */}
