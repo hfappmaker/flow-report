@@ -20,7 +20,6 @@
     "test:p:debug": "playwright test --debug",
     "test:p:headed": "playwright test --headed",
     "worktree:init": "bash scripts/worktree-init.sh",
-    "worktree:list": "bash scripts/worktree-list.sh",
     "worktree:remove": "bash scripts/worktree-remove.sh"
   },
   "dependencies": {

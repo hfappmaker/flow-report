@@ -1,7 +1,6 @@
 {
   "permissions": {
     "allow": [
-      "Bash(./scripts/worktree-create.sh:*)",
       "Bash(cat:*)",
       "Bash(curl:*)",
       "Bash(find:*)",
@@ -71,5 +70,10 @@
     "deny": ["Read(.env*)", "Write(.env*)"]
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["next-devtools", "playwright", "postgresql", "serena"]
+  "enabledMcpjsonServers": [
+    "next-devtools",
+    "playwright",
+    "postgresql",
+    "serena"
+  ]
 }

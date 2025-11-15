@@ -28,9 +28,11 @@ if [ -d "$WORKTREE_INPUT" ]; then
     WORKTREE_PATH="$WORKTREE_INPUT"
 else
     # ブランチ名として扱う
+    # ブランチ名をファイルシステムに安全な形式に変換（/ → -）
+    SAFE_BRANCH_NAME=$(echo "$WORKTREE_INPUT" | sed 's/\//-/g')
     REPO_ROOT=$(git rev-parse --show-toplevel)
     REPO_NAME=$(basename "$REPO_ROOT")
-    WORKTREE_PATH="$(dirname "$REPO_ROOT")/${REPO_NAME}-${WORKTREE_INPUT}"
+    WORKTREE_PATH="$(dirname "$REPO_ROOT")/${REPO_NAME}-${SAFE_BRANCH_NAME}"
 
     if [ ! -d "$WORKTREE_PATH" ]; then
         echo "Error: worktreeが見つかりません: $WORKTREE_PATH"
