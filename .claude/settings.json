@@ -72,8 +72,7 @@
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "next-devtools",
-    "playwright",
-    "postgresql",
-    "serena"
+    "serena",
+    "github"
   ]
 }
