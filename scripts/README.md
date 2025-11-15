@@ -41,9 +41,10 @@ pnpm run worktree:init feature/new-feature main
 ```
 
 このコマンドは以下を自動実行します：
+
 1. 親ディレクトリに `WorkTimeManagementV2-<ブランチ名>` を作成
 2. 依存関係のインストール (`pnpm install`)
-3. `.env`ファイルと`.env.development.local`のコピー
+3. `.env`ファイルと`.env.development.local`と`.env.development.preview`のコピー
 4. Prisma Clientの生成
 5. `.next`ディレクトリのクリーンアップ
 6. **VSCodeで自動的に開く**
@@ -146,6 +147,7 @@ PORT=3002 pnpm run dev  # http://localhost:3002
 ### DevContainerのディスク使用量
 
 各worktreeで以下のDockerリソースが作成されます：
+
 - コンテナイメージ（共有）
 - 実行中のコンテナ
 - 名前付きボリューム（`node_modules`、`dist`）
@@ -204,14 +206,17 @@ PORT=3002 pnpm run dev  # http://localhost:3002
 ### worktree-initが失敗する
 
 **ブランチ関連:**
+
 - ブランチ名が既に存在する場合、既存のブランチがチェックアウトされます
 - ディレクトリが既に存在する場合はエラーになります
 
 **セットアップ関連:**
+
 - メインworktreeに`.env.development.local`が存在することを確認してください
 - `pnpm install`が失敗する場合は、`pnpm-lock.yaml`を削除して再試行してください
 
 **VSCode起動関連:**
+
 - `code`コマンドが見つからない場合は、手動でVSCodeを開いてください
 
 ### worktreeの削除ができない

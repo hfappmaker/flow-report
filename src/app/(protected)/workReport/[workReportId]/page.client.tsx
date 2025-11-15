@@ -87,33 +87,9 @@ import {
 import { WORK_REPORT_DAYS } from "@/features/work-report/constants/work-report-constants";
 import { useMessageState } from "@/hooks/use-message-state";
 import { formatDateAsUTC } from "@/utils/date-utils";
-
-function isHoliday(date: Date, holidays: Holiday[]): boolean {
-  const dateStr = date.toISOString().split("T")[0]; // YYYY-MM-DD format
-  return holidays.some((holiday) => holiday.date === dateStr);
-}
-
-function getDateColorClass(date: Date, holidays: Holiday[]): string {
-  const dayOfWeek = date.getDay();
-
-  // 祝日チェック
-  if (isHoliday(date, holidays)) {
-    return "text-red-600"; // 祝日は赤
-  }
-
-  // 日曜日
-  if (dayOfWeek === 0) {
-    return "text-red-600"; // 日曜日は赤
-  }
-
-  // 土曜日
-  if (dayOfWeek === 6) {
-    return "text-blue-600"; // 土曜日は青
-  }
-
-  // 平日
-  return "text-white-900";
-}
+import { isHoliday } from "@/features/holidays/utils/holiday-utils";
+import { getDateColorClass } from "@/features/work-report/utils/date-display-utils";
+import { msToSerial } from "@/features/work-report/utils/excel-utils";
 
 export default function ClientWorkReportPage({
   contractId,
@@ -461,9 +437,6 @@ export default function ClientWorkReportPage({
     clientName,
     showError,
   ]);
-
-  // ミリ秒からシリアル値に変換
-  const msToSerial = (ms: number) => ms / (24 * 60 * 60 * 1000);
 
   // テンプレートからの作業報告書作成
   const createReportFromTemplate = async (
