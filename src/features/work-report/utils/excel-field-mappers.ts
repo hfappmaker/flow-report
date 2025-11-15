@@ -74,7 +74,11 @@ export const fieldMappers: Record<FieldName, FieldHandler> = {
   稼働時間: (entry) => {
     if (!entry.startTime || !entry.endTime) return null;
     const startMs = entry.startTime.getTime();
-    const endMs = entry.endTime.getTime();
+    let endMs = entry.endTime.getTime();
+    // 開始時刻が終了時刻よりあとの場合（日付をまたぐ）、終了時刻に24時間を加算
+    if (startMs > endMs) {
+      endMs += 24 * 60 * 60 * 1000; // 24時間分のミリ秒を加算
+    }
     const breakMs = entry.breakDuration ? entry.breakDuration * 60000 : 0;
     const value = msToSerial(endMs - startMs - breakMs);
     return { value, numFmt: "[h]:mm" };
