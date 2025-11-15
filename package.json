@@ -19,8 +19,7 @@
     "test:p:ui": "playwright test --ui",
     "test:p:debug": "playwright test --debug",
     "test:p:headed": "playwright test --headed",
-    "worktree:create": "bash scripts/worktree-create.sh",
-    "worktree:setup": "bash scripts/worktree-setup.sh",
+    "worktree:init": "bash scripts/worktree-init.sh",
     "worktree:list": "bash scripts/worktree-list.sh",
     "worktree:remove": "bash scripts/worktree-remove.sh"
   },
