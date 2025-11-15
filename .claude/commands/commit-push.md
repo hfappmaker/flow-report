@@ -9,10 +9,10 @@ Please perform the following steps:
 1. **Get staged files**: Run `git diff --cached --name-only` to list all staged files
 
 2. **ESLint auto-fix**: For each staged file with extensions `.ts`, `.tsx`, `.js`, `.jsx`:
-   - Run `npx eslint "<file>" --fix` to auto-fix linting issues
+   - Run `pnpm exec eslint "<file>" --fix` to auto-fix linting issues
 
 3. **Check ESLint warnings**: For each staged file:
-   - Run `npx eslint "<file>"` to check for remaining warnings
+   - Run `pnpm exec eslint "<file>"` to check for remaining warnings
    - If warnings are found:
      - Analyze the warnings and propose fixes
      - Show the proposed changes to the user
@@ -20,7 +20,7 @@ Please perform the following steps:
      - Apply fixes only if user approves
 
 4. **Prettier formatting**: For each staged file with extensions `.ts`, `.tsx`, `.js`, `.jsx`:
-   - Run `npx prettier --write "<file>"` to format the code
+   - Run `pnpm exec prettier --write "<file>"` to format the code
 
 5. **Re-stage changes**: Run `git add <files>` to re-stage all modified files
 

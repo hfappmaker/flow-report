@@ -50,9 +50,9 @@
      - Follow naming conventions
 
 5. **Verification**:
-   - Run TypeScript type checking: `npx tsc --noEmit`
-   - Run ESLint: `npx eslint <changed-files> --fix`
-   - Run Prettier: `npx prettier --write <changed-files>`
+   - Run TypeScript type checking: `pnpm exec tsc --noEmit`
+   - Run ESLint: `pnpm exec eslint <changed-files> --fix`
+   - Run Prettier: `pnpm exec prettier --write <changed-files>`
 
 6. **Summary Report**:
    - List all files changed
