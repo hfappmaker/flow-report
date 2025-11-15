@@ -62,13 +62,13 @@ export function formatTimeInput(date: Date | null): string {
 }
 
 /**
- * 休憩時間を「H:MM」形式でフォーマット
+ * 休憩時間を「HH:MM」形式でフォーマット（type="time"用）
  * @param minutes 休憩時間（分）
- * @returns フォーマットされた休憩時間文字列（例: "1:30"）
+ * @returns フォーマットされた休憩時間文字列（例: "01:30"）
  */
 export function formatBreakDuration(minutes: number | null): string {
   if (minutes === null) return "";
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = String(minutes % 60).padStart(2, "0");
-  return `${String(hours)}:${remainingMinutes}`;
+  return `${String(hours).padStart(2, "0")}:${remainingMinutes}`;
 }

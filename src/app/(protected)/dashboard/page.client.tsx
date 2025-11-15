@@ -462,7 +462,7 @@ export default function DashboardClientPage({
               ? new Date(attendanceDialogState.endTime)
               : null,
             breakDuration: attendanceDialogState.breakDuration,
-            memo: null,
+            memo: attendanceDialogState.memo ?? null,
           }}
           basicStartTime={
             attendanceDialogState.contract.basicStartTime
