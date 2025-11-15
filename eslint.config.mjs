@@ -1,20 +1,19 @@
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 
-import { FlatCompat } from "@eslint/eslintrc";
 import eslint from "@eslint/js";
+import nextPlugin from "@next/eslint-plugin-next";
 import eslintConfigPrettier from "eslint-config-prettier";
 import importPlugin from "eslint-plugin-import";
+import jsxA11y from "eslint-plugin-jsx-a11y";
+import react from "eslint-plugin-react";
+import reactHooks from "eslint-plugin-react-hooks";
 import tailwind from "eslint-plugin-tailwindcss";
 import unusedImports from "eslint-plugin-unused-imports";
 import tseslint from "typescript-eslint";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
 
 /** @type {{ configs: Record<string, unknown> }} */
 const tailwindPlugin = tailwind;
@@ -40,8 +39,33 @@ export default tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
-  ...compat.extends("next/core-web-vitals"),
   ...flatRecommended,
+  {
+    // Next.js, React, アクセシビリティに関する設定
+    plugins: {
+      "@next/next": nextPlugin,
+      react: react,
+      "react-hooks": reactHooks,
+      "jsx-a11y": jsxA11y,
+    },
+    rules: {
+      // Next.js recommended rules
+      ...nextPlugin.configs.recommended.rules,
+      ...nextPlugin.configs["core-web-vitals"].rules,
+      // React recommended rules
+      ...react.configs.recommended.rules,
+      ...react.configs["jsx-runtime"].rules,
+      // React Hooks rules
+      ...reactHooks.configs.recommended.rules,
+      // JSX a11y recommended rules
+      ...jsxA11y.configs.recommended.rules,
+    },
+    settings: {
+      react: {
+        version: "detect",
+      },
+    },
+  },
   {
     // @typescript-eslintに関する設定
     languageOptions: {

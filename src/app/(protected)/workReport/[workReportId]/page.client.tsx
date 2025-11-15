@@ -56,6 +56,7 @@ import {
 } from "@/features/work-report/actions/work-report";
 import { AttendanceEditDialog } from "@/features/work-report/components/attendance-edit-dialog";
 import { TemplateSelectionDialog } from "@/features/work-report/components/template-selection-dialog";
+import { generateWorkReportExcel } from "@/features/work-report/libs/excel-report-generator";
 import {
   type EditFormValues,
   type BulkEditFormValues,
@@ -72,6 +73,7 @@ import {
   shouldUpdateDate,
   getBulkEditFormDefaults,
 } from "@/features/work-report/utils/attendance-utils";
+import { getDateColorClass } from "@/features/work-report/utils/date-display-utils";
 import {
   formatWorkReportFileName,
   formatWorkReportEmailSubject,
@@ -79,10 +81,8 @@ import {
   formatTimeInput,
   formatBreakDuration,
 } from "@/features/work-report/utils/date-formatting";
-import { generateWorkReportExcel } from "@/features/work-report/libs/excel-report-generator";
 import { useMessageState } from "@/hooks/use-message-state";
 import { formatDateAsUTC } from "@/utils/date-utils";
-import { getDateColorClass } from "@/features/work-report/utils/date-display-utils";
 
 export default function ClientWorkReportPage({
   contractId,
@@ -1039,7 +1039,7 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
       <AttendanceEditDialog
         key={editingDate?.toISOString() ?? "closed"}
         isOpen={editingDate !== null}
-        onClose={() => setEditingDate(null)}
+        onClose={() => { setEditingDate(null); }}
         selectedDate={editingDate ?? new Date()}
         onSubmit={onEditSubmit}
         defaultValues={defaultValuesForEdit}
