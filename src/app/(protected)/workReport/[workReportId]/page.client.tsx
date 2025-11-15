@@ -55,6 +55,7 @@ import {
   updateWorkReportStatusAction,
 } from "@/features/work-report/actions/work-report";
 import { AttendanceEditDialog } from "@/features/work-report/components/attendance-edit-dialog";
+import { TemplateSelectionDialog } from "@/features/work-report/components/template-selection-dialog";
 import {
   type EditFormValues,
   type BulkEditFormValues,
@@ -142,6 +143,7 @@ export default function ClientWorkReportPage({
   const [isLoadingPartners, setIsLoadingPartners] = useState(false);
 
   const [status, setStatus] = useState<WorkReportStatus>(initialStatus);
+  const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
 
   // Compute default attendance values for each day in the range…
   const defaults = generateDefaultAttendances(
@@ -494,20 +496,30 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
     }
   };
 
-  const handleConfirmCreateReport = async () => {
-    // 現在はデフォルトテンプレート + Excel形式のみサポート
+  const handleConfirmCreateReport = async (
+    customWorkbook: ExcelJS.Workbook | null,
+  ) => {
     try {
-      const response = await fetch("/workReportDefaultTemplate.xlsx");
-      if (!response.ok) {
-        throw new Error("デフォルトテンプレートの取得に失敗しました");
+      let workbook: ExcelJS.Workbook;
+
+      if (customWorkbook) {
+        // Use custom template
+        workbook = customWorkbook;
+      } else {
+        // Use default template
+        const response = await fetch("/work-report-default-template.xlsx");
+        if (!response.ok) {
+          throw new Error("デフォルトテンプレートの取得に失敗しました");
+        }
+        const buffer = await response.arrayBuffer();
+        workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(buffer);
       }
-      const buffer = await response.arrayBuffer();
-      const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(buffer);
+
       await createReportFromTemplate(workbook);
     } catch (err) {
-      console.error("デフォルトテンプレートの読み込みに失敗しました:", err);
-      showError("デフォルトテンプレートの読み込みに失敗しました");
+      console.error("テンプレートの読み込みに失敗しました:", err);
+      showError("テンプレートの読み込みに失敗しました");
       return;
     }
   };
@@ -666,9 +678,7 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
               variant="outline"
               disabled={status !== "SUBMITTED"}
               onClick={() => {
-                startTransition(() => {
-                  void handleConfirmCreateReport();
-                });
+                setIsTemplateDialogOpen(true);
               }}
             >
               作業報告書を作成
@@ -1157,6 +1167,12 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
           </div>
         </DialogContent>
       </Dialog>
+
+      <TemplateSelectionDialog
+        open={isTemplateDialogOpen}
+        onOpenChange={setIsTemplateDialogOpen}
+        onConfirm={handleConfirmCreateReport}
+      />
     </div>
   );
 }
