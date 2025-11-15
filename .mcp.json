@@ -31,7 +31,8 @@
         "--context",
         "ide-assistant",
         "--project",
-        "."
+        ".",
+        "--no-browser"
       ]
     },
     "github": {

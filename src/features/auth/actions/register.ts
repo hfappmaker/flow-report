@@ -3,8 +3,8 @@
 import bcrypt from "bcryptjs";
 import * as z from "zod";
 
-import { sendVerificationEmail } from "@/features/auth/lib/mail";
-import { generateVerificationToken } from "@/features/auth/lib/tokens";
+import { sendVerificationEmail } from "@/features/auth/libs/mail";
+import { generateVerificationToken } from "@/features/auth/libs/tokens";
 import { getUserByEmail } from "@/features/auth/repositories/user-repository";
 import { RegisterSchema } from "@/features/auth/schemas/register";
 import { db } from "@/repositories/db";

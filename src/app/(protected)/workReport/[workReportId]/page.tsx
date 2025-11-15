@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { currentUser } from "@/features/auth/lib/auth";
+import { currentUser } from "@/features/auth/libs/auth";
 import { getContractById } from "@/features/contract/repositories/contract-repository";
 import { fetchHolidays } from "@/features/holidays/libs/google-calendar";
 import { getAttendancesByWorkReportIdAction } from "@/features/work-report/actions/attendance";

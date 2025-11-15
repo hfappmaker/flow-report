@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { currentUser } from "@/features/auth/lib/auth";
+import { currentUser } from "@/features/auth/libs/auth";
 
 export const metadata: Metadata = {
   title: "メールテンプレート",

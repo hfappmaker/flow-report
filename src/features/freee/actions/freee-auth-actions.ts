@@ -1,6 +1,6 @@
 "use server";
 
-import { currentUser } from "@/features/auth/lib/auth";
+import { currentUser } from "@/features/auth/libs/auth";
 import {
   deleteFreeeToken,
   getFreeeToken,

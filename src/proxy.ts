@@ -8,7 +8,7 @@ import {
   authRoutes,
   errorRoutes,
 } from "@/app/routes";
-import authConfig from "@/features/auth/lib/auth-edge.config";
+import authConfig from "@/features/auth/libs/auth-edge.config";
 import { SubscriptionInfo } from "@/features/subscription/types/subscription";
 
 const { auth } = NextAuth(authConfig);
@@ -137,9 +137,7 @@ export default auth(async (req) => {
 
   // エラールートの場合は何もしない
   if (isErrorRoute) {
-    console.log(
-      "Request is for an error route, skipping proxy processing.",
-    );
+    console.log("Request is for an error route, skipping proxy processing.");
     return;
   }
 
