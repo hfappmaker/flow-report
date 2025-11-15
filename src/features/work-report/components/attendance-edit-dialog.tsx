@@ -39,6 +39,7 @@ interface AttendanceEditDialogProps {
   basicStartTime: Date | null;
   basicEndTime: Date | null;
   basicBreakDuration: number | null;
+  basicMemo: string | null;
   dailyWorkMinutes: number;
   holidays?: Holiday[];
 }
@@ -83,6 +84,7 @@ export function AttendanceEditDialog({
   basicStartTime,
   basicEndTime,
   basicBreakDuration,
+  basicMemo,
   dailyWorkMinutes,
   holidays = [],
 }: AttendanceEditDialogProps) {
@@ -106,6 +108,9 @@ export function AttendanceEditDialog({
     }
     if (basicBreakDuration !== null) {
       editForm.setValue("breakDuration", basicBreakDuration);
+    }
+    if (basicMemo) {
+      editForm.setValue("memo", basicMemo);
     }
   };
 
@@ -153,7 +158,10 @@ export function AttendanceEditDialog({
                   size="sm"
                   onClick={fillBasicTime}
                   disabled={
-                    !basicStartTime && !basicEndTime && !basicBreakDuration
+                    !basicStartTime &&
+                    !basicEndTime &&
+                    !basicBreakDuration &&
+                    !basicMemo
                   }
                 >
                   基本時間を入力

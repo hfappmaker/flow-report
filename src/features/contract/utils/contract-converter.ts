@@ -25,6 +25,7 @@ export const convertContractFormValuesToContract = (
     basicStartTime: data.basicStartTime,
     basicEndTime: data.basicEndTime,
     basicBreakDuration: data.basicBreakDuration,
+    basicMemo: data.basicMemo,
     closingDay: data.closingDay,
     taxInclusiveType: data.taxInclusiveType,
     taxRoundingType: data.taxRoundingType,
@@ -66,6 +67,7 @@ export const convertContractToFormValues = (
       ? new Date(contract.basicEndTime)
       : null,
     basicBreakDuration: contract.basicBreakDuration ?? null,
+    basicMemo: contract.basicMemo ?? null,
     closingDay: contract.closingDay ?? null,
     taxInclusiveType: contract.taxInclusiveType,
     taxRoundingType: contract.taxRoundingType,
