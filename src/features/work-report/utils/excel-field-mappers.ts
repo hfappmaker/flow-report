@@ -1,15 +1,15 @@
 import type ExcelJS from "exceljs";
 
-import type { AttendanceData } from "@/features/work-report/types/attendance";
-
 import { formatMonthDay } from "./attendance-utils";
 import { msToSerial } from "./excel-utils";
+import type { AttendanceData } from "@/features/work-report/types/attendance";
 
 /**
  * Excel名前付き範囲のフィールド名
  */
 export const FIELD_NAMES = [
   "日付",
+  "曜日",
   "開始時刻",
   "終了時刻",
   "休憩時間",
@@ -22,10 +22,10 @@ export type FieldName = (typeof FIELD_NAMES)[number];
 /**
  * フィールドハンドラーの戻り値
  */
-type FieldValue = {
+interface FieldValue {
   value: string | number;
   numFmt?: string;
-};
+}
 
 /**
  * フィールドハンドラー関数の型定義
@@ -38,6 +38,13 @@ type FieldHandler = (entry: AttendanceData) => FieldValue | null;
 export const fieldMappers: Record<FieldName, FieldHandler> = {
   日付: (entry) => ({
     value: formatMonthDay(entry.date.toISOString()),
+  }),
+
+  曜日: (entry) => ({
+    value: entry.date.toLocaleDateString("ja-JP", {
+      weekday: "short",
+      timeZone: "UTC",
+    }),
   }),
 
   開始時刻: (entry) => {
@@ -103,10 +110,6 @@ export function setCellValueForField(
   }
 
   const handler = fieldMappers[fieldName];
-  if (!handler) {
-    cell.value = "";
-    return;
-  }
 
   const result = handler(entry);
   if (!result) {
