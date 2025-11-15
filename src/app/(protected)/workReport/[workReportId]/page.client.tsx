@@ -122,6 +122,7 @@ export default function ClientWorkReportPage({
   basicStartTime,
   basicEndTime,
   basicBreakDuration,
+  basicMemo,
   holidays,
   status: initialStatus,
   unitPrice,
@@ -212,6 +213,7 @@ export default function ClientWorkReportPage({
       basicStartTime,
       basicEndTime,
       basicBreakDuration,
+      basicMemo,
       workReportStartDate,
       workReportEndDate,
     ),
@@ -231,6 +233,7 @@ export default function ClientWorkReportPage({
         basicStartTime,
         basicEndTime,
         basicBreakDuration,
+        basicMemo,
         workReportStartDate,
         workReportEndDate,
       ),
@@ -1254,6 +1257,7 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
         basicStartTime={basicStartTime}
         basicEndTime={basicEndTime}
         basicBreakDuration={basicBreakDuration}
+        basicMemo={basicMemo}
         dailyWorkMinutes={dailyWorkMinutes}
         holidays={holidays}
       />

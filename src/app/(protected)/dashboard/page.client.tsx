@@ -477,6 +477,7 @@ export default function DashboardClientPage({
           basicBreakDuration={
             attendanceDialogState.contract.basicBreakDuration ?? null
           }
+          basicMemo={attendanceDialogState.contract.basicMemo ?? null}
           dailyWorkMinutes={
             attendanceDialogState.contract.dailyWorkMinutes ?? 15
           }

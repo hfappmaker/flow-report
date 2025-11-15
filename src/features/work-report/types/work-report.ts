@@ -34,6 +34,7 @@ export interface WorkReportClientProps {
   basicStartTime: Date | null;
   basicEndTime: Date | null;
   basicBreakDuration: number | null;
+  basicMemo: string | null;
   status: WorkReportStatus;
   holidays: Holiday[];
   // Contract settlement and tax information

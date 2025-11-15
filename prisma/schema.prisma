@@ -95,6 +95,7 @@ model Contract {
   basicStartTime     DateTime? @db.Time // 基本開始時刻
   basicEndTime       DateTime? @db.Time // 基本終了時刻
   basicBreakDuration Int? // 基本休憩時間（分）
+  basicMemo          String? // 基本作業内容
 
   closingDay Int? // 締め日(1～31)
   

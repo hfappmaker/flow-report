@@ -40,7 +40,9 @@ export const contractFormSchema = z
     unitPrice: z.number().nullable(),
     settlementMin: z.number().nullable(),
     settlementMax: z.number().nullable(),
-    rateType: z.enum(["upperLower", "middle", "fixed", "hourlyRate"]).default("upperLower"),
+    rateType: z
+      .enum(["upperLower", "middle", "fixed", "hourlyRate"])
+      .default("upperLower"),
     upperRate: z.number().nullable(),
     lowerRate: z.number().nullable(),
     middleRate: z.number().nullable(),
@@ -50,6 +52,7 @@ export const contractFormSchema = z
     basicStartTime: z.date().nullable(),
     basicEndTime: z.date().nullable(),
     basicBreakDuration: z.number().nullable(),
+    basicMemo: z.string().nullable(),
     closingDay: z
       .number()
       .int("整数で入力してください")
@@ -180,7 +183,7 @@ export const contractFormSchema = z
       message: "契約期間は最長1年以内にしてください",
       path: ["endDate"],
     },
-  );;
+  );
 
 export type ContractFormValues = z.infer<typeof contractFormSchema>;
 
@@ -221,6 +224,7 @@ export const ContractForm = ({
       basicStartTime: null,
       basicEndTime: null,
       basicBreakDuration: null,
+      basicMemo: null,
       closingDay: null,
       taxInclusiveType: "EXCLUSIVE" as const,
       taxRoundingType: "ROUND_DOWN" as const,
@@ -406,7 +410,9 @@ export const ContractForm = ({
               <FormLabel>精算方式</FormLabel>
               <FormControl>
                 <RadioGroup
-                  onValueChange={(value: "upperLower" | "middle" | "fixed" | "hourlyRate") => {
+                  onValueChange={(
+                    value: "upperLower" | "middle" | "fixed" | "hourlyRate",
+                  ) => {
                     form.setValue("rateType", value);
                     // 非表示になる項目の値をクリア
                     if (value === "upperLower") {
@@ -586,6 +592,29 @@ export const ContractForm = ({
             label="基本休憩時間(分)"
           />
         </div>
+
+        {/* Basic Memo */}
+        <FormField
+          control={form.control}
+          name="basicMemo"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>基本作業内容</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  value={field.value ?? ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    field.onChange(value === "" ? null : value);
+                  }}
+                  placeholder="基本時間入力時に自動で入力される作業内容"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {/* Closing Day */}
         <FormField
