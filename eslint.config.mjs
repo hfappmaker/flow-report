@@ -1,6 +1,7 @@
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 
+import { defineConfig } from "eslint/config";
 import eslint from "@eslint/js";
 import nextPlugin from "@next/eslint-plugin-next";
 import eslintConfigPrettier from "eslint-config-prettier";
@@ -19,7 +20,7 @@ const __dirname = dirname(__filename);
 const tailwindPlugin = tailwind;
 const flatRecommended = tailwindPlugin.configs["flat/recommended"];
 
-export default tseslint.config(
+export default defineConfig(
   {
     // キャッシュの設定
     cache: true,
