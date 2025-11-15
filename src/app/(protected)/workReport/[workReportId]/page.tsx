@@ -2,10 +2,9 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { currentUser } from "@/features/auth/lib/auth";
-import { getContractById } from "@/features/contract/repositories/contract-repository";
 import { fetchHolidays } from "@/features/holidays/libs/google-calendar";
 import { getAttendancesByWorkReportIdAction } from "@/features/work-report/actions/attendance";
-import { getWorkReportById } from "@/features/work-report/repositories/work-report-repository";
+import { getWorkReportWithContractById } from "@/features/work-report/repositories/work-report-repository";
 import { Serialize } from "@/utils/serialization/serialization-utils";
 
 import ClientWorkReportPage from "./page.client";
@@ -22,18 +21,20 @@ export default async function WorkReportPage({
 }) {
   const { workReportId } = await params;
   const user = await currentUser();
-  // Assume that getWorkReportById returns a work report with startDate and endDate as strings or Date objects.
-  const workReport = await getWorkReportById(workReportId);
-  if (!workReport) {
+  // 作業報告書と契約情報を一緒に取得（N+1クエリを回避）
+  const workReportWithContract =
+    await getWorkReportWithContractById(workReportId);
+  if (!workReportWithContract) {
     return notFound();
   }
 
-  // 契約情報を取得
-  const contract = await getContractById(workReport.contractId);
-  // TODO: 契約の作成者がログインユーザーと一致するか確認
-  if (!contract || contract.userId !== user?.id) {
+  // 契約の作成者がログインユーザーと一致するか確認
+  if (workReportWithContract.contract.userId !== user?.id) {
     return notFound();
   }
+
+  const workReport = workReportWithContract;
+  const contract = workReportWithContract.contract;
 
   const attendances = await getAttendancesByWorkReportIdAction(workReportId);
 
