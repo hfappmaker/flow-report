@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "reset": "pnpm exec dotenv -e .env.development.local -- pnpm exec prisma db push --force-reset && pnpm exec dotenv -e .env.development.local -- pnpm exec prisma db seed",
+    "reset:dev": "pnpm exec dotenv -e .env.development.local -- pnpm exec prisma db push --force-reset && pnpm exec dotenv -e .env.development.local -- pnpm exec prisma db seed",
+    "reset:preview": "pnpm exec dotenv -e .env.preview.local -- pnpm exec prisma db push --force-reset && pnpm exec dotenv -e .env.preview.local -- pnpm exec prisma db seed",
     "dev": "rm -rf .next && next dev",
     "dev:turbo": "rm -rf .next && next dev --turbopack",
     "dev:inspect": "rm -rf .next && NODE_OPTIONS='--inspect' next dev",
