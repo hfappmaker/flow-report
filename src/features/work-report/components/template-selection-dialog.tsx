@@ -1,6 +1,10 @@
 "use client";
 
+import ExcelJS from "exceljs";
+import { FileSpreadsheet, Upload, Trash2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,12 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Input } from "@/components/ui/input";
-import { FileSpreadsheet, Upload, Trash2 } from "lucide-react";
-import ExcelJS from "exceljs";
 
 const TEMPLATE_STORAGE_KEY = "workReportCustomTemplate";
 const TEMPLATE_NAME_STORAGE_KEY = "workReportCustomTemplateName";
@@ -41,13 +42,13 @@ export function TemplateSelectionDialog({
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Check for saved template on mount
+  // Check for saved template when dialog opens
   useEffect(() => {
-    const savedName = localStorage.getItem(TEMPLATE_NAME_STORAGE_KEY);
-    if (savedName) {
+    if (open) {
+      const savedName = localStorage.getItem(TEMPLATE_NAME_STORAGE_KEY);
       setSavedTemplateName(savedName);
     }
-  }, []);
+  }, [open]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -116,6 +117,9 @@ export function TemplateSelectionDialog({
           );
           localStorage.setItem(TEMPLATE_STORAGE_KEY, base64);
           localStorage.setItem(TEMPLATE_NAME_STORAGE_KEY, selectedFile.name);
+          // Update state to reflect the newly saved template
+          setSavedTemplateName(selectedFile.name);
+          setSelectedFile(null);
         } else if (savedTemplateName) {
           // Load from localStorage
           const base64 = localStorage.getItem(TEMPLATE_STORAGE_KEY);
@@ -165,15 +169,15 @@ export function TemplateSelectionDialog({
         <div className="space-y-4 py-4">
           <RadioGroup
             value={templateType}
-            onValueChange={(value) =>
-              setTemplateType(value as "default" | "custom")
-            }
+            onValueChange={(value) => {
+              setTemplateType(value as "default" | "custom");
+            }}
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="default" id="default" />
               <Label htmlFor="default" className="cursor-pointer">
                 <div className="flex items-center gap-2">
-                  <FileSpreadsheet className="h-4 w-4" />
+                  <FileSpreadsheet className="size-4" />
                   <span>デフォルトテンプレート</span>
                 </div>
               </Label>
@@ -183,7 +187,7 @@ export function TemplateSelectionDialog({
               <RadioGroupItem value="custom" id="custom" />
               <Label htmlFor="custom" className="cursor-pointer">
                 <div className="flex items-center gap-2">
-                  <Upload className="h-4 w-4" />
+                  <Upload className="size-4" />
                   <span>カスタムテンプレート</span>
                 </div>
               </Label>
@@ -195,7 +199,7 @@ export function TemplateSelectionDialog({
               {savedTemplateName && (
                 <div className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 p-3">
                   <div className="flex items-center gap-2">
-                    <FileSpreadsheet className="h-4 w-4 text-gray-500" />
+                    <FileSpreadsheet className="size-4 text-gray-500" />
                     <span className="text-sm text-gray-700">
                       {savedTemplateName}
                     </span>
@@ -207,7 +211,7 @@ export function TemplateSelectionDialog({
                     onClick={handleDeleteSavedTemplate}
                     className="h-8 text-red-600 hover:bg-red-50 hover:text-red-700"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="size-4" />
                   </Button>
                 </div>
               )}
@@ -245,12 +249,19 @@ export function TemplateSelectionDialog({
         <DialogFooter>
           <Button
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={() => {
+              onOpenChange(false);
+            }}
             disabled={isProcessing}
           >
             キャンセル
           </Button>
-          <Button onClick={handleConfirm} disabled={isProcessing}>
+          <Button
+            onClick={() => {
+              void handleConfirm();
+            }}
+            disabled={isProcessing}
+          >
             {isProcessing ? "処理中..." : "作成"}
           </Button>
         </DialogFooter>
