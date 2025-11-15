@@ -67,9 +67,7 @@ export const ContractDetailsContent = ({
             <label className="text-sm font-medium text-muted-foreground">
               終了日
             </label>
-            <p className="mt-1">
-              {formatDateAsUTC(contract.endDate)}
-            </p>
+            <p className="mt-1">{formatDateAsUTC(contract.endDate)}</p>
           </div>
         </div>
       </div>
@@ -269,6 +267,14 @@ export const ContractDetailsContent = ({
               {contract.basicBreakDuration
                 ? `${contract.basicBreakDuration.toString()}分`
                 : "なし"}
+            </p>
+          </div>
+          <div className="col-span-3">
+            <label className="text-sm font-medium text-muted-foreground">
+              基本作業内容
+            </label>
+            <p className="mt-1 whitespace-pre-line">
+              {contract.basicMemo || "なし"}
             </p>
           </div>
           <div className="col-span-3">
