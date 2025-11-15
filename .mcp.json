@@ -2,9 +2,9 @@
   "mcpServers": {
     "playwright": {
       "type": "stdio",
-      "command": "npx",
+      "command": "pnpm",
       "args": [
-        "-y",
+        "dlx",
         "@playwright/mcp@latest",
         "--no-sandbox",
         "--isolated"
@@ -13,9 +13,9 @@
     },
     "postgresql": {
       "type": "stdio",
-      "command": "npx",
+      "command": "pnpm",
       "args": [
-        "-y",
+        "dlx",
         "@modelcontextprotocol/server-postgres@latest",
         "postgresql://user:password@db:5432/worktime_management"
       ],
@@ -31,15 +31,14 @@
         "--context",
         "ide-assistant",
         "--project",
-        ".",
-        "--no-browser"
+        "."
       ]
     },
     "github": {
       "type": "stdio",
-      "command": "npx",
+      "command": "pnpm",
       "args": [
-        "-y",
+        "dlx",
         "@modelcontextprotocol/server-github@latest"
       ],
       "env": {
@@ -48,9 +47,9 @@
     },
     "next-devtools": {
       "type": "stdio",
-      "command": "npx",
+      "command": "pnpm",
       "args": [
-        "-y",
+        "dlx",
         "next-devtools-mcp@latest"
       ],
       "env": {}
