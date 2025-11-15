@@ -77,20 +77,12 @@ export async function generateWorkReportExcel(
       newSheet.mergeCells(mergeRange);
     });
 
-    // セルのスタイルをコピー
+    // セルのスタイルと値をコピー
     worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
       const newRow = newSheet.getRow(rowNumber);
       row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
         const newCell = newRow.getCell(colNumber);
         newCell.style = { ...cell.style };
-      });
-    });
-
-    // セルの値をコピー
-    worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
-      const newRow = newSheet.getRow(rowNumber);
-      row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-        const newCell = newRow.getCell(colNumber);
         newCell.value = cell.value;
       });
     });
