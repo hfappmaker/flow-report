@@ -2,11 +2,9 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { currentUser } from "@/features/auth/libs/auth";
-import { getContractById } from "@/features/contract/repositories/contract-repository";
 import { fetchHolidays } from "@/features/holidays/libs/google-calendar";
 import { getAttendancesByWorkReportIdAction } from "@/features/work-report/actions/attendance";
 import { getWorkReportWithContractById } from "@/features/work-report/repositories/work-report-repository";
-import { Serialize } from "@/utils/serialization/serialization-utils";
 
 import ClientWorkReportPage from "./page.client";
 
