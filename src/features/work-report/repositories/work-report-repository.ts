@@ -13,6 +13,19 @@ export async function getWorkReportById(workReportId: string) {
   return workReport;
 }
 
+export async function getWorkReportWithContractById(workReportId: string) {
+  const workReport = await db.workReport.findUnique({
+    where: {
+      id: workReportId,
+    },
+    include: {
+      contract: true,
+    },
+  });
+
+  return workReport;
+}
+
 export async function createWorkReport(contractId: string, targetDate: Date) {
   const workReport = await db.workReport.create({
     data: {

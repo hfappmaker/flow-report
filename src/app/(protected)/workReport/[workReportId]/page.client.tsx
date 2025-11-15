@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import ExcelJS from "exceljs";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Resolver, useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -76,6 +76,15 @@ import {
   shouldUpdateDate,
   getBulkEditFormDefaults,
 } from "@/features/work-report/utils/attendance-utils";
+import {
+  formatWorkReportMonth,
+  formatWorkReportFileName,
+  formatWorkReportEmailSubject,
+  formatWorkReportEmailMonth,
+  formatTimeInput,
+  formatBreakDuration,
+} from "@/features/work-report/utils/date-formatting";
+import { WORK_REPORT_DAYS } from "@/features/work-report/constants/work-report-constants";
 import { useMessageState } from "@/hooks/use-message-state";
 import { formatDateAsUTC } from "@/utils/date-utils";
 
@@ -162,14 +171,6 @@ export default function ClientWorkReportPage({
   >();
   const [isLoadingPartners, setIsLoadingPartners] = useState(false);
 
-  // New state for holding the uploaded template file
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [uploadedTemplateFile, _setUploadedTemplateFile] =
-    useState<File | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [templateOption, _setTemplateOption] = useState("default"); // 'default' or 'upload'
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [extensionOption, _setExtensionOption] = useState("excel"); // 'excel' or 'pdf'
   const [status, setStatus] = useState<WorkReportStatus>(initialStatus);
 
   // Compute default attendance values for each day in the range…
@@ -190,21 +191,44 @@ export default function ClientWorkReportPage({
     currentAttendances[currentAttendances.length - 1]?.date || new Date();
 
   // Calculate work hours and amounts for summary
-  const totalWorkMinutes = calculateTotalWorkMinutes(currentAttendances);
-  const workTimeText = formatWorkTime(totalWorkMinutes);
+  const totalWorkMinutes = useMemo(
+    () => calculateTotalWorkMinutes(currentAttendances),
+    [currentAttendances],
+  );
 
-  const amountCalculation = calculateWorkAmount(totalWorkMinutes, {
-    unitPrice,
-    settlementMin,
-    settlementMax,
-    upperRate,
-    lowerRate,
-    middleRate,
-    hourlyRate,
-    taxInclusiveType,
-    taxRoundingType,
-    rateType,
-  });
+  const workTimeText = useMemo(
+    () => formatWorkTime(totalWorkMinutes),
+    [totalWorkMinutes],
+  );
+
+  const amountCalculation = useMemo(
+    () =>
+      calculateWorkAmount(totalWorkMinutes, {
+        unitPrice,
+        settlementMin,
+        settlementMax,
+        upperRate,
+        lowerRate,
+        middleRate,
+        hourlyRate,
+        taxInclusiveType,
+        taxRoundingType,
+        rateType,
+      }),
+    [
+      totalWorkMinutes,
+      unitPrice,
+      settlementMin,
+      settlementMax,
+      upperRate,
+      lowerRate,
+      middleRate,
+      hourlyRate,
+      taxInclusiveType,
+      taxRoundingType,
+      rateType,
+    ],
+  );
 
   // 一括編集用フォーム
   const bulkEditForm = useForm<BulkEditFormValues>({
@@ -245,58 +269,28 @@ export default function ClientWorkReportPage({
   const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
 
   // 一括編集を適用する
-  const applyBulkEdit = (data: BulkEditFormValues) => {
-    startTransition(() => {
-      void (async () => {
-        // startDateとendDateはバリデーションで必須なので、ここではnullではない
-        if (!data.startDate || !data.endDate) {
-          return;
-        }
-
-        const startDate = data.startDate;
-        const endDate = data.endDate;
-
-        const updatedValues = currentAttendances.map((attendance) => {
-          const shouldUpdate = shouldUpdateDate(
-            attendance.date,
-            data.selectedDays,
-            startDate,
-            endDate,
-            data.excludeHolidays,
-            holidays,
-          );
-          if (shouldUpdate) {
-            return {
-              ...attendance,
-              startTime: data.startTime,
-              endTime: data.endTime,
-              breakDuration: data.breakDuration,
-              memo: data.memo,
-            };
-          }
-          return attendance;
-        });
-        await updateWorkReportAttendancesAction(
-          workReportId,
-          updatedValues.map((attendance) => ({
-            ...attendance,
-            workReportId: workReportId,
-          })),
-        );
-        setCurrentAttendances(updatedValues);
-        resetBulkEditForm();
-        showSuccess("一括編集を適用しました");
-      })();
-    });
-  };
-
-  // 編集フォームの送信処理
-  const onEditSubmit = async (date: Date, data: EditFormValues) => {
-    try {
+  const applyBulkEdit = useCallback(
+    (data: BulkEditFormValues) => {
       startTransition(() => {
         void (async () => {
+          // startDateとendDateはバリデーションで必須なので、ここではnullではない
+          if (!data.startDate || !data.endDate) {
+            return;
+          }
+
+          const startDate = data.startDate;
+          const endDate = data.endDate;
+
           const updatedValues = currentAttendances.map((attendance) => {
-            if (attendance.date.getTime() === date.getTime()) {
+            const shouldUpdate = shouldUpdateDate(
+              attendance.date,
+              data.selectedDays,
+              startDate,
+              endDate,
+              data.excludeHolidays,
+              holidays,
+            );
+            if (shouldUpdate) {
               return {
                 ...attendance,
                 startTime: data.startTime,
@@ -307,30 +301,73 @@ export default function ClientWorkReportPage({
             }
             return attendance;
           });
-          // フォームの値を更新
-          const attendance = updatedValues.find(
-            (attendance) => attendance.date.getTime() === date.getTime(),
+          await updateWorkReportAttendancesAction(
+            workReportId,
+            updatedValues.map((attendance) => ({
+              ...attendance,
+              workReportId: workReportId,
+            })),
           );
-          if (attendance) {
-            await updateWorkReportAttendanceAction(
-              workReportId,
-              attendance.date,
-              {
-                ...attendance,
-                workReportId: workReportId,
-              },
-            );
-          }
           setCurrentAttendances(updatedValues);
-          setEditingDate(null);
+          resetBulkEditForm();
+          showSuccess("一括編集を適用しました");
         })();
       });
-      showSuccess("編集を適用しました");
-    } catch (error) {
-      console.error("編集の適用に失敗しました", error);
-      showError("編集の適用に失敗しました");
-    }
-  };
+    },
+    [
+      currentAttendances,
+      holidays,
+      workReportId,
+      startTransition,
+      resetBulkEditForm,
+      showSuccess,
+    ],
+  );
+
+  // 編集フォームの送信処理
+  const onEditSubmit = useCallback(
+    async (date: Date, data: EditFormValues) => {
+      try {
+        startTransition(() => {
+          void (async () => {
+            const updatedValues = currentAttendances.map((attendance) => {
+              if (attendance.date.getTime() === date.getTime()) {
+                return {
+                  ...attendance,
+                  startTime: data.startTime,
+                  endTime: data.endTime,
+                  breakDuration: data.breakDuration,
+                  memo: data.memo,
+                };
+              }
+              return attendance;
+            });
+            // フォームの値を更新
+            const attendance = updatedValues.find(
+              (attendance) => attendance.date.getTime() === date.getTime(),
+            );
+            if (attendance) {
+              await updateWorkReportAttendanceAction(
+                workReportId,
+                attendance.date,
+                {
+                  ...attendance,
+                  workReportId: workReportId,
+                },
+              );
+            }
+            setCurrentAttendances(updatedValues);
+            setEditingDate(null);
+          })();
+        });
+        showSuccess("編集を適用しました");
+      } catch (error) {
+        console.error("編集の適用に失敗しました", error);
+        showError("編集の適用に失敗しました");
+      }
+    },
+    [currentAttendances, workReportId, startTransition, showSuccess, showError],
+  );
 
   // openEditDialog関数を簡略化
   const openEditDialog = (date: Date) => {
@@ -504,7 +541,7 @@ export default function ClientWorkReportPage({
           const workReportMonthCell = targetWorkReportMonthSheet.getCell(
             workReportMonthRangeAddress,
           );
-          workReportMonthCell.value = `${String(targetDate.getFullYear())}年${String(targetDate.getMonth() + 1)}月度作業報告書`;
+          workReportMonthCell.value = formatWorkReportMonth(targetDate);
         }
       }
 
@@ -594,13 +631,11 @@ export default function ClientWorkReportPage({
             const { startRow, startCol } = parseExcelRange(rangeAddress);
             const sheet = workbook.getWorksheet(sheetName);
             if (sheet) {
-              for (let i = 0; i < 31; i++) {
+              for (let i = 0; i < WORK_REPORT_DAYS; i++) {
                 const currentRow = startRow + i;
                 let value: string | number = "";
                 if (i < sortedFormData.length) {
                   const entry = sortedFormData[i];
-                  console.log("Start Time:", entry.startTime?.toISOString());
-                  console.log("End Time:", entry.endTime?.toISOString());
                   if (fieldName === "日付") {
                     value = formatMonthDay(entry.date.toISOString());
                   } else if (fieldName === "開始時刻") {
@@ -660,7 +695,7 @@ export default function ClientWorkReportPage({
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${String(targetDate.getFullYear())}年${String(targetDate.getMonth() + 1)}月度作業報告書_${userName}.xlsx`;
+      link.download = formatWorkReportFileName(targetDate, userName);
       link.click();
       window.URL.revokeObjectURL(url);
       showSuccess("テンプレートからの作業報告書作成が完了しました");
@@ -683,14 +718,14 @@ export default function ClientWorkReportPage({
       // メーラーを起動
       const recipient = clientEmail; // 送信先
       const subject = encodeURIComponent(
-        `【作業報告書】${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}月分_${userName}`,
+        formatWorkReportEmailSubject(targetDate, userName),
       );
       const body = encodeURIComponent(`
 ${contactName ? contactName : clientName}様
 
 お世話になっております。${userName}です。
 
-${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}月分の作業報告書を送付いたします。
+${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたします。
 ご確認のほど、よろしくお願いいたします。
 `);
       window.open(
@@ -704,41 +739,19 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
   };
 
   const handleConfirmCreateReport = async () => {
-    if (extensionOption === "excel") {
-      if (templateOption === "upload") {
-        if (!uploadedTemplateFile) {
-          showError("テンプレートファイルが選択されていません");
-          return;
-        }
-        try {
-          const buffer = await uploadedTemplateFile.arrayBuffer();
-          const workbook = new ExcelJS.Workbook();
-          await workbook.xlsx.load(buffer);
-          await createReportFromTemplate(workbook);
-        } catch (err) {
-          console.error("アップロードテンプレートの処理に失敗しました", err);
-          showError("アップロードテンプレートの処理に失敗しました");
-          return;
-        }
+    // 現在はデフォルトテンプレート + Excel形式のみサポート
+    try {
+      const response = await fetch("/workReportDefaultTemplate.xlsx");
+      if (!response.ok) {
+        throw new Error("デフォルトテンプレートの取得に失敗しました");
       }
-      if (templateOption === "default") {
-        try {
-          const response = await fetch("/workReportDefaultTemplate.xlsx");
-          if (!response.ok) {
-            throw new Error("デフォルトテンプレートの取得に失敗しました");
-          }
-          const buffer = await response.arrayBuffer();
-          const workbook = new ExcelJS.Workbook();
-          await workbook.xlsx.load(buffer);
-          await createReportFromTemplate(workbook);
-        } catch (err) {
-          console.error("デフォルトテンプレートの読み込みに失敗しました:", err);
-          showError("デフォルトテンプレートの読み込みに失敗しました");
-          return;
-        }
-      }
-    } else if (extensionOption === "pdf") {
-      showError("PDF形式での作業報告書作成は未実装です");
+      const buffer = await response.arrayBuffer();
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
+      await createReportFromTemplate(workbook);
+    } catch (err) {
+      console.error("デフォルトテンプレートの読み込みに失敗しました:", err);
+      showError("デフォルトテンプレートの読み込みに失敗しました");
       return;
     }
   };
@@ -995,14 +1008,7 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                     type="time"
                     id={`start-${day.date.toISOString()}`}
                     readOnly
-                    value={
-                      day.startTime
-                        ? day.startTime
-                            .toISOString()
-                            .split("T")[1]
-                            .substring(0, 5)
-                        : ""
-                    }
+                    value={formatTimeInput(day.startTime)}
                   />
                 </div>
                 {/* End time */}
@@ -1014,14 +1020,7 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                     type="time"
                     id={`end-${day.date.toISOString()}`}
                     readOnly
-                    value={
-                      day.endTime
-                        ? day.endTime
-                            .toISOString()
-                            .split("T")[1]
-                            .substring(0, 5)
-                        : ""
-                    }
+                    value={formatTimeInput(day.endTime)}
                   />
                 </div>
                 {/* Break time */}
@@ -1033,16 +1032,7 @@ ${String(targetDate.getUTCFullYear())}年${String(targetDate.getUTCMonth() + 1)}
                     type="time"
                     id={`break-${day.date.toISOString()}`}
                     readOnly
-                    value={
-                      day.breakDuration
-                        ? `${Math.floor(day.breakDuration / 60)
-                            .toString()
-                            .padStart(
-                              2,
-                              "0",
-                            )}:${(day.breakDuration % 60).toString().padStart(2, "0")}`
-                        : ""
-                    }
+                    value={formatBreakDuration(day.breakDuration)}
                   />
                 </div>
                 {/* Memo */}
