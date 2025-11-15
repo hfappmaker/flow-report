@@ -636,10 +636,11 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
 
       {/* Work Hours and Amount Summary */}
       <div className="mb-6 rounded-lg border bg-muted/30 p-4">
-        <h2 className="mb-3 text-lg font-semibold">稼働時間・金額サマリー</h2>
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div>
-            <span className="font-medium text-muted-foreground">稼働時間:</span>
+            <span className="font-medium text-muted-foreground">
+              総稼働時間:
+            </span>
             <div className="text-base font-semibold">{workTimeText}</div>
           </div>
           <div>
@@ -782,9 +783,9 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
               <div className="flex flex-wrap gap-2 lg:contents">
                 {/* Start time */}
                 <div className="w-[calc(50%-0.25rem)] lg:col-span-1 lg:w-auto">
-                  <label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
+                  <Label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
                     出勤時間
-                  </label>
+                  </Label>
                   <Input
                     type="time"
                     id={`start-${day.date.toISOString()}`}
@@ -794,9 +795,9 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
                 </div>
                 {/* End time */}
                 <div className="w-[calc(50%-0.25rem)] lg:col-span-1 lg:w-auto">
-                  <label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
+                  <Label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
                     退勤時間
-                  </label>
+                  </Label>
                   <Input
                     type="time"
                     id={`end-${day.date.toISOString()}`}
@@ -806,9 +807,9 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
                 </div>
                 {/* Break time */}
                 <div className="w-[calc(50%-0.25rem)] lg:col-span-1 lg:w-auto">
-                  <label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
+                  <Label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
                     休憩時間
-                  </label>
+                  </Label>
                   <Input
                     type="time"
                     id={`break-${day.date.toISOString()}`}
@@ -818,9 +819,9 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
                 </div>
                 {/* Work time */}
                 <div className="w-[calc(50%-0.25rem)] lg:col-span-1 lg:w-auto">
-                  <label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
+                  <Label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
                     稼働時間
-                  </label>
+                  </Label>
                   <Input
                     type="time"
                     id={`work-${day.date.toISOString()}`}
@@ -836,9 +837,9 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
                 </div>
                 {/* Memo */}
                 <div className="lg:col-span-1">
-                  <label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
+                  <Label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
                     作業内容
-                  </label>
+                  </Label>
                   <Input
                     type="text"
                     id={`memo-${day.date.toISOString()}`}
@@ -1039,7 +1040,9 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
       <AttendanceEditDialog
         key={editingDate?.toISOString() ?? "closed"}
         isOpen={editingDate !== null}
-        onClose={() => { setEditingDate(null); }}
+        onClose={() => {
+          setEditingDate(null);
+        }}
         selectedDate={editingDate ?? new Date()}
         onSubmit={onEditSubmit}
         defaultValues={defaultValuesForEdit}
@@ -1132,7 +1135,7 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
                               ?.name ?? clientName)
                           : "未選択"}
                       </li>
-                      <li>稼働時間: {workTimeText}</li>
+                      <li>総稼働時間: {workTimeText}</li>
                       <li>
                         金額:{" "}
                         {amountCalculation

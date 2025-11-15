@@ -1,5 +1,10 @@
 import ExcelJS from "exceljs";
 
+import {
+  calculateBasicWorkMinutes,
+  calculateTotalWorkMinutes,
+  calculateWorkingDays,
+} from "@/features/contract/utils/contract-calculation-utils";
 import { WORK_REPORT_DAYS } from "@/features/work-report/constants/work-report-constants";
 import type { AttendanceData } from "@/features/work-report/types/attendance";
 import {
@@ -16,10 +21,10 @@ import { msToSerial } from "@/features/work-report/utils/excel-utils";
 /**
  * Excel名前付き範囲のセル値の型定義
  */
-type NamedRangeCellValue = {
+interface NamedRangeCellValue {
   value: string | number;
   numFmt?: string;
-};
+}
 
 /**
  * 作業報告書Excel生成に必要なデータ
@@ -161,6 +166,34 @@ export async function generateWorkReportExcel(
   setNamedRangeValue("_１ヶ月あたりの作業単位", () =>
     monthlyWorkMinutes ? { value: `${String(monthlyWorkMinutes)}分` } : null,
   );
+
+  // 総稼働時間
+  const totalWorkMinutes = calculateTotalWorkMinutes(attendances);
+  setNamedRangeValue("総稼働時間", () => ({
+    value: msToSerial(totalWorkMinutes * 60 * 1000),
+    numFmt: "[h]:mm",
+  }));
+
+  // 基本稼働時間
+  const basicWorkMinutes = calculateBasicWorkMinutes(
+    basicStartTime,
+    basicEndTime,
+    basicBreakDuration,
+  );
+  setNamedRangeValue("基本稼働時間", () =>
+    basicWorkMinutes !== null
+      ? {
+          value: msToSerial(basicWorkMinutes * 60 * 1000),
+          numFmt: "[h]:mm",
+        }
+      : null,
+  );
+
+  // 稼働日数
+  const workingDays = calculateWorkingDays(attendances);
+  setNamedRangeValue("稼働日数", () => ({
+    value: workingDays,
+  }));
 
   // フォームデータを名前付き範囲に入力
   // 各名前付き範囲（'日付', '開始時刻', '終了時刻', '休憩時間'）は31セルが縦に並んでいると仮定

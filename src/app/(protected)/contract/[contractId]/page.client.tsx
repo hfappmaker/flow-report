@@ -99,9 +99,7 @@ export default function ContractClientPage({
   // 作業報告書カードを生成する共通関数
   const renderWorkReportCard = (workReport: WorkReportWithAttendances) => {
     // 稼働時間と金額を計算
-    const totalWorkMinutes = calculateTotalWorkMinutes(
-      workReport.attendances,
-    );
+    const totalWorkMinutes = calculateTotalWorkMinutes(workReport.attendances);
     const workTimeText = formatWorkTime(totalWorkMinutes);
 
     const amountCalculation = contract
@@ -130,9 +128,17 @@ export default function ContractClientPage({
       >
         <div className="flex w-full items-center justify-between">
           <div
+            role="button"
+            tabIndex={0}
             className="flex-1 cursor-pointer"
             onClick={() => {
               handleNavigation(workReport.id);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleNavigation(workReport.id);
+              }
             }}
           >
             <h3 className="mb-2 text-lg font-semibold text-foreground">
@@ -141,7 +147,7 @@ export default function ContractClientPage({
             </h3>
             <div className="flex gap-4 text-sm text-muted-foreground">
               <div>
-                <span className="font-medium">稼働時間:</span> {workTimeText}
+                <span className="font-medium">総稼働時間:</span> {workTimeText}
               </div>
               <div>
                 <span className="font-medium">税抜:</span>{" "}

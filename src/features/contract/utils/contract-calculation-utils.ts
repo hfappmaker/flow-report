@@ -326,6 +326,48 @@ export function calculateTotalWorkMinutes(
 }
 
 /**
+ * 稼働日数を計算する（startTimeとendTimeの両方がnullでない日数をカウント）
+ */
+export function calculateWorkingDays(
+  attendances: {
+    startTime?: string | Date | null;
+    endTime?: string | Date | null;
+  }[],
+): number {
+  return attendances.filter((attendance) => {
+    return attendance.startTime != null && attendance.endTime != null;
+  }).length;
+}
+
+/**
+ * 基本稼働時間（分）を計算する
+ * (基本終了時刻 - 基本開始時刻) - 基本休憩時間
+ */
+export function calculateBasicWorkMinutes(
+  basicStartTime: Date | null,
+  basicEndTime: Date | null,
+  basicBreakDuration: number | null,
+): number | null {
+  if (!basicStartTime || !basicEndTime) {
+    return null;
+  }
+
+  try {
+    // 開始時刻と終了時刻から作業時間を計算（分）
+    const workMinutes =
+      (basicEndTime.getTime() - basicStartTime.getTime()) / (1000 * 60);
+
+    // 休憩時間を差し引く
+    const breakMinutes = basicBreakDuration ?? 0;
+
+    return Math.max(0, workMinutes - breakMinutes);
+  } catch (error) {
+    console.error("Error calculating basic work minutes:", error);
+    return null;
+  }
+}
+
+/**
  * 時間を「○時間○分」形式でフォーマットする
  */
 export function formatWorkTime(minutes: number): string {
