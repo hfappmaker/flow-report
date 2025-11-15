@@ -53,7 +53,6 @@
    - Run TypeScript type checking: `npx tsc --noEmit`
    - Run ESLint: `npx eslint <changed-files> --fix`
    - Run Prettier: `npx prettier --write <changed-files>`
-   - If tests exist, suggest running them: `npm test`
 
 6. **Summary Report**:
    - List all files changed

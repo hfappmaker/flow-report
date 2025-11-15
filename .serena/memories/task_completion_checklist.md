@@ -1,10 +1,10 @@
 # タスク完了時のチェックリスト
 
 ## 必須実行コマンド
-1. **リント**: `npm run lint`
-2. **型チェック**: `npx tsc --noEmit`
-3. **テスト**: `npm run test:j` (適用可能な場合)
-4. **フォーマット**: `prettier --write .`
+1. **リント**: `pnpm run lint`
+2. **型チェック**: `pnpm exec tsc --noEmit`
+3. **テスト**: `pnpm run test:j` (適用可能な場合)
+4. **フォーマット**: `pnpm exec prettier --write .`
 
 ## コード品質チェック
 - TypeScript厳格モードに準拠

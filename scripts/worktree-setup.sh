@@ -23,10 +23,10 @@ echo ""
 
 # 1. 依存関係のインストール
 echo "📦 依存関係をインストール中..."
-if [ -f "package-lock.json" ]; then
-    npm ci
+if [ -f "pnpm-lock.yaml" ]; then
+    pnpm install --frozen-lockfile
 else
-    npm install
+    pnpm install
 fi
 echo "✓ 依存関係のインストール完了"
 echo ""
@@ -48,7 +48,7 @@ fi
 
 # 3. Prisma Clientの生成
 echo "🔧 Prisma Clientを生成中..."
-npx prisma generate
+pnpm exec prisma generate
 echo "✓ Prisma Client生成完了"
 echo ""
 
@@ -65,5 +65,5 @@ echo "✓ セットアップが完了しました！"
 echo "=========================================="
 echo ""
 echo "開発サーバーを起動するには:"
-echo "  npm run dev"
+echo "  pnpm run dev"
 echo ""

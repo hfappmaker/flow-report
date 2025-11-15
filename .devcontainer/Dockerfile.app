@@ -1,8 +1,8 @@
 FROM mcr.microsoft.com/devcontainers/typescript-node:dev-22-bookworm
 
-# システムの更新とnpmの最新化
+# システムの更新とpnpmのインストール
 RUN apt update && apt upgrade -y \
-    && npm install -g npm@latest \
+    && npm install -g pnpm@latest \
     && npm cache clean --force
 
 # Stripe CLIのインストール（最新版を自動取得）
@@ -23,18 +23,26 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
 #uvのinstall
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
-RUN npm install -g @anthropic-ai/claude-code
-# RUN npx playwright install
-RUN npx playwright install-deps
+# pnpmのグローバルbinディレクトリをセットアップ
+ENV SHELL=/bin/bash
+ENV PNPM_HOME=/root/.local/share/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+RUN pnpm config set global-bin-dir $PNPM_HOME
 
-RUN npm install -g vercel
+# Claude Code CLIのインストール
+RUN pnpm add -g @anthropic-ai/claude-code
 # Playwright browserのインストール
-# RUN npm install -g playwright --with-deps
-# RUN npm install -g @playwright/mcp@latest
-# RUN npx playwright install chrome
+RUN pnpm dlx playwright install
+RUN pnpm dlx playwright install-deps
+RUN pnpm dlx playwright install chrome
+# Playwrightのインストール
+RUN pnpm add -g playwright --with-deps
 # 日本語フォントのインストール
 # sudo apt update
 # sudo apt install -y fonts-noto-cjk fonts-ipafont-gothic fonts-ipafont-mincho
+# Vercel CLIのインストール
+RUN pnpm add -g vercel
 # Playwright MCPのインストール
-# RUN claude mcp add playwright -s project -- npx  -y @playwright/mcp@latest --headless --no-sandbox --isolated
-# RUN claude mcp add postgresql -s project -- npx  -y @modelcontextprotocol/server-postgres@latest postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB
+# RUN claude mcp add playwright -s project -- pnpm dlx -y @playwright/mcp@latest --headless --no-sandbox --isolated
+# PostgreSQL MCPのインストール
+# RUN claude mcp add postgresql -s project -- pnpm dlx -y @modelcontextprotocol/server-postgres@latest postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB

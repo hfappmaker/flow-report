@@ -12,7 +12,7 @@
   "service": "app",
   "workspaceFolder": "/WorkTimeManagementV2",
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "sudo chown -R node:node . && npm install && npx playwright install && vercel link && vercel env pull .env.development.local",
+  "postCreateCommand": "sudo chown -R node:node . && pnpm install && pnpm exec playwright install && vercel link && vercel env pull .env.development.local",
   // Configure tool-specific properties.
 
   "customizations": {
@@ -30,11 +30,6 @@
     }
   },
 
-  "mounts": [
-    "source=try-node-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
-    "source=try-dist,target=${containerWorkspaceFolder}/dist,type=volume"
-  ],
-
   // Features to add to the dev container. More info: https://containers.dev/features.
   // "features": {},
 
@@ -42,7 +37,7 @@
   // "forwardPorts": ["5432"],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  // "postCreateCommand": "npm install",
+  // "postCreateCommand": "pnpm install",
 
   // Configure tool-specific properties.
   // "customizations": {},

@@ -2,7 +2,7 @@
 
 ## 1. Development Environment
 - Node.js 18+ required
-- Use npm as package manager (converted from Yarn)
+- Use pnpm as package manager
 - DevContainer for unified development environment
 
 ## 2. Code Standards

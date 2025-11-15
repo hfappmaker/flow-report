@@ -43,7 +43,7 @@ cd ../WorkTimeManagementV2-<ブランチ名>
 ```
 
 このスクリプトは以下を実行します：
-- 依存関係のインストール (`npm ci` または `npm install`)
+- 依存関係のインストール (`pnpm install --frozen-lockfile` または `pnpm install`)
 - `.env`ファイルと`.env.development.local`のコピー（メインworktreeから）
 - Prisma Clientの生成
 - `.next`ディレクトリのクリーンアップ
@@ -145,13 +145,13 @@ code ../WorkTimeManagementV2-feature-new-feature
 
 ```bash
 # worktree 1のコンテナ内
-npm run dev  # http://localhost:3000
+pnpm run dev  # http://localhost:3000
 
 # worktree 2のコンテナ内（別VS Codeウィンドウ）
-PORT=3001 npm run dev  # http://localhost:3001
+PORT=3001 pnpm run dev  # http://localhost:3001
 
 # worktree 3のコンテナ内（別VS Codeウィンドウ）
-PORT=3002 npm run dev  # http://localhost:3002
+PORT=3002 pnpm run dev  # http://localhost:3002
 ```
 
 ### DevContainerのディスク使用量
@@ -190,13 +190,13 @@ docker volume prune
 
 ```bash
 # worktree 1
-npm run dev  # デフォルト: http://localhost:3000
+pnpm run dev  # デフォルト: http://localhost:3000
 
 # worktree 2（別ターミナル）
-PORT=3001 npm run dev  # http://localhost:3001
+PORT=3001 pnpm run dev  # http://localhost:3001
 
 # worktree 3（別ターミナル）
-PORT=3002 npm run dev  # http://localhost:3002
+PORT=3002 pnpm run dev  # http://localhost:3002
 ```
 
 ### node_modules
@@ -220,7 +220,7 @@ PORT=3002 npm run dev  # http://localhost:3002
 ### セットアップスクリプトが失敗する
 
 - メインworktreeに`.env.development.local`が存在することを確認してください
-- `npm ci`が失敗する場合は、`package-lock.json`を削除して再試行してください
+- `pnpm install`が失敗する場合は、`pnpm-lock.yaml`を削除して再試行してください
 
 ### worktreeの削除ができない
 
