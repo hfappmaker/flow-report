@@ -45,9 +45,26 @@ export const bulkEditFormSchema = z.object({
   prompt: z.string().nullable(),
 });
 
+export const templateUploadSchema = z.object({
+  file: z
+    .instanceof(File)
+    .refine((file) => file.size <= 5 * 1024 * 1024, {
+      message: "ファイルサイズは5MB以下にしてください",
+    })
+    .refine(
+      (file) =>
+        file.type ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      {
+        message: ".xlsx形式のファイルを選択してください",
+      },
+    ),
+});
+
 export type CreateWorkReportFormValues = z.infer<
   typeof createWorkReportFormSchema
 >;
 export type SearchFormValues = z.infer<typeof searchFormSchema>;
 export type EditFormValues = z.infer<typeof editFormSchema>;
 export type BulkEditFormValues = z.infer<typeof bulkEditFormSchema>;
+export type TemplateUploadValues = z.infer<typeof templateUploadSchema>;
