@@ -36,7 +36,7 @@ RUN pnpm dlx playwright install
 RUN pnpm dlx playwright install-deps
 RUN pnpm dlx playwright install chrome
 # Playwrightのインストール
-RUN pnpm add -g playwright --with-deps
+RUN pnpm add -g playwright
 # 日本語フォントのインストール
 # sudo apt update
 # sudo apt install -y fonts-noto-cjk fonts-ipafont-gothic fonts-ipafont-mincho
