@@ -2,7 +2,7 @@
 
 import { SessionProvider } from "next-auth/react";
 
-import { auth } from "@/features/auth/lib/auth";
+import { auth } from "@/features/auth/libs/auth";
 
 import Navbar from "./_components/navbar";
 

@@ -3,9 +3,9 @@
 import bcrypt from "bcryptjs";
 import * as z from "zod";
 
-import { unstable_update, currentUser } from "@/features/auth/lib/auth";
-import { sendVerificationEmail } from "@/features/auth/lib/mail";
-import { generateVerificationToken } from "@/features/auth/lib/tokens";
+import { unstable_update, currentUser } from "@/features/auth/libs/auth";
+import { sendVerificationEmail } from "@/features/auth/libs/mail";
+import { generateVerificationToken } from "@/features/auth/libs/tokens";
 import {
   getUserByEmail,
   getUserById,

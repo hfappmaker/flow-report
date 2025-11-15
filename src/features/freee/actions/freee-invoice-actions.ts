@@ -1,11 +1,11 @@
 "use server";
 
-import { currentUser } from "@/features/auth/lib/auth";
+import { currentUser } from "@/features/auth/libs/auth";
 import { getContractById } from "@/features/contract/repositories/contract-repository";
 import {
   createFreeeInvoice,
   getFreeeInvoiceWebUrl,
-} from "@/features/freee/lib/freee-invoice-api-client";
+} from "@/features/freee/libs/freee-invoice-api-client";
 import { getFreeeToken } from "@/features/freee/repositories/freee-token-repository";
 import { mapWorkReportToFreeeInvoice } from "@/features/freee/utils/invoice-data-mapper";
 import { getAttendancesByWorkReportId } from "@/features/work-report/repositories/attendance-repository";
@@ -94,12 +94,8 @@ export async function createFreeeInvoiceFromWorkReportAction(
           : null,
         upperRate: contract.upperRate ? Number(contract.upperRate) : null,
         lowerRate: contract.lowerRate ? Number(contract.lowerRate) : null,
-        middleRate: contract.middleRate
-          ? Number(contract.middleRate)
-          : null,
-        hourlyRate: contract.hourlyRate
-          ? Number(contract.hourlyRate)
-          : null,
+        middleRate: contract.middleRate ? Number(contract.middleRate) : null,
+        hourlyRate: contract.hourlyRate ? Number(contract.hourlyRate) : null,
         taxInclusiveType: contract.taxInclusiveType,
         taxRoundingType: contract.taxRoundingType,
         rateType: contract.rateType,
@@ -122,7 +118,10 @@ export async function createFreeeInvoiceFromWorkReportAction(
     console.error("Failed to create freee invoice:", error);
 
     // 403 or 401エラーの場合は再認可が必要
-    if (axios.isAxiosError(error) && (error.response?.status === 403 || error.response?.status === 401)) {
+    if (
+      axios.isAxiosError(error) &&
+      (error.response?.status === 403 || error.response?.status === 401)
+    ) {
       return {
         success: false,
         message: "freee連携の有効期限が切れています。再度連携してください。",

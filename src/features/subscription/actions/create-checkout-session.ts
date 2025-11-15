@@ -1,7 +1,7 @@
 "use server";
 import Stripe from "stripe";
 
-import { currentUser } from "@/features/auth/lib/auth";
+import { currentUser } from "@/features/auth/libs/auth";
 import {
   stripe,
   TRIAL_PERIOD_DAYS,

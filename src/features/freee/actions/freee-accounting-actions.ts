@@ -2,8 +2,8 @@
 
 import axios from "axios";
 
-import { currentUser } from "@/features/auth/lib/auth";
-import { getFreeePartners } from "@/features/freee/lib/freee-accounting-api-client";
+import { currentUser } from "@/features/auth/libs/auth";
+import { getFreeePartners } from "@/features/freee/libs/freee-accounting-api-client";
 import { getFreeeToken } from "@/features/freee/repositories/freee-token-repository";
 import type { FreeePartner } from "@/features/freee/types/freee-accounting-types";
 
@@ -56,7 +56,10 @@ export async function getFreeePartnersAction(options?: {
     console.error("Failed to get freee partners:", error);
 
     // 403 or 401エラーの場合は再認可が必要
-    if (axios.isAxiosError(error) && (error.response?.status === 403 || error.response?.status === 401)) {
+    if (
+      axios.isAxiosError(error) &&
+      (error.response?.status === 403 || error.response?.status === 401)
+    ) {
       return {
         success: false,
         message: "freee連携の有効期限が切れています。再度連携してください。",

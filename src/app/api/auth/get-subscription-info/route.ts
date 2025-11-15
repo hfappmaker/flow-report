@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { currentUser } from "@/features/auth/lib/auth";
+import { currentUser } from "@/features/auth/libs/auth";
 import { getSubscriptionInfoByUserId } from "@/features/subscription/repositories/subscription-repository";
 
 export async function GET() {

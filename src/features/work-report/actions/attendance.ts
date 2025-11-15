@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { generateWithAI } from "@/features/ai/lib/ai";
+import { generateWithAI } from "@/features/ai/libs/ai";
 import { fetchHolidays } from "@/features/holidays/libs/google-calendar";
 import {
   getAttendanceByWorkReportIdAndDate,

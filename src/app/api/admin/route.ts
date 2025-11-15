@@ -1,7 +1,7 @@
 import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-import { currentRole } from "@/features/auth/lib/auth";
+import { currentRole } from "@/features/auth/libs/auth";
 
 export async function GET() {
   const role = await currentRole();

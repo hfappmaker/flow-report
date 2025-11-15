@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { getValidAccessToken } from "@/features/freee/lib/freee-oauth";
+import { getValidAccessToken } from "@/features/freee/libs/freee-oauth";
 import type { FreeePartnersResponse } from "@/features/freee/types/freee-accounting-types";
 
 /**

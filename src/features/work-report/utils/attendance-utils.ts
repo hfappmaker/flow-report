@@ -170,6 +170,7 @@ export function getBulkEditFormDefaults(
   basicStartTime: Date | null,
   basicEndTime: Date | null,
   basicBreakDuration: number | null,
+  basicMemo: string | null,
   startDate: Date,
   endDate: Date,
 ) {
@@ -181,7 +182,7 @@ export function getBulkEditFormDefaults(
     startTime: basicStartTime ? new Date(basicStartTime.toISOString()) : null,
     endTime: basicEndTime ? new Date(basicEndTime.toISOString()) : null,
     breakDuration: basicBreakDuration ?? null,
-    memo: null,
+    memo: basicMemo,
     prompt: null,
   };
 }

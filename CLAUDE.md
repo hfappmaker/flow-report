@@ -1,12 +1,15 @@
 # WorkTimeManagementV2 Project Rules for Claude Code
 
 ## 1. Development Environment
+
 - Node.js 18+ required
 - Use pnpm as package manager
 - DevContainer for unified development environment
 
 ## 2. Code Standards
+
 ### 2.1 Folder Structure
+
 ```
 src/
   ├── app              // Routing components
@@ -15,11 +18,13 @@ src/
   ├── components       // Generic components (buttons, labels, text boxes, etc.)
   ├── config           // Global configuration and environment variables
   ├── features         // Feature modules with subfolders as needed:
+  │   ├── actions      // Feature-specific server actions
   │   ├── assets       // Feature-specific static files
   │   ├── components   // Feature-specific components
   │   ├── hooks        // Feature-specific custom hooks
   │   ├── libs         // Feature-specific libraries (initialization, config, non-data-fetching code)
   │   ├── repositories // Feature-specific repositories
+  │   ├── schemas      // Feature-specific validation schemas (Zod, etc.)
   │   ├── stores       // Feature-specific state management
   │   ├── testing      // Feature-specific test utilities and mocks
   │   ├── types        // Feature-specific type definitions
@@ -34,16 +39,19 @@ src/
 ```
 
 **Important Notes:**
+
 - Only include necessary folders in each feature module
 - Avoid barrel files to prevent tree-shaking issues; use direct imports
 - Use ESLint rules to restrict cross-feature imports and maintain unidirectional code structure
 
 ### 2.2 Naming Conventions
+
 - Directory/file names: kebab-case (e.g., `user-info/`, `user-profile.tsx`, `user-type.ts`)
 - Constants: UPPER_SNAKE_CASE
 - Variables/functions: camelCase
 
 ### 2.3 Coding Standards
+
 - Use TypeScript strict mode
 - Follow ESLint and Prettier configurations
 - Prefer function components
@@ -58,7 +66,9 @@ src/
 - Don't use Tailwind classes for element selection in tests
 
 ## 3. Commit Messages
+
 Use conventional commit prefixes:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation only changes
@@ -68,12 +78,14 @@ Use conventional commit prefixes:
 - `chore`: Build process or tool changes
 
 ## 4. Claude Code Specific Instructions
+
 - Maintain the existing code style and patterns
 - Follow the folder structure when creating new files
 - Prioritize editing existing files over creating new ones
 - Use the project's existing testing framework (check package.json or codebase)
 
 ### MCP Settings Management
+
 - **ALWAYS** manage MCP permissions and settings in `.claude/settings.json` for repository-wide sharing
 - **NEVER** create or modify `.claude/settings.local.json` files
 - All MCP server configurations and permissions must be committed to the repository
@@ -81,7 +93,9 @@ Use conventional commit prefixes:
 - This ensures consistent MCP settings across all team members and environments
 
 ### Files to Ignore
+
 Claude Code should avoid processing these files and directories:
+
 - `node_modules/` - Package dependencies
 - `.next/` - Next.js build output
 - `dist/` - Distribution/build files
@@ -96,7 +110,8 @@ Claude Code should avoid processing these files and directories:
 - `*.lock` - Lock files (package-lock.json, yarn.lock)
 
 # Important Instruction Reminders
+
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
-NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+NEVER proactively create documentation files (\*.md) or README files. Only create documentation files if explicitly requested by the User.

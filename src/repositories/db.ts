@@ -1,6 +1,6 @@
 import { withAccelerate } from "@prisma/extension-accelerate";
 
-import { currentUser } from "@/features/auth/lib/auth";
+import { currentUser } from "@/features/auth/libs/auth";
 import { baseDb } from "@/repositories/base-db";
 
 declare global {

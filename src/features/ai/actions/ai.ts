@@ -1,6 +1,6 @@
 "use server";
 
-import { generateWithOllama } from "@/features/ai/lib/ai";
+import { generateWithOllama } from "@/features/ai/libs/ai";
 
 export const generateOllamaAction = async (
   prompt: string,

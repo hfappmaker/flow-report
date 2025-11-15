@@ -1,6 +1,6 @@
 "use server";
 
-import { currentUser } from "@/features/auth/lib/auth";
+import { currentUser } from "@/features/auth/libs/auth";
 import { stripe } from "@/features/subscription/libs/stripe";
 import { getStripeCustomerByUserId } from "@/features/subscription/repositories/subscription-repository";
 import { CustomerPortalSessionResult } from "@/features/subscription/types/subscription";

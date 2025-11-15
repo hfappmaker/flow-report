@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { currentUser } from "@/features/auth/lib/auth";
-import { exchangeCodeForToken } from "@/features/freee/lib/freee-oauth";
+import { currentUser } from "@/features/auth/libs/auth";
+import { exchangeCodeForToken } from "@/features/freee/libs/freee-oauth";
 import { saveFreeeToken } from "@/features/freee/repositories/freee-token-repository";
 import { getAuthUrl } from "@/utils/get-app-url";
 
