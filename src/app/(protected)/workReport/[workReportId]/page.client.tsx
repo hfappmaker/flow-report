@@ -59,7 +59,6 @@ import { TemplateSelectionDialog } from "@/features/work-report/components/templ
 import {
   type EditFormValues,
   type BulkEditFormValues,
-  editFormSchema,
   bulkEditFormSchema,
 } from "@/features/work-report/schemas/work-report-form-schemas";
 import { type AttendanceData } from "@/features/work-report/types/attendance";
@@ -80,7 +79,6 @@ import {
   formatTimeInput,
   formatBreakDuration,
 } from "@/features/work-report/utils/date-formatting";
-import { WORK_REPORT_DAYS } from "@/features/work-report/constants/work-report-constants";
 import { generateWorkReportExcel } from "@/features/work-report/libs/excel-report-generator";
 import { useMessageState } from "@/hooks/use-message-state";
 import { formatDateAsUTC } from "@/utils/date-utils";
