@@ -3,11 +3,14 @@ import ExcelJS from "exceljs";
 import { WORK_REPORT_DAYS } from "@/features/work-report/constants/work-report-constants";
 import type { AttendanceData } from "@/features/work-report/types/attendance";
 import {
-  formatMonthDay,
   parseExcelRange,
   parseRangeReference,
 } from "@/features/work-report/utils/attendance-utils";
 import { formatWorkReportMonth } from "@/features/work-report/utils/date-formatting";
+import {
+  FIELD_NAMES,
+  setCellValueForField,
+} from "@/features/work-report/utils/excel-field-mappers";
 import { msToSerial } from "@/features/work-report/utils/excel-utils";
 
 /**
@@ -164,73 +167,23 @@ export async function generateWorkReportExcel(
   const sortedFormData = [...attendances].sort(
     (a, b) => a.date.getTime() - b.date.getTime(),
   );
-  const fieldNames = [
-    "日付",
-    "開始時刻",
-    "終了時刻",
-    "休憩時間",
-    "稼働時間",
-    "作業内容",
-  ];
-  fieldNames.forEach((fieldName) => {
+
+  FIELD_NAMES.forEach((fieldName) => {
     const fieldRanges = workbook.definedNames.getRanges(fieldName);
     if (fieldRanges.ranges.length > 0) {
       const [sheetName, rangeAddress] = parseRangeReference(
         fieldRanges.ranges[0],
       );
       if (sheetName && rangeAddress) {
-        const { startRow, startCol } = parseExcelRange(rangeAddress);
+        const { startRow, startCol, endRow } = parseExcelRange(rangeAddress);
         const sheet = workbook.getWorksheet(sheetName);
         if (sheet) {
-          for (let i = 0; i < WORK_REPORT_DAYS; i++) {
+          const maxRows = Math.min(endRow - startRow + 1, WORK_REPORT_DAYS);
+          for (let i = 0; i < maxRows; i++) {
             const currentRow = startRow + i;
-            let value: string | number = "";
-            if (i < sortedFormData.length) {
-              const entry = sortedFormData[i];
-              if (fieldName === "日付") {
-                value = formatMonthDay(entry.date.toISOString());
-              } else if (fieldName === "開始時刻") {
-                if (entry.startTime) {
-                  value = msToSerial(
-                    (entry.startTime.getUTCHours() * 60 +
-                      entry.startTime.getUTCMinutes()) *
-                      60000,
-                  );
-                  sheet.getCell(currentRow, startCol).numFmt = "[h]:mm";
-                }
-              } else if (fieldName === "終了時刻") {
-                if (entry.endTime) {
-                  value = msToSerial(
-                    (entry.endTime.getUTCHours() * 60 +
-                      entry.endTime.getUTCMinutes()) *
-                      60000,
-                  );
-                  sheet.getCell(currentRow, startCol).numFmt = "[h]:mm";
-                }
-              } else if (fieldName === "休憩時間") {
-                if (entry.breakDuration) {
-                  value = msToSerial(entry.breakDuration * 60000);
-                  sheet.getCell(currentRow, startCol).numFmt = "[h]:mm";
-                }
-              } else if (fieldName === "稼働時間") {
-                if (entry.startTime && entry.endTime) {
-                  const startMs = entry.startTime.getTime();
-                  const endMs = entry.endTime.getTime();
-                  if (entry.breakDuration) {
-                    const breakMs = entry.breakDuration * 60000;
-                    value = msToSerial(endMs - startMs - breakMs);
-                  } else {
-                    value = msToSerial(endMs - startMs);
-                  }
-                  sheet.getCell(currentRow, startCol).numFmt = "[h]:mm";
-                }
-              } else if (fieldName === "作業内容") {
-                if (entry.memo) {
-                  value = entry.memo;
-                }
-              }
-            }
-            sheet.getCell(currentRow, startCol).value = value;
+            const entry =
+              i < sortedFormData.length ? sortedFormData[i] : undefined;
+            setCellValueForField(fieldName, entry, sheet, currentRow, startCol);
           }
         }
       }
