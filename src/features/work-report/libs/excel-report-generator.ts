@@ -107,23 +107,6 @@ export async function generateWorkReportExcel(
     }
   }
 
-  // タイトルの名前付き範囲を処理
-  const workReportMonthRanges =
-    templateWorkbook.definedNames.getRanges("タイトル");
-  const [workReportMonthSheetName, workReportMonthRangeAddress] =
-    parseRangeReference(workReportMonthRanges.ranges[0]);
-  if (workReportMonthSheetName) {
-    const targetWorkReportMonthSheet = workbook.getWorksheet(
-      workReportMonthSheetName,
-    );
-    if (targetWorkReportMonthSheet && workReportMonthRangeAddress) {
-      const workReportMonthCell = targetWorkReportMonthSheet.getCell(
-        workReportMonthRangeAddress,
-      );
-      workReportMonthCell.value = formatWorkReportMonth(targetDate);
-    }
-  }
-
   // 名前付き範囲に値を設定するヘルパー関数
   const setNamedRangeValue = (
     rangeName: string,
@@ -149,6 +132,10 @@ export async function generateWorkReportExcel(
   };
 
   // 各名前付き範囲に値を設定
+  setNamedRangeValue("タイトル", () => ({
+    value: formatWorkReportMonth(targetDate),
+  }));
+
   setNamedRangeValue("作業者名", () => ({ value: userName }));
 
   setNamedRangeValue("基本開始時刻", () =>
