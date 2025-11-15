@@ -73,19 +73,19 @@ echo ""
 # .envファイルのコピー（存在しない場合のみ）
 MAIN_WORKTREE=$(git worktree list | head -n 1 | awk '{print $1}')
 
-if [ ! -f ".env.development.local" ] && [ -f "$MAIN_WORKTREE/.env.development.local" ]; then
-    echo "📄 .env.development.localをコピー中..."
-    cp "$MAIN_WORKTREE/.env.development.local" .env.development.local
-    echo "✓ .env.development.localをコピーしました"
-    echo ""
-fi
+copy_env_file() {
+    local env_file="$1"
+    if [ ! -f "$env_file" ] && [ -f "$MAIN_WORKTREE/$env_file" ]; then
+        echo "📄 ${env_file}をコピー中..."
+        cp "$MAIN_WORKTREE/$env_file" "$env_file"
+        echo "✓ ${env_file}をコピーしました"
+        echo ""
+    fi
+}
 
-if [ ! -f ".env" ] && [ -f "$MAIN_WORKTREE/.env" ]; then
-    echo "📄 .envをコピー中..."
-    cp "$MAIN_WORKTREE/.env" .env
-    echo "✓ .envをコピーしました"
-    echo ""
-fi
+copy_env_file ".env.development.local"
+copy_env_file ".env.preview.local"
+copy_env_file ".env"
 
 # Prisma Clientの生成
 echo "🔧 Prisma Clientを生成中..."
