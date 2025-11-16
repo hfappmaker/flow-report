@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import FormError from "@/components/ui/feedback/error-alert";
 import FormSuccess from "@/components/ui/feedback/success-alert";
 import { useTransitionContext } from "@/contexts/transition-context";
@@ -85,6 +86,12 @@ export default function ContractClientPage({
   const handleNavigation = (workReportId: string) => {
     startTransition(() => {
       router.push(`/workReport/${workReportId}`);
+    });
+  };
+
+  const handleNavigateToContracts = () => {
+    startTransition(() => {
+      router.push("/contracts");
     });
   };
 
@@ -184,9 +191,12 @@ export default function ContractClientPage({
 
   return (
     <div className="p-4">
-      <h1 className="mb-4 text-xl font-bold">
-        作業報告書一覧（{contract?.name}）
-      </h1>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-xl font-bold">
+          作業報告書一覧（{contract?.name}）
+        </h1>
+        <Button onClick={handleNavigateToContracts}>契約一覧へ</Button>
+      </div>
       <FormError message={error.message} resetSignal={error.date.getTime()} />
       <FormSuccess
         message={success.message}

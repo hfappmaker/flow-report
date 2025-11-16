@@ -261,10 +261,7 @@ export default function DashboardClientPage({
         </Card>
       )}
 
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">作成中の作業報告書一覧</h1>
-        <Button onClick={handleNavigateToContracts}>契約一覧へ</Button>
-      </div>
+      <h1 className="mb-6 text-2xl font-bold">作成中の作業報告書一覧</h1>
 
       {Object.entries(draftWorkReports).map(([contractId, contract]) => (
         <Card key={contractId} className="mb-6">
