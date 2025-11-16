@@ -76,8 +76,6 @@ fi
 echo ""
 echo "✓ Worktreeが削除されました: $WORKTREE_PATH"
 echo ""
-echo "残りのworktree:"
-git worktree list
 
 # VSCodeウィンドウを自動的に閉じる
 if [ "$IN_TARGET_VSCODE" = true ]; then
