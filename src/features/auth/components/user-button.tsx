@@ -2,7 +2,7 @@
 
 import { ExitIcon } from "@radix-ui/react-icons";
 import { FaUser } from "react-icons/fa";
-import { MdCancel } from "react-icons/md";
+import { MdSettings } from "react-icons/md";
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -13,8 +13,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import LogoutButton from "@/features/auth/components/logout-button";
-import CancelSubscriptionButton from "@/features/subscription/components/cancel-subscription-button";
-import ResubscribeButton from "@/features/subscription/components/resubscribe-button";
+import ManageSubscriptionButton from "@/features/subscription/components/manage-subscription-button";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useSubscription } from "@/hooks/use-subscription";
 
@@ -41,33 +40,18 @@ const UserButton = () => {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-48" align="end">
-        {/* サブスクリプションキャンセルボタン */}
+        {/* サブスクリプション管理ボタン */}
         {!isLoading &&
           (subscriptionInfo?.status === "TRIAL" ||
-            subscriptionInfo?.status === "ACTIVE") && (
+            subscriptionInfo?.status === "ACTIVE" ||
+            subscriptionInfo?.status === "CANCELED") && (
             <>
-              <CancelSubscriptionButton onSuccess={handleCancelSuccess}>
-                <button className="flex w-full items-center justify-center rounded-sm px-2 py-1.5 text-center text-sm hover:bg-red-50 hover:text-red-600 focus:bg-red-50 focus:text-red-600">
-                  <MdCancel className="mr-2 size-4" />
-                  サブスクリプションをキャンセル
+              <ManageSubscriptionButton onSuccess={handleCancelSuccess}>
+                <button className="flex w-full items-center justify-center rounded-sm px-2 py-1.5 text-center text-sm hover:bg-gray-100 focus:bg-gray-100">
+                  <MdSettings className="mr-2 size-4" />
+                  サブスクリプションを管理
                 </button>
-              </CancelSubscriptionButton>
-              <DropdownMenuSeparator />
-            </>
-          )}
-
-        {/* サブスクリプション再購読ボタン */}
-        {!isLoading &&
-          subscriptionInfo?.status === "CANCELED" &&
-          subscriptionInfo.currentPeriodEnd &&
-          new Date(subscriptionInfo.currentPeriodEnd) > new Date() && (
-            <>
-              <ResubscribeButton onSuccess={handleCancelSuccess}>
-                <div className="flex w-full cursor-pointer items-center justify-center rounded-sm px-2 py-1.5 text-center text-sm hover:bg-green-50 hover:text-green-600 focus:bg-green-50 focus:text-green-600">
-                  <ExitIcon className="mr-2 size-4" />
-                  サブスクリプションを再購読
-                </div>
-              </ResubscribeButton>
+              </ManageSubscriptionButton>
               <DropdownMenuSeparator />
             </>
           )}
