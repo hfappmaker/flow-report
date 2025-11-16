@@ -10,7 +10,7 @@
 
   "dockerComposeFile":"docker-compose.yml",
   "service": "app",
-  "workspaceFolder": "/WorkTimeManagementV2",
+  "workspaceFolder": "/workspace",
   // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "sudo chown -R node:node . && pnpm install && vercel link && vercel env pull .env.development.local",
   // Configure tool-specific properties.
