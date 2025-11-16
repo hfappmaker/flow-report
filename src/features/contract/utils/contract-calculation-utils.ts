@@ -31,6 +31,13 @@ export function calculateWorkAmountDetailed(
   taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
   taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
 } | null {
+  // monthlyWorkMinutes単位で切り捨て
+  const roundedWorkMinutes =
+    params.monthlyWorkMinutes && params.monthlyWorkMinutes > 0
+      ? Math.floor(workMinutes / params.monthlyWorkMinutes) *
+        params.monthlyWorkMinutes
+      : workMinutes;
+
   // 固定精算の場合
   if (params.rateType === "fixed") {
     if (!params.unitPrice) {
@@ -50,7 +57,7 @@ export function calculateWorkAmountDetailed(
     if (!params.hourlyRate) {
       return null;
     }
-    const workHours = workMinutes / 60;
+    const workHours = roundedWorkMinutes / 60;
     const totalAmount = workHours * params.hourlyRate;
     return {
       baseAmount: totalAmount,
@@ -67,7 +74,7 @@ export function calculateWorkAmountDetailed(
     return null;
   }
 
-  const workHours = workMinutes / 60;
+  const workHours = roundedWorkMinutes / 60;
   const settlementMin = params.settlementMin;
   const settlementMax = params.settlementMax;
 
@@ -84,27 +91,37 @@ export function calculateWorkAmountDetailed(
       : (params.middleRate ?? 0);
 
   // 超過・控除時間を計算
-  let excessHours = 0;
-  let deductionHours = 0;
+  const excessHours =
+    workHours > settlementMax
+      ? (() => {
+          // 超過処理のバリデーション
+          if (params.rateType === "upperLower" && !params.upperRate) {
+            return null;
+          }
+          if (params.rateType === "middle" && !params.middleRate) {
+            return null;
+          }
+          return workHours - settlementMax;
+        })()
+      : 0;
 
-  if (workHours < settlementMin) {
-    // 控除処理
-    if (params.rateType === "upperLower" && !params.lowerRate) {
-      return null;
-    }
-    if (params.rateType === "middle" && !params.middleRate) {
-      return null;
-    }
-    deductionHours = settlementMin - workHours;
-  } else if (workHours > settlementMax) {
-    // 超過処理
-    if (params.rateType === "upperLower" && !params.upperRate) {
-      return null;
-    }
-    if (params.rateType === "middle" && !params.middleRate) {
-      return null;
-    }
-    excessHours = workHours - settlementMax;
+  const deductionHours =
+    workHours < settlementMin
+      ? (() => {
+          // 控除処理のバリデーション
+          if (params.rateType === "upperLower" && !params.lowerRate) {
+            return null;
+          }
+          if (params.rateType === "middle" && !params.middleRate) {
+            return null;
+          }
+          return settlementMin - workHours;
+        })()
+      : 0;
+
+  // バリデーションエラーの場合はnullを返す
+  if (excessHours === null || deductionHours === null) {
+    return null;
   }
 
   // 超過情報（常に設定）
@@ -155,38 +172,40 @@ export function calculateWorkAmount(
   displayLabel: string;
 } | null {
   // 作業時間の丸め処理（monthlyWorkMinutes単位で切り捨て）
-  let roundedWorkMinutes = workMinutes;
-  if (params.monthlyWorkMinutes && params.monthlyWorkMinutes > 0) {
-    const units = Math.floor(workMinutes / params.monthlyWorkMinutes);
-    roundedWorkMinutes = units * params.monthlyWorkMinutes;
-  }
+  const roundedWorkMinutes =
+    params.monthlyWorkMinutes && params.monthlyWorkMinutes > 0
+      ? Math.floor(workMinutes / params.monthlyWorkMinutes) *
+        params.monthlyWorkMinutes
+      : workMinutes;
 
   const workHours = roundedWorkMinutes / 60;
-  let contractAmount: number;
 
-  // 固定精算の場合
-  if (params.rateType === "fixed") {
-    if (!params.unitPrice) {
-      return null;
+  // 契約金額を計算
+  const contractAmount = (() => {
+    // 固定精算の場合
+    if (params.rateType === "fixed") {
+      if (!params.unitPrice) {
+        return null;
+      }
+      return params.unitPrice;
     }
-    contractAmount = params.unitPrice;
-  }
-  // 時間単価の場合
-  else if (params.rateType === "hourlyRate") {
-    if (!params.hourlyRate) {
-      return null;
+
+    // 時間単価の場合
+    if (params.rateType === "hourlyRate") {
+      if (!params.hourlyRate) {
+        return null;
+      }
+      return workHours * params.hourlyRate;
     }
-    contractAmount = workHours * params.hourlyRate;
-  }
-  // 上下割・中間割の場合（従来の処理）
-  else {
+
+    // 上下割・中間割の場合（従来の処理）
     // 単価が設定されていない場合、または精算上限・下限の両方が設定されていない場合はnullを返す（ハイフン表示用）
     if (!params.unitPrice || !(params.settlementMin && params.settlementMax)) {
       return null;
     }
 
     // 契約の単価が税込か税抜かによって基準金額を決定
-    contractAmount = params.unitPrice; // 契約上の月単価
+    const baseUnitPrice = params.unitPrice; // 契約上の月単価
 
     // 精算処理（この時点で両方の値が設定されていることが保証されている）
     const settlementMin = params.settlementMin;
@@ -206,8 +225,10 @@ export function calculateWorkAmount(
           ? (params.middleRate ?? 0)
           : (params.lowerRate ?? 0);
 
-      contractAmount = contractAmount - shortfallHours * deductionRate;
-    } else if (workHours > settlementMax) {
+      return baseUnitPrice - shortfallHours * deductionRate;
+    }
+
+    if (workHours > settlementMax) {
       if (params.rateType === "upperLower" && !params.upperRate) {
         return null;
       }
@@ -221,82 +242,88 @@ export function calculateWorkAmount(
           ? (params.middleRate ?? 0)
           : (params.upperRate ?? 0);
 
-      contractAmount = contractAmount + excessHours * excessRate;
+      return baseUnitPrice + excessHours * excessRate;
     }
+
     // 精算範囲内の場合はunitPriceのまま
+    return baseUnitPrice;
+  })();
+
+  // contractAmountがnullの場合は早期リターン
+  if (contractAmount === null) {
+    return null;
   }
 
   // マイナス金額を防ぐ
-  contractAmount = Math.max(0, Math.round(contractAmount));
+  const finalContractAmount = Math.max(0, Math.round(contractAmount));
 
-  let baseAmount: number;
-  let taxAmount: number;
-  let displayAmount: number;
-  let displayLabel: string;
+  // 税込・税抜の計算
+  const taxCalculation =
+    params.taxInclusiveType === "INCLUSIVE"
+      ? (() => {
+          // 契約上の単価が税込の場合
+          // 税抜金額を逆算（税込金額から消費税を差し引く）
+          // 税込金額 = 税抜金額 + 消費税
+          // 消費税 = 税抜金額 × 0.1
+          // 税込金額 = 税抜金額 × 1.1
+          // 税抜金額 = 税込金額 ÷ 1.1
+          const rawBaseAmount = finalContractAmount / 1.1;
 
-  if (params.taxInclusiveType === "INCLUSIVE") {
-    // 契約上の単価が税込の場合
-    displayAmount = contractAmount;
-    displayLabel = "税込";
+          // 税抜金額の端数処理（消費税端数処理設定に基づく）
+          const calculatedBaseAmount = (() => {
+            switch (params.taxRoundingType) {
+              case "ROUND_UP":
+                return Math.floor(rawBaseAmount); // 税抜を切り下げることで消費税を切り上げ
+              case "ROUND_DOWN":
+                return Math.ceil(rawBaseAmount); // 税抜を切り上げることで消費税を切り下げ
+              case "ROUND":
+                return Math.round(rawBaseAmount);
+              default:
+                return Math.ceil(rawBaseAmount); // デフォルトは消費税切り捨て（税抜切り上げ）
+            }
+          })();
 
-    // 税抜金額を逆算（税込金額から消費税を差し引く）
-    // 税込金額 = 税抜金額 + 消費税
-    // 消費税 = 税抜金額 × 0.1
-    // 税込金額 = 税抜金額 × 1.1
-    // 税抜金額 = 税込金額 ÷ 1.1
-    let calculatedBaseAmount = contractAmount / 1.1;
+          const baseAmount = Math.round(calculatedBaseAmount);
+          const taxAmount = finalContractAmount - baseAmount;
 
-    // 税抜金額の端数処理（消費税端数処理設定に基づく）
-    switch (params.taxRoundingType) {
-      case "ROUND_UP":
-        calculatedBaseAmount = Math.floor(calculatedBaseAmount); // 税抜を切り下げることで消費税を切り上げ
-        break;
-      case "ROUND_DOWN":
-        calculatedBaseAmount = Math.ceil(calculatedBaseAmount); // 税抜を切り上げることで消費税を切り下げ
-        break;
-      case "ROUND":
-        calculatedBaseAmount = Math.round(calculatedBaseAmount);
-        break;
-      default:
-        calculatedBaseAmount = Math.ceil(calculatedBaseAmount); // デフォルトは消費税切り捨て（税抜切り上げ）
-    }
+          return {
+            baseAmount,
+            taxAmount,
+            displayAmount: finalContractAmount,
+            displayLabel: "税込" as const,
+          };
+        })()
+      : (() => {
+          // 契約上の単価が税抜の場合
+          const baseAmount = finalContractAmount;
 
-    baseAmount = Math.round(calculatedBaseAmount);
-    taxAmount = contractAmount - baseAmount;
-  } else {
-    // 契約上の単価が税抜の場合
-    baseAmount = contractAmount;
-    displayLabel = "税抜";
+          // 消費税計算（10%）
+          const taxRate = 0.1;
+          const rawTaxAmount = baseAmount * taxRate;
 
-    // 消費税計算（10%）
-    const taxRate = 0.1;
-    let calculatedTaxAmount = baseAmount * taxRate;
+          // 消費税端数処理
+          const calculatedTaxAmount = (() => {
+            switch (params.taxRoundingType) {
+              case "ROUND_UP":
+                return Math.ceil(rawTaxAmount);
+              case "ROUND_DOWN":
+                return Math.floor(rawTaxAmount);
+              case "ROUND":
+                return Math.round(rawTaxAmount);
+              default:
+                return Math.floor(rawTaxAmount); // デフォルトは切り捨て
+            }
+          })();
 
-    // 消費税端数処理
-    switch (params.taxRoundingType) {
-      case "ROUND_UP":
-        calculatedTaxAmount = Math.ceil(calculatedTaxAmount);
-        break;
-      case "ROUND_DOWN":
-        calculatedTaxAmount = Math.floor(calculatedTaxAmount);
-        break;
-      case "ROUND":
-        calculatedTaxAmount = Math.round(calculatedTaxAmount);
-        break;
-      default:
-        calculatedTaxAmount = Math.floor(calculatedTaxAmount); // デフォルトは切り捨て
-    }
+          return {
+            baseAmount,
+            taxAmount: calculatedTaxAmount,
+            displayAmount: baseAmount, // 税抜表示
+            displayLabel: "税抜" as const,
+          };
+        })();
 
-    taxAmount = calculatedTaxAmount;
-    displayAmount = baseAmount; // 税抜表示
-  }
-
-  return {
-    baseAmount,
-    taxAmount,
-    displayAmount,
-    displayLabel,
-  };
+  return taxCalculation;
 }
 
 /**
@@ -377,11 +404,11 @@ export function calculateBasicWorkMinutes(
 
   try {
     // 開始時刻と終了時刻から作業時間を計算（分）
-    let endTimeMs = basicEndTime.getTime();
     // 開始時刻が終了時刻よりあとの場合（日付をまたぐ）、終了時刻に24時間を加算
-    if (basicStartTime.getTime() > endTimeMs) {
-      endTimeMs += 24 * 60 * 60 * 1000; // 24時間分のミリ秒を加算
-    }
+    const endTimeMs =
+      basicStartTime.getTime() > basicEndTime.getTime()
+        ? basicEndTime.getTime() + 24 * 60 * 60 * 1000
+        : basicEndTime.getTime();
     const workMinutes = (endTimeMs - basicStartTime.getTime()) / (1000 * 60);
 
     // 休憩時間を差し引く
