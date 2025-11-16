@@ -14,6 +14,7 @@ export function calculateWorkAmountDetailed(
     taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
     taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
     rateType?: "middle" | "upperLower" | "fixed" | "hourlyRate";
+    monthlyWorkMinutes?: number | null;
   },
 ): {
   baseAmount: number;
@@ -300,6 +301,8 @@ export function calculateWorkAmount(
 
 /**
  * 作業報告書から総稼働時間（分）を計算する
+ * @param attendances 勤怠データの配列
+ * @param monthlyWorkMinutes 月次作業時間の単位（分）- 指定された場合、この単位で切り捨て
  */
 export function calculateTotalWorkMinutes(
   attendances: {
@@ -307,8 +310,9 @@ export function calculateTotalWorkMinutes(
     endTime?: string | Date | null;
     breakDuration?: number | null;
   }[],
+  monthlyWorkMinutes?: number | null,
 ): number {
-  return attendances.reduce((total, attendance) => {
+  const totalMinutes = attendances.reduce((total, attendance) => {
     if (!attendance.startTime || !attendance.endTime) {
       return total;
     }
@@ -319,11 +323,10 @@ export function calculateTotalWorkMinutes(
       const endTime = new Date(attendance.endTime);
 
       // 開始時刻と終了時刻から作業時間を計算（分）
-      let endTimeMs = endTime.getTime();
-      // 開始時刻が終了時刻よりあとの場合（日付をまたぐ）、終了時刻に24時間を加算
-      if (startTime.getTime() > endTimeMs) {
-        endTimeMs += 24 * 60 * 60 * 1000; // 24時間分のミリ秒を加算
-      }
+      const endTimeMs =
+        startTime.getTime() > endTime.getTime()
+          ? endTime.getTime() + 24 * 60 * 60 * 1000 // 日付をまたぐ場合、24時間を加算
+          : endTime.getTime();
       const workMinutes = (endTimeMs - startTime.getTime()) / (1000 * 60);
 
       // 休憩時間を差し引く
@@ -335,6 +338,14 @@ export function calculateTotalWorkMinutes(
       return total;
     }
   }, 0);
+
+  // monthlyWorkMinutes単位で切り捨て
+  if (monthlyWorkMinutes && monthlyWorkMinutes > 0) {
+    const units = Math.floor(totalMinutes / monthlyWorkMinutes);
+    return units * monthlyWorkMinutes;
+  }
+
+  return totalMinutes;
 }
 
 /**

@@ -173,7 +173,10 @@ export async function generateWorkReportExcel(
   setNamedRangeValue("備考", () => (remarks ? { value: remarks } : null));
 
   // 総稼働時間
-  const totalWorkMinutes = calculateTotalWorkMinutes(attendances);
+  const totalWorkMinutes = calculateTotalWorkMinutes(
+    attendances,
+    monthlyWorkMinutes,
+  );
   setNamedRangeValue("総稼働時間", () => ({
     value: msToSerial(totalWorkMinutes * 60 * 1000),
     numFmt: "[h]:mm",

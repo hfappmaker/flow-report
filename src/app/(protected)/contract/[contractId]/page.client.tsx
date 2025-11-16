@@ -99,7 +99,10 @@ export default function ContractClientPage({
   // 作業報告書カードを生成する共通関数
   const renderWorkReportCard = (workReport: WorkReportWithAttendances) => {
     // 稼働時間と金額を計算
-    const totalWorkMinutes = calculateTotalWorkMinutes(workReport.attendances);
+    const totalWorkMinutes = calculateTotalWorkMinutes(
+      workReport.attendances,
+      contract?.monthlyWorkMinutes,
+    );
     const workTimeText = formatWorkTime(totalWorkMinutes);
 
     const amountCalculation = contract

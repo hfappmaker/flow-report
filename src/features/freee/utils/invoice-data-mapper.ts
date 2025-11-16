@@ -22,6 +22,7 @@ export interface WorkReportInvoiceData {
   taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
   taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
   rateType: "upperLower" | "middle" | "fixed" | "hourlyRate";
+  monthlyWorkMinutes?: number | null;
 }
 
 /**
@@ -43,7 +44,10 @@ export function mapWorkReportToFreeeInvoice(
   const { targetDate, contractName, attendances } = workReportData;
 
   // 稼働時間と金額を計算
-  const totalWorkMinutes = calculateTotalWorkMinutes(attendances);
+  const totalWorkMinutes = calculateTotalWorkMinutes(
+    attendances,
+    workReportData.monthlyWorkMinutes,
+  );
 
   const amountDetail = calculateWorkAmountDetailed(totalWorkMinutes, {
     unitPrice: workReportData.unitPrice,
@@ -56,6 +60,7 @@ export function mapWorkReportToFreeeInvoice(
     taxInclusiveType: workReportData.taxInclusiveType,
     taxRoundingType: workReportData.taxRoundingType,
     rateType: workReportData.rateType,
+    monthlyWorkMinutes: workReportData.monthlyWorkMinutes,
   });
 
   if (!amountDetail) {

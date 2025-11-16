@@ -167,8 +167,8 @@ export default function ClientWorkReportPage({
 
   // Calculate work hours and amounts for summary
   const totalWorkMinutes = useMemo(
-    () => calculateTotalWorkMinutes(currentAttendances),
-    [currentAttendances],
+    () => calculateTotalWorkMinutes(currentAttendances, monthlyWorkMinutes),
+    [currentAttendances, monthlyWorkMinutes],
   );
 
   const workTimeText = useMemo(
