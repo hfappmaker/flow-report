@@ -1,20 +1,9 @@
 #!/bin/bash
 # git worktreeを削除するスクリプト
-# Usage: ./scripts/worktree-remove.sh <worktree-path or branch-name>
+# Usage: ./scripts/worktree-remove.sh
+# 現在のディレクトリのworktreeを削除し、VSCodeウィンドウを自動的に閉じます
 
 set -e
-
-# 引数チェック
-if [ -z "$1" ]; then
-    echo "Error: worktreeのパスまたはブランチ名を指定してください"
-    echo "Usage: $0 <worktree-path or branch-name>"
-    echo ""
-    echo "現在のworktree一覧:"
-    git worktree list
-    exit 1
-fi
-
-WORKTREE_INPUT="$1"
 
 # カレントディレクトリがgitリポジトリかチェック
 if ! git rev-parse --git-dir > /dev/null 2>&1; then
@@ -22,26 +11,32 @@ if ! git rev-parse --git-dir > /dev/null 2>&1; then
     exit 1
 fi
 
-# 入力がパスかブランチ名かを判定
-if [ -d "$WORKTREE_INPUT" ]; then
-    # パスとして存在する場合
-    WORKTREE_PATH="$WORKTREE_INPUT"
-else
-    # ブランチ名として扱う
-    # ブランチ名をファイルシステムに安全な形式に変換（/ → -）
-    SAFE_BRANCH_NAME=$(echo "$WORKTREE_INPUT" | sed 's/\//-/g')
-    REPO_ROOT=$(git rev-parse --show-toplevel)
-    REPO_NAME=$(basename "$REPO_ROOT")
-    WORKTREE_PATH="$(dirname "$REPO_ROOT")/${REPO_NAME}-${SAFE_BRANCH_NAME}"
+# 現在のディレクトリを取得
+CURRENT_DIR=$(pwd)
 
-    if [ ! -d "$WORKTREE_PATH" ]; then
-        echo "Error: worktreeが見つかりません: $WORKTREE_PATH"
-        echo ""
-        echo "現在のworktree一覧:"
-        git worktree list
-        exit 1
-    fi
+# メインのworktreeかどうかを判定
+MAIN_WORKTREE=$(git worktree list --porcelain | grep "^worktree " | head -n 1 | cut -d' ' -f2)
+
+if [ "$CURRENT_DIR" = "$MAIN_WORKTREE" ]; then
+    echo "Error: メインのworktreeでは実行できません"
+    echo ""
+    echo "このスクリプトはworktreeのVSCodeから実行してください。"
+    echo ""
+    echo "現在のworktree一覧:"
+    git worktree list
+    exit 1
 fi
+
+# 現在のディレクトリがworktreeのリストに含まれているか確認
+if ! git worktree list --porcelain | grep -q "^worktree $CURRENT_DIR$"; then
+    echo "Error: 現在のディレクトリはworktreeではありません"
+    echo ""
+    echo "現在のworktree一覧:"
+    git worktree list
+    exit 1
+fi
+
+WORKTREE_PATH="$CURRENT_DIR"
 
 echo "=========================================="
 echo "Git Worktree削除"
@@ -49,6 +44,15 @@ echo "=========================================="
 echo "削除対象: $WORKTREE_PATH"
 echo "=========================================="
 echo ""
+
+# 実行コンテキストを検出（このworktreeのVSCodeから実行されているか）
+IN_TARGET_VSCODE=false
+
+if [[ "$CURRENT_DIR" == "$WORKTREE_PATH"* ]]; then
+    IN_TARGET_VSCODE=true
+    echo "ℹ️  削除後、VSCodeウィンドウは自動的に閉じられます。"
+    echo ""
+fi
 
 # 確認プロンプト
 read -p "このworktreeを削除してもよろしいですか？ (y/N): " -n 1 -r
@@ -74,3 +78,17 @@ echo "✓ Worktreeが削除されました: $WORKTREE_PATH"
 echo ""
 echo "残りのworktree:"
 git worktree list
+
+# VSCodeウィンドウを自動的に閉じる
+if [ "$IN_TARGET_VSCODE" = true ]; then
+    echo ""
+    echo "🔄 VSCodeウィンドウを閉じています..."
+
+    # VSCodeのウィンドウを閉じるコマンドをバックグラウンドで実行
+    # エラーが発生しても無視する（codeコマンドが利用できない環境でも動作するように）
+    (code --command "workbench.action.closeWindow" 2>/dev/null || true) &
+
+    # 少し待機してからスクリプトを終了（VSCodeコマンドが実行される時間を確保）
+    sleep 1
+    exit 0
+fi
