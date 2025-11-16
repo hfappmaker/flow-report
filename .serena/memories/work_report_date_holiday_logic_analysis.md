@@ -6,7 +6,7 @@ Found multiple files in the work-report feature containing similar date/holiday 
 ## Files with Similar Logic
 
 ### 1. **attendance-edit-dialog.tsx** (Component)
-**Location:** `/WorkTimeManagementV2/src/features/work-report/components/attendance-edit-dialog.tsx`
+**Location:** `/workspace/src/features/work-report/components/attendance-edit-dialog.tsx`
 
 **Date/Holiday Logic:**
 - **Day Names Array (Line 46):** `const dayNames = ["日", "月", "火", "水", "木", "金", "土"];`
@@ -44,7 +44,7 @@ Found multiple files in the work-report feature containing similar date/holiday 
 - **Usage:** Displays date with color-coded day of week indicator in the edit dialog
 
 ### 2. **attendance.ts** (Server Action)
-**Location:** `/WorkTimeManagementV2/src/features/work-report/actions/attendance.ts`
+**Location:** `/workspace/src/features/work-report/actions/attendance.ts`
 
 **Date/Holiday Logic:**
 - **Day Names Array (Line 90):** `const dayNames = ["日", "月", "火", "水", "木", "金", "土"];`
@@ -71,7 +71,7 @@ Found multiple files in the work-report feature containing similar date/holiday 
 - **Usage:** Generates calendar information for AI prompt with workday determination
 
 ### 3. **attendance-utils.ts** (Utilities)
-**Location:** `/WorkTimeManagementV2/src/features/work-report/utils/attendance-utils.ts`
+**Location:** `/workspace/src/features/work-report/utils/attendance-utils.ts`
 
 **Date/Holiday Logic:**
 - **Holiday Checking (Lines 158-164):**
@@ -177,7 +177,7 @@ All files in work-report feature that handle dates could use these utilities:
 
 ## Recommended Action
 
-Create a new utility file: `/WorkTimeManagementV2/src/features/work-report/utils/date-utils.ts`
+Create a new utility file: `/workspace/src/features/work-report/utils/date-utils.ts`
 
 Export utilities:
 - `getDayName(date: Date): string`

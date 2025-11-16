@@ -12,7 +12,7 @@ RUN STRIPE_VERSION=$(curl -s https://api.github.com/repos/stripe/stripe-cli/rele
 # stripe login
 # stripe listen --forward-to localhost:3000/api/webhook/stripe
 # 以下のコマンドでStripeのイベントをテストする
-# stripe fixtures /WorkTimeManagementV2/stripe.fixture.json
+# stripe fixtures /workspace/stripe.fixture.json
 
 # GitHub CLIのインストール
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \

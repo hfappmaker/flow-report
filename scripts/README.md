@@ -42,7 +42,7 @@ pnpm run worktree:init feature/new-feature main
 
 このコマンドは以下を自動実行します：
 
-1. 親ディレクトリに `WorkTimeManagementV2-<ブランチ名>` を作成
+1. 親ディレクトリに `workspace-<ブランチ名>` を作成
 2. 依存関係のインストール (`pnpm install`)
 3. `.env`ファイルと`.env.development.local`と`.env.development.preview`のコピー
 4. Prisma Clientの生成
@@ -72,7 +72,7 @@ pnpm run worktree:remove <worktreeパスまたはブランチ名>
 pnpm run worktree:remove feature/auth-improvement
 
 # パスで削除
-pnpm run worktree:remove ../WorkTimeManagementV2-feature-auth-improvement
+pnpm run worktree:remove ../workspace-feature-auth-improvement
 ```
 
 削除前に確認プロンプトが表示されます。
@@ -86,14 +86,14 @@ pnpm run worktree:remove ../WorkTimeManagementV2-feature-auth-improvement
 
 ```bash
 # メインworktreeで緊急修正用のworktreeを一括セットアップ
-cd /WorkTimeManagementV2
+cd /workspace
 pnpm run worktree:init hotfix/urgent-bug
 
 # → VSCodeが自動的に開かれる
 # → すぐにバグ修正を実施
 
 # 修正完了後、元のworktreeに戻る
-cd ../WorkTimeManagementV2
+cd ../workspace
 
 # 不要になったworktreeを削除
 pnpm run worktree:remove hotfix/urgent-bug
