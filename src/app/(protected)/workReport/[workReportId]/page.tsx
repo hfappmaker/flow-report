@@ -1,12 +1,11 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import ClientWorkReportPage from "./page.client";
 import { currentUser } from "@/features/auth/libs/auth";
 import { fetchHolidays } from "@/features/holidays/libs/google-calendar";
 import { getAttendancesByWorkReportIdAction } from "@/features/work-report/actions/attendance";
 import { getWorkReportWithContractById } from "@/features/work-report/repositories/work-report-repository";
-
-import ClientWorkReportPage from "./page.client";
 
 export const metadata: Metadata = {
   title: "作業報告書",
@@ -57,6 +56,7 @@ export default async function WorkReportPage({
       basicEndTime={contract.basicEndTime}
       basicBreakDuration={contract.basicBreakDuration}
       basicMemo={contract.basicMemo}
+      remarks={workReport.remarks}
       closingDay={contract.closingDay}
       status={workReport.status}
       holidays={holidayData}

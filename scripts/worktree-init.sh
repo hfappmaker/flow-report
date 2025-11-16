@@ -86,6 +86,7 @@ copy_env_file() {
 copy_env_file ".env.development.local"
 copy_env_file ".env.preview.local"
 copy_env_file ".env"
+copy_env_file ".devcontainer/.env"
 
 # Prisma Clientの生成
 echo "🔧 Prisma Clientを生成中..."

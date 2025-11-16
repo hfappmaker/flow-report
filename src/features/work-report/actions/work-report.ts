@@ -12,6 +12,7 @@ import {
   getWorkReportsByContractIdAndYearMonthDateRange,
   updateWorkReportAttendances,
   updateWorkReportStatus,
+  updateWorkReportRemarks,
 } from "@/features/work-report/repositories/work-report-repository";
 import { AttendanceDto } from "@/features/work-report/types/attendance";
 import {
@@ -116,6 +117,15 @@ export const updateWorkReportStatusAction = async (
   status: WorkReportStatus,
 ): Promise<WorkReport> => {
   const updated = await updateWorkReportStatus(workReportId, status);
+  revalidatePath(`/workReport/${updated.contractId}/${updated.id}`);
+  return convertPrismaWorkReportToWorkReportDto(updated);
+};
+
+export const updateWorkReportRemarksAction = async (
+  workReportId: string,
+  remarks: string | null,
+): Promise<WorkReport> => {
+  const updated = await updateWorkReportRemarks(workReportId, remarks);
   revalidatePath(`/workReport/${updated.contractId}/${updated.id}`);
   return convertPrismaWorkReportToWorkReportDto(updated);
 };

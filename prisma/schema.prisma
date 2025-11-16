@@ -108,7 +108,7 @@ model WorkReport {
   targetDate  DateTime         // YYYY-MM-01 形式で保存
   contract    Contract         @relation(fields: [contractId], references: [id], onDelete: Cascade)
   contractId  String
-  memo        String?
+  remarks     String?
   attendances Attendance[]
   status      WorkReportStatus @default(DRAFT)
 

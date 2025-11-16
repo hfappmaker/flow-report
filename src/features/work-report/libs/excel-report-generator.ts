@@ -38,6 +38,7 @@ export interface WorkReportExcelData {
   basicBreakDuration: number | null;
   dailyWorkMinutes: number | null;
   monthlyWorkMinutes: number | null;
+  remarks?: string | null;
 }
 
 /**
@@ -60,6 +61,7 @@ export async function generateWorkReportExcel(
     basicBreakDuration,
     dailyWorkMinutes,
     monthlyWorkMinutes,
+    remarks,
   } = data;
 
   // 新しいワークブックを作成
@@ -166,6 +168,9 @@ export async function generateWorkReportExcel(
   setNamedRangeValue("_１ヶ月あたりの作業単位", () =>
     monthlyWorkMinutes ? { value: `${String(monthlyWorkMinutes)}分` } : null,
   );
+
+  // 備考
+  setNamedRangeValue("備考", () => (remarks ? { value: remarks } : null));
 
   // 総稼働時間
   const totalWorkMinutes = calculateTotalWorkMinutes(attendances);
