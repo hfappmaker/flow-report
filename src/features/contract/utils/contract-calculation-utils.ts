@@ -311,8 +311,12 @@ export function calculateTotalWorkMinutes(
       const endTime = new Date(attendance.endTime);
 
       // 開始時刻と終了時刻から作業時間を計算（分）
-      const workMinutes =
-        (endTime.getTime() - startTime.getTime()) / (1000 * 60);
+      let endTimeMs = endTime.getTime();
+      // 開始時刻が終了時刻よりあとの場合（日付をまたぐ）、終了時刻に24時間を加算
+      if (startTime.getTime() > endTimeMs) {
+        endTimeMs += 24 * 60 * 60 * 1000; // 24時間分のミリ秒を加算
+      }
+      const workMinutes = (endTimeMs - startTime.getTime()) / (1000 * 60);
 
       // 休憩時間を差し引く
       const breakMinutes = attendance.breakDuration ?? 0;
@@ -354,8 +358,12 @@ export function calculateBasicWorkMinutes(
 
   try {
     // 開始時刻と終了時刻から作業時間を計算（分）
-    const workMinutes =
-      (basicEndTime.getTime() - basicStartTime.getTime()) / (1000 * 60);
+    let endTimeMs = basicEndTime.getTime();
+    // 開始時刻が終了時刻よりあとの場合（日付をまたぐ）、終了時刻に24時間を加算
+    if (basicStartTime.getTime() > endTimeMs) {
+      endTimeMs += 24 * 60 * 60 * 1000; // 24時間分のミリ秒を加算
+    }
+    const workMinutes = (endTimeMs - basicStartTime.getTime()) / (1000 * 60);
 
     // 休憩時間を差し引く
     const breakMinutes = basicBreakDuration ?? 0;

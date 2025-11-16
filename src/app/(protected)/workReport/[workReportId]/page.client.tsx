@@ -179,8 +179,12 @@ export default function ClientWorkReportPage({
       breakDuration: number | null,
     ): number | null => {
       if (!startTime || !endTime) return null;
-      const workMinutes =
-        (endTime.getTime() - startTime.getTime()) / (1000 * 60);
+      let endTimeMs = endTime.getTime();
+      // 開始時刻が終了時刻よりあとの場合（日付をまたぐ）、終了時刻に24時間を加算
+      if (startTime.getTime() > endTimeMs) {
+        endTimeMs += 24 * 60 * 60 * 1000; // 24時間分のミリ秒を加算
+      }
+      const workMinutes = (endTimeMs - startTime.getTime()) / (1000 * 60);
       const breakMinutes = breakDuration ?? 0;
       return Math.max(0, workMinutes - breakMinutes);
     },
