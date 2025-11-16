@@ -118,6 +118,7 @@ export default function ContractClientPage({
           taxInclusiveType: contract.taxInclusiveType,
           taxRoundingType: contract.taxRoundingType,
           rateType: contract.rateType,
+          monthlyWorkMinutes: contract.monthlyWorkMinutes,
         })
       : null;
 

@@ -145,6 +145,7 @@ export function calculateWorkAmount(
     taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
     taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
     rateType?: "middle" | "upperLower" | "fixed" | "hourlyRate";
+    monthlyWorkMinutes?: number | null;
   },
 ): {
   baseAmount: number;
@@ -152,7 +153,14 @@ export function calculateWorkAmount(
   displayAmount: number;
   displayLabel: string;
 } | null {
-  const workHours = workMinutes / 60;
+  // 作業時間の丸め処理（monthlyWorkMinutes単位で切り捨て）
+  let roundedWorkMinutes = workMinutes;
+  if (params.monthlyWorkMinutes && params.monthlyWorkMinutes > 0) {
+    const units = Math.floor(workMinutes / params.monthlyWorkMinutes);
+    roundedWorkMinutes = units * params.monthlyWorkMinutes;
+  }
+
+  const workHours = roundedWorkMinutes / 60;
   let contractAmount: number;
 
   // 固定精算の場合

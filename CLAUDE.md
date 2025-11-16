@@ -65,6 +65,39 @@ src/
 - Don't import Prisma runtime libraries (e.g., `import { Decimal } from "@prisma/client/runtime/library"`)
 - Don't use Tailwind classes for element selection in tests
 
+### 2.4 Functional Programming Standards
+
+**CRITICAL: Claude Code must strictly adhere to these functional programming principles when writing code:**
+
+- **NEVER use `let` for variable declarations** - always use `const`
+- **NEVER use mutable array methods** such as:
+  - `array.push()` → use `[...array, newItem]` or `array.concat(newItem)`
+  - `array.pop()` → use `array.slice(0, -1)`
+  - `array.shift()` → use `array.slice(1)`
+  - `array.unshift()` → use `[newItem, ...array]`
+  - `array.splice()` → use `array.slice()` and spread operator
+  - `array.sort()` → use `[...array].sort()` or `array.toSorted()`
+  - `array.reverse()` → use `[...array].reverse()` or `array.toReversed()`
+- **NEVER reassign object properties** - use spread operator or object methods:
+  - Instead of `obj.prop = value`, use `{ ...obj, prop: value }`
+  - Instead of `delete obj.prop`, use object destructuring with rest
+- **Use immutable patterns**:
+  - Array transformations: `map()`, `filter()`, `reduce()`, `slice()`, `concat()`
+  - Object transformations: spread operator `{...}`, `Object.assign()` (creating new objects)
+  - Modern immutable methods: `toSorted()`, `toReversed()`, `toSpliced()`, `with()`
+- **Exceptions** (allowed by ESLint configuration):
+  - React refs: `ref.current = value`
+  - React component displayName: `Component.displayName = "Name"`
+
+**Rationale**: Functional programming with immutable data structures leads to:
+
+- More predictable and testable code
+- Easier debugging and reasoning about code behavior
+- Prevention of unintended side effects
+- Better compatibility with React's rendering model
+
+ESLint will warn about violations of these rules. Claude Code must write code that produces zero warnings.
+
 ## 3. Commit Messages
 
 Use conventional commit prefixes:

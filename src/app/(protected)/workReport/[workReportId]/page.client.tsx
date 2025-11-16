@@ -209,6 +209,7 @@ export default function ClientWorkReportPage({
         taxInclusiveType,
         taxRoundingType,
         rateType,
+        monthlyWorkMinutes,
       }),
     [
       totalWorkMinutes,
@@ -222,6 +223,7 @@ export default function ClientWorkReportPage({
       taxInclusiveType,
       taxRoundingType,
       rateType,
+      monthlyWorkMinutes,
     ],
   );
 

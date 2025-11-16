@@ -1,10 +1,11 @@
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 
-import { defineConfig } from "eslint/config";
 import eslint from "@eslint/js";
 import nextPlugin from "@next/eslint-plugin-next";
+import { defineConfig } from "eslint/config";
 import eslintConfigPrettier from "eslint-config-prettier";
+import functional from "eslint-plugin-functional";
 import importPlugin from "eslint-plugin-import";
 import jsxA11y from "eslint-plugin-jsx-a11y";
 import react from "eslint-plugin-react";
@@ -96,7 +97,7 @@ export default defineConfig(
       "@typescript-eslint/no-unnecessary-type-conversion": "warn",
       "@typescript-eslint/prefer-optional-chain": "warn",
       "@typescript-eslint/no-unnecessary-condition": "warn",
-      "@typescript-eslint/no-confusing-void-expression": "warn"
+      "@typescript-eslint/no-confusing-void-expression": "warn",
     },
   },
   {
@@ -140,6 +141,30 @@ export default defineConfig(
     },
     rules: {
       "unused-imports/no-unused-imports": "warn",
+    },
+  },
+  {
+    // eslint-plugin-functionalに関する設定 (関数型プログラミング)
+    plugins: {
+      functional: functional,
+    },
+    rules: {
+      // letを禁止し、constのみを使用
+      "functional/no-let": "warn",
+      // ミュータブルな配列・オブジェクト操作を禁止
+      "functional/immutable-data": [
+        "warn",
+        {
+          ignoreAccessorPattern: [
+            "**.current.**", // React refsを許可: ref.current = ...
+            "**.displayName", // React component displayNameを許可
+          ],
+        },
+      ],
+      // その他の関数型プログラミング規則は、段階的な導入のため無効化
+      "functional/prefer-immutable-types": "off",
+      "functional/no-expression-statements": "off",
+      "functional/functional-parameters": "off",
     },
   },
   {
