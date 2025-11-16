@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TextArea } from "@/components/ui/textarea";
 import {
   TimePickerFieldForDate,
   TimePickerFieldForNumber,
@@ -53,6 +54,7 @@ import { updateWorkReportAttendanceAction } from "@/features/work-report/actions
 import {
   updateWorkReportAttendancesAction,
   updateWorkReportStatusAction,
+  updateWorkReportRemarksAction,
 } from "@/features/work-report/actions/work-report";
 import { AttendanceEditDialog } from "@/features/work-report/components/attendance-edit-dialog";
 import { TemplateSelectionDialog } from "@/features/work-report/components/template-selection-dialog";
@@ -101,6 +103,7 @@ export default function ClientWorkReportPage({
   basicEndTime,
   basicBreakDuration,
   basicMemo,
+  remarks: initialRemarks,
   holidays,
   status: initialStatus,
   unitPrice,
@@ -142,6 +145,7 @@ export default function ClientWorkReportPage({
 
   const [status, setStatus] = useState<WorkReportStatus>(initialStatus);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
+  const [remarks, setRemarks] = useState<string>(initialRemarks ?? "");
 
   // Compute default attendance values for each day in the range…
   const defaults = generateDefaultAttendances(
@@ -466,6 +470,7 @@ export default function ClientWorkReportPage({
         basicBreakDuration,
         dailyWorkMinutes,
         monthlyWorkMinutes,
+        remarks: remarks || null,
       });
 
       const url = window.URL.createObjectURL(blob);
@@ -562,6 +567,20 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
     });
     setStatus(nextStatus);
   };
+
+  // 備考を更新
+  const handleRemarksBlur = useCallback(() => {
+    startTransition(() => {
+      void (async () => {
+        try {
+          await updateWorkReportRemarksAction(workReportId, remarks || null);
+          showSuccess("備考を保存しました");
+        } catch {
+          showError("備考の保存に失敗しました");
+        }
+      })();
+    });
+  }, [workReportId, remarks, startTransition, showSuccess, showError]);
 
   // freee請求書作成処理
   const handleCreateFreeeInvoice = async () => {
@@ -666,6 +685,28 @@ ${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたしま
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Remarks Section */}
+      <div className="mb-6 rounded-lg border bg-muted/30 p-4">
+        <Label
+          htmlFor="work-report-remarks"
+          className="mb-2 block text-sm font-medium"
+        >
+          備考
+        </Label>
+        <TextArea
+          id="work-report-remarks"
+          value={remarks}
+          onChange={(e) => {
+            setRemarks(e.target.value);
+          }}
+          onBlur={handleRemarksBlur}
+          disabled={status === "SUBMITTED"}
+          rows={4}
+          placeholder="備考を入力してください"
+          className="w-full"
+        />
       </div>
 
       <div className="flex flex-col gap-2">

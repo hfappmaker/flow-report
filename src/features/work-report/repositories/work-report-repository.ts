@@ -168,6 +168,17 @@ export async function updateWorkReportStatus(
   return workReport;
 }
 
+export async function updateWorkReportRemarks(
+  workReportId: string,
+  remarks: string | null,
+) {
+  const workReport = await db.workReport.update({
+    where: { id: workReportId },
+    data: { remarks },
+  });
+  return workReport;
+}
+
 export async function deleteWorkReport(workReportId: string) {
   const workReport = await db.workReport.delete({
     where: { id: workReportId },
