@@ -78,11 +78,10 @@ import {
 import { getDateColorClass } from "@/features/work-report/utils/date-display-utils";
 import {
   formatWorkReportFileName,
-  formatWorkReportEmailSubject,
-  formatWorkReportEmailMonth,
   formatTimeInput,
   formatBreakDuration,
 } from "@/features/work-report/utils/date-formatting";
+import { buildWorkReportMailtoUrl } from "@/features/work-report/utils/mailto-url-builder";
 import { useMessageState } from "@/hooks/use-message-state";
 import { formatDateAsUTC } from "@/utils/date-utils";
 
@@ -500,22 +499,14 @@ export default function ClientWorkReportPage({
         return;
       }
       // メーラーを起動
-      const recipient = clientEmail; // 送信先
-      const subject = encodeURIComponent(
-        formatWorkReportEmailSubject(targetDate, userName),
-      );
-      const body = encodeURIComponent(`
-${contactName ? contactName : clientName}様
-
-お世話になっております。${userName}です。
-
-${formatWorkReportEmailMonth(targetDate)}の作業報告書を送付いたします。
-ご確認のほど、よろしくお願いいたします。
-`);
-      window.open(
-        `mailto:${recipient}?subject=${subject}&body=${body}`,
-        "_blank",
-      );
+      const mailtoUrl = buildWorkReportMailtoUrl({
+        clientEmail,
+        contactName,
+        clientName,
+        userName,
+        targetDate,
+      });
+      window.open(mailtoUrl, "_blank");
     } catch (error) {
       console.error("作業報告書の作成に失敗しました", error);
       showError("作業報告書の作成に失敗しました");
