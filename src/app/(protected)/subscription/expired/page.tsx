@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import LogoutButton from "@/features/auth/components/logout-button";
 import { SubscriptionPromptButton } from "@/features/subscription/components/subscription-prompt-button";
 
 export default function SubscriptionExpiredPage() {
@@ -34,8 +36,13 @@ export default function SubscriptionExpiredPage() {
           </DialogDescription>
         </DialogHeader>
 
-        <DialogFooter>
+        <DialogFooter className="flex-col gap-2">
           <SubscriptionPromptButton />
+          <LogoutButton>
+            <Button variant="outline" className="w-full">
+              ログアウト
+            </Button>
+          </LogoutButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

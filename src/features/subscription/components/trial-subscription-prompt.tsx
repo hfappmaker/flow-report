@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import LogoutButton from "@/features/auth/components/logout-button";
 import { createCheckoutSession } from "@/features/subscription/actions/create-checkout-session";
 
 export function TrialSubscriptionPrompt() {
@@ -31,6 +32,7 @@ export function TrialSubscriptionPrompt() {
       }
 
       if (result.url) {
+        // eslint-disable-next-line functional/immutable-data -- Browser API requires direct assignment
         window.location.href = result.url;
       }
     } catch (error) {
@@ -68,14 +70,21 @@ export function TrialSubscriptionPrompt() {
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-col gap-2">
           <Button
-            onClick={handleSubscribe}
+            onClick={() => {
+              void handleSubscribe();
+            }}
             disabled={isLoading}
             className="w-full"
           >
             {isLoading ? "処理中..." : buttonText}
           </Button>
+          <LogoutButton>
+            <Button variant="outline" className="w-full">
+              ログアウト
+            </Button>
+          </LogoutButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>
