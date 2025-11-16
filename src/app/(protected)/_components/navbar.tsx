@@ -35,21 +35,14 @@ const Navbar = () => {
     <>
       <nav className="fixed top-0 hidden h-14 w-full items-center justify-between bg-secondary p-4 shadow-md lg:flex">
         <div className="flex items-center gap-x-4">
-          <Link
-            href="/dashboard"
-            onClick={() => {
-              handleNavigation("/dashboard");
-            }}
+          <Image
+            src="/flow-report.png"
+            alt="Flow Report"
+            width={140}
+            height={30}
+            priority
             className="shrink-0"
-          >
-            <Image
-              src="/flow-report.png"
-              alt="Flow Report"
-              width={140}
-              height={30}
-              priority
-            />
-          </Link>
+          />
           <div className="flex gap-x-2">
             {NAV_LINKS.map((link, index) => (
               <Button
@@ -75,62 +68,54 @@ const Navbar = () => {
       </nav>
 
       <nav className="flex items-center justify-between bg-secondary p-4 shadow-md lg:hidden">
-        <div className="flex items-center gap-x-2">
-          <Link
-            href="/dashboard"
-            onClick={() => {
-              handleNavigation("/dashboard");
-            }}
-            className="shrink-0"
-          >
-            <Image
-              src="/flow-report.png"
-              alt="Flow Report"
-              width={100}
-              height={22}
-              priority
-            />
-          </Link>
-          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <SheetTrigger>
-              <Button
-                asChild
-                variant="secondary"
-                size="sm"
-                className="w-full text-sky-400 hover:text-background"
-              >
-                <MdMenu />
-              </Button>
-            </SheetTrigger>
-            <SheetContent>
-              <SheetHeader>
-                <SheetTitle className="sr-only">
-                  ナビゲーションメニュー
-                </SheetTitle>
-              </SheetHeader>
-              <div className="flex-col p-2">
-                {NAV_LINKS.map((link, index) => (
-                  <Button
-                    key={index}
-                    asChild
-                    variant={pathName === link.path ? "default" : "outline"}
-                    className="my-2 w-full hover:bg-sky-400 hover:text-primary-foreground"
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+          <SheetTrigger>
+            <Button
+              asChild
+              variant="secondary"
+              size="sm"
+              className="w-full text-sky-400 hover:text-background"
+            >
+              <MdMenu />
+            </Button>
+          </SheetTrigger>
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle className="sr-only">
+                ナビゲーションメニュー
+              </SheetTitle>
+            </SheetHeader>
+            <div className="mb-6 flex justify-center">
+              <Image
+                src="/flow-report.png"
+                alt="Flow Report"
+                width={180}
+                height={39}
+                priority
+              />
+            </div>
+            <div className="flex-col p-2">
+              {NAV_LINKS.map((link, index) => (
+                <Button
+                  key={index}
+                  asChild
+                  variant={pathName === link.path ? "default" : "outline"}
+                  className="my-2 w-full hover:bg-sky-400 hover:text-primary-foreground"
+                >
+                  <Link
+                    role="link"
+                    href={link.path}
+                    onClick={() => {
+                      handleNavigation(link.path);
+                    }}
                   >
-                    <Link
-                      role="link"
-                      href={link.path}
-                      onClick={() => {
-                        handleNavigation(link.path);
-                      }}
-                    >
-                      {link.title}
-                    </Link>
-                  </Button>
-                ))}
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
+                    {link.title}
+                  </Link>
+                </Button>
+              ))}
+            </div>
+          </SheetContent>
+        </Sheet>
 
         <UserButton />
       </nav>
