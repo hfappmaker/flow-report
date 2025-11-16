@@ -16,10 +16,7 @@ const ManageSubscriptionButton = ({
 }: ManageSubscriptionButtonProps) => {
   const { startTransition } = useTransitionContext();
 
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
+  const handleAction = () => {
     startTransition(() => {
       void createCustomerPortalSession().then((data) => {
         if (data.error) {
@@ -34,12 +31,26 @@ const ManageSubscriptionButton = ({
     });
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleAction();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      e.stopPropagation();
+      handleAction();
+    }
+  };
+
   return (
     <div
       role="button"
       tabIndex={0}
       onClick={handleClick}
-      onKeyDown={handleClick}
+      onKeyDown={handleKeyDown}
     >
       {children}
     </div>
