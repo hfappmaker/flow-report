@@ -9,10 +9,10 @@ Please perform the following steps:
 1. **Get staged files**: Run `git diff --cached --name-only` to list all staged files
 
 2. **ESLint auto-fix**: For each staged file with extensions `.ts`, `.tsx`, `.js`, `.jsx`:
-   - Run `pnpm exec eslint "<file>" --fix` to auto-fix linting issues
+   - Run `pnpm exec eslint --cache --cache-location .eslintcache "<file>" --fix` to auto-fix linting issues
 
 3. **Check ESLint warnings**: For each staged file:
-   - Run `pnpm exec eslint "<file>"` to check for remaining warnings
+   - Run `pnpm exec eslint --cache --cache-location .eslintcache "<file>"` to check for remaining warnings
    - If warnings are found:
      - Analyze the warnings and propose fixes
      - Show the proposed changes to the user

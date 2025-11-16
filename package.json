@@ -11,7 +11,7 @@
     "dev:inspect": "rm -rf .next && NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
     "start": "prisma migrate deploy && next start -p 80",
-    "lint": "next lint",
+    "lint": "eslint --cache --cache-location .eslintcache \"src/**/*.{ts,tsx}\"",
     "analyze": "ANALYZE=true next build",
     "postinstall": "prisma generate",
     "test:j": "jest",
