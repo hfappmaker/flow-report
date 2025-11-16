@@ -23,9 +23,6 @@ const flatRecommended = tailwindPlugin.configs["flat/recommended"];
 
 export default defineConfig(
   {
-    // キャッシュの設定
-    cache: true,
-    cacheLocation: ".eslintcache",
     // 並列実行の設定
     cwd: __dirname,
     // 必要なファイルのみを対象に
