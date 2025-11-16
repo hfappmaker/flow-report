@@ -1,9 +1,8 @@
 "use client";
 
+import { Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
-import { Clock } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -124,23 +123,27 @@ export default function DashboardClientPage({
   // 契約編集
   const onEditContract = (data: ContractFormValues) => {
     if (!activeContract) return;
-    startTransition(async () => {
-      try {
-        const contractData = convertContractFormValuesToContract(
-          data,
-          activeContract.userId,
-        );
-        await updateContractAction(activeContract.id, contractData);
-        const newContractData = await getContractByIdAction(activeContract.id);
-        // 更新されたデータで activeContract を更新
-        setActiveContract(newContractData);
-        showSuccess(`契約 '${data.name}' を編集しました`);
-      } catch (error: unknown) {
-        console.error(error);
-        showError("契約の更新に失敗しました");
-      } finally {
-        closeDialog();
-      }
+    startTransition(() => {
+      void (async () => {
+        try {
+          const contractData = convertContractFormValuesToContract(
+            data,
+            activeContract.userId,
+          );
+          await updateContractAction(activeContract.id, contractData);
+          const newContractData = await getContractByIdAction(
+            activeContract.id,
+          );
+          // 更新されたデータで activeContract を更新
+          setActiveContract(newContractData);
+          showSuccess(`契約 '${data.name}' を編集しました`);
+        } catch (error: unknown) {
+          console.error(error);
+          showError("契約の更新に失敗しました");
+        } finally {
+          closeDialog();
+        }
+      })();
     });
   };
 
@@ -212,7 +215,7 @@ export default function DashboardClientPage({
   };
 
   // 勤怠データを保存
-  const handleAttendanceSave = async (date: Date, data: EditFormValues) => {
+  const handleAttendanceSave = (date: Date, data: EditFormValues) => {
     const { workReportId } = attendanceDialogState;
     if (!workReportId) return;
 
@@ -258,7 +261,10 @@ export default function DashboardClientPage({
         </Card>
       )}
 
-      <h1 className="mb-6 text-2xl font-bold">作成中の作業報告書一覧</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">作成中の作業報告書一覧</h1>
+        <Button onClick={handleNavigateToContracts}>契約一覧へ</Button>
+      </div>
 
       {Object.entries(draftWorkReports).map(([contractId, contract]) => (
         <Card key={contractId} className="mb-6">
@@ -268,8 +274,8 @@ export default function DashboardClientPage({
                 <CardTitle
                   className="cursor-pointer transition-colors hover:text-blue-600"
                   onClick={() => {
-                    startTransition(async () => {
-                      await openContractDetailsDialog(contractId);
+                    startTransition(() => {
+                      void openContractDetailsDialog(contractId);
                     });
                   }}
                 >
@@ -285,17 +291,19 @@ export default function DashboardClientPage({
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    startTransition(async () => {
-                      // 最新の作業報告書を取得（通常は1件のはず）
-                      const latestWorkReport = contract.workReports[0];
-                      await openAttendanceDialog(
-                        contractId,
-                        latestWorkReport.id,
-                      );
+                    startTransition(() => {
+                      void (async () => {
+                        // 最新の作業報告書を取得（通常は1件のはず）
+                        const latestWorkReport = contract.workReports[0];
+                        await openAttendanceDialog(
+                          contractId,
+                          latestWorkReport.id,
+                        );
+                      })();
                     });
                   }}
                 >
-                  <Clock className="mr-2 h-4 w-4" />
+                  <Clock className="mr-2 size-4" />
                   勤怠入力
                 </Button>
               )}
@@ -304,9 +312,10 @@ export default function DashboardClientPage({
           <CardContent>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {contract.workReports.map((workReport) => (
-                <div
+                <button
                   key={workReport.id}
-                  className="block cursor-pointer rounded-lg border bg-background p-4 transition-colors hover:bg-muted/50"
+                  type="button"
+                  className="block w-full cursor-pointer rounded-lg border bg-background p-4 text-left transition-colors hover:bg-muted/50"
                   onClick={() => {
                     handleNavigation(workReport.id);
                   }}
@@ -324,7 +333,7 @@ export default function DashboardClientPage({
                       {getWorkReportStatusDisplayText(workReport.status)}
                     </Badge>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </CardContent>
@@ -341,8 +350,8 @@ export default function DashboardClientPage({
               <CardTitle
                 className="cursor-pointer transition-colors hover:text-blue-600"
                 onClick={() => {
-                  startTransition(async () => {
-                    await openContractDetailsDialog(contractId);
+                  startTransition(() => {
+                    void openContractDetailsDialog(contractId);
                   });
                 }}
               >
@@ -355,9 +364,10 @@ export default function DashboardClientPage({
             <CardContent>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {contract.workReports.map((workReport) => (
-                  <div
+                  <button
                     key={workReport.id}
-                    className="block cursor-pointer rounded-lg border bg-background p-4 transition-colors hover:bg-muted/50"
+                    type="button"
+                    className="block w-full cursor-pointer rounded-lg border bg-background p-4 text-left transition-colors hover:bg-muted/50"
                     onClick={() => {
                       handleNavigation(workReport.id);
                     }}
@@ -375,7 +385,7 @@ export default function DashboardClientPage({
                         {getWorkReportStatusDisplayText(workReport.status)}
                       </Badge>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </CardContent>
