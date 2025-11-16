@@ -75,8 +75,8 @@ model Contract {
   
   // クライアント情報（契約時点のスナップショット）
   clientName         String
-  clientContactName  String // 担当者名(作業報告書のメール送信先)
-  clientEmail        String // 担当者メールアドレス(作業報告書のメール送信先)
+  clientContactName  String // 担当者名(作業報告書のメール宛先)
+  clientEmail        String // 担当者メールアドレス(作業報告書のメール宛先)
   
   userId        String
   user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)

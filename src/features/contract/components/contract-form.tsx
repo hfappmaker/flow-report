@@ -633,16 +633,16 @@ export const ContractForm = ({
           />
         </div>
 
-        {/* メール送信先情報 */}
+        {/* メール宛先情報 */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">メール送信先情報</h3>
+          <h3 className="text-lg font-medium">メール宛先情報</h3>
 
           <FormField
             control={form.control}
             name="clientContactName"
             render={({ field }) => (
               <FormItem className="flex-1">
-                <FormLabel>担当者名(メール送信先)</FormLabel>
+                <FormLabel>担当者名</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -650,9 +650,6 @@ export const ContractForm = ({
                     placeholder="担当者名を入力"
                   />
                 </FormControl>
-                <p className="text-sm text-muted-foreground">
-                  作業報告書のメール送信先として使用されます
-                </p>
                 <FormMessage />
               </FormItem>
             )}
@@ -672,9 +669,6 @@ export const ContractForm = ({
                     type="email"
                   />
                 </FormControl>
-                <p className="text-sm text-muted-foreground">
-                  作業報告書のメール送信先として使用されます
-                </p>
                 <FormMessage />
               </FormItem>
             )}
