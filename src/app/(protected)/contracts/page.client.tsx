@@ -217,7 +217,9 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
         } catch (error: unknown) {
           console.error(error);
           const errorMessage =
-            error instanceof Error ? error.message : "契約のコピーに失敗しました";
+            error instanceof Error
+              ? error.message
+              : "契約のコピーに失敗しました";
           showError(errorMessage);
         } finally {
           closeDialog();
@@ -417,7 +419,6 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                       <div className="hidden items-center gap-4 text-sm text-muted-foreground sm:flex">
                         <div>開始: {formatDate(contract.startDate)}</div>
                         <div>終了: {formatDate(contract.endDate)}</div>
-                        <div>担当: {contract.clientContactName}</div>
                       </div>
                     </div>
                     <div className="ml-4 flex shrink-0 items-center gap-3">

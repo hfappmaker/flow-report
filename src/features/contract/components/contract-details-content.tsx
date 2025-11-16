@@ -45,18 +45,6 @@ export const ContractDetailsContent = ({
             </label>
             <p className="mt-1">{contract.clientName}</p>
           </div>
-          <div className="col-span-2">
-            <label className="text-sm font-medium text-muted-foreground">
-              担当者
-            </label>
-            <p className="mt-1">{contract.clientContactName}</p>
-          </div>
-          <div className="col-span-2">
-            <label className="text-sm font-medium text-muted-foreground">
-              メールアドレス
-            </label>
-            <p className="mt-1">{contract.clientEmail}</p>
-          </div>
           <div>
             <label className="text-sm font-medium text-muted-foreground">
               開始日
@@ -286,6 +274,24 @@ export const ContractDetailsContent = ({
                 ? `${contract.closingDay.toString()}日`
                 : "末日"}
             </p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="mb-3 text-lg font-medium">メール送信先情報</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="col-span-2">
+            <label className="text-sm font-medium text-muted-foreground">
+              担当者名(メール送信先)
+            </label>
+            <p className="mt-1">{contract.clientContactName}</p>
+          </div>
+          <div className="col-span-2">
+            <label className="text-sm font-medium text-muted-foreground">
+              担当者メールアドレス
+            </label>
+            <p className="mt-1">{contract.clientEmail}</p>
           </div>
         </div>
       </div>
