@@ -5,5 +5,5 @@ services:
       dockerfile: Dockerfile.app
     container_name: app_container
     volumes:
-      - ../:/WorkTimeManagementV2:cached 
+      - ../:/workspace:cached 
     command: sleep infinity
