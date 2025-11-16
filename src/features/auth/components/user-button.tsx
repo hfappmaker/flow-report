@@ -47,7 +47,7 @@ const UserButton = () => {
             subscriptionInfo?.status === "CANCELED") && (
             <>
               <ManageSubscriptionButton onSuccess={handleCancelSuccess}>
-                <button className="flex w-full items-center justify-center rounded-sm px-2 py-1.5 text-center text-sm hover:bg-gray-100 focus:bg-gray-100">
+                <button className="flex w-full items-center justify-center rounded-sm px-2 py-1.5 text-center text-sm hover:bg-sky-400 hover:text-primary-foreground focus:bg-sky-400 focus:text-primary-foreground">
                   <MdSettings className="mr-2 size-4" />
                   サブスクリプションを管理
                 </button>
