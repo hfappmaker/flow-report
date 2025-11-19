@@ -51,7 +51,7 @@
     "@types/exceljs": "^1.3.2",
     "axios": "^1.13.1",
     "bcryptjs": "^3.0.3",
-    "caniuse-lite": "^1.0.30001753",
+    "caniuse-lite": "^1.0.30001755",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
