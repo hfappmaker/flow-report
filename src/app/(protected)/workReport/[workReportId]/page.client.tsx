@@ -52,6 +52,7 @@ import {
   updateWorkReportRemarksAction,
 } from "@/features/work-report/actions/work-report";
 import { AttendanceEditDialog } from "@/features/work-report/components/attendance-edit-dialog";
+import { FreeeConnectionButton } from "@/features/work-report/components/freee-connection-button";
 import { FreeeInvoiceDialog } from "@/features/work-report/components/freee-invoice-dialog";
 import { FreeeReauthDialog } from "@/features/work-report/components/freee-reauth-dialog";
 import { RemarksEditDialog } from "@/features/work-report/components/remarks-edit-dialog";
@@ -598,18 +599,12 @@ export default function ClientWorkReportPage({
             >
               作業報告書を作成
             </Button>
-            <Button
-              type="button"
-              variant="outline"
+            <FreeeConnectionButton
               disabled={status !== "SUBMITTED"}
-              onClick={() => {
-                const returnTo = encodeURIComponent(window.location.pathname);
+              onConnectionStart={() => {
                 setManualPending(true);
-                window.location.href = `/api/auth/freee/authorize?returnTo=${returnTo}`;
               }}
-            >
-              freee連携
-            </Button>
+            />
             <Button
               type="button"
               variant="outline"
