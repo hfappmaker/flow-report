@@ -45,10 +45,6 @@ import {
   formatWorkTime,
   formatAmount,
 } from "@/features/contract/utils/contract-calculation-utils";
-import { getFreeePartnersAction } from "@/features/freee/actions/freee-accounting-actions";
-import { checkFreeeConnectionAction } from "@/features/freee/actions/freee-auth-actions";
-import { createFreeeInvoiceFromWorkReportAction } from "@/features/freee/actions/freee-invoice-actions";
-import type { FreeePartner } from "@/features/freee/types/freee-accounting-types";
 import { updateWorkReportAttendanceAction } from "@/features/work-report/actions/attendance";
 import {
   updateWorkReportAttendancesAction,
@@ -56,8 +52,12 @@ import {
   updateWorkReportRemarksAction,
 } from "@/features/work-report/actions/work-report";
 import { AttendanceEditDialog } from "@/features/work-report/components/attendance-edit-dialog";
+import { FreeeInvoiceDialog } from "@/features/work-report/components/freee-invoice-dialog";
+import { FreeeReauthDialog } from "@/features/work-report/components/freee-reauth-dialog";
 import { RemarksEditDialog } from "@/features/work-report/components/remarks-edit-dialog";
 import { TemplateSelectionDialog } from "@/features/work-report/components/template-selection-dialog";
+import { useFreeeConnection } from "@/features/work-report/hooks/use-freee-connection";
+import { useFreeePartners } from "@/features/work-report/hooks/use-freee-partners";
 import { generateWorkReportExcel } from "@/features/work-report/libs/excel-report-generator";
 import {
   type EditFormValues,
@@ -127,20 +127,28 @@ export default function ClientWorkReportPage({
     Partial<EditFormValues> | undefined
   >(undefined);
   const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
-  const [showReauthDialog, setShowReauthDialog] = useState(false);
 
-  // freee連携状態
-  const [isFreeeConnected, setIsFreeeConnected] = useState(false);
-  const [isCheckingFreeeConnection, setIsCheckingFreeeConnection] =
-    useState(true);
-  const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
+  // freee連携状態管理
+  const {
+    isFreeeConnected,
+    setIsFreeeConnected,
+    isCheckingFreeeConnection,
+    showReauthDialog,
+    setShowReauthDialog,
+  } = useFreeeConnection();
 
-  // freee取引先関連
-  const [partners, setPartners] = useState<FreeePartner[]>([]);
-  const [selectedPartnerId, setSelectedPartnerId] = useState<
-    number | undefined
-  >();
-  const [isLoadingPartners, setIsLoadingPartners] = useState(false);
+  // freee取引先管理
+  const { partners, selectedPartnerId, setSelectedPartnerId, isLoadingPartners } =
+    useFreeePartners({
+      isDialogOpen: isInvoiceDialogOpen,
+      isFreeeConnected,
+      clientName,
+      onConnectionLost: () => {
+        setIsFreeeConnected(false);
+        setIsInvoiceDialogOpen(false);
+        setShowReauthDialog(true);
+      },
+    });
 
   const [status, setStatus] = useState<WorkReportStatus>(initialStatus);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
@@ -381,82 +389,6 @@ export default function ClientWorkReportPage({
     setEditingDate(date);
   };
 
-  // freee連携状態をチェック
-  useEffect(() => {
-    const checkConnection = async () => {
-      setIsCheckingFreeeConnection(true);
-      try {
-        const connected = await checkFreeeConnectionAction();
-        setIsFreeeConnected(connected);
-      } catch (error) {
-        console.error("Failed to check freee connection:", error);
-      } finally {
-        setIsCheckingFreeeConnection(false);
-      }
-    };
-
-    void checkConnection();
-
-    // OAuth コールバックから戻ってきた場合の処理
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("freee_connected") === "true") {
-      setIsFreeeConnected(true);
-      showSuccess("freeeとの連携が完了しました");
-      // URLパラメータをクリア
-      window.history.replaceState({}, "", window.location.pathname);
-    } else if (params.get("error") === "freee_auth_failed") {
-      showError("freee連携に失敗しました");
-      window.history.replaceState({}, "", window.location.pathname);
-    } else if (params.get("error") === "freee_auth_denied") {
-      showError("freee連携がキャンセルされました");
-      window.history.replaceState({}, "", window.location.pathname);
-    }
-  }, [showSuccess, showError]);
-
-  // 請求書ダイアログが開いた時に取引先一覧を取得
-  useEffect(() => {
-    if (isInvoiceDialogOpen && isFreeeConnected && partners.length === 0) {
-      const fetchPartners = async () => {
-        setIsLoadingPartners(true);
-        try {
-          const result = await getFreeePartnersAction();
-          if (result.success && result.partners) {
-            setPartners(result.partners);
-            // clientName に一致する取引先があれば自動選択
-            const matchingPartner = result.partners.find(
-              (p) => p.name === clientName,
-            );
-            if (matchingPartner) {
-              setSelectedPartnerId(matchingPartner.id);
-            }
-          } else {
-            // 再連携が必要な場合
-            if (result.requiresReauth) {
-              setIsFreeeConnected(false);
-              showError(result.message);
-              setIsInvoiceDialogOpen(false);
-              setShowReauthDialog(true);
-            } else {
-              showError(result.message);
-            }
-          }
-        } catch (error) {
-          console.error("Failed to fetch partners:", error);
-          showError("取引先一覧の取得に失敗しました");
-        } finally {
-          setIsLoadingPartners(false);
-        }
-      };
-
-      void fetchPartners();
-    }
-  }, [
-    isInvoiceDialogOpen,
-    isFreeeConnected,
-    partners.length,
-    clientName,
-    showError,
-  ]);
 
   // テンプレートからの作業報告書作成
   const createReportFromTemplate = async (
@@ -583,62 +515,6 @@ export default function ClientWorkReportPage({
     [workReportId, startTransition, showSuccess, showError],
   );
 
-  // freee請求書作成処理
-  const handleCreateFreeeInvoice = async () => {
-    if (!isFreeeConnected) {
-      // freee連携ページへリダイレクト
-      const returnTo = encodeURIComponent(window.location.pathname);
-      window.location.href = `/api/auth/freee/authorize?returnTo=${returnTo}`;
-      return;
-    }
-
-    // 取引先選択チェック
-    if (!selectedPartnerId) {
-      showError("取引先を選択してください");
-      return;
-    }
-
-    setIsCreatingInvoice(true);
-    try {
-      const result = await createFreeeInvoiceFromWorkReportAction(
-        workReportId,
-        selectedPartnerId,
-      );
-
-      if (result.success) {
-        showSuccess(result.message);
-        if (result.invoiceUrl) {
-          // 請求書URLをクリップボードにコピー（エラーが発生しても継続）
-          try {
-            await navigator.clipboard.writeText(result.invoiceUrl);
-            showSuccess("請求書URLをクリップボードにコピーしました");
-          } catch (clipboardError) {
-            console.warn("Failed to copy to clipboard:", clipboardError);
-            // クリップボードエラーは致命的ではないので処理を継続
-          }
-
-          // freee請求書ページを新しいタブで開く
-          window.open(result.invoiceUrl, "_blank");
-        }
-        setIsInvoiceDialogOpen(false);
-      } else {
-        // 再連携が必要な場合
-        if (result.requiresReauth) {
-          setIsFreeeConnected(false);
-          showError(result.message);
-          setIsInvoiceDialogOpen(false);
-          setShowReauthDialog(true);
-        } else {
-          showError(result.message);
-        }
-      }
-    } catch (error) {
-      console.error("Failed to create freee invoice:", error);
-      showError("請求書の作成中にエラーが発生しました");
-    } finally {
-      setIsCreatingInvoice(false);
-    }
-  };
 
   return (
     <div className="mx-auto">
@@ -1104,154 +980,33 @@ export default function ClientWorkReportPage({
       />
 
       {/* 請求書作成ダイアログ */}
-      <Dialog open={isInvoiceDialogOpen} onOpenChange={setIsInvoiceDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>freee請求書作成</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            {isCheckingFreeeConnection ? (
-              <p className="text-center text-muted-foreground">
-                freee連携状態を確認中...
-              </p>
-            ) : !isFreeeConnected ? (
-              <>
-                <p className="text-muted-foreground">
-                  freeeとの連携が必要です。
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  freeeアカウントと連携すると、作業報告書から請求書を作成できます。
-                </p>
-                <div className="flex justify-end space-x-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setIsInvoiceDialogOpen(false);
-                    }}
-                  >
-                    キャンセル
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="partner-select">取引先（必須）</Label>
-                    {isLoadingPartners ? (
-                      <p className="text-sm text-muted-foreground">
-                        取引先を読み込み中...
-                      </p>
-                    ) : (
-                      <Select
-                        value={selectedPartnerId?.toString()}
-                        onValueChange={(value) => {
-                          setSelectedPartnerId(parseInt(value, 10));
-                        }}
-                      >
-                        <SelectTrigger id="partner-select">
-                          <SelectValue placeholder="取引先を選択してください" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {partners.map((partner) => (
-                            <SelectItem
-                              key={partner.id}
-                              value={partner.id.toString()}
-                            >
-                              {partner.name}
-                              {partner.code ? ` (${partner.code})` : ""}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <p className="text-muted-foreground">
-                      以下の内容でfreee請求書を作成します：
-                    </p>
-                    <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-                      <li>
-                        対象月: {targetDate.getFullYear()}年
-                        {targetDate.getMonth() + 1}月度
-                      </li>
-                      <li>
-                        取引先:{" "}
-                        {selectedPartnerId
-                          ? (partners.find((p) => p.id === selectedPartnerId)
-                              ?.name ?? clientName)
-                          : "未選択"}
-                      </li>
-                      <li>総稼働時間: {workTimeText}</li>
-                      <li>
-                        金額:{" "}
-                        {amountCalculation
-                          ? formatAmount(
-                              amountCalculation.baseAmount +
-                                amountCalculation.taxAmount,
-                            )
-                          : "---"}
-                      </li>
-                    </ul>
-                    <p className="text-xs text-muted-foreground">
-                      ※ freee上でドラフト（下書き）として作成されます
-                    </p>
-                  </div>
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setIsInvoiceDialogOpen(false);
-                    }}
-                    disabled={isCreatingInvoice}
-                  >
-                    キャンセル
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      startTransition(() => {
-                        void handleCreateFreeeInvoice();
-                      });
-                    }}
-                    disabled={isCreatingInvoice || !selectedPartnerId}
-                  >
-                    {isCreatingInvoice ? "作成中..." : "作成"}
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <FreeeInvoiceDialog
+        open={isInvoiceDialogOpen}
+        onOpenChange={setIsInvoiceDialogOpen}
+        isFreeeConnected={isFreeeConnected}
+        isCheckingFreeeConnection={isCheckingFreeeConnection}
+        partners={partners}
+        selectedPartnerId={selectedPartnerId}
+        onPartnerIdChange={setSelectedPartnerId}
+        isLoadingPartners={isLoadingPartners}
+        workReportId={workReportId}
+        targetDate={targetDate}
+        clientName={clientName}
+        workTimeText={workTimeText}
+        baseAmount={amountCalculation?.baseAmount ?? 0}
+        taxAmount={amountCalculation?.taxAmount ?? 0}
+        onConnectionLost={() => {
+          setIsFreeeConnected(false);
+          setIsInvoiceDialogOpen(false);
+          setShowReauthDialog(true);
+        }}
+      />
 
       {/* freee再連携促進ダイアログ */}
-      <Dialog open={showReauthDialog} onOpenChange={setShowReauthDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>freee再連携が必要です</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-muted-foreground">
-              freee連携の有効期限が切れています。左側の「freee連携」ボタンから再度連携してください。
-            </p>
-          </div>
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              onClick={() => {
-                setShowReauthDialog(false);
-              }}
-            >
-              閉じる
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <FreeeReauthDialog
+        open={showReauthDialog}
+        onOpenChange={setShowReauthDialog}
+      />
 
       <TemplateSelectionDialog
         open={isTemplateDialogOpen}
