@@ -100,6 +100,7 @@ export async function createFreeeInvoiceFromWorkReportAction(
         taxRoundingType: contract.taxRoundingType,
         rateType: contract.rateType,
         monthlyWorkMinutes: contract.monthlyWorkMinutes,
+        closingDay: contract.closingDay,
       },
       options,
     );
