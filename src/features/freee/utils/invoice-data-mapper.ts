@@ -7,6 +7,7 @@ import type {
   FreeeInvoiceLine,
 } from "@/features/freee/types/freee-invoice-types";
 import type { AttendanceData } from "@/features/work-report/types/attendance";
+import { getClosingDate } from "@/utils/date-utils";
 
 export interface WorkReportInvoiceData {
   targetDate: Date;
@@ -23,6 +24,7 @@ export interface WorkReportInvoiceData {
   taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
   rateType: "upperLower" | "middle" | "fixed" | "hourlyRate";
   monthlyWorkMinutes?: number | null;
+  closingDay?: number | null;
 }
 
 /**
@@ -68,20 +70,24 @@ export function mapWorkReportToFreeeInvoice(
   }
 
   // 日付設定
-  const monthEnd = getLastDayOfMonth(
-    targetDate.getFullYear(),
-    targetDate.getMonth(),
-  );
-  const billingDate =
-    options?.billingDate ?? monthEnd.toISOString().split("T")[0];
-  const issueDate = options?.issueDate ?? monthEnd.toISOString().split("T")[0];
-
-  const nextMonthEnd = getLastDayOfMonth(
+  // 請求日は締め日を使用
+  const closingDate = getClosingDate(
     targetDate.getFullYear(),
     targetDate.getMonth() + 1,
+    workReportData.closingDay ?? null,
+  );
+  const billingDate =
+    options?.billingDate ?? closingDate.toISOString().split("T")[0];
+  const issueDate = options?.issueDate ?? closingDate.toISOString().split("T")[0];
+
+  // 支払期限は翌月の締め日
+  const nextMonthClosingDate = getClosingDate(
+    targetDate.getFullYear(),
+    targetDate.getMonth() + 2,
+    workReportData.closingDay ?? null,
   );
   const paymentDate =
-    options?.paymentDate ?? nextMonthEnd.toISOString().split("T")[0];
+    options?.paymentDate ?? nextMonthClosingDate.toISOString().split("T")[0];
 
   // 税処理設定
   const taxEntryMethod =
@@ -172,15 +178,6 @@ function mapTaxRounding(
     default:
       return "omit";
   }
-}
-
-/**
- * 月の最終日を取得
- */
-function getLastDayOfMonth(year: number, month: number): Date {
-  // monthは0始まり（0=1月, 11=12月）
-  // 翌月の0日目 = 今月の最終日
-  return new Date(year, month + 1, 0);
 }
 
 /**
