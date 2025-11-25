@@ -68,3 +68,67 @@ export type SearchFormValues = z.infer<typeof searchFormSchema>;
 export type EditFormValues = z.infer<typeof editFormSchema>;
 export type BulkEditFormValues = z.infer<typeof bulkEditFormSchema>;
 export type TemplateUploadValues = z.infer<typeof templateUploadSchema>;
+
+/**
+ * テンプレート設定のフィールドマッピングスキーマ
+ */
+export const templateFieldMappingSchema = z.object({
+  // ヘッダー系フィールド
+  title: z.string().nullable(),
+  userName: z.string().nullable(),
+  basicStartTime: z.string().nullable(),
+  basicEndTime: z.string().nullable(),
+  basicBreakDuration: z.string().nullable(),
+  dailyWorkMinutes: z.string().nullable(),
+  monthlyWorkMinutes: z.string().nullable(),
+  remarks: z.string().nullable(),
+  totalWorkTime: z.string().nullable(),
+  basicWorkTime: z.string().nullable(),
+  workingDays: z.string().nullable(),
+
+  // フォームデータ系フィールド
+  date: z.string().nullable(),
+  dayOfWeek: z.string().nullable(),
+  startTime: z.string().nullable(),
+  endTime: z.string().nullable(),
+  breakDuration: z.string().nullable(),
+  workDuration: z.string().nullable(),
+  memo: z.string().nullable(),
+});
+
+/**
+ * テンプレート設定作成スキーマ
+ */
+export const createTemplateConfigSchema = z.object({
+  name: z
+    .string()
+    .min(1, "テンプレート名を入力してください")
+    .max(100, "テンプレート名は100文字以内で入力してください"),
+  templateFile: z.string().min(1, "テンプレートファイルをアップロードしてください"),
+  templateFileName: z.string().min(1, "ファイル名が必要です"),
+  fieldMapping: templateFieldMappingSchema,
+});
+
+/**
+ * テンプレート設定更新スキーマ
+ */
+export const updateTemplateConfigSchema = z.object({
+  name: z
+    .string()
+    .min(1, "テンプレート名を入力してください")
+    .max(100, "テンプレート名は100文字以内で入力してください")
+    .optional(),
+  templateFile: z.string().optional(),
+  templateFileName: z.string().optional(),
+  fieldMapping: templateFieldMappingSchema.partial().optional(),
+});
+
+export type TemplateFieldMappingValues = z.infer<
+  typeof templateFieldMappingSchema
+>;
+export type CreateTemplateConfigValues = z.infer<
+  typeof createTemplateConfigSchema
+>;
+export type UpdateTemplateConfigValues = z.infer<
+  typeof updateTemplateConfigSchema
+>;

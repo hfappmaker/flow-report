@@ -226,3 +226,39 @@ model Subscription {
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
 }
+
+// 作業報告書カスタムテンプレート設定
+model WorkReportTemplateConfig {
+  id                String   @id @default(cuid())
+  name              String   // テンプレート名
+  templateFile      String   @db.Text // テンプレートファイル(Base64)
+  templateFileName  String   // 元のファイル名
+
+  // ヘッダー系のフィールドマッピング（名前付き範囲名）
+  titleRangeName           String?  // タイトル
+  userNameRangeName        String?  // 作業者名
+  basicStartTimeRangeName  String?  // 基本開始時刻
+  basicEndTimeRangeName    String?  // 基本終了時刻
+  basicBreakDurationRangeName String? // 基本休憩時間
+  dailyWorkMinutesRangeName String?  // 1日あたりの作業単位
+  monthlyWorkMinutesRangeName String? // 1ヶ月あたりの作業単位
+  remarksRangeName         String?  // 備考
+  totalWorkTimeRangeName   String?  // 総稼働時間
+  basicWorkTimeRangeName   String?  // 基本稼働時間
+  workingDaysRangeName     String?  // 稼働日数
+
+  // フォームデータ系のフィールドマッピング（名前付き範囲名、31行分）
+  dateRangeName            String?  // 日付
+  dayOfWeekRangeName       String?  // 曜日
+  startTimeRangeName       String?  // 開始時刻
+  endTimeRangeName         String?  // 終了時刻
+  breakDurationRangeName   String?  // 休憩時間
+  workDurationRangeName    String?  // 稼働時間
+  memoRangeName            String?  // 作業内容
+
+  userId            String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+}

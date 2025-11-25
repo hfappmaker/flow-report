@@ -7,13 +7,14 @@ import {
 } from "@/features/contract/utils/contract-calculation-utils";
 import { WORK_REPORT_DAYS } from "@/features/work-report/constants/work-report-constants";
 import type { AttendanceData } from "@/features/work-report/types/attendance";
+import type { TemplateFieldMapping } from "@/features/work-report/types/work-report-template-config";
 import {
   parseExcelRange,
   parseRangeReference,
 } from "@/features/work-report/utils/attendance-utils";
 import { formatWorkReportMonth } from "@/features/work-report/utils/date-formatting";
 import {
-  FIELD_NAMES,
+  type FieldName,
   setCellValueForField,
 } from "@/features/work-report/utils/excel-field-mappers";
 import { msToSerial } from "@/features/work-report/utils/excel-utils";
@@ -39,6 +40,8 @@ export interface WorkReportExcelData {
   dailyWorkMinutes: number | null;
   monthlyWorkMinutes: number | null;
   remarks?: string | null;
+  /** カスタムフィールドマッピング（指定がない場合はデフォルト名を使用） */
+  fieldMapping?: TemplateFieldMapping | null;
 }
 
 /**
@@ -62,7 +65,22 @@ export async function generateWorkReportExcel(
     dailyWorkMinutes,
     monthlyWorkMinutes,
     remarks,
+    fieldMapping,
   } = data;
+
+  // フィールドマッピングからレンジ名を取得するヘルパー関数
+  // nullや空文字の場合はnullを返す（その名前付き範囲はスキップ）
+  const getRangeName = (
+    mappingKey: keyof TemplateFieldMapping,
+    defaultName: string,
+  ): string | null => {
+    if (fieldMapping) {
+      const customName = fieldMapping[mappingKey];
+      // 空文字やnullの場合はスキップ
+      return customName && customName.trim() !== "" ? customName : null;
+    }
+    return defaultName;
+  };
 
   // 新しいワークブックを作成
   const workbook = new ExcelJS.Workbook();
@@ -111,9 +129,12 @@ export async function generateWorkReportExcel(
 
   // 名前付き範囲に値を設定するヘルパー関数
   const setNamedRangeValue = (
-    rangeName: string,
+    rangeName: string | null,
     getCellValue: () => NamedRangeCellValue | null,
   ) => {
+    // rangeName が null の場合はスキップ
+    if (!rangeName) return;
+
     const ranges = workbook.definedNames.getRanges(rangeName);
     if (ranges.ranges.length === 0) return;
 
@@ -133,51 +154,60 @@ export async function generateWorkReportExcel(
     }
   };
 
-  // 各名前付き範囲に値を設定
-  setNamedRangeValue("タイトル", () => ({
+  // 各名前付き範囲に値を設定（フィールドマッピングに基づいて動的に名前を取得）
+  setNamedRangeValue(getRangeName("title", "タイトル"), () => ({
     value: formatWorkReportMonth(targetDate),
   }));
 
-  setNamedRangeValue("作業者名", () => ({ value: userName }));
+  setNamedRangeValue(getRangeName("userName", "作業者名"), () => ({
+    value: userName,
+  }));
 
-  setNamedRangeValue("基本開始時刻", () =>
+  setNamedRangeValue(getRangeName("basicStartTime", "基本開始時刻"), () =>
     basicStartTime
       ? { value: msToSerial(basicStartTime.getTime()), numFmt: "[h]:mm" }
       : null,
   );
 
-  setNamedRangeValue("基本終了時刻", () =>
+  setNamedRangeValue(getRangeName("basicEndTime", "基本終了時刻"), () =>
     basicEndTime
       ? { value: msToSerial(basicEndTime.getTime()), numFmt: "[h]:mm" }
       : null,
   );
 
-  setNamedRangeValue("基本休憩時間", () =>
-    basicBreakDuration
-      ? {
-          value: msToSerial(basicBreakDuration * 60000),
-          numFmt: "[h]:mm",
-        }
-      : null,
+  setNamedRangeValue(
+    getRangeName("basicBreakDuration", "基本休憩時間"),
+    () =>
+      basicBreakDuration
+        ? {
+            value: msToSerial(basicBreakDuration * 60000),
+            numFmt: "[h]:mm",
+          }
+        : null,
   );
 
-  setNamedRangeValue("_１日あたりの作業単位", () =>
-    dailyWorkMinutes ? { value: `${String(dailyWorkMinutes)}分` } : null,
+  setNamedRangeValue(
+    getRangeName("dailyWorkMinutes", "_１日あたりの作業単位"),
+    () => (dailyWorkMinutes ? { value: `${String(dailyWorkMinutes)}分` } : null),
   );
 
-  setNamedRangeValue("_１ヶ月あたりの作業単位", () =>
-    monthlyWorkMinutes ? { value: `${String(monthlyWorkMinutes)}分` } : null,
+  setNamedRangeValue(
+    getRangeName("monthlyWorkMinutes", "_１ヶ月あたりの作業単位"),
+    () =>
+      monthlyWorkMinutes ? { value: `${String(monthlyWorkMinutes)}分` } : null,
   );
 
   // 備考
-  setNamedRangeValue("備考", () => (remarks ? { value: remarks } : null));
+  setNamedRangeValue(getRangeName("remarks", "備考"), () =>
+    remarks ? { value: remarks } : null,
+  );
 
   // 総稼働時間
   const totalWorkMinutes = calculateTotalWorkMinutes(
     attendances,
     monthlyWorkMinutes,
   );
-  setNamedRangeValue("総稼働時間", () => ({
+  setNamedRangeValue(getRangeName("totalWorkTime", "総稼働時間"), () => ({
     value: msToSerial(totalWorkMinutes * 60 * 1000),
     numFmt: "[h]:mm",
   }));
@@ -188,7 +218,7 @@ export async function generateWorkReportExcel(
     basicEndTime,
     basicBreakDuration,
   );
-  setNamedRangeValue("基本稼働時間", () =>
+  setNamedRangeValue(getRangeName("basicWorkTime", "基本稼働時間"), () =>
     basicWorkMinutes !== null
       ? {
           value: msToSerial(basicWorkMinutes * 60 * 1000),
@@ -199,7 +229,7 @@ export async function generateWorkReportExcel(
 
   // 稼働日数
   const workingDays = calculateWorkingDays(attendances);
-  setNamedRangeValue("稼働日数", () => ({
+  setNamedRangeValue(getRangeName("workingDays", "稼働日数"), () => ({
     value: workingDays,
   }));
 
@@ -209,8 +239,34 @@ export async function generateWorkReportExcel(
     (a, b) => a.date.getTime() - b.date.getTime(),
   );
 
-  FIELD_NAMES.forEach((fieldName) => {
-    const fieldRanges = workbook.definedNames.getRanges(fieldName);
+  // フォームデータ用のフィールドマッピング
+  const formFieldMappings: Array<{
+    mappingKey: keyof TemplateFieldMapping;
+    defaultName: string;
+    fieldName: FieldName;
+  }> = [
+    { mappingKey: "date", defaultName: "日付", fieldName: "日付" },
+    { mappingKey: "dayOfWeek", defaultName: "曜日", fieldName: "曜日" },
+    { mappingKey: "startTime", defaultName: "開始時刻", fieldName: "開始時刻" },
+    { mappingKey: "endTime", defaultName: "終了時刻", fieldName: "終了時刻" },
+    {
+      mappingKey: "breakDuration",
+      defaultName: "休憩時間",
+      fieldName: "休憩時間",
+    },
+    {
+      mappingKey: "workDuration",
+      defaultName: "稼働時間",
+      fieldName: "稼働時間",
+    },
+    { mappingKey: "memo", defaultName: "作業内容", fieldName: "作業内容" },
+  ];
+
+  formFieldMappings.forEach(({ mappingKey, defaultName, fieldName }) => {
+    const rangeName = getRangeName(mappingKey, defaultName);
+    if (!rangeName) return;
+
+    const fieldRanges = workbook.definedNames.getRanges(rangeName);
     if (fieldRanges.ranges.length > 0) {
       const [sheetName, rangeAddress] = parseRangeReference(
         fieldRanges.ranges[0],

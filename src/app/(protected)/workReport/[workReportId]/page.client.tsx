@@ -56,7 +56,11 @@ import { FreeeConnectionButton } from "@/features/work-report/components/freee-c
 import { FreeeInvoiceDialog } from "@/features/work-report/components/freee-invoice-dialog";
 import { FreeeReauthDialog } from "@/features/work-report/components/freee-reauth-dialog";
 import { RemarksEditDialog } from "@/features/work-report/components/remarks-edit-dialog";
-import { TemplateSelectionDialog } from "@/features/work-report/components/template-selection-dialog";
+import {
+  TemplateSelectionDialog,
+  type TemplateSelectionResult,
+} from "@/features/work-report/components/template-selection-dialog";
+import type { TemplateFieldMapping } from "@/features/work-report/types/work-report-template-config";
 import { useFreeeConnection } from "@/features/work-report/hooks/use-freee-connection";
 import { useFreeePartners } from "@/features/work-report/hooks/use-freee-partners";
 import { generateWorkReportExcel } from "@/features/work-report/libs/excel-report-generator";
@@ -394,6 +398,7 @@ export default function ClientWorkReportPage({
   // テンプレートからの作業報告書作成
   const createReportFromTemplate = async (
     templateWorkbook: ExcelJS.Workbook,
+    fieldMapping?: TemplateFieldMapping | null,
   ) => {
     try {
       const blob = await generateWorkReportExcel(templateWorkbook, {
@@ -406,6 +411,7 @@ export default function ClientWorkReportPage({
         dailyWorkMinutes,
         monthlyWorkMinutes,
         remarks: remarks || null,
+        fieldMapping: fieldMapping ?? null,
       });
 
       const url = window.URL.createObjectURL(blob);
@@ -446,10 +452,9 @@ export default function ClientWorkReportPage({
     }
   };
 
-  const handleConfirmCreateReport = async (
-    customWorkbook: ExcelJS.Workbook | null,
-  ) => {
+  const handleConfirmCreateReport = async (result: TemplateSelectionResult) => {
     try {
+      const { workbook: customWorkbook, fieldMapping } = result;
       let workbook: ExcelJS.Workbook;
 
       if (customWorkbook) {
@@ -466,7 +471,7 @@ export default function ClientWorkReportPage({
         await workbook.xlsx.load(buffer);
       }
 
-      await createReportFromTemplate(workbook);
+      await createReportFromTemplate(workbook, fieldMapping);
     } catch (err) {
       console.error("テンプレートの読み込みに失敗しました:", err);
       showError("テンプレートの読み込みに失敗しました");
