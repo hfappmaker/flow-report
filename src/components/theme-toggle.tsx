@@ -16,7 +16,7 @@ export const ThemeToggle = () => {
 
     setTimeout(() => {
       root.classList.remove("theme-transitioning");
-    }, 300);
+    }, 500);
   };
 
   return (
