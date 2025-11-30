@@ -1,7 +1,12 @@
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({
+  connectionString: process.env.PRISMA_DATABASE_URL,
+});
+
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const testUsers = [
@@ -11,7 +16,7 @@ async function main() {
       name: "テストユーザー1",
     },
     {
-      email: "loadtest2@example.com", 
+      email: "loadtest2@example.com",
       password: "LoadTest123!",
       name: "テストユーザー2",
     },
@@ -42,7 +47,7 @@ async function main() {
       // ユーザーを作成
       const user = await prisma.user.create({
         data: {
-          id: `test-${userData.email.split('@')[0]}`, // ユーザーIDを一意にするためのプレフィックス
+          id: `test-${userData.email.split("@")[0]}`, // ユーザーIDを一意にするためのプレフィックス
           email: userData.email,
           password: hashedPassword,
           name: userData.name,
@@ -81,7 +86,9 @@ async function main() {
             created: new Date(),
           },
         });
-        console.log(`✅ ${userData.email} に有効なサブスクリプションを追加しました`);
+        console.log(
+          `✅ ${userData.email} に有効なサブスクリプションを追加しました`,
+        );
       } else if (userData.email === "loadtest3@example.com") {
         const stripeCustomer = await prisma.stripeCustomer.create({
           data: {
@@ -99,7 +106,9 @@ async function main() {
             created: new Date(),
           },
         });
-        console.log(`✅ ${userData.email} にキャンセル済みのサブスクリプションを追加しました`);
+        console.log(
+          `✅ ${userData.email} にキャンセル済みのサブスクリプションを追加しました`,
+        );
       }
 
       console.log(`✅ ${userData.email} を作成しました (ID: ${user.id})`);
