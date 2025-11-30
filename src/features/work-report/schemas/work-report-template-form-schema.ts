@@ -12,31 +12,31 @@ export const fieldMappingSchema = z.object({
 export type FieldMappingFormValues = z.infer<typeof fieldMappingSchema>;
 
 /**
- * 作業報告書テンプレートフォームのスキーマ（新規作成時）
+ * Excelテンプレートフォームのスキーマ（新規作成時）
  */
-export const workReportTemplateCreateFormSchema = z.object({
+export const excelTemplateCreateFormSchema = z.object({
   name: z.string().min(1, "テンプレート名は必須です"),
   file: z.instanceof(File, { message: "Excelファイルは必須です" }),
   sheetName: z.string().nullable().optional(),
   fieldMappings: z.array(fieldMappingSchema),
 });
 
-export type WorkReportTemplateCreateFormValues = z.infer<
-  typeof workReportTemplateCreateFormSchema
+export type ExcelTemplateCreateFormValues = z.infer<
+  typeof excelTemplateCreateFormSchema
 >;
 
 /**
- * 作業報告書テンプレートフォームのスキーマ（編集時）
+ * Excelテンプレートフォームのスキーマ（編集時）
  */
-export const workReportTemplateEditFormSchema = z.object({
+export const excelTemplateEditFormSchema = z.object({
   name: z.string().min(1, "テンプレート名は必須です"),
   file: z.instanceof(File).nullable().optional(),
   sheetName: z.string().nullable().optional(),
   fieldMappings: z.array(fieldMappingSchema),
 });
 
-export type WorkReportTemplateEditFormValues = z.infer<
-  typeof workReportTemplateEditFormSchema
+export type ExcelTemplateEditFormValues = z.infer<
+  typeof excelTemplateEditFormSchema
 >;
 
 /**

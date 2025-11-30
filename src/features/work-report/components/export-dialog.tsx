@@ -1,15 +1,7 @@
 "use client";
 
 import ExcelJS from "exceljs";
-import {
-  Download,
-  FileSpreadsheet,
-  FileText,
-  Lock,
-  Settings,
-  Archive,
-} from "lucide-react";
-import Link from "next/link";
+import { Download, FileSpreadsheet, FileText, Lock, Archive } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -37,7 +29,7 @@ import {
   generateZipFile,
 } from "@/features/work-report/libs/zip-generator";
 import type { ExportFile } from "@/features/work-report/types/export-types";
-import type { WorkReportTemplateWithFields } from "@/features/work-report/types/work-report-template";
+import type { ExcelTemplateWithFields } from "@/features/work-report/types/work-report-template";
 
 /**
  * エクスポート結果
@@ -45,12 +37,12 @@ import type { WorkReportTemplateWithFields } from "@/features/work-report/types/
 export interface ExportResult {
   workReportTemplate: {
     workbook: ExcelJS.Workbook;
-    fieldMappings: WorkReportTemplateWithFields["fieldMappings"];
+    fieldMappings: ExcelTemplateWithFields["fieldMappings"];
     sheetName: string | null;
   } | null;
   invoiceTemplate: {
     workbook: ExcelJS.Workbook;
-    fieldMappings: WorkReportTemplateWithFields["fieldMappings"];
+    fieldMappings: ExcelTemplateWithFields["fieldMappings"];
     sheetName: string | null;
   } | null;
   zipOptions: {
@@ -63,8 +55,8 @@ interface ExportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onExport: (result: ExportResult) => Promise<ExportFile[]>;
-  workReportTemplates: WorkReportTemplateWithFields[];
-  invoiceTemplates: WorkReportTemplateWithFields[];
+  workReportTemplates: ExcelTemplateWithFields[];
+  invoiceTemplates: ExcelTemplateWithFields[];
   targetDate: Date;
   userName: string;
 }
@@ -500,39 +492,31 @@ export function ExportDialog({
           )}
         </div>
 
-        <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
-          <Link href="/templates">
-            <Button variant="ghost" size="sm" type="button">
-              <Settings className="mr-1 size-4" />
-              テンプレート管理
-            </Button>
-          </Link>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                onOpenChange(false);
-              }}
-              disabled={isProcessing}
-            >
-              キャンセル
-            </Button>
-            <Button
-              onClick={handleExport}
-              disabled={
-                isProcessing ||
-                (!isWorkReportEnabled && !isInvoiceEnabled) ||
-                (isWorkReportEnabled &&
-                  workReportTemplates.length > 0 &&
-                  !workReportTemplateId) ||
-                (isInvoiceEnabled &&
-                  invoiceTemplates.length > 0 &&
-                  !invoiceTemplateId)
-              }
-            >
-              {isProcessing ? "処理中..." : "エクスポート"}
-            </Button>
-          </div>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => {
+              onOpenChange(false);
+            }}
+            disabled={isProcessing}
+          >
+            キャンセル
+          </Button>
+          <Button
+            onClick={handleExport}
+            disabled={
+              isProcessing ||
+              (!isWorkReportEnabled && !isInvoiceEnabled) ||
+              (isWorkReportEnabled &&
+                workReportTemplates.length > 0 &&
+                !workReportTemplateId) ||
+              (isInvoiceEnabled &&
+                invoiceTemplates.length > 0 &&
+                !invoiceTemplateId)
+            }
+          >
+            {isProcessing ? "処理中..." : "エクスポート"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

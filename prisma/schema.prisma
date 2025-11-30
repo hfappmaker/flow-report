@@ -69,7 +69,7 @@ model User {
   contracts             Contract[]
   auditLogs             AuditLog[]
   EmailTemplate         EmailTemplate[]
-  workReportTemplates   WorkReportTemplate[]
+  excelTemplates        ExcelTemplate[]
 }
 
 
@@ -233,31 +233,33 @@ model Subscription {
   updatedAt            DateTime          @updatedAt
 }
 
-model WorkReportTemplate {
-  id            String                      @id @default(cuid())
-  name          String                      // テンプレート名
-  type          TemplateType                @default(WORK_REPORT) // テンプレートの種類
-  fileData      String                      @db.Text // ExcelファイルのBase64エンコードデータ
-  fileName      String                      // 元のファイル名（表示用）
-  sheetName     String?                     // 出力するシート名（nullの場合は最初のシート）
+model ExcelTemplate {
+  id            String               @id @default(cuid())
+  name          String               // テンプレート名
+  type          TemplateType         @default(WORK_REPORT) // テンプレートの種類
+  fileData      String               @db.Text // ExcelファイルのBase64エンコードデータ
+  fileName      String               // 元のファイル名（表示用）
+  sheetName     String?              // 出力するシート名（nullの場合は最初のシート）
   createUserId  String
-  createUser    User                        @relation(fields: [createUserId], references: [id], onDelete: Cascade)
-  fieldMappings WorkReportTemplateField[]
-  createdAt     DateTime                    @default(now())
-  updatedAt     DateTime                    @updatedAt
+  createUser    User                 @relation(fields: [createUserId], references: [id], onDelete: Cascade)
+  fieldMappings ExcelTemplateField[]
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
 
   @@unique([name, createUserId, type])
+  @@map("WorkReportTemplate")
 }
 
-model WorkReportTemplateField {
-  id            String             @id @default(cuid())
+model ExcelTemplateField {
+  id            String        @id @default(cuid())
   templateId    String
-  template      WorkReportTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  namedRange    String             // Excelの名前付き範囲名
-  valueTemplate String             // 値テンプレート（例: "${作業者名}様"）
-  numFmt        String?            // 数値フォーマット（例: "[h]:mm"）
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
+  template      ExcelTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  namedRange    String        // Excelの名前付き範囲名
+  valueTemplate String        // 値テンプレート（例: "${作業者名}様"）
+  numFmt        String?       // 数値フォーマット（例: "[h]:mm"）
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   @@unique([templateId, namedRange])
+  @@map("WorkReportTemplateField")
 }

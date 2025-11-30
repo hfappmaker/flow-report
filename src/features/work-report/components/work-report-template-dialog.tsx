@@ -12,25 +12,25 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  WorkReportTemplateForm,
-  type WorkReportTemplateFormValues,
+  ExcelTemplateForm,
+  type ExcelTemplateFormValues,
 } from "@/features/work-report/components/work-report-template-form";
-import type { WorkReportTemplateWithFields } from "@/features/work-report/types/work-report-template";
+import type { ExcelTemplateWithFields } from "@/features/work-report/types/work-report-template";
 
 export type DialogType = "create" | "edit" | "delete" | "details" | null;
 
-interface WorkReportTemplateDialogProps {
+interface ExcelTemplateDialogProps {
   type: DialogType;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  template?: WorkReportTemplateWithFields | null;
-  onSubmit: (values: WorkReportTemplateFormValues) => void;
+  template?: ExcelTemplateWithFields | null;
+  onSubmit: (values: ExcelTemplateFormValues) => void;
   onDelete?: () => void;
   onCancel: () => void;
   isSubmitting?: boolean;
 }
 
-export function WorkReportTemplateDialog({
+export function ExcelTemplateDialog({
   type,
   isOpen,
   onOpenChange,
@@ -39,7 +39,7 @@ export function WorkReportTemplateDialog({
   onDelete,
   onCancel,
   isSubmitting = false,
-}: WorkReportTemplateDialogProps) {
+}: ExcelTemplateDialogProps) {
   const getDialogTitle = () => {
     switch (type) {
       case "create":
@@ -59,7 +59,7 @@ export function WorkReportTemplateDialog({
     switch (type) {
       case "create":
         return (
-          <WorkReportTemplateForm
+          <ExcelTemplateForm
             onSubmit={onSubmit}
             submitButtonText="作成"
             onCancel={onCancel}
@@ -68,7 +68,7 @@ export function WorkReportTemplateDialog({
         );
       case "edit":
         return (
-          <WorkReportTemplateForm
+          <ExcelTemplateForm
             defaultValues={
               template
                 ? {

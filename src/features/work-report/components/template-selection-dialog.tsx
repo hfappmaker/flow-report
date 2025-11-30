@@ -23,14 +23,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { WorkReportTemplateWithFields } from "@/features/work-report/types/work-report-template";
+import type { ExcelTemplateWithFields } from "@/features/work-report/types/work-report-template";
 
 /**
  * テンプレート選択時に返却する情報
  */
 export interface TemplateSelectionResult {
   workbook: ExcelJS.Workbook;
-  fieldMappings: WorkReportTemplateWithFields["fieldMappings"];
+  fieldMappings: ExcelTemplateWithFields["fieldMappings"];
   sheetName: string | null;
 }
 
@@ -38,7 +38,7 @@ interface TemplateSelectionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (result: TemplateSelectionResult | null) => Promise<void>;
-  customTemplates: WorkReportTemplateWithFields[];
+  customTemplates: ExcelTemplateWithFields[];
 }
 
 /**

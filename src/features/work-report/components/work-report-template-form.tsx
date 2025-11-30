@@ -13,33 +13,33 @@ import {
   validateNamedRange,
 } from "@/features/work-report/schemas/work-report-template-form-schema";
 
-export interface WorkReportTemplateFormValues {
+export interface ExcelTemplateFormValues {
   name: string;
   file: File | null;
   sheetName: string | null;
   fieldMappings: FieldMappingFormValues[];
 }
 
-interface WorkReportTemplateFormProps {
+interface ExcelTemplateFormProps {
   defaultValues?: {
     name: string;
     fileName?: string;
     sheetName?: string | null;
     fieldMappings: FieldMappingFormValues[];
   };
-  onSubmit: (values: WorkReportTemplateFormValues) => void;
+  onSubmit: (values: ExcelTemplateFormValues) => void;
   submitButtonText: string;
   onCancel: () => void;
   isSubmitting?: boolean;
 }
 
-export function WorkReportTemplateForm({
+export function ExcelTemplateForm({
   defaultValues,
   onSubmit,
   submitButtonText,
   onCancel,
   isSubmitting = false,
-}: WorkReportTemplateFormProps) {
+}: ExcelTemplateFormProps) {
   const [name, setName] = useState(defaultValues?.name ?? "");
   const [file, setFile] = useState<File | null>(null);
   const [sheetName, setSheetName] = useState(defaultValues?.sheetName ?? "");

@@ -1,6 +1,6 @@
 import type {
-  WorkReportTemplate as PrismaWorkReportTemplate,
-  WorkReportTemplateField as PrismaWorkReportTemplateField,
+  ExcelTemplate as PrismaExcelTemplate,
+  ExcelTemplateField as PrismaExcelTemplateField,
   TemplateType,
 } from "@prisma/client";
 import type { StrictOmit } from "ts-essentials";
@@ -8,32 +8,32 @@ import type { StrictOmit } from "ts-essentials";
 export type { TemplateType };
 
 /**
- * 作業報告書テンプレートの型定義
+ * Excelテンプレートの型定義
  */
-export type WorkReportTemplate = StrictOmit<
-  PrismaWorkReportTemplate,
+export type ExcelTemplate = StrictOmit<
+  PrismaExcelTemplate,
   "createdAt" | "updatedAt"
 >;
 
 /**
- * 作業報告書テンプレートフィールドの型定義
+ * Excelテンプレートフィールドの型定義
  */
-export type WorkReportTemplateField = StrictOmit<
-  PrismaWorkReportTemplateField,
+export type ExcelTemplateField = StrictOmit<
+  PrismaExcelTemplateField,
   "createdAt" | "updatedAt"
 >;
 
 /**
- * フィールドマッピングを含む作業報告書テンプレートの型定義
+ * フィールドマッピングを含むExcelテンプレートの型定義
  */
-export type WorkReportTemplateWithFields = WorkReportTemplate & {
-  fieldMappings: WorkReportTemplateField[];
+export type ExcelTemplateWithFields = ExcelTemplate & {
+  fieldMappings: ExcelTemplateField[];
 };
 
 /**
  * テンプレート作成時の入力型
  */
-export interface CreateWorkReportTemplateInput {
+export interface CreateExcelTemplateInput {
   name: string;
   type: TemplateType;
   fileData: string;
@@ -55,7 +55,7 @@ export interface CreateFieldMappingInput {
 /**
  * テンプレート更新時の入力型
  */
-export interface UpdateWorkReportTemplateInput {
+export interface UpdateExcelTemplateInput {
   name?: string;
   fileData?: string;
   fileName?: string;

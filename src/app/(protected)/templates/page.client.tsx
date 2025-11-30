@@ -12,17 +12,17 @@ import { Spinner } from "@/components/ui/loading/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTransitionContext } from "@/contexts/transition-context";
 import {
-  createWorkReportTemplateAction,
-  updateWorkReportTemplateAction,
-  deleteWorkReportTemplateAction,
-  getWorkReportTemplatesByUserIdAndTypeAction,
+  createExcelTemplateAction,
+  updateExcelTemplateAction,
+  deleteExcelTemplateAction,
+  getExcelTemplatesByUserIdAndTypeAction,
 } from "@/features/work-report/actions/work-report-template";
 import {
-  WorkReportTemplateDialog,
+  ExcelTemplateDialog,
   type DialogType,
 } from "@/features/work-report/components/work-report-template-dialog";
-import type { WorkReportTemplateFormValues } from "@/features/work-report/components/work-report-template-form";
-import type { WorkReportTemplateWithFields } from "@/features/work-report/types/work-report-template";
+import type { ExcelTemplateFormValues } from "@/features/work-report/components/work-report-template-form";
+import type { ExcelTemplateWithFields } from "@/features/work-report/types/work-report-template";
 import { useMessageState } from "@/hooks/use-message-state";
 
 /**
@@ -58,12 +58,10 @@ export default function TemplatesClientPage({
   userId,
 }: TemplatesClientPageProps) {
   const [activeTab, setActiveTab] = useState<TemplateType>("WORK_REPORT");
-  const [templates, setTemplates] = useState<WorkReportTemplateWithFields[]>(
-    [],
-  );
+  const [templates, setTemplates] = useState<ExcelTemplateWithFields[]>([]);
   const [activeDialog, setActiveDialog] = useState<DialogType>(null);
   const [activeTemplate, setActiveTemplate] =
-    useState<WorkReportTemplateWithFields | null>(null);
+    useState<ExcelTemplateWithFields | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { error, success, showError, showSuccess } = useMessageState();
@@ -72,7 +70,7 @@ export default function TemplatesClientPage({
   const refreshTemplates = useCallback(async () => {
     try {
       setIsLoading(true);
-      const data = await getWorkReportTemplatesByUserIdAndTypeAction(
+      const data = await getExcelTemplatesByUserIdAndTypeAction(
         userId,
         activeTab,
       );
@@ -97,7 +95,7 @@ export default function TemplatesClientPage({
   };
 
   // テンプレート作成
-  const onCreateTemplate = async (data: WorkReportTemplateFormValues) => {
+  const onCreateTemplate = async (data: ExcelTemplateFormValues) => {
     if (!data.file) {
       showError("Excelファイルは必須です");
       return;
@@ -106,7 +104,7 @@ export default function TemplatesClientPage({
     setIsSubmitting(true);
     try {
       const fileData = await fileToBase64(data.file);
-      await createWorkReportTemplateAction({
+      await createExcelTemplateAction({
         name: data.name,
         type: activeTab,
         fileData,
@@ -135,7 +133,7 @@ export default function TemplatesClientPage({
   };
 
   // テンプレート編集
-  const onEditTemplate = async (data: WorkReportTemplateFormValues) => {
+  const onEditTemplate = async (data: ExcelTemplateFormValues) => {
     if (!activeTemplate) return;
 
     setIsSubmitting(true);
@@ -159,7 +157,7 @@ export default function TemplatesClientPage({
           }
         : baseUpdateData;
 
-      await updateWorkReportTemplateAction(activeTemplate.id, updateData);
+      await updateExcelTemplateAction(activeTemplate.id, updateData);
       showSuccess(`テンプレート '${data.name}' を更新しました`);
       closeDialog();
       await refreshTemplates();
@@ -181,7 +179,7 @@ export default function TemplatesClientPage({
 
     setIsSubmitting(true);
     try {
-      await deleteWorkReportTemplateAction(activeTemplate.id);
+      await deleteExcelTemplateAction(activeTemplate.id);
       showSuccess(`テンプレート '${activeTemplate.name}' を削除しました`);
       closeDialog();
       await refreshTemplates();
@@ -339,7 +337,7 @@ export default function TemplatesClientPage({
           <TabsContent value="INVOICE">{renderTemplateList()}</TabsContent>
         </Tabs>
 
-        <WorkReportTemplateDialog
+        <ExcelTemplateDialog
           type={activeDialog}
           isOpen={activeDialog !== null}
           onOpenChange={(open) => {

@@ -44,7 +44,7 @@ import {
   updateWorkReportStatusAction,
   updateWorkReportRemarksAction,
 } from "@/features/work-report/actions/work-report";
-import { getWorkReportTemplatesByUserIdAndTypeAction } from "@/features/work-report/actions/work-report-template";
+import { getExcelTemplatesByUserIdAndTypeAction } from "@/features/work-report/actions/work-report-template";
 import { AttendanceEditDialog } from "@/features/work-report/components/attendance-edit-dialog";
 import {
   ExportDialog,
@@ -68,7 +68,7 @@ import {
   type WorkReportClientProps,
   type WorkReportStatus,
 } from "@/features/work-report/types/work-report";
-import type { WorkReportTemplateWithFields } from "@/features/work-report/types/work-report-template";
+import type { ExcelTemplateWithFields } from "@/features/work-report/types/work-report-template";
 import {
   generateDefaultAttendances,
   mergeAttendances,
@@ -162,10 +162,10 @@ export default function ClientWorkReportPage({
   const [remarks, setRemarks] = useState<string>(initialRemarks ?? "");
   const [isRemarksDialogOpen, setIsRemarksDialogOpen] = useState(false);
   const [workReportTemplates, setWorkReportTemplates] = useState<
-    WorkReportTemplateWithFields[]
+    ExcelTemplateWithFields[]
   >([]);
   const [invoiceTemplates, setInvoiceTemplates] = useState<
-    WorkReportTemplateWithFields[]
+    ExcelTemplateWithFields[]
   >([]);
 
   // Compute default attendance values for each day in the range…
@@ -200,8 +200,8 @@ export default function ClientWorkReportPage({
   useEffect(() => {
     const fetchTemplates = async () => {
       const [workReportTpls, invoiceTpls] = await Promise.all([
-        getWorkReportTemplatesByUserIdAndTypeAction(userId, "WORK_REPORT"),
-        getWorkReportTemplatesByUserIdAndTypeAction(userId, "INVOICE"),
+        getExcelTemplatesByUserIdAndTypeAction(userId, "WORK_REPORT"),
+        getExcelTemplatesByUserIdAndTypeAction(userId, "INVOICE"),
       ]);
       setWorkReportTemplates(workReportTpls);
       setInvoiceTemplates(invoiceTpls);

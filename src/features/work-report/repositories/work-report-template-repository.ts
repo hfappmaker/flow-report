@@ -1,24 +1,24 @@
 import type { TemplateType } from "@prisma/client";
 
 import type {
-  CreateWorkReportTemplateInput,
-  UpdateWorkReportTemplateInput,
+  CreateExcelTemplateInput,
+  UpdateExcelTemplateInput,
 } from "@/features/work-report/types/work-report-template";
 import { db } from "@/repositories/db";
 
-export class WorkReportTemplateError extends Error {
+export class ExcelTemplateError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "WorkReportTemplateError";
+    this.name = "ExcelTemplateError";
   }
 }
 
-export class WorkReportTemplateRepository {
+export class ExcelTemplateRepository {
   /**
    * ユーザーIDに紐づくテンプレート一覧を取得
    */
   async getByCreateUserId(createUserId: string) {
-    return await db.workReportTemplate.findMany({
+    return await db.excelTemplate.findMany({
       where: { createUserId },
       include: {
         fieldMappings: true,
@@ -31,7 +31,7 @@ export class WorkReportTemplateRepository {
    * ユーザーIDとタイプに紐づくテンプレート一覧を取得
    */
   async getByCreateUserIdAndType(createUserId: string, type: TemplateType) {
-    return await db.workReportTemplate.findMany({
+    return await db.excelTemplate.findMany({
       where: { createUserId, type },
       include: {
         fieldMappings: true,
@@ -41,10 +41,10 @@ export class WorkReportTemplateRepository {
   }
 
   /**
-   * IDで作業報告書テンプレートを取得（フィールドマッピング含む）
+   * IDでExcelテンプレートを取得（フィールドマッピング含む）
    */
   async getById(id: string) {
-    return await db.workReportTemplate.findUnique({
+    return await db.excelTemplate.findUnique({
       where: { id },
       include: {
         fieldMappings: true,
@@ -53,12 +53,12 @@ export class WorkReportTemplateRepository {
   }
 
   /**
-   * 作業報告書テンプレートを作成
+   * Excelテンプレートを作成
    */
-  async create(data: CreateWorkReportTemplateInput) {
+  async create(data: CreateExcelTemplateInput) {
     const { fieldMappings, ...templateData } = data;
 
-    return await db.workReportTemplate.create({
+    return await db.excelTemplate.create({
       data: {
         ...templateData,
         fieldMappings: {
@@ -72,18 +72,18 @@ export class WorkReportTemplateRepository {
   }
 
   /**
-   * 作業報告書テンプレートを更新
+   * Excelテンプレートを更新
    */
-  async update(id: string, data: UpdateWorkReportTemplateInput) {
+  async update(id: string, data: UpdateExcelTemplateInput) {
     const { fieldMappings, ...templateData } = data;
 
     // フィールドマッピングが指定されている場合は、既存のものを全削除して再作成
     if (fieldMappings !== undefined) {
-      await db.workReportTemplateField.deleteMany({
+      await db.excelTemplateField.deleteMany({
         where: { templateId: id },
       });
 
-      return await db.workReportTemplate.update({
+      return await db.excelTemplate.update({
         where: { id },
         data: {
           ...templateData,
@@ -97,7 +97,7 @@ export class WorkReportTemplateRepository {
       });
     }
 
-    return await db.workReportTemplate.update({
+    return await db.excelTemplate.update({
       where: { id },
       data: templateData,
       include: {
@@ -107,10 +107,10 @@ export class WorkReportTemplateRepository {
   }
 
   /**
-   * 作業報告書テンプレートを削除
+   * Excelテンプレートを削除
    */
   async delete(id: string) {
-    return await db.workReportTemplate.delete({
+    return await db.excelTemplate.delete({
       where: { id },
     });
   }
@@ -123,7 +123,7 @@ export class WorkReportTemplateRepository {
     createUserId: string,
     excludeId?: string,
   ) {
-    const template = await db.workReportTemplate.findFirst({
+    const template = await db.excelTemplate.findFirst({
       where: {
         name,
         createUserId,
@@ -142,7 +142,7 @@ export class WorkReportTemplateRepository {
     type: TemplateType,
     excludeId?: string,
   ) {
-    const template = await db.workReportTemplate.findFirst({
+    const template = await db.excelTemplate.findFirst({
       where: {
         name,
         createUserId,
