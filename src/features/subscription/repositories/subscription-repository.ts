@@ -65,12 +65,6 @@ export async function upsertUserSubscription(
     update: { created, ...data },
   });
 
-  // Subscription更新後、該当ユーザーのキャッシュを無効化
-  // const user = await getUserByStripeCustomerId(stripeCustomerId);
-  // if (user) {
-  //   await invalidateSubscriptionCache(user.id);
-  // }
-
   return result;
 }
 
