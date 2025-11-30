@@ -275,6 +275,19 @@ export const ContractDetailsContent = ({
                 : "末日"}
             </p>
           </div>
+          <div className="col-span-3">
+            <label className="text-sm font-medium text-muted-foreground">
+              支払いサイト
+            </label>
+            <p className="mt-1">
+              {contract.paymentMonthOffset === 0 && "当月"}
+              {contract.paymentMonthOffset === 1 && "翌月"}
+              {contract.paymentMonthOffset === 2 && "翌々月"}
+              {contract.paymentDay
+                ? `${contract.paymentDay.toString()}日`
+                : "末日"}
+            </p>
+          </div>
         </div>
       </div>
 

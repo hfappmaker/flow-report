@@ -59,6 +59,13 @@ export const contractFormSchema = z
       .min(1, "締め日は1日以上である必要があります")
       .max(31, "締め日は31日以下である必要があります")
       .nullable(),
+    paymentMonthOffset: z.number().int().min(0).max(2).default(1), // 0=当月, 1=翌月, 2=翌々月
+    paymentDay: z
+      .number()
+      .int("整数で入力してください")
+      .min(1, "支払日は1日以上である必要があります")
+      .max(31, "支払日は31日以下である必要があります")
+      .nullable(),
     taxInclusiveType: z.enum(["INCLUSIVE", "EXCLUSIVE"]).default("EXCLUSIVE"),
     taxRoundingType: z
       .enum(["ROUND_DOWN", "ROUND_UP", "ROUND"])
@@ -226,6 +233,8 @@ export const ContractForm = ({
       basicBreakDuration: null,
       basicMemo: null,
       closingDay: null,
+      paymentMonthOffset: 1,
+      paymentDay: null,
       taxInclusiveType: "EXCLUSIVE" as const,
       taxRoundingType: "ROUND_DOWN" as const,
     },
@@ -631,6 +640,70 @@ export const ContractForm = ({
               </FormItem>
             )}
           />
+
+          {/* Payment Site */}
+          <div className="space-y-2">
+            <FormLabel>支払いサイト</FormLabel>
+            <div className="flex items-center gap-2">
+              <FormField
+                control={form.control}
+                name="paymentMonthOffset"
+                render={({ field }) => (
+                  <FormItem className="shrink-0">
+                    <FormControl>
+                      <select
+                        {...field}
+                        value={field.value}
+                        onChange={(e) => {
+                          field.onChange(Number(e.target.value));
+                        }}
+                        disabled={isEditing}
+                        className="flex h-10 w-24 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <option value={0}>当月</option>
+                        <option value={1}>翌月</option>
+                        <option value={2}>翌々月</option>
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="paymentDay"
+                render={({ field }) => (
+                  <FormItem className="shrink-0">
+                    <FormControl>
+                      <div className="flex items-center gap-1">
+                        <Input
+                          {...field}
+                          type="number"
+                          value={field.value ?? ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value === "" ? null : Number(value));
+                          }}
+                          placeholder="末"
+                          disabled={isEditing}
+                          min={1}
+                          max={31}
+                          className="w-16"
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          日
+                        </span>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              支払日が未入力の場合は末日として扱われます
+            </p>
+          </div>
         </div>
 
         {/* メール宛先情報 */}
