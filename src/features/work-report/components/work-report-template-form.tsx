@@ -8,7 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldMappingEditor } from "@/features/work-report/components/field-mapping-editor";
 import type { FieldMappingFormValues } from "@/features/work-report/schemas/work-report-template-form-schema";
-import { validateExcelFile } from "@/features/work-report/schemas/work-report-template-form-schema";
+import {
+  validateExcelFile,
+  validateNamedRange,
+} from "@/features/work-report/schemas/work-report-template-form-schema";
 
 export interface WorkReportTemplateFormValues {
   name: string;
@@ -91,8 +94,9 @@ export function WorkReportTemplateForm({
     > = {};
     fieldMappings.forEach((mapping, index) => {
       const fieldErrors: { namedRange?: string; valueTemplate?: string } = {};
-      if (!mapping.namedRange.trim()) {
-        fieldErrors.namedRange = "名前付き範囲は必須です";
+      const namedRangeError = validateNamedRange(mapping.namedRange);
+      if (namedRangeError) {
+        fieldErrors.namedRange = namedRangeError;
       }
       if (!mapping.valueTemplate.trim()) {
         fieldErrors.valueTemplate = "値は必須です";
