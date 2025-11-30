@@ -15,6 +15,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useTransitionContext } from "@/contexts/transition-context";
 import UserButton from "@/features/auth/components/user-button";
 
@@ -64,7 +65,10 @@ const Navbar = () => {
             ))}
           </div>
         </div>
-        <UserButton />
+        <div className="flex items-center gap-x-2">
+          <ThemeToggle />
+          <UserButton />
+        </div>
       </nav>
 
       <nav className="flex items-center justify-between bg-secondary p-4 shadow-md lg:hidden">
@@ -117,7 +121,10 @@ const Navbar = () => {
           </SheetContent>
         </Sheet>
 
-        <UserButton />
+        <div className="flex items-center gap-x-2">
+          <ThemeToggle />
+          <UserButton />
+        </div>
       </nav>
     </>
   );

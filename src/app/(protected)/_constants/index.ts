@@ -12,7 +12,7 @@ export const NAV_LINKS = [
     path: "/templates",
   },
   {
-    title: "設定",
-    path: "/settings",
+    title: "ユーザー設定",
+    path: "/user-settings",
   },
 ];
