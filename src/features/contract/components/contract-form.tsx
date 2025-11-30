@@ -619,22 +619,26 @@ export const ContractForm = ({
               <FormItem>
                 <FormLabel>締め日</FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    type="number"
-                    value={field.value ?? ""}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      field.onChange(value === "" ? null : Number(value));
-                    }}
-                    placeholder="（例）20（未入力の場合は末日）"
-                    disabled={isEditing}
-                    min={1}
-                    max={31}
-                  />
+                  <div className="flex items-center gap-1">
+                    <Input
+                      {...field}
+                      type="number"
+                      value={field.value ?? ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        field.onChange(value === "" ? null : Number(value));
+                      }}
+                      placeholder="末"
+                      disabled={isEditing}
+                      min={1}
+                      max={31}
+                      className="w-16"
+                    />
+                    <span className="text-sm text-muted-foreground">日</span>
+                  </div>
                 </FormControl>
                 <p className="text-sm text-muted-foreground">
-                  月末日がない場合（例：2月31日）は、その月の最終日が締め日となります
+                  締め日が未入力の場合と月末日がない場合（例：2月31日）は末日になります。
                 </p>
                 <FormMessage />
               </FormItem>
@@ -701,7 +705,7 @@ export const ContractForm = ({
               />
             </div>
             <p className="text-sm text-muted-foreground">
-              支払日が未入力の場合は末日として扱われます
+              支払日が未入力の場合と月末日がない場合（例：2月31日）は末日になります。
             </p>
           </div>
         </div>
