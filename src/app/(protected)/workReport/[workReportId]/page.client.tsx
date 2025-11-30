@@ -50,7 +50,6 @@ import {
   ExportDialog,
   type ExportResult,
 } from "@/features/work-report/components/export-dialog";
-import { FreeeConnectionButton } from "@/features/work-report/components/freee-connection-button";
 import { FreeeReauthDialog } from "@/features/work-report/components/freee-reauth-dialog";
 import { RemarksEditDialog } from "@/features/work-report/components/remarks-edit-dialog";
 import { useFreeeConnection } from "@/features/work-report/hooks/use-freee-connection";
@@ -705,12 +704,6 @@ export default function ClientWorkReportPage({
             >
               エクスポート
             </Button>
-            <FreeeConnectionButton
-              disabled={status !== "SUBMITTED"}
-              onConnectionStart={() => {
-                setManualPending(true);
-              }}
-            />
             <Button
               type="button"
               variant="outline"
@@ -1097,6 +1090,9 @@ export default function ClientWorkReportPage({
         baseAmount={amountCalculation?.baseAmount ?? 0}
         taxAmount={amountCalculation?.taxAmount ?? 0}
         onFreeeInvoiceCreate={handleCreateFreeeInvoice}
+        onConnectionStart={() => {
+          setManualPending(true);
+        }}
       />
 
       {/* 備考編集ダイアログ */}

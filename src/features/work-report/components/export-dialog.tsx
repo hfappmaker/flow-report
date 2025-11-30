@@ -32,6 +32,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatAmount } from "@/features/contract/utils/contract-calculation-utils";
 import type { FreeePartner } from "@/features/freee/types/freee-accounting-types";
+import { FreeeConnectionButton } from "@/features/work-report/components/freee-connection-button";
 import { useExportSettings } from "@/features/work-report/hooks/use-export-settings";
 import {
   formatZipFileName,
@@ -84,6 +85,7 @@ interface ExportDialogProps {
   baseAmount: number;
   taxAmount: number;
   onFreeeInvoiceCreate: () => Promise<void>;
+  onConnectionStart: () => void;
 }
 
 /**
@@ -118,6 +120,7 @@ export function ExportDialog({
   baseAmount,
   taxAmount,
   onFreeeInvoiceCreate,
+  onConnectionStart,
 }: ExportDialogProps) {
   const {
     settings,
@@ -600,13 +603,19 @@ export function ExportDialog({
                 freee連携状態を確認中...
               </p>
             ) : !isFreeeConnected ? (
-              <div className="space-y-2">
-                <p className="text-muted-foreground">
-                  freeeとの連携が必要です。
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  freeeアカウントと連携すると、作業報告書から請求書を作成できます。
-                </p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-muted-foreground">
+                    freeeとの連携が必要です。
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    freeeアカウントと連携すると、作業報告書から請求書を作成できます。
+                  </p>
+                </div>
+                <FreeeConnectionButton
+                  disabled={false}
+                  onConnectionStart={onConnectionStart}
+                />
               </div>
             ) : (
               <div className="space-y-4">
@@ -663,6 +672,15 @@ export function ExportDialog({
                   <p className="text-xs text-muted-foreground">
                     ※ freee上でドラフト（下書き）として作成されます
                   </p>
+                </div>
+
+                {/* freee再連携ボタン */}
+                <div className="border-t pt-4">
+                  <FreeeConnectionButton
+                    disabled={false}
+                    onConnectionStart={onConnectionStart}
+                    label="freee再連携"
+                  />
                 </div>
               </div>
             )}
