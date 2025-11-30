@@ -8,11 +8,22 @@ import { Button } from "@/components/ui/button";
 export const ThemeToggle = () => {
   const { theme, setTheme } = useTheme();
 
+  const handleToggle = () => {
+    const root = document.documentElement;
+    root.classList.add("theme-transitioning");
+
+    setTheme(theme === "dark" ? "light" : "dark");
+
+    setTimeout(() => {
+      root.classList.remove("theme-transitioning");
+    }, 300);
+  };
+
   return (
     <Button
       variant="ghost"
       size="icon"
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      onClick={handleToggle}
       aria-label="テーマを切り替える"
     >
       <Moon className="size-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
