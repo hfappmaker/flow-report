@@ -1,6 +1,7 @@
 "use client";
 
-import { FileSpreadsheet, Plus, Edit, Trash2, Eye } from "lucide-react";
+import type { TemplateType } from "@prisma/client";
+import { FileSpreadsheet, FileText, Plus, Edit, Trash2, Eye } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -8,12 +9,13 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import FormError from "@/components/ui/feedback/error-alert";
 import FormSuccess from "@/components/ui/feedback/success-alert";
 import { Spinner } from "@/components/ui/loading/spinner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTransitionContext } from "@/contexts/transition-context";
 import {
   createWorkReportTemplateAction,
   updateWorkReportTemplateAction,
   deleteWorkReportTemplateAction,
-  getWorkReportTemplatesByUserIdAction,
+  getWorkReportTemplatesByUserIdAndTypeAction,
 } from "@/features/work-report/actions/work-report-template";
 import {
   WorkReportTemplateDialog,
@@ -35,13 +37,27 @@ async function fileToBase64(file: File): Promise<string> {
   return btoa(binary);
 }
 
-interface WorkReportTemplatesClientPageProps {
+interface TemplatesClientPageProps {
   userId: string;
 }
 
-export default function WorkReportTemplatesClientPage({
+const TAB_CONFIG = {
+  WORK_REPORT: {
+    label: "作業報告書",
+    icon: FileSpreadsheet,
+    emptyMessage: "作業報告書テンプレートがありません。",
+  },
+  INVOICE: {
+    label: "請求書",
+    icon: FileText,
+    emptyMessage: "請求書テンプレートがありません。",
+  },
+} as const;
+
+export default function TemplatesClientPage({
   userId,
-}: WorkReportTemplatesClientPageProps) {
+}: TemplatesClientPageProps) {
+  const [activeTab, setActiveTab] = useState<TemplateType>("WORK_REPORT");
   const [templates, setTemplates] = useState<WorkReportTemplateWithFields[]>(
     [],
   );
@@ -55,7 +71,11 @@ export default function WorkReportTemplatesClientPage({
 
   const refreshTemplates = useCallback(async () => {
     try {
-      const data = await getWorkReportTemplatesByUserIdAction(userId);
+      setIsLoading(true);
+      const data = await getWorkReportTemplatesByUserIdAndTypeAction(
+        userId,
+        activeTab,
+      );
       setTemplates(data);
     } catch (err) {
       console.error(err);
@@ -63,11 +83,11 @@ export default function WorkReportTemplatesClientPage({
     } finally {
       setIsLoading(false);
     }
-  }, [userId, showError]);
+  }, [userId, activeTab, showError]);
 
   useEffect(() => {
-    startTransition(async () => {
-      await refreshTemplates();
+    startTransition(() => {
+      refreshTemplates().catch(console.error);
     });
   }, [refreshTemplates, startTransition]);
 
@@ -88,6 +108,7 @@ export default function WorkReportTemplatesClientPage({
       const fileData = await fileToBase64(data.file);
       await createWorkReportTemplateAction({
         name: data.name,
+        type: activeTab,
         fileData,
         fileName: data.file.name,
         sheetName: data.sheetName,
@@ -172,116 +193,151 @@ export default function WorkReportTemplatesClientPage({
     }
   };
 
-  if (isLoading) {
+  const tabConfig = TAB_CONFIG[activeTab];
+
+  const renderTemplateList = () => {
+    if (isLoading) {
+      return (
+        <div className="flex h-64 items-center justify-center">
+          <Spinner />
+        </div>
+      );
+    }
+
+    if (templates.length > 0) {
+      return (
+        <div className="space-y-3">
+          {templates.map((template) => (
+            <div
+              key={template.id}
+              className="flex items-center justify-between rounded-lg border p-4 hover:bg-muted/50"
+            >
+              <button
+                type="button"
+                className="flex-1 cursor-pointer text-left"
+                onClick={() => {
+                  setActiveTemplate(template);
+                  setActiveDialog("details");
+                }}
+              >
+                <div className="font-medium">{template.name}</div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <FileSpreadsheet className="size-4" />
+                  {template.fileName}
+                  {template.fieldMappings.length > 0 && (
+                    <span className="ml-2">
+                      ({template.fieldMappings.length} フィールド)
+                    </span>
+                  )}
+                </div>
+              </button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setActiveTemplate(template);
+                    setActiveDialog("details");
+                  }}
+                >
+                  <Eye className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setActiveTemplate(template);
+                    setActiveDialog("edit");
+                  }}
+                >
+                  <Edit className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setActiveTemplate(template);
+                    setActiveDialog("delete");
+                  }}
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
     return (
-      <div className="flex h-64 items-center justify-center">
-        <Spinner />
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <tabConfig.icon className="mb-4 size-12 text-muted-foreground" />
+        <p className="text-muted-foreground">{tabConfig.emptyMessage}</p>
+        <p className="text-sm text-muted-foreground">
+          「新規作成」ボタンからテンプレートを追加してください。
+        </p>
       </div>
     );
-  }
+  };
 
   return (
     <Card className="w-full shadow-sm">
       <CardHeader className="flex-row items-center justify-between gap-x-3">
         <div className="flex items-center gap-x-3 font-semibold">
           <FileSpreadsheet className="text-3xl text-sky-400" />
-          <p className="text-2xl">作業報告書テンプレート</p>
+          <p className="text-2xl">テンプレート一覧</p>
         </div>
-        <Button
-          onClick={() => {
-            setActiveDialog("create");
-          }}
-          className="flex items-center gap-1"
-        >
-          <Plus className="size-4" />
-          新規作成
-        </Button>
       </CardHeader>
       <CardContent>
-        <div className="mb-4">
-          <FormError
-            message={error.message}
-            resetSignal={error.date.getTime()}
-          />
-        </div>
-        <div className="mb-4">
-          <FormSuccess
-            message={success.message}
-            resetSignal={success.date.getTime()}
-          />
-        </div>
-
-        {templates.length > 0 ? (
-          <div className="space-y-3">
-            {templates.map((template) => (
-              <div
-                key={template.id}
-                className="flex items-center justify-between rounded-lg border p-4 hover:bg-muted/50"
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => {
+            setActiveTab(value as TemplateType);
+          }}
+          className="w-full"
+        >
+          <div className="flex items-center justify-between">
+            <TabsList>
+              <TabsTrigger
+                value="WORK_REPORT"
+                className="flex items-center gap-2"
               >
-                <button
-                  type="button"
-                  className="flex-1 cursor-pointer text-left"
-                  onClick={() => {
-                    setActiveTemplate(template);
-                    setActiveDialog("details");
-                  }}
-                >
-                  <div className="font-medium">{template.name}</div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <FileSpreadsheet className="size-4" />
-                    {template.fileName}
-                    {template.fieldMappings.length > 0 && (
-                      <span className="ml-2">
-                        ({template.fieldMappings.length} フィールド)
-                      </span>
-                    )}
-                  </div>
-                </button>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setActiveTemplate(template);
-                      setActiveDialog("details");
-                    }}
-                  >
-                    <Eye className="size-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setActiveTemplate(template);
-                      setActiveDialog("edit");
-                    }}
-                  >
-                    <Edit className="size-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setActiveTemplate(template);
-                      setActiveDialog("delete");
-                    }}
-                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+                <FileSpreadsheet className="size-4" />
+                作業報告書
+              </TabsTrigger>
+              <TabsTrigger value="INVOICE" className="flex items-center gap-2">
+                <FileText className="size-4" />
+                請求書
+              </TabsTrigger>
+            </TabsList>
+            <Button
+              onClick={() => {
+                setActiveDialog("create");
+              }}
+              className="flex items-center gap-1"
+            >
+              <Plus className="size-4" />
+              新規作成
+            </Button>
           </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <FileSpreadsheet className="mb-4 size-12 text-muted-foreground" />
-            <p className="text-muted-foreground">テンプレートがありません。</p>
-            <p className="text-sm text-muted-foreground">
-              「新規作成」ボタンからテンプレートを追加してください。
-            </p>
+
+          <div className="mt-4">
+            <FormError
+              message={error.message}
+              resetSignal={error.date.getTime()}
+            />
           </div>
-        )}
+          <div className="mb-4">
+            <FormSuccess
+              message={success.message}
+              resetSignal={success.date.getTime()}
+            />
+          </div>
+
+          <TabsContent value="WORK_REPORT">{renderTemplateList()}</TabsContent>
+          <TabsContent value="INVOICE">{renderTemplateList()}</TabsContent>
+        </Tabs>
 
         <WorkReportTemplateDialog
           type={activeDialog}

@@ -1,8 +1,11 @@
 import type {
   WorkReportTemplate as PrismaWorkReportTemplate,
   WorkReportTemplateField as PrismaWorkReportTemplateField,
+  TemplateType,
 } from "@prisma/client";
 import type { StrictOmit } from "ts-essentials";
+
+export type { TemplateType };
 
 /**
  * 作業報告書テンプレートの型定義
@@ -32,6 +35,7 @@ export type WorkReportTemplateWithFields = WorkReportTemplate & {
  */
 export interface CreateWorkReportTemplateInput {
   name: string;
+  type: TemplateType;
   fileData: string;
   fileName: string;
   sheetName?: string | null;

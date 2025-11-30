@@ -8,6 +8,10 @@ export const NAV_LINKS = [
     path: "/contracts",
   },
   {
+    title: "テンプレート一覧",
+    path: "/templates",
+  },
+  {
     title: "設定",
     path: "/settings",
   },

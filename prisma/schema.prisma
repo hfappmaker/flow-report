@@ -48,6 +48,11 @@ enum SubscriptionStatus {
   CANCELED   // キャンセル済み
 }
 
+enum TemplateType {
+  WORK_REPORT // 作業報告書
+  INVOICE     // 請求書
+}
+
 // ADMINは契約の作成、支払いの作成、Userの割り当てとUSERで出来ることが全て可能
 // USERは契約の閲覧、WorkReportの作成が可能
 model User {
@@ -231,6 +236,7 @@ model Subscription {
 model WorkReportTemplate {
   id            String                      @id @default(cuid())
   name          String                      // テンプレート名
+  type          TemplateType                @default(WORK_REPORT) // テンプレートの種類
   fileData      String                      @db.Text // ExcelファイルのBase64エンコードデータ
   fileName      String                      // 元のファイル名（表示用）
   sheetName     String?                     // 出力するシート名（nullの場合は最初のシート）
@@ -240,7 +246,7 @@ model WorkReportTemplate {
   createdAt     DateTime                    @default(now())
   updatedAt     DateTime                    @updatedAt
 
-  @@unique([name, createUserId])
+  @@unique([name, createUserId, type])
 }
 
 model WorkReportTemplateField {
