@@ -103,7 +103,6 @@
     "@types/uuid": "11.0.0",
     "@typescript-eslint/eslint-plugin": "^8.47.0",
     "@typescript-eslint/parser": "^8.47.0",
-    "@vitest/ui": "^2.1.8",
     "autoprefixer": "10.4.22",
     "dotenv": "^17.2.2",
     "dotenv-cli": "^11.0.0",
