@@ -1,5 +1,3 @@
-import { withAccelerate } from "@prisma/extension-accelerate";
-
 import { currentUser } from "@/features/auth/libs/auth";
 import { baseDb } from "@/repositories/base-db";
 
@@ -95,8 +93,7 @@ const extendedDb = baseDb
         },
       },
     },
-  })
-  .$extends(withAccelerate());
+  });
 
 type ExtendedPrismaClient = typeof extendedDb;
 
