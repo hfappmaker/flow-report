@@ -233,6 +233,7 @@ model WorkReportTemplate {
   name          String                      // テンプレート名
   fileData      String                      @db.Text // ExcelファイルのBase64エンコードデータ
   fileName      String                      // 元のファイル名（表示用）
+  sheetName     String?                     // 出力するシート名（nullの場合は最初のシート）
   createUserId  String
   createUser    User                        @relation(fields: [createUserId], references: [id], onDelete: Cascade)
   fieldMappings WorkReportTemplateField[]

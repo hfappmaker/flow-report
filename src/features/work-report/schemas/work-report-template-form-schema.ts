@@ -17,6 +17,7 @@ export type FieldMappingFormValues = z.infer<typeof fieldMappingSchema>;
 export const workReportTemplateCreateFormSchema = z.object({
   name: z.string().min(1, "テンプレート名は必須です"),
   file: z.instanceof(File, { message: "Excelファイルは必須です" }),
+  sheetName: z.string().nullable().optional(),
   fieldMappings: z.array(fieldMappingSchema),
 });
 
@@ -30,6 +31,7 @@ export type WorkReportTemplateCreateFormValues = z.infer<
 export const workReportTemplateEditFormSchema = z.object({
   name: z.string().min(1, "テンプレート名は必須です"),
   file: z.instanceof(File).nullable().optional(),
+  sheetName: z.string().nullable().optional(),
   fieldMappings: z.array(fieldMappingSchema),
 });
 

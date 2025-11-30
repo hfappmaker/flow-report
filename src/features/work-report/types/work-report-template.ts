@@ -34,6 +34,7 @@ export interface CreateWorkReportTemplateInput {
   name: string;
   fileData: string;
   fileName: string;
+  sheetName?: string | null;
   createUserId: string;
   fieldMappings: CreateFieldMappingInput[];
 }
@@ -54,5 +55,6 @@ export interface UpdateWorkReportTemplateInput {
   name?: string;
   fileData?: string;
   fileName?: string;
+  sheetName?: string | null;
   fieldMappings?: CreateFieldMappingInput[];
 }

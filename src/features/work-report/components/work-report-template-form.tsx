@@ -13,6 +13,7 @@ import { validateExcelFile } from "@/features/work-report/schemas/work-report-te
 export interface WorkReportTemplateFormValues {
   name: string;
   file: File | null;
+  sheetName: string | null;
   fieldMappings: FieldMappingFormValues[];
 }
 
@@ -20,6 +21,7 @@ interface WorkReportTemplateFormProps {
   defaultValues?: {
     name: string;
     fileName?: string;
+    sheetName?: string | null;
     fieldMappings: FieldMappingFormValues[];
   };
   onSubmit: (values: WorkReportTemplateFormValues) => void;
@@ -37,6 +39,7 @@ export function WorkReportTemplateForm({
 }: WorkReportTemplateFormProps) {
   const [name, setName] = useState(defaultValues?.name ?? "");
   const [file, setFile] = useState<File | null>(null);
+  const [sheetName, setSheetName] = useState(defaultValues?.sheetName ?? "");
   const [fieldMappings, setFieldMappings] = useState<FieldMappingFormValues[]>(
     defaultValues?.fieldMappings ?? [],
   );
@@ -117,6 +120,7 @@ export function WorkReportTemplateForm({
     onSubmit({
       name: name.trim(),
       file,
+      sheetName: sheetName.trim() || null,
       fieldMappings,
     });
   };
@@ -169,6 +173,21 @@ export function WorkReportTemplateForm({
         )}
         {errors.file && <p className="text-sm text-red-500">{errors.file}</p>}
         <p className="text-xs text-muted-foreground">最大ファイルサイズ: 5MB</p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="sheetName">出力シート名（オプション）</Label>
+        <Input
+          id="sheetName"
+          value={sheetName}
+          onChange={(e) => {
+            setSheetName(e.target.value);
+          }}
+          placeholder="空欄の場合は最初のシートを使用"
+        />
+        <p className="text-xs text-muted-foreground">
+          Excelファイル内のシート名を指定します。空欄の場合は最初のシートが使用されます。
+        </p>
       </div>
 
       <div className="border-t pt-4">

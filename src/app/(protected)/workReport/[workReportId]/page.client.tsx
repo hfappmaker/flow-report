@@ -413,6 +413,7 @@ export default function ClientWorkReportPage({
       valueTemplate: string;
       numFmt?: string | null;
     }[],
+    sheetName?: string | null,
   ) => {
     try {
       const blob = await generateWorkReportExcel(
@@ -429,6 +430,7 @@ export default function ClientWorkReportPage({
           remarks: remarks || null,
         },
         fieldMappings,
+        sheetName,
       );
 
       const url = window.URL.createObjectURL(blob);
@@ -475,7 +477,11 @@ export default function ClientWorkReportPage({
     try {
       if (result) {
         // Use custom template
-        await createReportFromTemplate(result.workbook, result.fieldMappings);
+        await createReportFromTemplate(
+          result.workbook,
+          result.fieldMappings,
+          result.sheetName,
+        );
       } else {
         // Use default template
         const response = await fetch("/work-report-default-template.xlsx");

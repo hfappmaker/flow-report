@@ -74,6 +74,7 @@ export function WorkReportTemplateDialog({
                 ? {
                     name: template.name,
                     fileName: template.fileName,
+                    sheetName: template.sheetName,
                     fieldMappings: template.fieldMappings.map((m) => ({
                       namedRange: m.namedRange,
                       valueTemplate: m.valueTemplate,
@@ -133,6 +134,10 @@ export function WorkReportTemplateDialog({
                     <FileSpreadsheet className="size-4 text-gray-500" />
                     <span>{template?.fileName}</span>
                   </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold">シート名:</span>
+                  <span>{template?.sheetName ?? "（最初のシート）"}</span>
                 </div>
               </div>
             </div>

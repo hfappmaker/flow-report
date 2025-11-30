@@ -60,12 +60,14 @@ export interface CustomFieldMapping {
  * @param templateWorkbook テンプレートワークブック
  * @param data 作業報告書データ
  * @param customFieldMappings カスタムフィールドマッピング（オプション）
+ * @param targetSheetName 出力するシート名（オプション、指定がない場合は最初のシート）
  * @returns 生成されたExcelファイルのBlob
  */
 export async function generateWorkReportExcel(
   templateWorkbook: ExcelJS.Workbook,
   data: WorkReportExcelData,
   customFieldMappings?: CustomFieldMapping[],
+  targetSheetName?: string | null,
 ): Promise<Blob> {
   const {
     attendances,
@@ -82,8 +84,21 @@ export async function generateWorkReportExcel(
   // 新しいワークブックを作成
   const workbook = new ExcelJS.Workbook();
 
+  // 出力対象のシートを決定
+  // targetSheetNameが指定されている場合はそのシート、なければ最初のシート
+  const worksheetsToProcess = targetSheetName
+    ? templateWorkbook.worksheets.filter((ws) => ws.name === targetSheetName)
+    : templateWorkbook.worksheets.slice(0, 1);
+
+  // 指定されたシートが見つからない場合はエラー
+  if (targetSheetName && worksheetsToProcess.length === 0) {
+    throw new Error(
+      `指定されたシート "${targetSheetName}" がテンプレートに存在しません`,
+    );
+  }
+
   // テンプレートからシートをコピー
-  for (const worksheet of templateWorkbook.worksheets) {
+  for (const worksheet of worksheetsToProcess) {
     // 新しいシートを作成
     const newSheet = workbook.addWorksheet(worksheet.name);
 

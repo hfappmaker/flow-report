@@ -31,6 +31,7 @@ import type { WorkReportTemplateWithFields } from "@/features/work-report/types/
 export interface TemplateSelectionResult {
   workbook: ExcelJS.Workbook;
   fieldMappings: WorkReportTemplateWithFields["fieldMappings"];
+  sheetName: string | null;
 }
 
 interface TemplateSelectionDialogProps {
@@ -116,6 +117,7 @@ export function TemplateSelectionDialog({
         await onConfirm({
           workbook,
           fieldMappings: selectedTemplate.fieldMappings,
+          sheetName: selectedTemplate.sheetName,
         });
       }
 
@@ -217,8 +219,13 @@ export function TemplateSelectionDialog({
                       <FileSpreadsheet className="size-4" />
                       <span>{selectedTemplate.fileName}</span>
                     </div>
+                    {selectedTemplate.sheetName && (
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        シート: {selectedTemplate.sheetName}
+                      </div>
+                    )}
                     {selectedTemplate.fieldMappings.length > 0 && (
-                      <div className="mt-2 text-xs text-muted-foreground">
+                      <div className="mt-1 text-xs text-muted-foreground">
                         {selectedTemplate.fieldMappings.length}{" "}
                         件のフィールドマッピング
                       </div>

@@ -90,6 +90,7 @@ export default function WorkReportTemplatesClientPage({
         name: data.name,
         fileData,
         fileName: data.file.name,
+        sheetName: data.sheetName,
         createUserId: userId,
         fieldMappings: data.fieldMappings.map((m) => ({
           namedRange: m.namedRange,
@@ -120,6 +121,7 @@ export default function WorkReportTemplatesClientPage({
     try {
       const baseUpdateData = {
         name: data.name,
+        sheetName: data.sheetName,
         fieldMappings: data.fieldMappings.map((m) => ({
           namedRange: m.namedRange,
           valueTemplate: m.valueTemplate,
