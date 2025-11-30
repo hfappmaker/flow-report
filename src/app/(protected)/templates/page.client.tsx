@@ -2,8 +2,9 @@
 
 import type { TemplateType } from "@prisma/client";
 import { FileSpreadsheet, FileText, Plus, Edit, Trash2, Eye } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import FormError from "@/components/ui/feedback/error-alert";
@@ -22,8 +23,29 @@ import {
   type DialogType,
 } from "@/features/work-report/components/work-report-template-dialog";
 import type { ExcelTemplateFormValues } from "@/features/work-report/components/work-report-template-form";
+import {
+  DEFAULT_TEMPLATE_ID,
+  DEFAULT_TEMPLATE_NAME,
+  DEFAULT_TEMPLATE_FILE_NAME,
+  DEFAULT_TEMPLATE_FIELD_MAPPINGS,
+  isDefaultTemplate,
+} from "@/features/work-report/constants/default-template";
 import type { ExcelTemplateWithFields } from "@/features/work-report/types/work-report-template";
 import { useMessageState } from "@/hooks/use-message-state";
+
+/**
+ * システムデフォルトの作業報告書テンプレート（読み取り専用）
+ */
+const SYSTEM_DEFAULT_WORK_REPORT_TEMPLATE: ExcelTemplateWithFields = {
+  id: DEFAULT_TEMPLATE_ID,
+  name: DEFAULT_TEMPLATE_NAME,
+  type: "WORK_REPORT",
+  fileData: "", // UIでは使用しない（エクスポート時はpublicフォルダから読み込み）
+  fileName: DEFAULT_TEMPLATE_FILE_NAME,
+  sheetName: null,
+  createUserId: "system",
+  fieldMappings: DEFAULT_TEMPLATE_FIELD_MAPPINGS,
+};
 
 /**
  * FileをBase64文字列に変換
@@ -82,6 +104,14 @@ export default function TemplatesClientPage({
       setIsLoading(false);
     }
   }, [userId, activeTab, showError]);
+
+  // 作業報告書タブの場合、デフォルトテンプレートを先頭に追加
+  const displayTemplates = useMemo(() => {
+    if (activeTab === "WORK_REPORT") {
+      return [SYSTEM_DEFAULT_WORK_REPORT_TEMPLATE, ...templates];
+    }
+    return templates;
+  }, [activeTab, templates]);
 
   useEffect(() => {
     startTransition(() => {
@@ -202,68 +232,82 @@ export default function TemplatesClientPage({
       );
     }
 
-    if (templates.length > 0) {
+    if (displayTemplates.length > 0) {
       return (
         <div className="space-y-3">
-          {templates.map((template) => (
-            <div
-              key={template.id}
-              className="flex items-center justify-between rounded-lg border p-4 hover:bg-muted/50"
-            >
-              <button
-                type="button"
-                className="flex-1 cursor-pointer text-left"
-                onClick={() => {
-                  setActiveTemplate(template);
-                  setActiveDialog("details");
-                }}
+          {displayTemplates.map((template) => {
+            const isSystem = isDefaultTemplate(template.id);
+            return (
+              <div
+                key={template.id}
+                className="flex items-center justify-between rounded-lg border p-4 hover:bg-muted/50"
               >
-                <div className="font-medium">{template.name}</div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <FileSpreadsheet className="size-4" />
-                  {template.fileName}
-                  {template.fieldMappings.length > 0 && (
-                    <span className="ml-2">
-                      ({template.fieldMappings.length} フィールド)
-                    </span>
-                  )}
-                </div>
-              </button>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
+                  type="button"
+                  className="flex-1 cursor-pointer text-left"
                   onClick={() => {
                     setActiveTemplate(template);
                     setActiveDialog("details");
                   }}
                 >
-                  <Eye className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setActiveTemplate(template);
-                    setActiveDialog("edit");
-                  }}
-                >
-                  <Edit className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setActiveTemplate(template);
-                    setActiveDialog("delete");
-                  }}
-                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                >
-                  <Trash2 className="size-4" />
-                </Button>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{template.name}</span>
+                    {isSystem && (
+                      <Badge variant="secondary" className="text-xs">
+                        システム
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <FileSpreadsheet className="size-4" />
+                    {template.fileName}
+                    {template.fieldMappings.length > 0 && (
+                      <span className="ml-2">
+                        ({template.fieldMappings.length} フィールド)
+                      </span>
+                    )}
+                  </div>
+                </button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setActiveTemplate(template);
+                      setActiveDialog("details");
+                    }}
+                  >
+                    <Eye className="size-4" />
+                  </Button>
+                  {!isSystem && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setActiveTemplate(template);
+                          setActiveDialog("edit");
+                        }}
+                      >
+                        <Edit className="size-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setActiveTemplate(template);
+                          setActiveDialog("delete");
+                        }}
+                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       );
     }

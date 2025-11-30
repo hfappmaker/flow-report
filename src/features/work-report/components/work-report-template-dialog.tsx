@@ -2,6 +2,7 @@
 
 import { FileSpreadsheet } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,11 +12,13 @@ import {
   DialogPortal,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { isDefaultTemplate } from "@/features/work-report/constants/default-template";
+import type { ExcelTemplateWithFields } from "@/features/work-report/types/work-report-template";
+
 import {
   ExcelTemplateForm,
   type ExcelTemplateFormValues,
-} from "@/features/work-report/components/work-report-template-form";
-import type { ExcelTemplateWithFields } from "@/features/work-report/types/work-report-template";
+} from "./work-report-template-form";
 
 export type DialogType = "create" | "edit" | "delete" | "details" | null;
 
@@ -118,7 +121,8 @@ export function ExcelTemplateDialog({
             </div>
           </>
         );
-      case "details":
+      case "details": {
+        const isSystem = template ? isDefaultTemplate(template.id) : false;
         return (
           <div className="space-y-4">
             <div>
@@ -127,6 +131,11 @@ export function ExcelTemplateDialog({
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">テンプレート名:</span>
                   <span>{template?.name}</span>
+                  {isSystem && (
+                    <Badge variant="secondary" className="text-xs">
+                      システム
+                    </Badge>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">ファイル名:</span>
@@ -174,6 +183,7 @@ export function ExcelTemplateDialog({
             </div>
           </div>
         );
+      }
       default:
         return null;
     }

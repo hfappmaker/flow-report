@@ -1,17 +1,11 @@
 import ExcelJS from "exceljs";
 
-import {
-  calculateBasicWorkMinutes,
-  calculateTotalWorkMinutes,
-  calculateWorkingDays,
-} from "@/features/contract/utils/contract-calculation-utils";
 import { WORK_REPORT_DAYS } from "@/features/work-report/constants/work-report-constants";
 import type { AttendanceData } from "@/features/work-report/types/attendance";
 import {
   parseExcelRange,
   parseRangeReference,
 } from "@/features/work-report/utils/attendance-utils";
-import { formatWorkReportMonth } from "@/features/work-report/utils/date-formatting";
 import {
   FIELD_NAMES,
   setCellValueForField,
@@ -44,6 +38,14 @@ export interface WorkReportExcelData {
   dailyWorkMinutes: number | null;
   monthlyWorkMinutes: number | null;
   remarks?: string | null;
+  // ユーザー情報（請求書用）
+  postalCode?: string | null;
+  address?: string | null;
+  bankName?: string | null;
+  bankBranchName?: string | null;
+  bankAccountType?: string | null;
+  bankAccountNumber?: string | null;
+  bankAccountHolder?: string | null;
 }
 
 /**
@@ -165,76 +167,6 @@ export async function generateWorkReportExcel(
       cell.numFmt = cellValue.numFmt;
     }
   };
-
-  // 各名前付き範囲に値を設定
-  setNamedRangeValue("タイトル", () => ({
-    value: formatWorkReportMonth(targetDate),
-  }));
-
-  setNamedRangeValue("作業者名", () => ({ value: userName }));
-
-  setNamedRangeValue("基本開始時刻", () =>
-    basicStartTime
-      ? { value: msToSerial(basicStartTime.getTime()), numFmt: "[h]:mm" }
-      : null,
-  );
-
-  setNamedRangeValue("基本終了時刻", () =>
-    basicEndTime
-      ? { value: msToSerial(basicEndTime.getTime()), numFmt: "[h]:mm" }
-      : null,
-  );
-
-  setNamedRangeValue("基本休憩時間", () =>
-    basicBreakDuration
-      ? {
-          value: msToSerial(basicBreakDuration * 60000),
-          numFmt: "[h]:mm",
-        }
-      : null,
-  );
-
-  setNamedRangeValue("_１日あたりの作業単位", () =>
-    dailyWorkMinutes ? { value: `${String(dailyWorkMinutes)}分` } : null,
-  );
-
-  setNamedRangeValue("_１ヶ月あたりの作業単位", () =>
-    monthlyWorkMinutes ? { value: `${String(monthlyWorkMinutes)}分` } : null,
-  );
-
-  // 備考
-  setNamedRangeValue("備考", () => (remarks ? { value: remarks } : null));
-
-  // 総稼働時間
-  const totalWorkMinutes = calculateTotalWorkMinutes(
-    attendances,
-    monthlyWorkMinutes,
-  );
-  setNamedRangeValue("総稼働時間", () => ({
-    value: msToSerial(totalWorkMinutes * 60 * 1000),
-    numFmt: "[h]:mm",
-  }));
-
-  // 基本稼働時間
-  const basicWorkMinutes = calculateBasicWorkMinutes(
-    basicStartTime,
-    basicEndTime,
-    basicBreakDuration,
-  );
-  setNamedRangeValue("基本稼働時間", () =>
-    basicWorkMinutes !== null
-      ? {
-          value: msToSerial(basicWorkMinutes * 60 * 1000),
-          numFmt: "[h]:mm",
-        }
-      : null,
-  );
-
-  // 稼働日数
-  const workingDays = calculateWorkingDays(attendances);
-  setNamedRangeValue("稼働日数", () => ({
-    value: workingDays,
-  }));
 
   // カスタムフィールドマッピングの処理
   if (customFieldMappings && customFieldMappings.length > 0) {

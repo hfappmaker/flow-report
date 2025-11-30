@@ -70,6 +70,17 @@ model User {
   auditLogs             AuditLog[]
   EmailTemplate         EmailTemplate[]
   excelTemplates        ExcelTemplate[]
+
+  // 住所情報
+  postalCode String? // 郵便番号
+  address    String? // 住所
+
+  // 銀行口座情報
+  bankName          String? // 銀行名
+  bankBranchName    String? // 支店名
+  bankAccountType   String? // 口座種別（普通/当座）
+  bankAccountNumber String? // 口座番号
+  bankAccountHolder String? // 口座名義
 }
 
 

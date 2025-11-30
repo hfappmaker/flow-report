@@ -217,6 +217,49 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
     description: "請求日の翌月末（YYYY/MM/DD形式）",
     example: "2025/02/28",
   },
+  // ユーザー情報
+  {
+    key: "郵便番号",
+    label: "郵便番号",
+    description: "ユーザーの郵便番号",
+    example: "123-4567",
+  },
+  {
+    key: "住所",
+    label: "住所",
+    description: "ユーザーの住所",
+    example: "東京都渋谷区...",
+  },
+  {
+    key: "銀行名",
+    label: "銀行名",
+    description: "振込先銀行名",
+    example: "○○銀行",
+  },
+  {
+    key: "支店名",
+    label: "支店名",
+    description: "振込先支店名",
+    example: "○○支店",
+  },
+  {
+    key: "口座種別",
+    label: "口座種別",
+    description: "口座種別（普通/当座）",
+    example: "普通",
+  },
+  {
+    key: "口座番号",
+    label: "口座番号",
+    description: "口座番号",
+    example: "1234567",
+  },
+  {
+    key: "口座名義",
+    label: "口座名義",
+    description: "口座名義",
+    example: "ヤマダ タロウ",
+  },
 ];
 
 /**
@@ -361,6 +404,14 @@ export function generatePlaceholderValues(
         ? formatMinutesToTimeString(basicWorkMinutes)
         : "",
     稼働日数: String(workingDays),
+    // ユーザー情報
+    郵便番号: data.postalCode ?? "",
+    住所: data.address ?? "",
+    銀行名: data.bankName ?? "",
+    支店名: data.bankBranchName ?? "",
+    口座種別: data.bankAccountType ?? "",
+    口座番号: data.bankAccountNumber ?? "",
+    口座名義: data.bankAccountHolder ?? "",
   };
 
   // 契約データがない場合は基本プレースホルダーのみ返す
@@ -370,13 +421,24 @@ export function generatePlaceholderValues(
 
   // 請求書用プレースホルダーを追加
   const invoicePlaceholders: Record<string, string> = {
-    月単価: contractData.unitPrice !== null ? String(contractData.unitPrice) : "",
-    時間単価: contractData.hourlyRate !== null ? String(contractData.hourlyRate) : "",
-    精算下限: contractData.settlementMin !== null ? String(contractData.settlementMin) : "",
-    精算上限: contractData.settlementMax !== null ? String(contractData.settlementMax) : "",
-    超過時間単価: contractData.upperRate !== null ? String(contractData.upperRate) : "",
-    控除時間単価: contractData.lowerRate !== null ? String(contractData.lowerRate) : "",
-    中間割時間単価: contractData.middleRate !== null ? String(contractData.middleRate) : "",
+    月単価:
+      contractData.unitPrice !== null ? String(contractData.unitPrice) : "",
+    時間単価:
+      contractData.hourlyRate !== null ? String(contractData.hourlyRate) : "",
+    精算下限:
+      contractData.settlementMin !== null
+        ? String(contractData.settlementMin)
+        : "",
+    精算上限:
+      contractData.settlementMax !== null
+        ? String(contractData.settlementMax)
+        : "",
+    超過時間単価:
+      contractData.upperRate !== null ? String(contractData.upperRate) : "",
+    控除時間単価:
+      contractData.lowerRate !== null ? String(contractData.lowerRate) : "",
+    中間割時間単価:
+      contractData.middleRate !== null ? String(contractData.middleRate) : "",
     精算方式: formatRateType(contractData.rateType),
     税込税抜: contractData.taxInclusiveType === "INCLUSIVE" ? "税込" : "税抜",
   };
@@ -406,7 +468,7 @@ export function generatePlaceholderValues(
     const taxRate = 0.1;
     const taxAmount =
       contractData.taxInclusiveType === "INCLUSIVE"
-        ? Math.round(subtotal / 1.1 * taxRate)
+        ? Math.round((subtotal / 1.1) * taxRate)
         : (() => {
             const rawTaxAmount = subtotal * taxRate;
             switch (contractData.taxRoundingType) {

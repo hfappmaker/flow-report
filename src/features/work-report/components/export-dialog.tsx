@@ -8,8 +8,9 @@ import {
   Lock,
   Archive,
 } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -32,7 +33,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatAmount } from "@/features/contract/utils/contract-calculation-utils";
 import type { FreeePartner } from "@/features/freee/types/freee-accounting-types";
-import { FreeeConnectionButton } from "@/features/work-report/components/freee-connection-button";
+import {
+  DEFAULT_TEMPLATE_ID,
+  DEFAULT_TEMPLATE_NAME,
+  DEFAULT_TEMPLATE_FILE_NAME,
+  DEFAULT_TEMPLATE_FIELD_MAPPINGS,
+  isDefaultTemplate,
+} from "@/features/work-report/constants/default-template";
 import { useExportSettings } from "@/features/work-report/hooks/use-export-settings";
 import {
   formatZipFileName,
@@ -43,6 +50,22 @@ import type {
   ExportTabType,
 } from "@/features/work-report/types/export-types";
 import type { ExcelTemplateWithFields } from "@/features/work-report/types/work-report-template";
+
+import { FreeeConnectionButton } from "./freee-connection-button";
+
+/**
+ * システムデフォルトの作業報告書テンプレート（読み取り専用）
+ */
+const SYSTEM_DEFAULT_WORK_REPORT_TEMPLATE: ExcelTemplateWithFields = {
+  id: DEFAULT_TEMPLATE_ID,
+  name: DEFAULT_TEMPLATE_NAME,
+  type: "WORK_REPORT",
+  fileData: "", // 使用しない（publicフォルダから読み込み）
+  fileName: DEFAULT_TEMPLATE_FILE_NAME,
+  sheetName: null,
+  createUserId: "system",
+  fieldMappings: DEFAULT_TEMPLATE_FIELD_MAPPINGS,
+};
 
 /**
  * エクスポート結果
@@ -149,14 +172,22 @@ export function ExportDialog({
   // freee請求書作成状態
   const [isCreatingFreeeInvoice, setIsCreatingFreeeInvoice] = useState(false);
 
+  // 作業報告書テンプレート一覧にデフォルトテンプレートを追加
+  const allWorkReportTemplates = useMemo(
+    () => [SYSTEM_DEFAULT_WORK_REPORT_TEMPLATE, ...workReportTemplates],
+    [workReportTemplates],
+  );
+
   // localStorageから設定を復元
   useEffect(() => {
     if (isLoaded) {
       if (settings.workReportTemplateId) {
-        // 保存されたテンプレートが存在するか確認
-        const exists = workReportTemplates.some(
-          (t) => t.id === settings.workReportTemplateId,
-        );
+        // 保存されたテンプレートが存在するか確認（デフォルトテンプレートも含む）
+        const exists =
+          isDefaultTemplate(settings.workReportTemplateId) ||
+          workReportTemplates.some(
+            (t) => t.id === settings.workReportTemplateId,
+          );
         if (exists) {
           setWorkReportTemplateIdState(settings.workReportTemplateId);
         }
@@ -175,16 +206,16 @@ export function ExportDialog({
     }
   }, [isLoaded, settings, workReportTemplates, invoiceTemplates]);
 
-  // テンプレートが1つだけの場合は自動選択
+  // テンプレートが選択されていない場合はデフォルトテンプレートを自動選択
   useEffect(() => {
-    if (workReportTemplates.length === 1 && !workReportTemplateId) {
-      setWorkReportTemplateIdState(workReportTemplates[0].id);
+    if (!workReportTemplateId && allWorkReportTemplates.length > 0) {
+      setWorkReportTemplateIdState(DEFAULT_TEMPLATE_ID);
     }
     if (invoiceTemplates.length === 1 && !invoiceTemplateId) {
       setInvoiceTemplateIdState(invoiceTemplates[0].id);
     }
   }, [
-    workReportTemplates,
+    allWorkReportTemplates,
     invoiceTemplates,
     workReportTemplateId,
     invoiceTemplateId,
@@ -290,6 +321,25 @@ export function ExportDialog({
       // テンプレートの読み込み
       const workReportTemplate = isWorkReportEnabled
         ? await (async () => {
+            // デフォルトテンプレートの場合はpublicフォルダから読み込み
+            if (isDefaultTemplate(workReportTemplateId ?? "")) {
+              const response = await fetch(
+                `/${DEFAULT_TEMPLATE_FILE_NAME}`,
+              );
+              if (!response.ok) {
+                throw new Error("デフォルトテンプレートの読み込みに失敗しました");
+              }
+              const arrayBuffer = await response.arrayBuffer();
+              const workbook = new ExcelJS.Workbook();
+              await workbook.xlsx.load(arrayBuffer);
+              return {
+                workbook,
+                fieldMappings: DEFAULT_TEMPLATE_FIELD_MAPPINGS,
+                sheetName: null,
+              };
+            }
+
+            // カスタムテンプレートの場合
             const template = workReportTemplates.find(
               (t) => t.id === workReportTemplateId,
             );
@@ -368,7 +418,7 @@ export function ExportDialog({
     }
   };
 
-  const selectedWorkReportTemplate = workReportTemplates.find(
+  const selectedWorkReportTemplate = allWorkReportTemplates.find(
     (t) => t.id === workReportTemplateId,
   );
   const selectedInvoiceTemplate = invoiceTemplates.find(
@@ -379,7 +429,7 @@ export function ExportDialog({
     isProcessing ||
     (!isWorkReportEnabled && !isInvoiceEnabled) ||
     (isWorkReportEnabled &&
-      workReportTemplates.length > 0 &&
+      allWorkReportTemplates.length > 0 &&
       !workReportTemplateId) ||
     (isInvoiceEnabled && invoiceTemplates.length > 0 && !invoiceTemplateId);
 
@@ -434,37 +484,37 @@ export function ExportDialog({
               {isWorkReportEnabled && (
                 <div className="space-y-2 pl-6">
                   <Label htmlFor="workReportTemplate">テンプレート</Label>
-                  {workReportTemplates.length > 0 ? (
-                    <>
-                      <Select
-                        value={workReportTemplateId ?? ""}
-                        onValueChange={handleWorkReportTemplateChange}
-                      >
-                        <SelectTrigger id="workReportTemplate">
-                          <SelectValue placeholder="テンプレートを選択" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {workReportTemplates.map((template) => (
-                            <SelectItem key={template.id} value={template.id}>
-                              <div className="flex items-center gap-2">
-                                <FileSpreadsheet className="size-4" />
-                                <span>{template.name}</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {selectedWorkReportTemplate && (
-                        <div className="text-xs text-muted-foreground">
-                          {selectedWorkReportTemplate.fileName}
-                          {selectedWorkReportTemplate.sheetName &&
-                            ` (${selectedWorkReportTemplate.sheetName})`}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="rounded-md border border-dashed border-gray-300 p-3 text-center text-sm text-muted-foreground">
-                      テンプレートが登録されていません
+                  <Select
+                    value={workReportTemplateId ?? ""}
+                    onValueChange={handleWorkReportTemplateChange}
+                  >
+                    <SelectTrigger id="workReportTemplate">
+                      <SelectValue placeholder="テンプレートを選択" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allWorkReportTemplates.map((template) => (
+                        <SelectItem key={template.id} value={template.id}>
+                          <div className="flex items-center gap-2">
+                            <FileSpreadsheet className="size-4" />
+                            <span>{template.name}</span>
+                            {isDefaultTemplate(template.id) && (
+                              <Badge
+                                variant="secondary"
+                                className="ml-1 text-xs"
+                              >
+                                システム
+                              </Badge>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedWorkReportTemplate && (
+                    <div className="text-xs text-muted-foreground">
+                      {selectedWorkReportTemplate.fileName}
+                      {selectedWorkReportTemplate.sheetName &&
+                        ` (${selectedWorkReportTemplate.sheetName})`}
                     </div>
                   )}
                 </div>
