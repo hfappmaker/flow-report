@@ -20,6 +20,7 @@ import { msToSerial } from "@/features/work-report/utils/excel-utils";
 import {
   generatePlaceholderValues,
   replacePlaceholders,
+  type InvoiceContractData,
 } from "@/features/work-report/utils/placeholder-utils";
 
 /**
@@ -61,6 +62,7 @@ export interface CustomFieldMapping {
  * @param data 作業報告書データ
  * @param customFieldMappings カスタムフィールドマッピング（オプション）
  * @param targetSheetName 出力するシート名（オプション、指定がない場合は最初のシート）
+ * @param contractData 請求書用契約データ（オプション）
  * @returns 生成されたExcelファイルのBlob
  */
 export async function generateWorkReportExcel(
@@ -68,6 +70,7 @@ export async function generateWorkReportExcel(
   data: WorkReportExcelData,
   customFieldMappings?: CustomFieldMapping[],
   targetSheetName?: string | null,
+  contractData?: InvoiceContractData,
 ): Promise<Blob> {
   const {
     attendances,
@@ -236,7 +239,7 @@ export async function generateWorkReportExcel(
   // カスタムフィールドマッピングの処理
   if (customFieldMappings && customFieldMappings.length > 0) {
     // プレースホルダー値を生成
-    const placeholderValues = generatePlaceholderValues(data);
+    const placeholderValues = generatePlaceholderValues(data, contractData);
 
     // 各カスタムフィールドマッピングを処理
     for (const mapping of customFieldMappings) {

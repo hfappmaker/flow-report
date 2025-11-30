@@ -1,6 +1,9 @@
+import type { ContractRateType } from "@prisma/client";
+
 import {
   calculateBasicWorkMinutes,
   calculateTotalWorkMinutes,
+  calculateWorkAmountDetailed,
   calculateWorkingDays,
 } from "@/features/contract/utils/contract-calculation-utils";
 import type { WorkReportExcelData } from "@/features/work-report/libs/excel-report-generator";
@@ -91,12 +94,207 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
     description: "当月の稼働日数（例: 21）",
     example: "21",
   },
+  // 請求書用プレースホルダー（契約情報）
+  {
+    key: "月単価",
+    label: "月単価",
+    description: "契約の月単価（例: 500000）",
+    example: "500000",
+  },
+  {
+    key: "時間単価",
+    label: "時間単価",
+    description: "契約の時間単価（例: 3000）",
+    example: "3000",
+  },
+  {
+    key: "精算下限",
+    label: "精算下限",
+    description: "精算幅の下限時間（例: 140）",
+    example: "140",
+  },
+  {
+    key: "精算上限",
+    label: "精算上限",
+    description: "精算幅の上限時間（例: 180）",
+    example: "180",
+  },
+  {
+    key: "超過時間単価",
+    label: "超過時間単価",
+    description: "超過時の時間単価（例: 3500）",
+    example: "3500",
+  },
+  {
+    key: "控除時間単価",
+    label: "控除時間単価",
+    description: "控除時の時間単価（例: 3000）",
+    example: "3000",
+  },
+  {
+    key: "中間割時間単価",
+    label: "中間割時間単価",
+    description: "中間割の時間単価（例: 3200）",
+    example: "3200",
+  },
+  {
+    key: "精算方式",
+    label: "精算方式",
+    description: "精算方式名（上下割/中間割/固定/時間単価）",
+    example: "上下割",
+  },
+  // 計算結果
+  {
+    key: "基本金額",
+    label: "基本金額",
+    description: "精算前の基本金額（例: 500000）",
+    example: "500000",
+  },
+  {
+    key: "超過時間",
+    label: "超過時間",
+    description: "超過した時間数（例: 5.5）",
+    example: "5.5",
+  },
+  {
+    key: "超過金額",
+    label: "超過金額",
+    description: "超過時間 × 超過時間単価（例: 19250）",
+    example: "19250",
+  },
+  {
+    key: "控除時間",
+    label: "控除時間",
+    description: "控除された時間数（例: 3.0）",
+    example: "3.0",
+  },
+  {
+    key: "控除金額",
+    label: "控除金額",
+    description: "控除時間 × 控除時間単価（例: 9000）",
+    example: "9000",
+  },
+  {
+    key: "小計金額",
+    label: "小計金額",
+    description: "基本金額 + 超過金額 - 控除金額（例: 510250）",
+    example: "510250",
+  },
+  {
+    key: "消費税額",
+    label: "消費税額",
+    description: "消費税額（例: 51025）",
+    example: "51025",
+  },
+  {
+    key: "合計金額",
+    label: "合計金額",
+    description: "小計 + 消費税（例: 561275）",
+    example: "561275",
+  },
+  {
+    key: "税込税抜",
+    label: "税込税抜",
+    description: "契約の税込/税抜設定（例: 税抜）",
+    example: "税抜",
+  },
+  // 日付関連
+  {
+    key: "締め日",
+    label: "締め日",
+    description: "契約の締め日（未設定時は対象月の最終日）",
+    example: "20",
+  },
+  {
+    key: "請求日",
+    label: "請求日",
+    description: "対象月の締め日の日付（YYYY/MM/DD形式）",
+    example: "2025/01/20",
+  },
+  {
+    key: "支払期限",
+    label: "支払期限",
+    description: "請求日の翌月末（YYYY/MM/DD形式）",
+    example: "2025/02/28",
+  },
 ];
 
 /**
  * プレースホルダーのキー一覧
  */
 export const PLACEHOLDER_KEYS = AVAILABLE_PLACEHOLDERS.map((p) => p.key);
+
+/**
+ * 請求書用の契約データ
+ */
+export interface InvoiceContractData {
+  unitPrice: number | null;
+  hourlyRate: number | null;
+  settlementMin: number | null;
+  settlementMax: number | null;
+  upperRate: number | null;
+  lowerRate: number | null;
+  middleRate: number | null;
+  rateType: ContractRateType;
+  taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
+  taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
+  closingDay: number | null;
+}
+
+/**
+ * 精算方式を日本語に変換
+ */
+function formatRateType(rateType: ContractRateType): string {
+  const rateTypeLabels: Record<ContractRateType, string> = {
+    upperLower: "上下割",
+    middle: "中間割",
+    fixed: "固定",
+    hourlyRate: "時間単価",
+  };
+  return rateTypeLabels[rateType];
+}
+
+/**
+ * 日付をYYYY/MM/DD形式でフォーマット
+ */
+function formatDateString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${String(year)}/${month}/${day}`;
+}
+
+/**
+ * 対象月の請求日を計算（締め日がない場合は月末）
+ */
+function calculateInvoiceDate(
+  targetDate: Date,
+  closingDay: number | null,
+): Date {
+  const year = targetDate.getFullYear();
+  const month = targetDate.getMonth();
+
+  if (closingDay === null) {
+    // 締め日が未設定の場合は対象月の最終日
+    return new Date(year, month + 1, 0);
+  }
+
+  // 締め日が対象月の日数を超える場合は月末
+  const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
+  const actualClosingDay = Math.min(closingDay, lastDayOfMonth);
+
+  return new Date(year, month, actualClosingDay);
+}
+
+/**
+ * 支払期限を計算（請求日の翌月末）
+ */
+function calculatePaymentDeadline(invoiceDate: Date): Date {
+  const year = invoiceDate.getFullYear();
+  const month = invoiceDate.getMonth();
+  // 翌月の最終日
+  return new Date(year, month + 2, 0);
+}
 
 /**
  * 時刻を[h]:mm形式の文字列に変換
@@ -120,9 +318,12 @@ function formatMinutesToTimeString(minutes: number | null): string {
 
 /**
  * WorkReportExcelDataからプレースホルダー値を生成
+ * @param data 作業報告書データ
+ * @param contractData 請求書用の契約データ（オプション）
  */
 export function generatePlaceholderValues(
   data: WorkReportExcelData,
+  contractData?: InvoiceContractData,
 ): Record<string, string> {
   const totalWorkMinutes = calculateTotalWorkMinutes(
     data.attendances,
@@ -137,7 +338,8 @@ export function generatePlaceholderValues(
 
   const workingDays = calculateWorkingDays(data.attendances);
 
-  return {
+  // 基本プレースホルダー
+  const basePlaceholders: Record<string, string> = {
     対象年: String(data.targetDate.getFullYear()),
     対象月: String(data.targetDate.getMonth() + 1),
     作業者名: data.userName,
@@ -160,6 +362,111 @@ export function generatePlaceholderValues(
         : "",
     稼働日数: String(workingDays),
   };
+
+  // 契約データがない場合は基本プレースホルダーのみ返す
+  if (!contractData) {
+    return basePlaceholders;
+  }
+
+  // 請求書用プレースホルダーを追加
+  const invoicePlaceholders: Record<string, string> = {
+    月単価: contractData.unitPrice !== null ? String(contractData.unitPrice) : "",
+    時間単価: contractData.hourlyRate !== null ? String(contractData.hourlyRate) : "",
+    精算下限: contractData.settlementMin !== null ? String(contractData.settlementMin) : "",
+    精算上限: contractData.settlementMax !== null ? String(contractData.settlementMax) : "",
+    超過時間単価: contractData.upperRate !== null ? String(contractData.upperRate) : "",
+    控除時間単価: contractData.lowerRate !== null ? String(contractData.lowerRate) : "",
+    中間割時間単価: contractData.middleRate !== null ? String(contractData.middleRate) : "",
+    精算方式: formatRateType(contractData.rateType),
+    税込税抜: contractData.taxInclusiveType === "INCLUSIVE" ? "税込" : "税抜",
+  };
+
+  // 金額計算
+  const amountDetails = calculateWorkAmountDetailed(totalWorkMinutes, {
+    unitPrice: contractData.unitPrice,
+    settlementMin: contractData.settlementMin,
+    settlementMax: contractData.settlementMax,
+    upperRate: contractData.upperRate,
+    lowerRate: contractData.lowerRate,
+    middleRate: contractData.middleRate,
+    hourlyRate: contractData.hourlyRate,
+    taxInclusiveType: contractData.taxInclusiveType,
+    taxRoundingType: contractData.taxRoundingType,
+    rateType: contractData.rateType,
+    monthlyWorkMinutes: data.monthlyWorkMinutes,
+  });
+
+  if (amountDetails) {
+    const subtotal =
+      amountDetails.baseAmount +
+      amountDetails.excessInfo.amount -
+      amountDetails.deductionInfo.amount;
+
+    // 消費税計算
+    const taxRate = 0.1;
+    const taxAmount =
+      contractData.taxInclusiveType === "INCLUSIVE"
+        ? Math.round(subtotal / 1.1 * taxRate)
+        : (() => {
+            const rawTaxAmount = subtotal * taxRate;
+            switch (contractData.taxRoundingType) {
+              case "ROUND_UP":
+                return Math.ceil(rawTaxAmount);
+              case "ROUND_DOWN":
+                return Math.floor(rawTaxAmount);
+              case "ROUND":
+              default:
+                return Math.round(rawTaxAmount);
+            }
+          })();
+
+    const totalAmount =
+      contractData.taxInclusiveType === "INCLUSIVE"
+        ? subtotal
+        : subtotal + taxAmount;
+
+    Object.assign(invoicePlaceholders, {
+      基本金額: String(Math.round(amountDetails.baseAmount)),
+      超過時間: String(amountDetails.excessInfo.hours),
+      超過金額: String(Math.round(amountDetails.excessInfo.amount)),
+      控除時間: String(amountDetails.deductionInfo.hours),
+      控除金額: String(Math.round(amountDetails.deductionInfo.amount)),
+      小計金額: String(Math.round(subtotal)),
+      消費税額: String(taxAmount),
+      合計金額: String(Math.round(totalAmount)),
+    });
+  } else {
+    // 計算できない場合は空文字
+    Object.assign(invoicePlaceholders, {
+      基本金額: "",
+      超過時間: "",
+      超過金額: "",
+      控除時間: "",
+      控除金額: "",
+      小計金額: "",
+      消費税額: "",
+      合計金額: "",
+    });
+  }
+
+  // 日付関連
+  const invoiceDate = calculateInvoiceDate(
+    data.targetDate,
+    contractData.closingDay,
+  );
+  const paymentDeadline = calculatePaymentDeadline(invoiceDate);
+  const closingDayValue =
+    contractData.closingDay !== null
+      ? String(contractData.closingDay)
+      : String(invoiceDate.getDate());
+
+  Object.assign(invoicePlaceholders, {
+    締め日: closingDayValue,
+    請求日: formatDateString(invoiceDate),
+    支払期限: formatDateString(paymentDeadline),
+  });
+
+  return { ...basePlaceholders, ...invoicePlaceholders };
 }
 
 /**

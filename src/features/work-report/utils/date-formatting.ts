@@ -72,3 +72,13 @@ export function formatBreakDuration(minutes: number | null): string {
   const remainingMinutes = String(minutes % 60).padStart(2, "0");
   return `${String(hours).padStart(2, "0")}:${remainingMinutes}`;
 }
+
+/**
+ * 請求書のファイル名を生成
+ * @param date 対象の日付
+ * @param userName ユーザー名
+ * @returns ファイル名（例: "2025年1月度請求書_山田太郎.xlsx"）
+ */
+export function formatInvoiceFileName(date: Date, userName: string): string {
+  return `${String(date.getFullYear())}年${String(date.getMonth() + 1)}月度請求書_${userName}.xlsx`;
+}

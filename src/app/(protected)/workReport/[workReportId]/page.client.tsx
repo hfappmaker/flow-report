@@ -44,19 +44,20 @@ import {
   updateWorkReportStatusAction,
   updateWorkReportRemarksAction,
 } from "@/features/work-report/actions/work-report";
-import { getWorkReportTemplatesByUserIdAction } from "@/features/work-report/actions/work-report-template";
+import { getWorkReportTemplatesByUserIdAndTypeAction } from "@/features/work-report/actions/work-report-template";
 import { AttendanceEditDialog } from "@/features/work-report/components/attendance-edit-dialog";
+import {
+  ExportDialog,
+  type ExportResult,
+} from "@/features/work-report/components/export-dialog";
 import { FreeeConnectionButton } from "@/features/work-report/components/freee-connection-button";
 import { FreeeInvoiceDialog } from "@/features/work-report/components/freee-invoice-dialog";
 import { FreeeReauthDialog } from "@/features/work-report/components/freee-reauth-dialog";
 import { RemarksEditDialog } from "@/features/work-report/components/remarks-edit-dialog";
-import {
-  TemplateSelectionDialog,
-  type TemplateSelectionResult,
-} from "@/features/work-report/components/template-selection-dialog";
 import { useFreeeConnection } from "@/features/work-report/hooks/use-freee-connection";
 import { useFreeePartners } from "@/features/work-report/hooks/use-freee-partners";
 import { generateWorkReportExcel } from "@/features/work-report/libs/excel-report-generator";
+import type { ExportFile } from "@/features/work-report/types/export-types";
 import {
   type EditFormValues,
   type BulkEditFormValues,
@@ -77,9 +78,11 @@ import {
 import { getDateColorClass } from "@/features/work-report/utils/date-display-utils";
 import {
   formatWorkReportFileName,
+  formatInvoiceFileName,
   formatTimeInput,
   formatBreakDuration,
 } from "@/features/work-report/utils/date-formatting";
+import type { InvoiceContractData } from "@/features/work-report/utils/placeholder-utils";
 import { buildWorkReportMailtoUrl } from "@/features/work-report/utils/mailto-url-builder";
 import { useMessageState } from "@/hooks/use-message-state";
 import { formatDateAsUTC } from "@/utils/date-utils";
@@ -155,10 +158,13 @@ export default function ClientWorkReportPage({
   });
 
   const [status, setStatus] = useState<WorkReportStatus>(initialStatus);
-  const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [remarks, setRemarks] = useState<string>(initialRemarks ?? "");
   const [isRemarksDialogOpen, setIsRemarksDialogOpen] = useState(false);
-  const [customTemplates, setCustomTemplates] = useState<
+  const [workReportTemplates, setWorkReportTemplates] = useState<
+    WorkReportTemplateWithFields[]
+  >([]);
+  const [invoiceTemplates, setInvoiceTemplates] = useState<
     WorkReportTemplateWithFields[]
   >([]);
 
@@ -190,11 +196,15 @@ export default function ClientWorkReportPage({
     [totalWorkMinutes],
   );
 
-  // カスタムテンプレートを取得
+  // テンプレートを取得（作業報告書と請求書を並行して取得）
   useEffect(() => {
     const fetchTemplates = async () => {
-      const templates = await getWorkReportTemplatesByUserIdAction(userId);
-      setCustomTemplates(templates);
+      const [workReportTpls, invoiceTpls] = await Promise.all([
+        getWorkReportTemplatesByUserIdAndTypeAction(userId, "WORK_REPORT"),
+        getWorkReportTemplatesByUserIdAndTypeAction(userId, "INVOICE"),
+      ]);
+      setWorkReportTemplates(workReportTpls);
+      setInvoiceTemplates(invoiceTpls);
     };
     void fetchTemplates();
   }, [userId]);
@@ -405,53 +415,108 @@ export default function ClientWorkReportPage({
     setEditingDate(date);
   };
 
-  // テンプレートからの作業報告書作成
-  const createReportFromTemplate = async (
-    templateWorkbook: ExcelJS.Workbook,
-    fieldMappings?: {
-      namedRange: string;
-      valueTemplate: string;
-      numFmt?: string | null;
-    }[],
-    sheetName?: string | null,
-  ) => {
-    try {
-      const blob = await generateWorkReportExcel(
-        templateWorkbook,
-        {
-          attendances: currentAttendances,
-          targetDate,
-          userName,
-          basicStartTime,
-          basicEndTime,
-          basicBreakDuration,
-          dailyWorkMinutes,
-          monthlyWorkMinutes,
-          remarks: remarks || null,
-        },
-        fieldMappings,
-        sheetName,
-      );
+  // エクスポート処理
+  const handleExport = useCallback(
+    async (result: ExportResult): Promise<ExportFile[]> => {
+      const files: ExportFile[] = [];
 
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = formatWorkReportFileName(targetDate, userName);
-      link.click();
-      window.URL.revokeObjectURL(url);
-      showSuccess("テンプレートからの作業報告書作成が完了しました");
-    } catch (err) {
-      console.error("Error creating report from template:", err);
-      showError("テンプレートからの作業報告書作成に失敗しました");
-    }
-  };
+      // 作業報告書データ
+      const workReportData = {
+        attendances: currentAttendances,
+        targetDate,
+        userName,
+        basicStartTime,
+        basicEndTime,
+        basicBreakDuration,
+        dailyWorkMinutes,
+        monthlyWorkMinutes,
+        remarks: remarks || null,
+      };
 
-  // メール送信用の関数を追加
+      // 請求書用の契約データ
+      const contractData: InvoiceContractData = {
+        unitPrice,
+        hourlyRate,
+        settlementMin,
+        settlementMax,
+        upperRate,
+        lowerRate,
+        middleRate,
+        rateType,
+        taxInclusiveType,
+        taxRoundingType,
+        closingDay,
+      };
+
+      // 作業報告書を生成
+      if (result.workReportTemplate) {
+        const blob = await generateWorkReportExcel(
+          result.workReportTemplate.workbook,
+          workReportData,
+          result.workReportTemplate.fieldMappings,
+          result.workReportTemplate.sheetName,
+          contractData,
+        );
+        files.push({
+          fileName: formatWorkReportFileName(targetDate, userName),
+          blob,
+          type: "WORK_REPORT",
+        });
+      }
+
+      // 請求書を生成
+      if (result.invoiceTemplate) {
+        const blob = await generateWorkReportExcel(
+          result.invoiceTemplate.workbook,
+          workReportData,
+          result.invoiceTemplate.fieldMappings,
+          result.invoiceTemplate.sheetName,
+          contractData,
+        );
+        files.push({
+          fileName: formatInvoiceFileName(targetDate, userName),
+          blob,
+          type: "INVOICE",
+        });
+      }
+
+      if (files.length > 0) {
+        showSuccess("エクスポートが完了しました");
+      }
+
+      return files;
+    },
+    [
+      currentAttendances,
+      targetDate,
+      userName,
+      basicStartTime,
+      basicEndTime,
+      basicBreakDuration,
+      dailyWorkMinutes,
+      monthlyWorkMinutes,
+      remarks,
+      unitPrice,
+      hourlyRate,
+      settlementMin,
+      settlementMax,
+      upperRate,
+      lowerRate,
+      middleRate,
+      rateType,
+      taxInclusiveType,
+      taxRoundingType,
+      closingDay,
+      showSuccess,
+    ],
+  );
+
+  // メール送信用の関数
   const createReportAndSendEmail = () => {
     try {
       if (
         !window.confirm(
-          "作業報告書は自動で添付されません。\n「作業報告書を作成」でダウンロードしたファイルを手動で添付してください。",
+          "作業報告書は自動で添付されません。\n「エクスポート」でダウンロードしたファイルを手動で添付してください。",
         )
       ) {
         return;
@@ -468,35 +533,6 @@ export default function ClientWorkReportPage({
     } catch (error) {
       console.error("作業報告書の作成に失敗しました", error);
       showError("作業報告書の作成に失敗しました");
-    }
-  };
-
-  const handleConfirmCreateReport = async (
-    result: TemplateSelectionResult | null,
-  ) => {
-    try {
-      if (result) {
-        // Use custom template
-        await createReportFromTemplate(
-          result.workbook,
-          result.fieldMappings,
-          result.sheetName,
-        );
-      } else {
-        // Use default template
-        const response = await fetch("/work-report-default-template.xlsx");
-        if (!response.ok) {
-          throw new Error("デフォルトテンプレートの取得に失敗しました");
-        }
-        const buffer = await response.arrayBuffer();
-        const workbook = new ExcelJS.Workbook();
-        await workbook.xlsx.load(buffer);
-        await createReportFromTemplate(workbook);
-      }
-    } catch (err) {
-      console.error("テンプレートの読み込みに失敗しました:", err);
-      showError("テンプレートの読み込みに失敗しました");
-      return;
     }
   };
 
@@ -619,10 +655,10 @@ export default function ClientWorkReportPage({
               variant="outline"
               disabled={status !== "SUBMITTED"}
               onClick={() => {
-                setIsTemplateDialogOpen(true);
+                setIsExportDialogOpen(true);
               }}
             >
-              作業報告書を作成
+              エクスポート
             </Button>
             <FreeeConnectionButton
               disabled={status !== "SUBMITTED"}
@@ -1028,11 +1064,14 @@ export default function ClientWorkReportPage({
         onOpenChange={setShowReauthDialog}
       />
 
-      <TemplateSelectionDialog
-        open={isTemplateDialogOpen}
-        onOpenChange={setIsTemplateDialogOpen}
-        onConfirm={handleConfirmCreateReport}
-        customTemplates={customTemplates}
+      <ExportDialog
+        open={isExportDialogOpen}
+        onOpenChange={setIsExportDialogOpen}
+        onExport={handleExport}
+        workReportTemplates={workReportTemplates}
+        invoiceTemplates={invoiceTemplates}
+        targetDate={targetDate}
+        userName={userName}
       />
 
       {/* 備考編集ダイアログ */}
