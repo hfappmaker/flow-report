@@ -10,6 +10,9 @@ export type BankAccountType = (typeof BANK_ACCOUNT_TYPES)[number];
  * ユーザー設定フォームのスキーマ
  */
 export const userSettingsFormSchema = z.object({
+  // 基本情報
+  name: z.string().optional(),
+
   // 住所情報
   postalCode: z.string().optional(),
   address: z.string().optional(),

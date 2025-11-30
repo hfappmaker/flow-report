@@ -19,6 +19,8 @@ import { updateUserSettings } from "@/features/user-settings/actions/update-user
 import { BANK_ACCOUNT_TYPES } from "@/features/user-settings/schemas/user-settings-form-schema";
 
 type UserSettings = {
+  name: string;
+  email: string;
   postalCode: string;
   address: string;
   bankName: string;
@@ -38,6 +40,7 @@ export function UserSettingsForm({ initialSettings }: UserSettingsFormProps) {
   const [success, setSuccess] = useState("");
 
   // フォームの状態
+  const [name, setName] = useState(initialSettings?.name ?? "");
   const [postalCode, setPostalCode] = useState(
     initialSettings?.postalCode ?? "",
   );
@@ -63,6 +66,7 @@ export function UserSettingsForm({ initialSettings }: UserSettingsFormProps) {
 
     startTransition(async () => {
       const result = await updateUserSettings({
+        name: name || undefined,
         postalCode: postalCode || undefined,
         address: address || undefined,
         bankName: bankName || undefined,
@@ -93,8 +97,33 @@ export function UserSettingsForm({ initialSettings }: UserSettingsFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* 住所セクション */}
+          {/* 基本情報セクション */}
           <div className="space-y-4">
+            <h3 className="font-medium">基本情報</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="name">名前</Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="例: 山田 太郎"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">メールアドレス</Label>
+                <Input
+                  id="email"
+                  value={initialSettings?.email ?? ""}
+                  disabled
+                  className="bg-muted"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 住所セクション */}
+          <div className="space-y-4 border-t pt-4">
             <h3 className="font-medium">住所情報</h3>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">

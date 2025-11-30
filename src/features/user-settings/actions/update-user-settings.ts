@@ -25,6 +25,7 @@ export const updateUserSettings = async (
   await db.user.update({
     where: { id: dbUser.id },
     data: {
+      name: values.name ?? null,
       postalCode: values.postalCode ?? null,
       address: values.address ?? null,
       bankName: values.bankName ?? null,
@@ -52,6 +53,8 @@ export const getUserSettings = async () => {
   }
 
   return {
+    name: dbUser.name ?? "",
+    email: dbUser.email ?? "",
     postalCode: dbUser.postalCode ?? "",
     address: dbUser.address ?? "",
     bankName: dbUser.bankName ?? "",
