@@ -3,12 +3,12 @@
 {
   "name": "Node.js & TypeScript & PostgreSQL",
   // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-//   "image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bullseye",
-//   "features": {
-//     "ghcr.io/devcontainers-contrib/features/prisma:2": {}
-//   },
+  //   "image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bullseye",
+  //   "features": {
+  //     "ghcr.io/devcontainers-contrib/features/prisma:2": {}
+  //   },
 
-  "dockerComposeFile":"docker-compose.yml",
+  "dockerComposeFile": "docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/workspace",
   // Use 'postCreateCommand' to run commands after the container is created.
@@ -25,7 +25,8 @@
         "Anthropic.claude-code",
         "ms-playwright.playwright",
         "Stripe.vscode-stripe",
-        "eamodio.gitlens"
+        "eamodio.gitlens",
+        "Prisma.prisma"
       ]
     }
   },
