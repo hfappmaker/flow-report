@@ -28,13 +28,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   TimePickerFieldForDate,
   TimePickerFieldForNumber,
 } from "@/components/ui/time-picker";
@@ -51,12 +44,16 @@ import {
   updateWorkReportStatusAction,
   updateWorkReportRemarksAction,
 } from "@/features/work-report/actions/work-report";
+import { getWorkReportTemplatesByUserIdAction } from "@/features/work-report/actions/work-report-template";
 import { AttendanceEditDialog } from "@/features/work-report/components/attendance-edit-dialog";
 import { FreeeConnectionButton } from "@/features/work-report/components/freee-connection-button";
 import { FreeeInvoiceDialog } from "@/features/work-report/components/freee-invoice-dialog";
 import { FreeeReauthDialog } from "@/features/work-report/components/freee-reauth-dialog";
 import { RemarksEditDialog } from "@/features/work-report/components/remarks-edit-dialog";
-import { TemplateSelectionDialog } from "@/features/work-report/components/template-selection-dialog";
+import {
+  TemplateSelectionDialog,
+  type TemplateSelectionResult,
+} from "@/features/work-report/components/template-selection-dialog";
 import { useFreeeConnection } from "@/features/work-report/hooks/use-freee-connection";
 import { useFreeePartners } from "@/features/work-report/hooks/use-freee-partners";
 import { generateWorkReportExcel } from "@/features/work-report/libs/excel-report-generator";
@@ -70,6 +67,7 @@ import {
   type WorkReportClientProps,
   type WorkReportStatus,
 } from "@/features/work-report/types/work-report";
+import type { WorkReportTemplateWithFields } from "@/features/work-report/types/work-report-template";
 import {
   generateDefaultAttendances,
   mergeAttendances,
@@ -89,6 +87,7 @@ import { formatDateAsUTC } from "@/utils/date-utils";
 export default function ClientWorkReportPage({
   contractId,
   workReportId,
+  userId,
   attendances,
   contractName,
   clientName,
@@ -139,22 +138,29 @@ export default function ClientWorkReportPage({
   } = useFreeeConnection();
 
   // freee取引先管理
-  const { partners, selectedPartnerId, setSelectedPartnerId, isLoadingPartners } =
-    useFreeePartners({
-      isDialogOpen: isInvoiceDialogOpen,
-      isFreeeConnected,
-      clientName,
-      onConnectionLost: () => {
-        setIsFreeeConnected(false);
-        setIsInvoiceDialogOpen(false);
-        setShowReauthDialog(true);
-      },
-    });
+  const {
+    partners,
+    selectedPartnerId,
+    setSelectedPartnerId,
+    isLoadingPartners,
+  } = useFreeePartners({
+    isDialogOpen: isInvoiceDialogOpen,
+    isFreeeConnected,
+    clientName,
+    onConnectionLost: () => {
+      setIsFreeeConnected(false);
+      setIsInvoiceDialogOpen(false);
+      setShowReauthDialog(true);
+    },
+  });
 
   const [status, setStatus] = useState<WorkReportStatus>(initialStatus);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [remarks, setRemarks] = useState<string>(initialRemarks ?? "");
   const [isRemarksDialogOpen, setIsRemarksDialogOpen] = useState(false);
+  const [customTemplates, setCustomTemplates] = useState<
+    WorkReportTemplateWithFields[]
+  >([]);
 
   // Compute default attendance values for each day in the range…
   const defaults = generateDefaultAttendances(
@@ -183,6 +189,15 @@ export default function ClientWorkReportPage({
     () => formatWorkTime(totalWorkMinutes),
     [totalWorkMinutes],
   );
+
+  // カスタムテンプレートを取得
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      const templates = await getWorkReportTemplatesByUserIdAction(userId);
+      setCustomTemplates(templates);
+    };
+    void fetchTemplates();
+  }, [userId]);
 
   // Calculate work time for a single attendance in minutes
   const calculateAttendanceWorkMinutes = useCallback(
@@ -390,23 +405,31 @@ export default function ClientWorkReportPage({
     setEditingDate(date);
   };
 
-
   // テンプレートからの作業報告書作成
   const createReportFromTemplate = async (
     templateWorkbook: ExcelJS.Workbook,
+    fieldMappings?: {
+      namedRange: string;
+      valueTemplate: string;
+      numFmt?: string | null;
+    }[],
   ) => {
     try {
-      const blob = await generateWorkReportExcel(templateWorkbook, {
-        attendances: currentAttendances,
-        targetDate,
-        userName,
-        basicStartTime,
-        basicEndTime,
-        basicBreakDuration,
-        dailyWorkMinutes,
-        monthlyWorkMinutes,
-        remarks: remarks || null,
-      });
+      const blob = await generateWorkReportExcel(
+        templateWorkbook,
+        {
+          attendances: currentAttendances,
+          targetDate,
+          userName,
+          basicStartTime,
+          basicEndTime,
+          basicBreakDuration,
+          dailyWorkMinutes,
+          monthlyWorkMinutes,
+          remarks: remarks || null,
+        },
+        fieldMappings,
+      );
 
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -447,14 +470,12 @@ export default function ClientWorkReportPage({
   };
 
   const handleConfirmCreateReport = async (
-    customWorkbook: ExcelJS.Workbook | null,
+    result: TemplateSelectionResult | null,
   ) => {
     try {
-      let workbook: ExcelJS.Workbook;
-
-      if (customWorkbook) {
+      if (result) {
         // Use custom template
-        workbook = customWorkbook;
+        await createReportFromTemplate(result.workbook, result.fieldMappings);
       } else {
         // Use default template
         const response = await fetch("/work-report-default-template.xlsx");
@@ -462,11 +483,10 @@ export default function ClientWorkReportPage({
           throw new Error("デフォルトテンプレートの取得に失敗しました");
         }
         const buffer = await response.arrayBuffer();
-        workbook = new ExcelJS.Workbook();
+        const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.load(buffer);
+        await createReportFromTemplate(workbook);
       }
-
-      await createReportFromTemplate(workbook);
     } catch (err) {
       console.error("テンプレートの読み込みに失敗しました:", err);
       showError("テンプレートの読み込みに失敗しました");
@@ -515,7 +535,6 @@ export default function ClientWorkReportPage({
     },
     [workReportId, startTransition, showSuccess, showError],
   );
-
 
   return (
     <div className="mx-auto">
@@ -1007,6 +1026,7 @@ export default function ClientWorkReportPage({
         open={isTemplateDialogOpen}
         onOpenChange={setIsTemplateDialogOpen}
         onConfirm={handleConfirmCreateReport}
+        customTemplates={customTemplates}
       />
 
       {/* 備考編集ダイアログ */}

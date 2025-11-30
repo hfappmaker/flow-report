@@ -17,6 +17,10 @@ import {
   setCellValueForField,
 } from "@/features/work-report/utils/excel-field-mappers";
 import { msToSerial } from "@/features/work-report/utils/excel-utils";
+import {
+  generatePlaceholderValues,
+  replacePlaceholders,
+} from "@/features/work-report/utils/placeholder-utils";
 
 /**
  * Excel名前付き範囲のセル値の型定義
@@ -42,15 +46,26 @@ export interface WorkReportExcelData {
 }
 
 /**
+ * カスタムフィールドマッピングの型定義（オプショナル）
+ */
+export interface CustomFieldMapping {
+  namedRange: string;
+  valueTemplate: string;
+  numFmt?: string | null;
+}
+
+/**
  * テンプレートから作業報告書のExcelファイルを生成
  *
  * @param templateWorkbook テンプレートワークブック
  * @param data 作業報告書データ
+ * @param customFieldMappings カスタムフィールドマッピング（オプション）
  * @returns 生成されたExcelファイルのBlob
  */
 export async function generateWorkReportExcel(
   templateWorkbook: ExcelJS.Workbook,
   data: WorkReportExcelData,
+  customFieldMappings?: CustomFieldMapping[],
 ): Promise<Blob> {
   const {
     attendances,
@@ -202,6 +217,27 @@ export async function generateWorkReportExcel(
   setNamedRangeValue("稼働日数", () => ({
     value: workingDays,
   }));
+
+  // カスタムフィールドマッピングの処理
+  if (customFieldMappings && customFieldMappings.length > 0) {
+    // プレースホルダー値を生成
+    const placeholderValues = generatePlaceholderValues(data);
+
+    // 各カスタムフィールドマッピングを処理
+    for (const mapping of customFieldMappings) {
+      setNamedRangeValue(mapping.namedRange, () => {
+        // プレースホルダーを置換
+        const resolvedValue = replacePlaceholders(
+          mapping.valueTemplate,
+          placeholderValues,
+        );
+        return {
+          value: resolvedValue,
+          numFmt: mapping.numFmt ?? undefined,
+        };
+      });
+    }
+  }
 
   // フォームデータを名前付き範囲に入力
   // 各名前付き範囲（'日付', '開始時刻', '終了時刻', '休憩時間'）は31セルが縦に並んでいると仮定

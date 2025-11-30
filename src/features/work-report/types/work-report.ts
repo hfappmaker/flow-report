@@ -20,6 +20,7 @@ export type WorkReportStatus = WorkReport["status"];
 export interface WorkReportClientProps {
   contractId: string;
   workReportId: string;
+  userId: string;
   attendances: AttendanceDto[];
   contractName: string;
   clientName: string;
