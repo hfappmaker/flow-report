@@ -16,7 +16,10 @@
 - `pnpm exec prettier --write "<file>"`: 特定ファイルのフォーマット
 
 ## テスト
-- `pnpm run test:j`: Jest単体テスト
+- `pnpm run test`: Vitestウォッチモード
+- `pnpm run test:run`: Vitest単発実行
+- `pnpm run test:ui`: Vitest UI
+- `pnpm run test:coverage`: カバレッジレポート生成
 - `pnpm run test:p`: Playwrightテスト
 - `pnpm run test:p:ui`: PlaywrightテストUI
 - `pnpm run test:p:debug`: Playwrightデバッグモード
@@ -29,14 +32,3 @@
 
 ## Claude Codeカスタムコマンド
 - `/commit-push`: ESLint/Prettier自動フォーマット→警告修正→コミット→プッシュの一括実行
-  - Staging済みファイルに対して実行
-  - 警告が見つかった場合は修正案を提示
-  - コミットメッセージを自動生成
-  - リモートリポジトリへ自動プッシュ
-
-## 基本コマンド（Linux）
-- `ls`: ファイル一覧
-- `cd`: ディレクトリ移動
-- `grep`: テキスト検索
-- `find`: ファイル検索
-- `git`: バージョン管理

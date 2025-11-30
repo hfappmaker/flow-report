@@ -8,63 +8,33 @@ Please perform the following steps:
 
 1. **Get current branch**: Run `git branch --show-current` to get the current branch name
 
-2. **Get staged files**: Run `git diff --cached --name-only` to list all staged files
+2. **Execute shared steps**: Follow all steps in `.claude/commands/_shared/lint-format-commit-push.md`
+   - Note: For the push step, use `git push -u origin <current-branch>` instead of `git push`
 
-3. **ESLint auto-fix**: For each staged file with extensions `.ts`, `.tsx`, `.js`, `.jsx`:
-   - Run `pnpm exec eslint "<file>" --fix` to auto-fix linting issues
+3. **Generate PR description**: Analyze all commits in the current branch (compared to develop) and generate a PR description:
+   - Run `git log develop..HEAD --oneline` to see all commits
+   - Run `git diff develop...HEAD` to see all changes
+   - Generate a comprehensive PR description including:
+     - ## Summary: Brief overview of changes
+     - ## Changes: Bulleted list of key changes
+     - ## Technical Details: Implementation details if significant
+     - ## Test Plan: Suggested testing steps
+     - Add footer: `🤖 Generated with [Claude Code](https://claude.com/claude-code)`
 
-4. **Check ESLint warnings**: For each staged file:
-   - Run `pnpm exec eslint "<file>"` to check for remaining warnings
-   - If warnings are found:
-     - Analyze the warnings and propose fixes
-     - Show the proposed changes to the user
-     - Ask for user confirmation before applying the fixes
-     - Apply fixes only if user approves
+4. **Create Pull Request**: Use GitHub MCP to create the PR:
+   - Use `mcp__github__create_pull_request` tool
+   - Set `owner` and `repo` from git remote
+   - Set `title` as the PR summary (first line of description)
+   - Set `body` as the full PR description
+   - Set `head` as current branch
+   - Set `base` as "develop"
 
-5. **Prettier formatting**: For each staged file with extensions `.ts`, `.tsx`, `.js`, `.jsx`:
-   - Run `pnpm exec prettier --write "<file>"` to format the code
-
-6. **Re-stage changes**: Run `git add <files>` to re-stage all modified files
-
-7. **Analyze changes**: Run `git diff --cached` to see all staged changes
-
-8. **Generate commit message**: Analyze the diff output and generate an appropriate commit message following Conventional Commits format:
-   - Use prefixes: `feat:`, `fix:`, `refactor:`, `docs:`, `style:`, `test:`, `chore:`
-   - Write a concise summary in Japanese
-   - Include technical details if significant
-
-9. **Commit**: Run `git commit -m "<generated-message>
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>"`
-
-10. **Push**: Run `git push -u origin <current-branch>` to push to the remote repository
-
-11. **Generate PR description**: Analyze all commits in the current branch (compared to develop) and generate a PR description:
-    - Run `git log develop..HEAD --oneline` to see all commits
-    - Run `git diff develop...HEAD` to see all changes
-    - Generate a comprehensive PR description including:
-      - ## Summary: Brief overview of changes
-      - ## Changes: Bulleted list of key changes
-      - ## Technical Details: Implementation details if significant
-      - ## Test Plan: Suggested testing steps
-      - Add footer: `🤖 Generated with [Claude Code](https://claude.com/claude-code)`
-
-12. **Create Pull Request**: Use GitHub MCP to create the PR:
-    - Use `mcp__github__create_pull_request` tool
-    - Set `owner` and `repo` from git remote
-    - Set `title` as the PR summary (first line of description)
-    - Set `body` as the full PR description
-    - Set `head` as current branch
-    - Set `base` as "develop"
-
-13. **Report**: Display a summary including:
-    - Number of files processed
-    - ESLint warnings fixed (if any)
-    - Commit message used
-    - Push status
-    - PR URL
+5. **Report**: Display a summary including:
+   - Number of files processed
+   - ESLint warnings fixed (if any)
+   - Commit message used
+   - Push status
+   - PR URL
 
 ## Description
 

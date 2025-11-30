@@ -3,7 +3,7 @@
 ## 必須実行コマンド
 1. **リント**: `pnpm run lint`
 2. **型チェック**: `pnpm exec tsc --noEmit`
-3. **テスト**: `pnpm run test:j` (適用可能な場合)
+3. **テスト**: `pnpm run test:run` (適用可能な場合)
 4. **フォーマット**: `pnpm exec prettier --write .`
 
 ## コード品質チェック
