@@ -1,13 +1,15 @@
 import { Button } from "@/components/ui/button";
 
-type FreeeConnectionButtonProps = {
+interface FreeeConnectionButtonProps {
   disabled: boolean;
   onConnectionStart: () => void;
-};
+  label?: string;
+}
 
 export const FreeeConnectionButton = ({
   disabled,
   onConnectionStart,
+  label = "freee連携",
 }: FreeeConnectionButtonProps) => {
   const handleClick = () => {
     const returnTo = encodeURIComponent(window.location.pathname);
@@ -22,7 +24,7 @@ export const FreeeConnectionButton = ({
       disabled={disabled}
       onClick={handleClick}
     >
-      freee連携
+      {label}
     </Button>
   );
 };

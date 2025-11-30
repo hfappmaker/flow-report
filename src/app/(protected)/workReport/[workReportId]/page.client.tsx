@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import ExcelJS from "exceljs";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Resolver, useForm } from "react-hook-form";
@@ -38,6 +37,7 @@ import {
   formatWorkTime,
   formatAmount,
 } from "@/features/contract/utils/contract-calculation-utils";
+import { createFreeeInvoiceFromWorkReportAction } from "@/features/freee/actions/freee-invoice-actions";
 import { updateWorkReportAttendanceAction } from "@/features/work-report/actions/attendance";
 import {
   updateWorkReportAttendancesAction,
@@ -50,20 +50,18 @@ import {
   ExportDialog,
   type ExportResult,
 } from "@/features/work-report/components/export-dialog";
-import { FreeeConnectionButton } from "@/features/work-report/components/freee-connection-button";
-import { FreeeInvoiceDialog } from "@/features/work-report/components/freee-invoice-dialog";
 import { FreeeReauthDialog } from "@/features/work-report/components/freee-reauth-dialog";
 import { RemarksEditDialog } from "@/features/work-report/components/remarks-edit-dialog";
 import { useFreeeConnection } from "@/features/work-report/hooks/use-freee-connection";
 import { useFreeePartners } from "@/features/work-report/hooks/use-freee-partners";
 import { generateWorkReportExcel } from "@/features/work-report/libs/excel-report-generator";
-import type { ExportFile } from "@/features/work-report/types/export-types";
 import {
   type EditFormValues,
   type BulkEditFormValues,
   bulkEditFormSchema,
 } from "@/features/work-report/schemas/work-report-form-schemas";
 import { type AttendanceData } from "@/features/work-report/types/attendance";
+import type { ExportFile } from "@/features/work-report/types/export-types";
 import {
   type WorkReportClientProps,
   type WorkReportStatus,
@@ -82,8 +80,8 @@ import {
   formatTimeInput,
   formatBreakDuration,
 } from "@/features/work-report/utils/date-formatting";
-import type { InvoiceContractData } from "@/features/work-report/utils/placeholder-utils";
 import { buildWorkReportMailtoUrl } from "@/features/work-report/utils/mailto-url-builder";
+import type { InvoiceContractData } from "@/features/work-report/utils/placeholder-utils";
 import { useMessageState } from "@/hooks/use-message-state";
 import { formatDateAsUTC } from "@/utils/date-utils";
 
@@ -129,7 +127,9 @@ export default function ClientWorkReportPage({
   const [defaultValuesForEdit, setDefaultValuesForEdit] = useState<
     Partial<EditFormValues> | undefined
   >(undefined);
-  const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
+
+  const [status, setStatus] = useState<WorkReportStatus>(initialStatus);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
 
   // freee連携状態管理
   const {
@@ -147,18 +147,15 @@ export default function ClientWorkReportPage({
     setSelectedPartnerId,
     isLoadingPartners,
   } = useFreeePartners({
-    isDialogOpen: isInvoiceDialogOpen,
+    isDialogOpen: isExportDialogOpen,
     isFreeeConnected,
     clientName,
     onConnectionLost: () => {
       setIsFreeeConnected(false);
-      setIsInvoiceDialogOpen(false);
+      setIsExportDialogOpen(false);
       setShowReauthDialog(true);
     },
   });
-
-  const [status, setStatus] = useState<WorkReportStatus>(initialStatus);
-  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [remarks, setRemarks] = useState<string>(initialRemarks ?? "");
   const [isRemarksDialogOpen, setIsRemarksDialogOpen] = useState(false);
   const [workReportTemplates, setWorkReportTemplates] = useState<
@@ -511,6 +508,53 @@ export default function ClientWorkReportPage({
     ],
   );
 
+  // freee請求書作成処理
+  const handleCreateFreeeInvoice = useCallback(async () => {
+    if (!selectedPartnerId) {
+      showError("取引先を選択してください");
+      return;
+    }
+
+    const result = await createFreeeInvoiceFromWorkReportAction(
+      workReportId,
+      selectedPartnerId,
+    );
+
+    if (result.success) {
+      showSuccess(result.message);
+      if (result.invoiceUrl) {
+        // 請求書URLをクリップボードにコピー（エラーが発生しても継続）
+        try {
+          await navigator.clipboard.writeText(result.invoiceUrl);
+          showSuccess("請求書URLをクリップボードにコピーしました");
+        } catch (clipboardError) {
+          console.warn("Failed to copy to clipboard:", clipboardError);
+          // クリップボードエラーは致命的ではないので処理を継続
+        }
+
+        // freee請求書ページを新しいタブで開く
+        window.open(result.invoiceUrl, "_blank");
+      }
+    } else {
+      // 再連携が必要な場合
+      if (result.requiresReauth) {
+        showError(result.message);
+        setIsFreeeConnected(false);
+        setIsExportDialogOpen(false);
+        setShowReauthDialog(true);
+      } else {
+        showError(result.message);
+      }
+    }
+  }, [
+    selectedPartnerId,
+    workReportId,
+    showError,
+    showSuccess,
+    setIsFreeeConnected,
+    setShowReauthDialog,
+  ]);
+
   // メール送信用の関数
   const createReportAndSendEmail = () => {
     try {
@@ -659,22 +703,6 @@ export default function ClientWorkReportPage({
               }}
             >
               エクスポート
-            </Button>
-            <FreeeConnectionButton
-              disabled={status !== "SUBMITTED"}
-              onConnectionStart={() => {
-                setManualPending(true);
-              }}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              disabled={status !== "SUBMITTED"}
-              onClick={() => {
-                setIsInvoiceDialogOpen(true);
-              }}
-            >
-              請求書作成
             </Button>
             <Button
               type="button"
@@ -1035,29 +1063,6 @@ export default function ClientWorkReportPage({
         holidays={holidays}
       />
 
-      {/* 請求書作成ダイアログ */}
-      <FreeeInvoiceDialog
-        open={isInvoiceDialogOpen}
-        onOpenChange={setIsInvoiceDialogOpen}
-        isFreeeConnected={isFreeeConnected}
-        isCheckingFreeeConnection={isCheckingFreeeConnection}
-        partners={partners}
-        selectedPartnerId={selectedPartnerId}
-        onPartnerIdChange={setSelectedPartnerId}
-        isLoadingPartners={isLoadingPartners}
-        workReportId={workReportId}
-        targetDate={targetDate}
-        clientName={clientName}
-        workTimeText={workTimeText}
-        baseAmount={amountCalculation?.baseAmount ?? 0}
-        taxAmount={amountCalculation?.taxAmount ?? 0}
-        onConnectionLost={() => {
-          setIsFreeeConnected(false);
-          setIsInvoiceDialogOpen(false);
-          setShowReauthDialog(true);
-        }}
-      />
-
       {/* freee再連携促進ダイアログ */}
       <FreeeReauthDialog
         open={showReauthDialog}
@@ -1072,6 +1077,22 @@ export default function ClientWorkReportPage({
         invoiceTemplates={invoiceTemplates}
         targetDate={targetDate}
         userName={userName}
+        // freee関連props
+        isFreeeConnected={isFreeeConnected}
+        isCheckingFreeeConnection={isCheckingFreeeConnection}
+        partners={partners}
+        selectedPartnerId={selectedPartnerId}
+        onPartnerIdChange={setSelectedPartnerId}
+        isLoadingPartners={isLoadingPartners}
+        workReportId={workReportId}
+        clientName={clientName}
+        workTimeText={workTimeText}
+        baseAmount={amountCalculation?.baseAmount ?? 0}
+        taxAmount={amountCalculation?.taxAmount ?? 0}
+        onFreeeInvoiceCreate={handleCreateFreeeInvoice}
+        onConnectionStart={() => {
+          setManualPending(true);
+        }}
       />
 
       {/* 備考編集ダイアログ */}

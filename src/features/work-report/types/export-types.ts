@@ -1,11 +1,17 @@
 import type { TemplateType } from "@prisma/client";
 
 /**
+ * エクスポートタブの種類
+ */
+export type ExportTabType = "excel" | "freee";
+
+/**
  * エクスポート設定（localStorageに保存）
  */
 export interface ExportSettings {
   workReportTemplateId: string | null;
   invoiceTemplateId: string | null;
+  activeTab: ExportTabType;
 }
 
 /**
