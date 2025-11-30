@@ -246,7 +246,7 @@ interface YearMonthPickerFieldProps<T extends FieldValues> {
 
 interface YearMonthPickerContentProps {
   field: {
-    value: Date | null;
+    value: Date | null | undefined;
     onChange: (value: Date | null) => void;
   };
   yearPlaceholder: string;
