@@ -1,3 +1,5 @@
+import type { TemplateType } from "@prisma/client";
+
 import type {
   CreateWorkReportTemplateInput,
   UpdateWorkReportTemplateInput,
@@ -13,11 +15,24 @@ export class WorkReportTemplateError extends Error {
 
 export class WorkReportTemplateRepository {
   /**
-   * ユーザーIDに紐づく作業報告書テンプレート一覧を取得
+   * ユーザーIDに紐づくテンプレート一覧を取得
    */
   async getByCreateUserId(createUserId: string) {
     return await db.workReportTemplate.findMany({
       where: { createUserId },
+      include: {
+        fieldMappings: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  /**
+   * ユーザーIDとタイプに紐づくテンプレート一覧を取得
+   */
+  async getByCreateUserIdAndType(createUserId: string, type: TemplateType) {
+    return await db.workReportTemplate.findMany({
+      where: { createUserId, type },
       include: {
         fieldMappings: true,
       },
@@ -112,6 +127,26 @@ export class WorkReportTemplateRepository {
       where: {
         name,
         createUserId,
+        ...(excludeId ? { id: { not: excludeId } } : {}),
+      },
+    });
+    return template !== null;
+  }
+
+  /**
+   * 同じユーザー・タイプで同じ名前のテンプレートが存在するか確認
+   */
+  async existsByNameAndUserIdAndType(
+    name: string,
+    createUserId: string,
+    type: TemplateType,
+    excludeId?: string,
+  ) {
+    const template = await db.workReportTemplate.findFirst({
+      where: {
+        name,
+        createUserId,
+        type,
         ...(excludeId ? { id: { not: excludeId } } : {}),
       },
     });

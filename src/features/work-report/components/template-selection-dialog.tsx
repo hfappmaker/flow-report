@@ -241,7 +241,7 @@ export function TemplateSelectionDialog({
               <p className="text-sm text-muted-foreground">
                 カスタムテンプレートが登録されていません。
               </p>
-              <Link href="/work-report-templates">
+              <Link href="/templates">
                 <Button variant="link" size="sm" className="mt-2">
                   <Settings className="mr-1 size-4" />
                   テンプレート管理画面へ
@@ -258,7 +258,7 @@ export function TemplateSelectionDialog({
         </div>
 
         <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
-          <Link href="/work-report-templates">
+          <Link href="/templates">
             <Button variant="ghost" size="sm" type="button">
               <Settings className="mr-1 size-4" />
               テンプレート管理
