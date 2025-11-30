@@ -247,7 +247,6 @@ model ExcelTemplate {
   updatedAt     DateTime             @updatedAt
 
   @@unique([name, createUserId, type])
-  @@map("WorkReportTemplate")
 }
 
 model ExcelTemplateField {
@@ -261,5 +260,4 @@ model ExcelTemplateField {
   updatedAt     DateTime      @updatedAt
 
   @@unique([templateId, namedRange])
-  @@map("WorkReportTemplateField")
 }
