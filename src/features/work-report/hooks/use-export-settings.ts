@@ -5,11 +5,13 @@ import { useCallback, useEffect, useState } from "react";
 import {
   EXPORT_SETTINGS_KEY,
   type ExportSettings,
+  type ExportTabType,
 } from "@/features/work-report/types/export-types";
 
 const DEFAULT_SETTINGS: ExportSettings = {
   workReportTemplateId: null,
   invoiceTemplateId: null,
+  activeTab: "excel",
 };
 
 /**
@@ -28,6 +30,7 @@ export function useExportSettings() {
         setSettings({
           workReportTemplateId: parsed.workReportTemplateId ?? null,
           invoiceTemplateId: parsed.invoiceTemplateId ?? null,
+          activeTab: parsed.activeTab ?? "excel",
         });
       }
     } catch (error) {
@@ -69,10 +72,19 @@ export function useExportSettings() {
     [updateSettings],
   );
 
+  // アクティブタブを更新
+  const setActiveTab = useCallback(
+    (tab: ExportTabType) => {
+      updateSettings({ activeTab: tab });
+    },
+    [updateSettings],
+  );
+
   return {
     settings,
     isLoaded,
     setWorkReportTemplateId,
     setInvoiceTemplateId,
+    setActiveTab,
   };
 }

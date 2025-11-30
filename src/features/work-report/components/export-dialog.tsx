@@ -1,7 +1,13 @@
 "use client";
 
 import ExcelJS from "exceljs";
-import { Download, FileSpreadsheet, FileText, Lock, Archive } from "lucide-react";
+import {
+  Download,
+  FileSpreadsheet,
+  FileText,
+  Lock,
+  Archive,
+} from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -23,12 +29,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { formatAmount } from "@/features/contract/utils/contract-calculation-utils";
+import type { FreeePartner } from "@/features/freee/types/freee-accounting-types";
 import { useExportSettings } from "@/features/work-report/hooks/use-export-settings";
 import {
   formatZipFileName,
   generateZipFile,
 } from "@/features/work-report/libs/zip-generator";
-import type { ExportFile } from "@/features/work-report/types/export-types";
+import type {
+  ExportFile,
+  ExportTabType,
+} from "@/features/work-report/types/export-types";
 import type { ExcelTemplateWithFields } from "@/features/work-report/types/work-report-template";
 
 /**
@@ -59,6 +71,19 @@ interface ExportDialogProps {
   invoiceTemplates: ExcelTemplateWithFields[];
   targetDate: Date;
   userName: string;
+  // freee関連props
+  isFreeeConnected: boolean;
+  isCheckingFreeeConnection: boolean;
+  partners: FreeePartner[];
+  selectedPartnerId: number | undefined;
+  onPartnerIdChange: (partnerId: number) => void;
+  isLoadingPartners: boolean;
+  workReportId: string;
+  clientName: string;
+  workTimeText: string;
+  baseAmount: number;
+  taxAmount: number;
+  onFreeeInvoiceCreate: () => Promise<void>;
 }
 
 /**
@@ -81,9 +106,26 @@ export function ExportDialog({
   invoiceTemplates,
   targetDate,
   userName,
+  // freee関連props
+  isFreeeConnected,
+  isCheckingFreeeConnection,
+  partners,
+  selectedPartnerId,
+  onPartnerIdChange,
+  isLoadingPartners,
+  clientName,
+  workTimeText,
+  baseAmount,
+  taxAmount,
+  onFreeeInvoiceCreate,
 }: ExportDialogProps) {
-  const { settings, isLoaded, setWorkReportTemplateId, setInvoiceTemplateId } =
-    useExportSettings();
+  const {
+    settings,
+    isLoaded,
+    setWorkReportTemplateId,
+    setInvoiceTemplateId,
+    setActiveTab,
+  } = useExportSettings();
 
   // ダイアログ状態
   const [isWorkReportEnabled, setIsWorkReportEnabled] = useState(true);
@@ -99,6 +141,10 @@ export function ExportDialog({
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  // タブ状態
+  const [activeTab, setActiveTabState] = useState<ExportTabType>("excel");
+  // freee請求書作成状態
+  const [isCreatingFreeeInvoice, setIsCreatingFreeeInvoice] = useState(false);
 
   // localStorageから設定を復元
   useEffect(() => {
@@ -121,6 +167,8 @@ export function ExportDialog({
           setIsInvoiceEnabled(true);
         }
       }
+      // タブ状態を復元
+      setActiveTabState(settings.activeTab);
     }
   }, [isLoaded, settings, workReportTemplates, invoiceTemplates]);
 
@@ -162,6 +210,42 @@ export function ExportDialog({
     },
     [setInvoiceTemplateId],
   );
+
+  // タブ変更時にlocalStorageに保存
+  const handleTabChange = useCallback(
+    (value: string) => {
+      const tab = value as ExportTabType;
+      setActiveTabState(tab);
+      setActiveTab(tab);
+      setError("");
+    },
+    [setActiveTab],
+  );
+
+  // freee請求書作成処理
+  const handleCreateFreeeInvoice = useCallback(async () => {
+    if (!selectedPartnerId) {
+      setError("取引先を選択してください。");
+      return;
+    }
+
+    setIsCreatingFreeeInvoice(true);
+    setError("");
+
+    try {
+      await onFreeeInvoiceCreate();
+      onOpenChange(false);
+    } catch (err) {
+      console.error("Failed to create freee invoice:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "請求書の作成中にエラーが発生しました。",
+      );
+    } finally {
+      setIsCreatingFreeeInvoice(false);
+    }
+  }, [selectedPartnerId, onFreeeInvoiceCreate, onOpenChange]);
 
   // ファイルダウンロード処理
   const downloadFile = useCallback((blob: Blob, fileName: string) => {
@@ -288,209 +372,309 @@ export function ExportDialog({
     (t) => t.id === invoiceTemplateId,
   );
 
+  const isExcelExportDisabled =
+    isProcessing ||
+    (!isWorkReportEnabled && !isInvoiceEnabled) ||
+    (isWorkReportEnabled &&
+      workReportTemplates.length > 0 &&
+      !workReportTemplateId) ||
+    (isInvoiceEnabled && invoiceTemplates.length > 0 && !invoiceTemplateId);
+
+  const isFreeeCreateDisabled =
+    isCreatingFreeeInvoice ||
+    !isFreeeConnected ||
+    isCheckingFreeeConnection ||
+    !selectedPartnerId;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Download className="size-5" />
             エクスポート
           </DialogTitle>
-          <DialogDescription>
-            出力するファイルとテンプレートを選択してください。
-          </DialogDescription>
+          <DialogDescription>出力方法を選択してください。</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-5 py-4">
-          {/* 作業報告書 */}
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="workReport"
-                checked={isWorkReportEnabled}
-                onCheckedChange={(checked) => {
-                  setIsWorkReportEnabled(checked === true);
-                }}
-              />
-              <Label
-                htmlFor="workReport"
-                className="flex cursor-pointer items-center gap-2"
-              >
-                <FileSpreadsheet className="size-4" />
-                作業報告書
-              </Label>
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="excel" className="flex items-center gap-2">
+              <FileSpreadsheet className="size-4" />
+              Excelエクスポート
+            </TabsTrigger>
+            <TabsTrigger value="freee" className="flex items-center gap-2">
+              freee請求書
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Excelエクスポートタブ */}
+          <TabsContent value="excel" className="space-y-5 py-4">
+            {/* 作業報告書 */}
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="workReport"
+                  checked={isWorkReportEnabled}
+                  onCheckedChange={(checked) => {
+                    setIsWorkReportEnabled(checked === true);
+                  }}
+                />
+                <Label
+                  htmlFor="workReport"
+                  className="flex cursor-pointer items-center gap-2"
+                >
+                  <FileSpreadsheet className="size-4" />
+                  作業報告書
+                </Label>
+              </div>
+              {isWorkReportEnabled && (
+                <div className="space-y-2 pl-6">
+                  <Label htmlFor="workReportTemplate">テンプレート</Label>
+                  {workReportTemplates.length > 0 ? (
+                    <>
+                      <Select
+                        value={workReportTemplateId ?? ""}
+                        onValueChange={handleWorkReportTemplateChange}
+                      >
+                        <SelectTrigger id="workReportTemplate">
+                          <SelectValue placeholder="テンプレートを選択" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {workReportTemplates.map((template) => (
+                            <SelectItem key={template.id} value={template.id}>
+                              <div className="flex items-center gap-2">
+                                <FileSpreadsheet className="size-4" />
+                                <span>{template.name}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {selectedWorkReportTemplate && (
+                        <div className="text-xs text-muted-foreground">
+                          {selectedWorkReportTemplate.fileName}
+                          {selectedWorkReportTemplate.sheetName &&
+                            ` (${selectedWorkReportTemplate.sheetName})`}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="rounded-md border border-dashed border-gray-300 p-3 text-center text-sm text-muted-foreground">
+                      テンプレートが登録されていません
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-            {isWorkReportEnabled && (
-              <div className="space-y-2 pl-6">
-                <Label htmlFor="workReportTemplate">テンプレート</Label>
-                {workReportTemplates.length > 0 ? (
-                  <>
-                    <Select
-                      value={workReportTemplateId ?? ""}
-                      onValueChange={handleWorkReportTemplateChange}
+
+            {/* 請求書 */}
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="invoice"
+                  checked={isInvoiceEnabled}
+                  onCheckedChange={(checked) => {
+                    setIsInvoiceEnabled(checked === true);
+                  }}
+                />
+                <Label
+                  htmlFor="invoice"
+                  className="flex cursor-pointer items-center gap-2"
+                >
+                  <FileText className="size-4" />
+                  請求書
+                </Label>
+              </div>
+              {isInvoiceEnabled && (
+                <div className="space-y-2 pl-6">
+                  <Label htmlFor="invoiceTemplate">テンプレート</Label>
+                  {invoiceTemplates.length > 0 ? (
+                    <>
+                      <Select
+                        value={invoiceTemplateId ?? ""}
+                        onValueChange={handleInvoiceTemplateChange}
+                      >
+                        <SelectTrigger id="invoiceTemplate">
+                          <SelectValue placeholder="テンプレートを選択" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {invoiceTemplates.map((template) => (
+                            <SelectItem key={template.id} value={template.id}>
+                              <div className="flex items-center gap-2">
+                                <FileText className="size-4" />
+                                <span>{template.name}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {selectedInvoiceTemplate && (
+                        <div className="text-xs text-muted-foreground">
+                          {selectedInvoiceTemplate.fileName}
+                          {selectedInvoiceTemplate.sheetName &&
+                            ` (${selectedInvoiceTemplate.sheetName})`}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="rounded-md border border-dashed border-gray-300 p-3 text-center text-sm text-muted-foreground">
+                      テンプレートが登録されていません
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* 区切り線 */}
+            <div className="border-t" />
+
+            {/* ZIP圧縮オプション */}
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="zip"
+                  checked={isZipEnabled}
+                  onCheckedChange={(checked) => {
+                    setIsZipEnabled(checked === true);
+                    if (!checked) {
+                      setIsPasswordEnabled(false);
+                      setPassword("");
+                    }
+                  }}
+                />
+                <Label
+                  htmlFor="zip"
+                  className="flex cursor-pointer items-center gap-2"
+                >
+                  <Archive className="size-4" />
+                  ZIPに圧縮する
+                </Label>
+              </div>
+
+              {isZipEnabled && (
+                <div className="space-y-3 pl-6">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="password"
+                      checked={isPasswordEnabled}
+                      onCheckedChange={(checked) => {
+                        setIsPasswordEnabled(checked === true);
+                        if (!checked) {
+                          setPassword("");
+                        }
+                      }}
+                    />
+                    <Label
+                      htmlFor="password"
+                      className="flex cursor-pointer items-center gap-2"
                     >
-                      <SelectTrigger id="workReportTemplate">
-                        <SelectValue placeholder="テンプレートを選択" />
+                      <Lock className="size-4" />
+                      パスワードを設定する
+                    </Label>
+                  </div>
+
+                  {isPasswordEnabled && (
+                    <div className="space-y-2">
+                      <Label htmlFor="passwordInput">パスワード</Label>
+                      <Input
+                        id="passwordInput"
+                        type="password"
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                        }}
+                        placeholder="パスワードを入力"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* freee請求書タブ */}
+          <TabsContent value="freee" className="space-y-4 py-4">
+            {isCheckingFreeeConnection ? (
+              <p className="text-center text-muted-foreground">
+                freee連携状態を確認中...
+              </p>
+            ) : !isFreeeConnected ? (
+              <div className="space-y-2">
+                <p className="text-muted-foreground">
+                  freeeとの連携が必要です。
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  freeeアカウントと連携すると、作業報告書から請求書を作成できます。
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="partner-select">取引先（必須）</Label>
+                  {isLoadingPartners ? (
+                    <p className="text-sm text-muted-foreground">
+                      取引先を読み込み中...
+                    </p>
+                  ) : (
+                    <Select
+                      value={selectedPartnerId?.toString()}
+                      onValueChange={(value) => {
+                        onPartnerIdChange(parseInt(value, 10));
+                      }}
+                    >
+                      <SelectTrigger id="partner-select">
+                        <SelectValue placeholder="取引先を選択してください" />
                       </SelectTrigger>
                       <SelectContent>
-                        {workReportTemplates.map((template) => (
-                          <SelectItem key={template.id} value={template.id}>
-                            <div className="flex items-center gap-2">
-                              <FileSpreadsheet className="size-4" />
-                              <span>{template.name}</span>
-                            </div>
+                        {partners.map((partner) => (
+                          <SelectItem
+                            key={partner.id}
+                            value={partner.id.toString()}
+                          >
+                            {partner.name}
+                            {partner.code ? ` (${partner.code})` : ""}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {selectedWorkReportTemplate && (
-                      <div className="text-xs text-muted-foreground">
-                        {selectedWorkReportTemplate.fileName}
-                        {selectedWorkReportTemplate.sheetName &&
-                          ` (${selectedWorkReportTemplate.sheetName})`}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="rounded-md border border-dashed border-gray-300 p-3 text-center text-sm text-muted-foreground">
-                    テンプレートが登録されていません
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* 請求書 */}
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="invoice"
-                checked={isInvoiceEnabled}
-                onCheckedChange={(checked) => {
-                  setIsInvoiceEnabled(checked === true);
-                }}
-              />
-              <Label
-                htmlFor="invoice"
-                className="flex cursor-pointer items-center gap-2"
-              >
-                <FileText className="size-4" />
-                請求書
-              </Label>
-            </div>
-            {isInvoiceEnabled && (
-              <div className="space-y-2 pl-6">
-                <Label htmlFor="invoiceTemplate">テンプレート</Label>
-                {invoiceTemplates.length > 0 ? (
-                  <>
-                    <Select
-                      value={invoiceTemplateId ?? ""}
-                      onValueChange={handleInvoiceTemplateChange}
-                    >
-                      <SelectTrigger id="invoiceTemplate">
-                        <SelectValue placeholder="テンプレートを選択" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {invoiceTemplates.map((template) => (
-                          <SelectItem key={template.id} value={template.id}>
-                            <div className="flex items-center gap-2">
-                              <FileText className="size-4" />
-                              <span>{template.name}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {selectedInvoiceTemplate && (
-                      <div className="text-xs text-muted-foreground">
-                        {selectedInvoiceTemplate.fileName}
-                        {selectedInvoiceTemplate.sheetName &&
-                          ` (${selectedInvoiceTemplate.sheetName})`}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="rounded-md border border-dashed border-gray-300 p-3 text-center text-sm text-muted-foreground">
-                    テンプレートが登録されていません
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* 区切り線 */}
-          <div className="border-t" />
-
-          {/* ZIP圧縮オプション */}
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="zip"
-                checked={isZipEnabled}
-                onCheckedChange={(checked) => {
-                  setIsZipEnabled(checked === true);
-                  if (!checked) {
-                    setIsPasswordEnabled(false);
-                    setPassword("");
-                  }
-                }}
-              />
-              <Label
-                htmlFor="zip"
-                className="flex cursor-pointer items-center gap-2"
-              >
-                <Archive className="size-4" />
-                ZIPに圧縮する
-              </Label>
-            </div>
-
-            {isZipEnabled && (
-              <div className="space-y-3 pl-6">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="password"
-                    checked={isPasswordEnabled}
-                    onCheckedChange={(checked) => {
-                      setIsPasswordEnabled(checked === true);
-                      if (!checked) {
-                        setPassword("");
-                      }
-                    }}
-                  />
-                  <Label
-                    htmlFor="password"
-                    className="flex cursor-pointer items-center gap-2"
-                  >
-                    <Lock className="size-4" />
-                    パスワードを設定する
-                  </Label>
+                  )}
                 </div>
 
-                {isPasswordEnabled && (
-                  <div className="space-y-2">
-                    <Label htmlFor="passwordInput">パスワード</Label>
-                    <Input
-                      id="passwordInput"
-                      type="password"
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                      }}
-                      placeholder="パスワードを入力"
-                    />
-                  </div>
-                )}
+                <div className="space-y-2">
+                  <p className="text-muted-foreground">
+                    以下の内容でfreee請求書を作成します：
+                  </p>
+                  <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                    <li>
+                      対象月: {targetDate.getFullYear()}年
+                      {targetDate.getMonth() + 1}月度
+                    </li>
+                    <li>
+                      取引先:{" "}
+                      {selectedPartnerId
+                        ? (partners.find((p) => p.id === selectedPartnerId)
+                            ?.name ?? clientName)
+                        : "未選択"}
+                    </li>
+                    <li>総稼働時間: {workTimeText}</li>
+                    <li>金額: {formatAmount(baseAmount + taxAmount)}</li>
+                  </ul>
+                  <p className="text-xs text-muted-foreground">
+                    ※ freee上でドラフト（下書き）として作成されます
+                  </p>
+                </div>
               </div>
             )}
-          </div>
+          </TabsContent>
+        </Tabs>
 
-          {/* エラー表示 */}
-          {error && (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-              {error}
-            </div>
-          )}
-        </div>
+        {/* エラー表示 */}
+        {error && (
+          <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+            {error}
+          </div>
+        )}
 
         <DialogFooter>
           <Button
@@ -498,25 +682,22 @@ export function ExportDialog({
             onClick={() => {
               onOpenChange(false);
             }}
-            disabled={isProcessing}
+            disabled={isProcessing || isCreatingFreeeInvoice}
           >
             キャンセル
           </Button>
-          <Button
-            onClick={handleExport}
-            disabled={
-              isProcessing ||
-              (!isWorkReportEnabled && !isInvoiceEnabled) ||
-              (isWorkReportEnabled &&
-                workReportTemplates.length > 0 &&
-                !workReportTemplateId) ||
-              (isInvoiceEnabled &&
-                invoiceTemplates.length > 0 &&
-                !invoiceTemplateId)
-            }
-          >
-            {isProcessing ? "処理中..." : "エクスポート"}
-          </Button>
+          {activeTab === "excel" ? (
+            <Button onClick={handleExport} disabled={isExcelExportDisabled}>
+              {isProcessing ? "処理中..." : "エクスポート"}
+            </Button>
+          ) : (
+            <Button
+              onClick={handleCreateFreeeInvoice}
+              disabled={isFreeeCreateDisabled}
+            >
+              {isCreatingFreeeInvoice ? "作成中..." : "作成"}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
