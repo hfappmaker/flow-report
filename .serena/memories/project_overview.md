@@ -27,4 +27,5 @@
 - freee: freee API連携
 - holidays: 祝日管理
 - subscription: サブスクリプション管理 (Stripe)
+- user-settings: ユーザー設定
 - work-report: 作業報告書

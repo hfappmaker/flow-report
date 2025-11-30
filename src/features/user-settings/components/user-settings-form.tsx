@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -8,7 +8,6 @@ import ErrorAlert from "@/components/ui/feedback/error-alert";
 import SuccessAlert from "@/components/ui/feedback/success-alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Spinner } from "@/components/ui/loading/spinner";
 import {
   Select,
   SelectContent,
@@ -16,43 +15,46 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  getUserSettings,
-  updateUserSettings,
-} from "@/features/user-settings/actions/update-user-settings";
+import { updateUserSettings } from "@/features/user-settings/actions/update-user-settings";
 import { BANK_ACCOUNT_TYPES } from "@/features/user-settings/schemas/user-settings-form-schema";
 
-export function UserSettingsForm() {
+type UserSettings = {
+  postalCode: string;
+  address: string;
+  bankName: string;
+  bankBranchName: string;
+  bankAccountType: "普通" | "当座" | null;
+  bankAccountNumber: string;
+  bankAccountHolder: string;
+};
+
+type UserSettingsFormProps = {
+  initialSettings: UserSettings | null;
+};
+
+export function UserSettingsForm({ initialSettings }: UserSettingsFormProps) {
   const [isPending, startTransition] = useTransition();
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   // フォームの状態
-  const [postalCode, setPostalCode] = useState("");
-  const [address, setAddress] = useState("");
-  const [bankName, setBankName] = useState("");
-  const [bankBranchName, setBankBranchName] = useState("");
-  const [bankAccountType, setBankAccountType] = useState<string>("");
-  const [bankAccountNumber, setBankAccountNumber] = useState("");
-  const [bankAccountHolder, setBankAccountHolder] = useState("");
-
-  useEffect(() => {
-    const loadSettings = async () => {
-      const settings = await getUserSettings();
-      if (settings) {
-        setPostalCode(settings.postalCode);
-        setAddress(settings.address);
-        setBankName(settings.bankName);
-        setBankBranchName(settings.bankBranchName);
-        setBankAccountType(settings.bankAccountType ?? "");
-        setBankAccountNumber(settings.bankAccountNumber);
-        setBankAccountHolder(settings.bankAccountHolder);
-      }
-      setIsLoading(false);
-    };
-    loadSettings();
-  }, []);
+  const [postalCode, setPostalCode] = useState(
+    initialSettings?.postalCode ?? "",
+  );
+  const [address, setAddress] = useState(initialSettings?.address ?? "");
+  const [bankName, setBankName] = useState(initialSettings?.bankName ?? "");
+  const [bankBranchName, setBankBranchName] = useState(
+    initialSettings?.bankBranchName ?? "",
+  );
+  const [bankAccountType, setBankAccountType] = useState<string>(
+    initialSettings?.bankAccountType ?? "",
+  );
+  const [bankAccountNumber, setBankAccountNumber] = useState(
+    initialSettings?.bankAccountNumber ?? "",
+  );
+  const [bankAccountHolder, setBankAccountHolder] = useState(
+    initialSettings?.bankAccountHolder ?? "",
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,10 +82,6 @@ export function UserSettingsForm() {
       }
     });
   };
-
-  if (isLoading) {
-    return <Spinner />;
-  }
 
   return (
     <Card className="w-auto shadow-sm">

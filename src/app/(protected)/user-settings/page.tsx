@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 
+import { getUserSettings } from "@/features/user-settings/actions/update-user-settings";
 import { UserSettingsForm } from "@/features/user-settings/components/user-settings-form";
 
 export const metadata: Metadata = {
@@ -7,6 +8,8 @@ export const metadata: Metadata = {
   description: "ユーザー設定",
 };
 
-export default function UserSettingsPage() {
-  return <UserSettingsForm />;
+export default async function UserSettingsPage() {
+  const settings = await getUserSettings();
+
+  return <UserSettingsForm initialSettings={settings} />;
 }
