@@ -4,7 +4,6 @@ import {
   calculateWorkingDays,
 } from "@/features/contract/utils/contract-calculation-utils";
 import type { WorkReportExcelData } from "@/features/work-report/libs/excel-report-generator";
-import { formatWorkReportMonth } from "@/features/work-report/utils/date-formatting";
 
 /**
  * プレースホルダー定義
@@ -21,10 +20,16 @@ export interface PlaceholderDefinition {
  */
 export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
   {
-    key: "タイトル",
-    label: "タイトル",
-    description: "対象月の作業報告書タイトル（例: 2025年1月度作業報告書）",
-    example: "2025年1月度作業報告書",
+    key: "対象年",
+    label: "対象年",
+    description: "対象月の年度（例: 2025）",
+    example: "2025",
+  },
+  {
+    key: "対象月",
+    label: "対象月",
+    description: "対象月の月（例: 1）",
+    example: "1",
   },
   {
     key: "作業者名",
@@ -51,16 +56,16 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
     example: "1:00",
   },
   {
-    key: "1日あたりの作業単位",
-    label: "1日あたりの作業単位",
-    description: "契約の日次作業単位（例: 480分）",
-    example: "480分",
+    key: "1日あたりの作業単位(分)",
+    label: "1日あたりの作業単位(分)",
+    description: "契約の日次作業単位（例: 0:15）",
+    example: "0:15",
   },
   {
-    key: "1ヶ月あたりの作業単位",
-    label: "1ヶ月あたりの作業単位",
-    description: "契約の月次作業単位（例: 10080分）",
-    example: "10080分",
+    key: "1ヶ月あたりの作業単位(分)",
+    label: "1ヶ月あたりの作業単位(分)",
+    description: "契約の月次作業単位（例: 0:30）",
+    example: "0:30",
   },
   {
     key: "備考",
@@ -100,7 +105,7 @@ function formatTimeString(date: Date | null): string {
   if (!date) return "";
   const hours = date.getUTCHours();
   const minutes = date.getUTCMinutes();
-  return `${hours}:${String(minutes).padStart(2, "0")}`;
+  return `${String(hours)}:${String(minutes).padStart(2, "0")}`;
 }
 
 /**
@@ -110,7 +115,7 @@ function formatMinutesToTimeString(minutes: number | null): string {
   if (minutes === null) return "";
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  return `${hours}:${String(mins).padStart(2, "0")}`;
+  return `${String(hours)}:${String(mins).padStart(2, "0")}`;
 }
 
 /**
@@ -133,7 +138,8 @@ export function generatePlaceholderValues(
   const workingDays = calculateWorkingDays(data.attendances);
 
   return {
-    タイトル: formatWorkReportMonth(data.targetDate),
+    対象年: String(data.targetDate.getFullYear()),
+    対象月: String(data.targetDate.getMonth() + 1),
     作業者名: data.userName,
     基本開始時刻: formatTimeString(data.basicStartTime),
     基本終了時刻: formatTimeString(data.basicEndTime),
@@ -141,10 +147,10 @@ export function generatePlaceholderValues(
       ? formatMinutesToTimeString(data.basicBreakDuration)
       : "",
     "1日あたりの作業単位": data.dailyWorkMinutes
-      ? `${String(data.dailyWorkMinutes)}分`
+      ? formatMinutesToTimeString(data.dailyWorkMinutes)
       : "",
     "1ヶ月あたりの作業単位": data.monthlyWorkMinutes
-      ? `${String(data.monthlyWorkMinutes)}分`
+      ? formatMinutesToTimeString(data.monthlyWorkMinutes)
       : "",
     備考: data.remarks ?? "",
     総稼働時間: formatMinutesToTimeString(totalWorkMinutes),
@@ -166,8 +172,10 @@ export function replacePlaceholders(
 ): string {
   // 日本語キーも含むプレースホルダーパターン
   return template.replace(/\${([^}]+)}/g, (match, key: string) => {
-    const value = values[key];
-    return value ?? match;
+    if (key in values) {
+      return values[key];
+    }
+    return match;
   });
 }
 
