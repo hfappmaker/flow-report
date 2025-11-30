@@ -1,6 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import ExcelJS from "exceljs";
+import { FileSpreadsheet, Upload, Settings } from "lucide-react";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,85 +14,77 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Input } from "@/components/ui/input";
-import { FileSpreadsheet, Upload, Trash2 } from "lucide-react";
-import ExcelJS from "exceljs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { WorkReportTemplateWithFields } from "@/features/work-report/types/work-report-template";
 
-const TEMPLATE_STORAGE_KEY = "workReportCustomTemplate";
-const TEMPLATE_NAME_STORAGE_KEY = "workReportCustomTemplateName";
+/**
+ * テンプレート選択時に返却する情報
+ */
+export interface TemplateSelectionResult {
+  workbook: ExcelJS.Workbook;
+  fieldMappings: WorkReportTemplateWithFields["fieldMappings"];
+  sheetName: string | null;
+}
 
 interface TemplateSelectionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (workbook: ExcelJS.Workbook | null) => Promise<void>;
+  onConfirm: (result: TemplateSelectionResult | null) => Promise<void>;
+  customTemplates: WorkReportTemplateWithFields[];
+}
+
+/**
+ * Base64文字列をUint8Arrayに変換
+ */
+function base64ToUint8Array(base64: string): Uint8Array {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
 }
 
 export function TemplateSelectionDialog({
   open,
   onOpenChange,
   onConfirm,
+  customTemplates,
 }: TemplateSelectionDialogProps) {
   const [templateType, setTemplateType] = useState<"default" | "custom">(
     "default",
   );
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [savedTemplateName, setSavedTemplateName] = useState<string | null>(
-    null,
-  );
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Check for saved template on mount
+  // ダイアログが開いたときに状態をリセット
   useEffect(() => {
-    const savedName = localStorage.getItem(TEMPLATE_NAME_STORAGE_KEY);
-    if (savedName) {
-      setSavedTemplateName(savedName);
+    if (open) {
+      setError("");
+      // カスタムテンプレートが1つだけの場合は自動選択
+      if (customTemplates.length === 1 && templateType === "custom") {
+        setSelectedTemplateId(customTemplates[0].id);
+      }
     }
-  }, []);
+  }, [open, customTemplates, templateType]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    setError("");
-
-    if (!file) {
-      setSelectedFile(null);
-      return;
+  // テンプレートタイプが変わったときに選択をリセット
+  useEffect(() => {
+    if (templateType === "custom" && customTemplates.length === 1) {
+      setSelectedTemplateId(customTemplates[0].id);
+    } else if (templateType === "default") {
+      setSelectedTemplateId("");
     }
-
-    // Validate file type
-    if (
-      file.type !==
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    ) {
-      setError(
-        "ファイル形式が正しくありません。.xlsxファイルを選択してください。",
-      );
-      setSelectedFile(null);
-      return;
-    }
-
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      setError(
-        "ファイルサイズが大きすぎます。5MB以下のファイルを選択してください。",
-      );
-      setSelectedFile(null);
-      return;
-    }
-
-    setSelectedFile(file);
-  };
-
-  const handleDeleteSavedTemplate = () => {
-    localStorage.removeItem(TEMPLATE_STORAGE_KEY);
-    localStorage.removeItem(TEMPLATE_NAME_STORAGE_KEY);
-    setSavedTemplateName(null);
-    setTemplateType("default");
-  };
+  }, [templateType, customTemplates]);
 
   const handleConfirm = async () => {
     try {
@@ -95,48 +92,33 @@ export function TemplateSelectionDialog({
       setError("");
 
       if (templateType === "default") {
-        // Use default template
+        // デフォルトテンプレートを使用（フィールドマッピングなし）
         await onConfirm(null);
       } else {
-        // Use custom template
-        let workbook: ExcelJS.Workbook;
-
-        if (selectedFile) {
-          // Load from newly uploaded file
-          const buffer = await selectedFile.arrayBuffer();
-          workbook = new ExcelJS.Workbook();
-          await workbook.xlsx.load(buffer);
-
-          // Save to localStorage for future use
-          const base64 = btoa(
-            new Uint8Array(buffer).reduce(
-              (data, byte) => data + String.fromCharCode(byte),
-              "",
-            ),
-          );
-          localStorage.setItem(TEMPLATE_STORAGE_KEY, base64);
-          localStorage.setItem(TEMPLATE_NAME_STORAGE_KEY, selectedFile.name);
-        } else if (savedTemplateName) {
-          // Load from localStorage
-          const base64 = localStorage.getItem(TEMPLATE_STORAGE_KEY);
-          if (!base64) {
-            throw new Error("保存されたテンプレートが見つかりません。");
-          }
-
-          const binary = atob(base64);
-          const bytes = new Uint8Array(binary.length);
-          for (let i = 0; i < binary.length; i++) {
-            bytes[i] = binary.charCodeAt(i);
-          }
-
-          workbook = new ExcelJS.Workbook();
-          await workbook.xlsx.load(bytes.buffer);
-        } else {
-          setError("カスタムテンプレートを選択してください。");
+        // カスタムテンプレートを使用
+        if (!selectedTemplateId) {
+          setError("テンプレートを選択してください。");
           return;
         }
 
-        await onConfirm(workbook);
+        const selectedTemplate = customTemplates.find(
+          (t) => t.id === selectedTemplateId,
+        );
+        if (!selectedTemplate) {
+          setError("選択されたテンプレートが見つかりません。");
+          return;
+        }
+
+        // Base64からワークブックを読み込み
+        const bytes = base64ToUint8Array(selectedTemplate.fileData);
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(bytes.buffer as ArrayBuffer);
+
+        await onConfirm({
+          workbook,
+          fieldMappings: selectedTemplate.fieldMappings,
+          sheetName: selectedTemplate.sheetName,
+        });
       }
 
       onOpenChange(false);
@@ -152,6 +134,10 @@ export function TemplateSelectionDialog({
     }
   };
 
+  const selectedTemplate = customTemplates.find(
+    (t) => t.id === selectedTemplateId,
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -165,73 +151,102 @@ export function TemplateSelectionDialog({
         <div className="space-y-4 py-4">
           <RadioGroup
             value={templateType}
-            onValueChange={(value) =>
-              setTemplateType(value as "default" | "custom")
-            }
+            onValueChange={(value) => {
+              setTemplateType(value as "default" | "custom");
+            }}
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="default" id="default" />
               <Label htmlFor="default" className="cursor-pointer">
                 <div className="flex items-center gap-2">
-                  <FileSpreadsheet className="h-4 w-4" />
+                  <FileSpreadsheet className="size-4" />
                   <span>デフォルトテンプレート</span>
                 </div>
               </Label>
             </div>
 
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="custom" id="custom" />
-              <Label htmlFor="custom" className="cursor-pointer">
+              <RadioGroupItem
+                value="custom"
+                id="custom"
+                disabled={customTemplates.length === 0}
+              />
+              <Label
+                htmlFor="custom"
+                className={`cursor-pointer ${customTemplates.length === 0 ? "opacity-50" : ""}`}
+              >
                 <div className="flex items-center gap-2">
-                  <Upload className="h-4 w-4" />
+                  <Upload className="size-4" />
                   <span>カスタムテンプレート</span>
+                  {customTemplates.length === 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      (未登録)
+                    </span>
+                  )}
                 </div>
               </Label>
             </div>
           </RadioGroup>
 
-          {templateType === "custom" && (
+          {templateType === "custom" && customTemplates.length > 0 && (
             <div className="space-y-3 pl-6">
-              {savedTemplateName && (
-                <div className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 p-3">
-                  <div className="flex items-center gap-2">
-                    <FileSpreadsheet className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-700">
-                      {savedTemplateName}
-                    </span>
+              <div className="space-y-2">
+                <Label htmlFor="template-select">テンプレートを選択</Label>
+                <Select
+                  value={selectedTemplateId}
+                  onValueChange={setSelectedTemplateId}
+                >
+                  <SelectTrigger id="template-select">
+                    <SelectValue placeholder="テンプレートを選択してください" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {customTemplates.map((template) => (
+                      <SelectItem key={template.id} value={template.id}>
+                        <div className="flex items-center gap-2">
+                          <FileSpreadsheet className="size-4" />
+                          <span>{template.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {selectedTemplate && (
+                <div className="rounded-md border border-gray-200 bg-gray-50 p-3">
+                  <div className="text-sm">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <FileSpreadsheet className="size-4" />
+                      <span>{selectedTemplate.fileName}</span>
+                    </div>
+                    {selectedTemplate.sheetName && (
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        シート: {selectedTemplate.sheetName}
+                      </div>
+                    )}
+                    {selectedTemplate.fieldMappings.length > 0 && (
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {selectedTemplate.fieldMappings.length}{" "}
+                        件のフィールドマッピング
+                      </div>
+                    )}
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleDeleteSavedTemplate}
-                    className="h-8 text-red-600 hover:bg-red-50 hover:text-red-700"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
                 </div>
               )}
+            </div>
+          )}
 
-              <div className="space-y-2">
-                <Label htmlFor="template-file">
-                  {savedTemplateName
-                    ? "新しいテンプレートをアップロード"
-                    : "テンプレートファイル (.xlsx)"}
-                </Label>
-                <Input
-                  id="template-file"
-                  type="file"
-                  accept=".xlsx"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  className="cursor-pointer"
-                />
-                {selectedFile && (
-                  <p className="text-sm text-green-600">
-                    選択: {selectedFile.name}
-                  </p>
-                )}
-              </div>
+          {templateType === "custom" && customTemplates.length === 0 && (
+            <div className="ml-6 rounded-md border border-dashed border-gray-300 p-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                カスタムテンプレートが登録されていません。
+              </p>
+              <Link href="/work-report-templates">
+                <Button variant="link" size="sm" className="mt-2">
+                  <Settings className="mr-1 size-4" />
+                  テンプレート管理画面へ
+                </Button>
+              </Link>
             </div>
           )}
 
@@ -242,17 +257,33 @@ export function TemplateSelectionDialog({
           )}
         </div>
 
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isProcessing}
-          >
-            キャンセル
-          </Button>
-          <Button onClick={handleConfirm} disabled={isProcessing}>
-            {isProcessing ? "処理中..." : "作成"}
-          </Button>
+        <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
+          <Link href="/work-report-templates">
+            <Button variant="ghost" size="sm" type="button">
+              <Settings className="mr-1 size-4" />
+              テンプレート管理
+            </Button>
+          </Link>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                onOpenChange(false);
+              }}
+              disabled={isProcessing}
+            >
+              キャンセル
+            </Button>
+            <Button
+              onClick={handleConfirm}
+              disabled={
+                isProcessing ||
+                (templateType === "custom" && !selectedTemplateId)
+              }
+            >
+              {isProcessing ? "処理中..." : "作成"}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

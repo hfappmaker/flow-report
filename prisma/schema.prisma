@@ -64,6 +64,7 @@ model User {
   contracts             Contract[]
   auditLogs             AuditLog[]
   EmailTemplate         EmailTemplate[]
+  workReportTemplates   WorkReportTemplate[]
 }
 
 
@@ -225,4 +226,32 @@ model Subscription {
   created              DateTime
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
+}
+
+model WorkReportTemplate {
+  id            String                      @id @default(cuid())
+  name          String                      // テンプレート名
+  fileData      String                      @db.Text // ExcelファイルのBase64エンコードデータ
+  fileName      String                      // 元のファイル名（表示用）
+  sheetName     String?                     // 出力するシート名（nullの場合は最初のシート）
+  createUserId  String
+  createUser    User                        @relation(fields: [createUserId], references: [id], onDelete: Cascade)
+  fieldMappings WorkReportTemplateField[]
+  createdAt     DateTime                    @default(now())
+  updatedAt     DateTime                    @updatedAt
+
+  @@unique([name, createUserId])
+}
+
+model WorkReportTemplateField {
+  id            String             @id @default(cuid())
+  templateId    String
+  template      WorkReportTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  namedRange    String             // Excelの名前付き範囲名
+  valueTemplate String             // 値テンプレート（例: "${作業者名}様"）
+  numFmt        String?            // 数値フォーマット（例: "[h]:mm"）
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@unique([templateId, namedRange])
 }
