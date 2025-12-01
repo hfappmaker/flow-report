@@ -11,12 +11,6 @@ import FormError from "@/components/ui/feedback/error-alert";
 import FormSuccess from "@/components/ui/feedback/success-alert";
 import { Spinner } from "@/components/ui/loading/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useTransitionContext } from "@/contexts/transition-context";
 import { MAX_TEMPLATES_PER_TYPE } from "@/features/work-report/constants/work-report-constants";
 import {
@@ -363,32 +357,23 @@ export default function TemplatesClientPage({
                 請求書
               </TabsTrigger>
             </TabsList>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div>
-                    <Button
-                      onClick={() => {
-                        setActiveDialog("create");
-                      }}
-                      className="flex items-center gap-1"
-                      disabled={isTemplateLimitReached}
-                    >
-                      <Plus className="size-4" />
-                      新規作成
-                    </Button>
-                  </div>
-                </TooltipTrigger>
-                {isTemplateLimitReached && (
-                  <TooltipContent>
-                    <p>
-                      テンプレートは最大{MAX_TEMPLATES_PER_TYPE}
-                      個までしか登録できません
-                    </p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
+            <div className="flex flex-col items-end gap-1">
+              <Button
+                onClick={() => {
+                  setActiveDialog("create");
+                }}
+                className="flex items-center gap-1"
+                disabled={isTemplateLimitReached}
+              >
+                <Plus className="size-4" />
+                新規作成
+              </Button>
+              {isTemplateLimitReached && (
+                <p className="text-xs text-muted-foreground">
+                  最大{MAX_TEMPLATES_PER_TYPE}個まで登録可能です
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="mt-4">
