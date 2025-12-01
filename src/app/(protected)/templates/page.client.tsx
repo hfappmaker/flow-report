@@ -2,7 +2,7 @@
 
 import type { TemplateType } from "@prisma/client";
 import { FileSpreadsheet, FileText, Plus, Edit, Trash2, Eye } from "lucide-react";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useTransition } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -95,6 +95,11 @@ export default function TemplatesClientPage({
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { error, success, showError, showSuccess } = useMessageState();
+  const [, startTransition] = useTransition();
+
+  // ユーザーが作成したテンプレートのみをカウント（デフォルトテンプレートは除く）
+  const templates =
+    activeTab === "WORK_REPORT" ? workReportTemplates : invoiceTemplates;
 
   const refreshTemplates = useCallback(async () => {
     try {
