@@ -11,7 +11,6 @@ import FormError from "@/components/ui/feedback/error-alert";
 import FormSuccess from "@/components/ui/feedback/success-alert";
 import { Spinner } from "@/components/ui/loading/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useTransitionContext } from "@/contexts/transition-context";
 import {
   createExcelTemplateAction,
   updateExcelTemplateAction,
@@ -61,6 +60,8 @@ async function fileToBase64(file: File): Promise<string> {
 
 interface TemplatesClientPageProps {
   userId: string;
+  initialWorkReportTemplates: ExcelTemplateWithFields[];
+  initialInvoiceTemplates: ExcelTemplateWithFields[];
 }
 
 const TAB_CONFIG = {
@@ -78,16 +79,21 @@ const TAB_CONFIG = {
 
 export default function TemplatesClientPage({
   userId,
+  initialWorkReportTemplates,
+  initialInvoiceTemplates,
 }: TemplatesClientPageProps) {
   const [activeTab, setActiveTab] = useState<TemplateType>("WORK_REPORT");
-  const [templates, setTemplates] = useState<ExcelTemplateWithFields[]>([]);
+  const [workReportTemplates, setWorkReportTemplates] = useState(
+    initialWorkReportTemplates,
+  );
+  const [invoiceTemplates, setInvoiceTemplates] =
+    useState(initialInvoiceTemplates);
   const [activeDialog, setActiveDialog] = useState<DialogType>(null);
   const [activeTemplate, setActiveTemplate] =
     useState<ExcelTemplateWithFields | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { error, success, showError, showSuccess } = useMessageState();
-  const { startTransition } = useTransitionContext();
 
   const refreshTemplates = useCallback(async () => {
     try {
@@ -96,7 +102,11 @@ export default function TemplatesClientPage({
         userId,
         activeTab,
       );
-      setTemplates(data);
+      if (activeTab === "WORK_REPORT") {
+        setWorkReportTemplates(data);
+      } else {
+        setInvoiceTemplates(data);
+      }
     } catch (err) {
       console.error(err);
       showError("テンプレートの取得に失敗しました");
@@ -108,16 +118,10 @@ export default function TemplatesClientPage({
   // 作業報告書タブの場合、デフォルトテンプレートを先頭に追加
   const displayTemplates = useMemo(() => {
     if (activeTab === "WORK_REPORT") {
-      return [SYSTEM_DEFAULT_WORK_REPORT_TEMPLATE, ...templates];
+      return [SYSTEM_DEFAULT_WORK_REPORT_TEMPLATE, ...workReportTemplates];
     }
-    return templates;
-  }, [activeTab, templates]);
-
-  useEffect(() => {
-    startTransition(() => {
-      refreshTemplates().catch(console.error);
-    });
-  }, [refreshTemplates, startTransition]);
+    return invoiceTemplates;
+  }, [activeTab, workReportTemplates, invoiceTemplates]);
 
   const closeDialog = () => {
     setActiveDialog(null);
