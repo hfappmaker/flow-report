@@ -1,6 +1,6 @@
 "use client";
 
-import { FileSpreadsheet } from "lucide-react";
+import { Download, FileSpreadsheet } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,15 +12,35 @@ import {
   DialogPortal,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { isDefaultTemplate } from "@/features/work-report/constants/default-template";
+import {
+  DEFAULT_TEMPLATE_FILE_NAME,
+  isDefaultTemplate,
+} from "@/features/work-report/constants/default-template";
 import type { ExcelTemplateWithFields } from "@/features/work-report/types/work-report-template";
-
 import {
   ExcelTemplateForm,
   type ExcelTemplateFormValues,
 } from "./work-report-template-form";
 
 export type DialogType = "create" | "edit" | "delete" | "details" | null;
+
+function base64ToUint8Array(base64: string): Uint8Array {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+function downloadBlob(blob: Blob, fileName: string): void {
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  window.URL.revokeObjectURL(url);
+}
 
 interface ExcelTemplateDialogProps {
   type: DialogType;
@@ -43,6 +63,24 @@ export function ExcelTemplateDialog({
   onCancel,
   isSubmitting = false,
 }: ExcelTemplateDialogProps) {
+  const handleDownloadTemplate = async () => {
+    if (!template) return;
+
+    const isSystem = isDefaultTemplate(template.id);
+
+    if (isSystem) {
+      const response = await fetch(`/${DEFAULT_TEMPLATE_FILE_NAME}`);
+      const blob = await response.blob();
+      downloadBlob(blob, DEFAULT_TEMPLATE_FILE_NAME);
+    } else {
+      const bytes = base64ToUint8Array(template.fileData);
+      const blob = new Blob([bytes.buffer as ArrayBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      downloadBlob(blob, template.fileName);
+    }
+  };
+
   const getDialogTitle = () => {
     switch (type) {
       case "create":
@@ -172,6 +210,15 @@ export function ExcelTemplateDialog({
             )}
 
             <div className="mt-4 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  void handleDownloadTemplate();
+                }}
+              >
+                <Download className="mr-2 size-4" />
+                ダウンロード
+              </Button>
               <Button
                 variant="outline"
                 onClick={() => {
