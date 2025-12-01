@@ -41,10 +41,7 @@ export function FieldMappingEditor({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Label>フィールドマッピング</Label>
-        <PlaceholderHelp />
-      </div>
+      <Label>フィールドマッピング</Label>
 
       <div className="space-y-3">
         {fieldMappings.map((mapping, index) => (
@@ -54,11 +51,14 @@ export function FieldMappingEditor({
           >
             <div className="flex-1 space-y-2">
               <div>
-                <Label htmlFor={`namedRange-${index}`} className="text-xs">
+                <Label
+                  htmlFor={`namedRange-${String(index)}`}
+                  className="text-xs"
+                >
                   名前付き範囲
                 </Label>
                 <Input
-                  id={`namedRange-${index}`}
+                  id={`namedRange-${String(index)}`}
                   value={mapping.namedRange}
                   onChange={(e) => {
                     handleChange(index, "namedRange", e.target.value);
@@ -75,20 +75,34 @@ export function FieldMappingEditor({
                 )}
               </div>
               <div>
-                <Label htmlFor={`valueTemplate-${index}`} className="text-xs">
+                <Label
+                  htmlFor={`valueTemplate-${String(index)}`}
+                  className="text-xs"
+                >
                   値（プレースホルダー使用可）
                 </Label>
-                <Input
-                  id={`valueTemplate-${index}`}
-                  value={mapping.valueTemplate}
-                  onChange={(e) => {
-                    handleChange(index, "valueTemplate", e.target.value);
-                  }}
-                  placeholder="例: ${作業者名}様"
-                  className={
-                    errors?.[index]?.valueTemplate ? "border-red-500" : ""
-                  }
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id={`valueTemplate-${String(index)}`}
+                    value={mapping.valueTemplate}
+                    onChange={(e) => {
+                      handleChange(index, "valueTemplate", e.target.value);
+                    }}
+                    placeholder="例: ${作業者名}様"
+                    className={
+                      errors?.[index]?.valueTemplate ? "border-red-500" : ""
+                    }
+                  />
+                  <PlaceholderHelp
+                    onInsert={(placeholder) => {
+                      handleChange(
+                        index,
+                        "valueTemplate",
+                        mapping.valueTemplate + placeholder,
+                      );
+                    }}
+                  />
+                </div>
                 {errors?.[index]?.valueTemplate && (
                   <p className="mt-1 text-xs text-red-500">
                     {errors[index].valueTemplate}

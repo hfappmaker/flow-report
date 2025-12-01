@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, Check, HelpCircle } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -12,40 +12,37 @@ import {
 import { AVAILABLE_PLACEHOLDERS } from "@/features/work-report/utils/placeholder-utils";
 
 interface PlaceholderHelpProps {
-  onInsert?: (placeholder: string) => void;
+  onInsert: (placeholder: string) => void;
 }
 
 export function PlaceholderHelp({ onInsert }: PlaceholderHelpProps) {
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
 
-  const handleCopy = async (key: string) => {
+  const handleInsert = (key: string) => {
     const placeholder = `\${${key}}`;
-    await navigator.clipboard.writeText(placeholder);
-    setCopiedKey(key);
-    setTimeout(() => {
-      setCopiedKey(null);
-    }, 2000);
-
-    if (onInsert) {
-      onInsert(placeholder);
-    }
+    onInsert(placeholder);
+    setOpen(false);
   };
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" type="button">
-          <HelpCircle className="mr-1 size-4" />
-          プレースホルダー
+        <Button
+          variant="outline"
+          size="icon"
+          type="button"
+          className="shrink-0"
+        >
+          <HelpCircle className="size-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-96" align="start">
+      <PopoverContent className="w-[calc(100vw-2rem)] sm:w-96" align="start">
         <div className="space-y-2">
           <h4 className="font-medium">利用可能なプレースホルダー</h4>
           <p className="text-sm text-muted-foreground">
-            クリックしてコピー。値に挿入すると動的に置換されます。
+            クリックして挿入。値に挿入すると動的に置換されます。
           </p>
-          <div className="max-h-64 overflow-y-auto">
+          <div className="max-h-[50vh] overflow-y-auto overscroll-contain">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
@@ -61,21 +58,16 @@ export function PlaceholderHelp({ onInsert }: PlaceholderHelpProps) {
                     key={placeholder.key}
                     className="border-b last:border-0 hover:bg-muted/50"
                   >
-                    <td className="py-2">
+                    <td className="py-3">
                       <button
                         type="button"
-                        onClick={() => handleCopy(placeholder.key)}
-                        className="flex items-center gap-1 rounded bg-muted px-2 py-1 font-mono text-xs hover:bg-muted/80"
+                        onClick={() => { handleInsert(placeholder.key); }}
+                        className="rounded bg-muted px-2 py-1 font-mono text-xs hover:bg-muted/80"
                       >
                         {`\${${placeholder.key}}`}
-                        {copiedKey === placeholder.key ? (
-                          <Check className="size-3 text-green-500" />
-                        ) : (
-                          <Copy className="size-3 text-muted-foreground" />
-                        )}
                       </button>
                     </td>
-                    <td className="py-2 text-muted-foreground">
+                    <td className="py-3 text-muted-foreground">
                       {placeholder.description}
                     </td>
                   </tr>
