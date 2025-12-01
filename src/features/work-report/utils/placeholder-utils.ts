@@ -22,6 +22,26 @@ export interface PlaceholderDefinition {
  * 利用可能なプレースホルダー一覧
  */
 export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
+  // メール用プレースホルダー
+  {
+    key: "宛先名",
+    label: "宛先名",
+    description: "担当者名（なければクライアント名）",
+    example: "山田商事",
+  },
+  {
+    key: "クライアント名",
+    label: "クライアント名",
+    description: "クライアントの名前",
+    example: "山田商事",
+  },
+  {
+    key: "担当者名",
+    label: "担当者名",
+    description: "クライアントの担当者名",
+    example: "鈴木一郎",
+  },
+  // 基本プレースホルダー
   {
     key: "対象年",
     label: "対象年",
@@ -583,4 +603,35 @@ export function validatePlaceholderKeys(template: string): {
     valid: invalidKeys.length === 0,
     invalidKeys,
   };
+}
+
+/**
+ * メール用の追加データ
+ */
+export interface EmailPlaceholderData {
+  clientName: string;
+  contactName: string | null;
+}
+
+/**
+ * メール用プレースホルダー値を生成
+ * @param data 作業報告書データ
+ * @param emailData メール用追加データ
+ * @param contractData 請求書用の契約データ（オプション）
+ */
+export function generateEmailPlaceholderValues(
+  data: WorkReportExcelData,
+  emailData: EmailPlaceholderData,
+  contractData?: InvoiceContractData,
+): Record<string, string> {
+  const basePlaceholders = generatePlaceholderValues(data, contractData);
+
+  // メール用プレースホルダーを追加
+  const emailPlaceholders: Record<string, string> = {
+    宛先名: emailData.contactName ?? emailData.clientName,
+    クライアント名: emailData.clientName,
+    担当者名: emailData.contactName ?? "",
+  };
+
+  return { ...basePlaceholders, ...emailPlaceholders };
 }

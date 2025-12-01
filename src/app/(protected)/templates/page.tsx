@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import TemplatesClientPage from "./page.client";
 import { currentUser } from "@/features/auth/libs/auth";
+import { EmailTemplateRepository } from "@/features/email/repositories/email-template-repository";
 import { ExcelTemplateRepository } from "@/features/work-report/repositories/work-report-template-repository";
 
 export const metadata: Metadata = {
@@ -16,17 +17,21 @@ export default async function TemplatesPage() {
     return notFound();
   }
 
-  const repository = new ExcelTemplateRepository();
-  const [workReportTemplates, invoiceTemplates] = await Promise.all([
-    repository.getByCreateUserIdAndType(user.id, "WORK_REPORT"),
-    repository.getByCreateUserIdAndType(user.id, "INVOICE"),
-  ]);
+  const excelRepository = new ExcelTemplateRepository();
+  const emailRepository = new EmailTemplateRepository();
+  const [workReportTemplates, invoiceTemplates, emailTemplates] =
+    await Promise.all([
+      excelRepository.getByCreateUserIdAndType(user.id, "WORK_REPORT"),
+      excelRepository.getByCreateUserIdAndType(user.id, "INVOICE"),
+      emailRepository.getByCreateUserId(user.id),
+    ]);
 
   return (
     <TemplatesClientPage
       userId={user.id}
       initialWorkReportTemplates={workReportTemplates}
       initialInvoiceTemplates={invoiceTemplates}
+      initialEmailTemplates={emailTemplates}
     />
   );
 }

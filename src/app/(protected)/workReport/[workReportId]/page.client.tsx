@@ -37,6 +37,8 @@ import {
   formatWorkTime,
   formatAmount,
 } from "@/features/contract/utils/contract-calculation-utils";
+import { getEmailTemplatesByCreateUserIdAction } from "@/features/email/actions/email-template";
+import type { EmailTemplate } from "@/features/email/types/email-template";
 import { createFreeeInvoiceFromWorkReportAction } from "@/features/freee/actions/freee-invoice-actions";
 import { updateWorkReportAttendanceAction } from "@/features/work-report/actions/attendance";
 import {
@@ -46,6 +48,7 @@ import {
 } from "@/features/work-report/actions/work-report";
 import { getExcelTemplatesByUserIdAndTypeAction } from "@/features/work-report/actions/work-report-template";
 import { AttendanceEditDialog } from "@/features/work-report/components/attendance-edit-dialog";
+import { EmailTemplateSelectDialog } from "@/features/work-report/components/email-template-select-dialog";
 import {
   ExportDialog,
   type ExportResult,
@@ -80,7 +83,8 @@ import {
   formatTimeInput,
   formatBreakDuration,
 } from "@/features/work-report/utils/date-formatting";
-import { buildWorkReportMailtoUrl } from "@/features/work-report/utils/mailto-url-builder";
+import { generateBasicEmailPlaceholderValues } from "@/features/work-report/utils/email-body-builder";
+import { buildMailtoUrlFromTemplate } from "@/features/work-report/utils/mailto-url-builder";
 import type { InvoiceContractData } from "@/features/work-report/utils/placeholder-utils";
 import { useMessageState } from "@/hooks/use-message-state";
 import { formatDateAsUTC } from "@/utils/date-utils";
@@ -164,6 +168,9 @@ export default function ClientWorkReportPage({
   const [invoiceTemplates, setInvoiceTemplates] = useState<
     ExcelTemplateWithFields[]
   >([]);
+  const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>([]);
+  const [isEmailTemplateDialogOpen, setIsEmailTemplateDialogOpen] =
+    useState(false);
 
   // Compute default attendance values for each day in the range…
   const defaults = generateDefaultAttendances(
@@ -193,15 +200,17 @@ export default function ClientWorkReportPage({
     [totalWorkMinutes],
   );
 
-  // テンプレートを取得（作業報告書と請求書を並行して取得）
+  // テンプレートを取得（作業報告書、請求書、メールを並行して取得）
   useEffect(() => {
     const fetchTemplates = async () => {
-      const [workReportTpls, invoiceTpls] = await Promise.all([
+      const [workReportTpls, invoiceTpls, emailTpls] = await Promise.all([
         getExcelTemplatesByUserIdAndTypeAction(userId, "WORK_REPORT"),
         getExcelTemplatesByUserIdAndTypeAction(userId, "INVOICE"),
+        getEmailTemplatesByCreateUserIdAction(userId),
       ]);
       setWorkReportTemplates(workReportTpls);
       setInvoiceTemplates(invoiceTpls);
+      setEmailTemplates(emailTpls);
     };
     void fetchTemplates();
   }, [userId]);
@@ -555,30 +564,40 @@ export default function ClientWorkReportPage({
     setShowReauthDialog,
   ]);
 
-  // メール送信用の関数
-  const createReportAndSendEmail = () => {
-    try {
-      if (
-        !window.confirm(
-          "作業報告書は自動で添付されません。\n「エクスポート」でダウンロードしたファイルを手動で添付してください。",
-        )
-      ) {
-        return;
-      }
-      // メーラーを起動
-      const mailtoUrl = buildWorkReportMailtoUrl({
-        clientEmail,
+  // メール用プレースホルダー値を生成
+  const emailPlaceholderValues = useMemo(
+    () =>
+      generateBasicEmailPlaceholderValues({
         contactName,
         clientName,
         userName,
         targetDate,
-      });
-      window.open(mailtoUrl, "_blank");
-    } catch (error) {
-      console.error("作業報告書の作成に失敗しました", error);
-      showError("作業報告書の作成に失敗しました");
-    }
+      }),
+    [contactName, clientName, userName, targetDate],
+  );
+
+  // メールテンプレート選択ダイアログを開く
+  const openEmailTemplateDialog = () => {
+    setIsEmailTemplateDialogOpen(true);
   };
+
+  // メール送信処理（テンプレート選択後に呼ばれる）
+  const handleEmailSend = useCallback(
+    (subject: string, body: string) => {
+      try {
+        const mailtoUrl = buildMailtoUrlFromTemplate({
+          clientEmail,
+          subject,
+          body,
+        });
+        window.open(mailtoUrl, "_blank");
+      } catch (error) {
+        console.error("メール送信に失敗しました", error);
+        showError("メール送信に失敗しました");
+      }
+    },
+    [clientEmail, showError],
+  );
 
   // 月締め処理を実行
   const handleConfirmStatusChange = () => {
@@ -708,7 +727,7 @@ export default function ClientWorkReportPage({
               type="button"
               variant="outline"
               disabled={status !== "SUBMITTED"}
-              onClick={createReportAndSendEmail}
+              onClick={openEmailTemplateDialog}
             >
               メール送信
             </Button>
@@ -1103,6 +1122,15 @@ export default function ClientWorkReportPage({
         }}
         onSubmit={handleRemarksSubmit}
         defaultValue={remarks}
+      />
+
+      {/* メールテンプレート選択ダイアログ */}
+      <EmailTemplateSelectDialog
+        open={isEmailTemplateDialogOpen}
+        onOpenChange={setIsEmailTemplateDialogOpen}
+        emailTemplates={emailTemplates}
+        placeholderValues={emailPlaceholderValues}
+        onSend={handleEmailSend}
       />
     </div>
   );

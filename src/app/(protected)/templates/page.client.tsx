@@ -1,8 +1,22 @@
 "use client";
 
 import type { TemplateType } from "@prisma/client";
-import { FileSpreadsheet, FileText, Plus, Edit, Trash2, Eye } from "lucide-react";
-import { useState, useEffect, useCallback, useMemo, useTransition } from "react";
+import {
+  FileSpreadsheet,
+  FileText,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  Mail,
+} from "lucide-react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useTransition,
+} from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +25,16 @@ import FormError from "@/components/ui/feedback/error-alert";
 import FormSuccess from "@/components/ui/feedback/success-alert";
 import { Spinner } from "@/components/ui/loading/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  getEmailTemplatesByCreateUserIdAction,
+  createEmailTemplateAction,
+  updateEmailTemplateAction,
+  deleteEmailTemplateAction,
+} from "@/features/email/actions/email-template";
+import { EmailTemplateDialog } from "@/features/email/components/email-template-dialog";
+import type { EmailTemplateFormValues } from "@/features/email/schemas/email-template-form-schema";
+import type { DialogType as EmailDialogType } from "@/features/email/types/dialog";
+import type { EmailTemplate } from "@/features/email/types/email-template";
 import { MAX_TEMPLATES_PER_TYPE } from "@/features/work-report/constants/work-report-constants";
 import {
   createExcelTemplateAction,
@@ -63,7 +87,10 @@ interface TemplatesClientPageProps {
   userId: string;
   initialWorkReportTemplates: ExcelTemplateWithFields[];
   initialInvoiceTemplates: ExcelTemplateWithFields[];
+  initialEmailTemplates: EmailTemplate[];
 }
+
+type TabType = TemplateType | "EMAIL";
 
 const TAB_CONFIG = {
   WORK_REPORT: {
@@ -76,42 +103,69 @@ const TAB_CONFIG = {
     icon: FileText,
     emptyMessage: "請求書テンプレートがありません。",
   },
+  EMAIL: {
+    label: "メール",
+    icon: Mail,
+    emptyMessage: "メールテンプレートがありません。",
+  },
 } as const;
 
 export default function TemplatesClientPage({
   userId,
   initialWorkReportTemplates,
   initialInvoiceTemplates,
+  initialEmailTemplates,
 }: TemplatesClientPageProps) {
-  const [activeTab, setActiveTab] = useState<TemplateType>("WORK_REPORT");
+  const [activeTab, setActiveTab] = useState<TabType>("WORK_REPORT");
   const [workReportTemplates, setWorkReportTemplates] = useState(
     initialWorkReportTemplates,
   );
-  const [invoiceTemplates, setInvoiceTemplates] =
-    useState(initialInvoiceTemplates);
+  const [invoiceTemplates, setInvoiceTemplates] = useState(
+    initialInvoiceTemplates,
+  );
+  const [emailTemplates, setEmailTemplates] = useState(initialEmailTemplates);
+  // Excelテンプレート用
   const [activeDialog, setActiveDialog] = useState<DialogType>(null);
   const [activeTemplate, setActiveTemplate] =
     useState<ExcelTemplateWithFields | null>(null);
+  // メールテンプレート用
+  const [activeEmailDialog, setActiveEmailDialog] =
+    useState<EmailDialogType>(null);
+  const [activeEmailTemplate, setActiveEmailTemplate] =
+    useState<EmailTemplate | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { error, success, showError, showSuccess } = useMessageState();
   const [, startTransition] = useTransition();
 
   // ユーザーが作成したテンプレートのみをカウント（デフォルトテンプレートは除く）
-  const templates =
-    activeTab === "WORK_REPORT" ? workReportTemplates : invoiceTemplates;
+  const templates = (() => {
+    switch (activeTab) {
+      case "WORK_REPORT":
+        return workReportTemplates;
+      case "INVOICE":
+        return invoiceTemplates;
+      case "EMAIL":
+        return emailTemplates;
+    }
+  })();
 
   const refreshTemplates = useCallback(async () => {
     try {
       setIsLoading(true);
-      const data = await getExcelTemplatesByUserIdAndTypeAction(
-        userId,
-        activeTab,
-      );
-      if (activeTab === "WORK_REPORT") {
-        setWorkReportTemplates(data);
+      if (activeTab === "EMAIL") {
+        const data = await getEmailTemplatesByCreateUserIdAction(userId);
+        setEmailTemplates(data);
       } else {
-        setInvoiceTemplates(data);
+        const data = await getExcelTemplatesByUserIdAndTypeAction(
+          userId,
+          activeTab,
+        );
+        if (activeTab === "WORK_REPORT") {
+          setWorkReportTemplates(data);
+        } else {
+          setInvoiceTemplates(data);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -122,11 +176,14 @@ export default function TemplatesClientPage({
   }, [userId, activeTab, showError]);
 
   // 作業報告書タブの場合、デフォルトテンプレートを先頭に追加
-  const displayTemplates = useMemo(() => {
+  const displayExcelTemplates = useMemo(() => {
     if (activeTab === "WORK_REPORT") {
       return [SYSTEM_DEFAULT_WORK_REPORT_TEMPLATE, ...workReportTemplates];
     }
-    return invoiceTemplates;
+    if (activeTab === "INVOICE") {
+      return invoiceTemplates;
+    }
+    return [];
   }, [activeTab, workReportTemplates, invoiceTemplates]);
 
   // ユーザーが作成したテンプレート数が上限に達しているかチェック
@@ -143,10 +200,19 @@ export default function TemplatesClientPage({
     setActiveTemplate(null);
   };
 
+  const closeEmailDialog = () => {
+    setActiveEmailDialog(null);
+    setActiveEmailTemplate(null);
+  };
+
   // テンプレート作成
   const onCreateTemplate = async (data: ExcelTemplateFormValues) => {
     if (!data.file) {
       showError("Excelファイルは必須です");
+      return;
+    }
+    if (activeTab === "EMAIL") {
+      showError("メールテンプレートはこのフォームでは作成できません");
       return;
     }
 
@@ -240,9 +306,81 @@ export default function TemplatesClientPage({
     }
   };
 
+  // メールテンプレート作成
+  const onCreateEmailTemplate = async (data: EmailTemplateFormValues) => {
+    setIsSubmitting(true);
+    try {
+      await createEmailTemplateAction({
+        name: data.name,
+        subject: data.subject,
+        body: data.body,
+        createUserId: userId,
+      });
+      showSuccess(`メールテンプレート '${data.name}' を作成しました`);
+      closeEmailDialog();
+      await refreshTemplates();
+    } catch (err) {
+      console.error(err);
+      if (err instanceof Error) {
+        showError(err.message);
+      } else {
+        showError("メールテンプレートの作成に失敗しました");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // メールテンプレート編集
+  const onEditEmailTemplate = async (data: EmailTemplateFormValues) => {
+    if (!activeEmailTemplate) return;
+
+    setIsSubmitting(true);
+    try {
+      await updateEmailTemplateAction(activeEmailTemplate.id, {
+        name: data.name,
+        subject: data.subject,
+        body: data.body,
+        createUserId: userId,
+      });
+      showSuccess(`メールテンプレート '${data.name}' を更新しました`);
+      closeEmailDialog();
+      await refreshTemplates();
+    } catch (err) {
+      console.error(err);
+      if (err instanceof Error) {
+        showError(err.message);
+      } else {
+        showError("メールテンプレートの更新に失敗しました");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // メールテンプレート削除
+  const onDeleteEmailTemplate = async () => {
+    if (!activeEmailTemplate) return;
+
+    setIsSubmitting(true);
+    try {
+      await deleteEmailTemplateAction(activeEmailTemplate.id);
+      showSuccess(
+        `メールテンプレート '${activeEmailTemplate.name}' を削除しました`,
+      );
+      closeEmailDialog();
+      await refreshTemplates();
+    } catch (err) {
+      console.error(err);
+      showError("メールテンプレートの削除に失敗しました");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const tabConfig = TAB_CONFIG[activeTab];
 
-  const renderTemplateList = () => {
+  const renderExcelTemplateList = () => {
     if (isLoading) {
       return (
         <div className="flex h-64 items-center justify-center">
@@ -251,10 +389,10 @@ export default function TemplatesClientPage({
       );
     }
 
-    if (displayTemplates.length > 0) {
+    if (displayExcelTemplates.length > 0) {
       return (
         <div className="space-y-3">
-          {displayTemplates.map((template) => {
+          {displayExcelTemplates.map((template) => {
             const isSystem = isDefaultTemplate(template.id);
             return (
               <div
@@ -342,6 +480,97 @@ export default function TemplatesClientPage({
     );
   };
 
+  const renderEmailTemplateList = () => {
+    if (isLoading) {
+      return (
+        <div className="flex h-64 items-center justify-center">
+          <Spinner />
+        </div>
+      );
+    }
+
+    if (emailTemplates.length > 0) {
+      return (
+        <div className="space-y-3">
+          {emailTemplates.map((template) => (
+            <div
+              key={template.id}
+              className="flex items-center justify-between rounded-lg border p-4 hover:bg-muted/50"
+            >
+              <button
+                type="button"
+                className="flex-1 cursor-pointer text-left"
+                onClick={() => {
+                  setActiveEmailTemplate(template);
+                  setActiveEmailDialog("details");
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{template.name}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Mail className="size-4" />
+                  {template.subject}
+                </div>
+              </button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setActiveEmailTemplate(template);
+                    setActiveEmailDialog("details");
+                  }}
+                >
+                  <Eye className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setActiveEmailTemplate(template);
+                    setActiveEmailDialog("edit");
+                  }}
+                >
+                  <Edit className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setActiveEmailTemplate(template);
+                    setActiveEmailDialog("delete");
+                  }}
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <Mail className="mb-4 size-12 text-muted-foreground" />
+        <p className="text-muted-foreground">{tabConfig.emptyMessage}</p>
+        <p className="text-sm text-muted-foreground">
+          「新規作成」ボタンからテンプレートを追加してください。
+        </p>
+      </div>
+    );
+  };
+
+  const handleNewButtonClick = () => {
+    if (activeTab === "EMAIL") {
+      setActiveEmailDialog("create");
+    } else {
+      setActiveDialog("create");
+    }
+  };
+
   return (
     <Card className="w-full shadow-sm">
       <CardHeader className="flex-row items-center justify-between gap-x-3">
@@ -354,7 +583,7 @@ export default function TemplatesClientPage({
         <Tabs
           value={activeTab}
           onValueChange={(value) => {
-            setActiveTab(value as TemplateType);
+            setActiveTab(value as TabType);
           }}
           className="w-full"
         >
@@ -371,12 +600,14 @@ export default function TemplatesClientPage({
                 <FileText className="size-4" />
                 請求書
               </TabsTrigger>
+              <TabsTrigger value="EMAIL" className="flex items-center gap-2">
+                <Mail className="size-4" />
+                メール
+              </TabsTrigger>
             </TabsList>
             <div className="flex flex-col items-end gap-1">
               <Button
-                onClick={() => {
-                  setActiveDialog("create");
-                }}
+                onClick={handleNewButtonClick}
                 className="flex items-center gap-1"
                 disabled={isTemplateLimitReached}
               >
@@ -404,8 +635,11 @@ export default function TemplatesClientPage({
             />
           </div>
 
-          <TabsContent value="WORK_REPORT">{renderTemplateList()}</TabsContent>
-          <TabsContent value="INVOICE">{renderTemplateList()}</TabsContent>
+          <TabsContent value="WORK_REPORT">
+            {renderExcelTemplateList()}
+          </TabsContent>
+          <TabsContent value="INVOICE">{renderExcelTemplateList()}</TabsContent>
+          <TabsContent value="EMAIL">{renderEmailTemplateList()}</TabsContent>
         </Tabs>
 
         <ExcelTemplateDialog
@@ -421,6 +655,22 @@ export default function TemplatesClientPage({
           onDelete={onDeleteTemplate}
           onCancel={closeDialog}
           isSubmitting={isSubmitting}
+        />
+
+        <EmailTemplateDialog
+          type={activeEmailDialog}
+          isOpen={activeEmailDialog !== null}
+          onOpenChange={(open) => {
+            if (!open) closeEmailDialog();
+          }}
+          template={activeEmailTemplate}
+          onSubmit={
+            activeEmailDialog === "create"
+              ? onCreateEmailTemplate
+              : onEditEmailTemplate
+          }
+          onDelete={onDeleteEmailTemplate}
+          onCancel={closeEmailDialog}
         />
       </CardContent>
     </Card>

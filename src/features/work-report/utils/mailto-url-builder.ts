@@ -45,3 +45,20 @@ export function buildWorkReportMailtoUrl(params: {
     body,
   });
 }
+
+/**
+ * テンプレートから生成された件名・本文でmailto URLを構築
+ * @param params メール送信パラメータ
+ * @returns 構築されたmailto URL
+ */
+export function buildMailtoUrlFromTemplate(params: {
+  clientEmail: string;
+  subject: string;
+  body: string;
+}): string {
+  return buildMailtoUrl({
+    recipient: params.clientEmail,
+    subject: params.subject,
+    body: params.body,
+  });
+}

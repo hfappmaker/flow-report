@@ -21,7 +21,6 @@ export function PlaceholderHelp({ onInsert }: PlaceholderHelpProps) {
   const handleInsert = (key: string) => {
     const placeholder = `\${${key}}`;
     onInsert(placeholder);
-    setOpen(false);
   };
 
   return (
@@ -42,7 +41,7 @@ export function PlaceholderHelp({ onInsert }: PlaceholderHelpProps) {
           <p className="text-sm text-muted-foreground">
             クリックして挿入。値に挿入すると動的に置換されます。
           </p>
-          <div className="max-h-[50vh] overflow-y-auto overscroll-contain">
+          <div className="max-h-[50vh] touch-pan-y overflow-y-auto overscroll-contain">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
@@ -61,7 +60,9 @@ export function PlaceholderHelp({ onInsert }: PlaceholderHelpProps) {
                     <td className="py-3">
                       <button
                         type="button"
-                        onClick={() => { handleInsert(placeholder.key); }}
+                        onClick={() => {
+                          handleInsert(placeholder.key);
+                        }}
                         className="rounded bg-muted px-2 py-1 font-mono text-xs hover:bg-muted/80"
                       >
                         {`\${${placeholder.key}}`}
