@@ -11,6 +11,7 @@ import FormError from "@/components/ui/feedback/error-alert";
 import FormSuccess from "@/components/ui/feedback/success-alert";
 import { Spinner } from "@/components/ui/loading/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MAX_TEMPLATES_PER_TYPE } from "@/features/work-report/constants/work-report-constants";
 import {
   createExcelTemplateAction,
   updateExcelTemplateAction,
@@ -122,6 +123,15 @@ export default function TemplatesClientPage({
     }
     return invoiceTemplates;
   }, [activeTab, workReportTemplates, invoiceTemplates]);
+
+  // ユーザーが作成したテンプレート数が上限に達しているかチェック
+  const isTemplateLimitReached = templates.length >= MAX_TEMPLATES_PER_TYPE;
+
+  useEffect(() => {
+    startTransition(() => {
+      refreshTemplates().catch(console.error);
+    });
+  }, [refreshTemplates, startTransition]);
 
   const closeDialog = () => {
     setActiveDialog(null);
@@ -357,15 +367,23 @@ export default function TemplatesClientPage({
                 請求書
               </TabsTrigger>
             </TabsList>
-            <Button
-              onClick={() => {
-                setActiveDialog("create");
-              }}
-              className="flex items-center gap-1"
-            >
-              <Plus className="size-4" />
-              新規作成
-            </Button>
+            <div className="flex flex-col items-end gap-1">
+              <Button
+                onClick={() => {
+                  setActiveDialog("create");
+                }}
+                className="flex items-center gap-1"
+                disabled={isTemplateLimitReached}
+              >
+                <Plus className="size-4" />
+                新規作成
+              </Button>
+              {isTemplateLimitReached && (
+                <p className="text-xs text-muted-foreground">
+                  最大{MAX_TEMPLATES_PER_TYPE}個まで登録可能です
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="mt-4">
