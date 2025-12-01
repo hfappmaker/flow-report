@@ -11,7 +11,14 @@ import FormError from "@/components/ui/feedback/error-alert";
 import FormSuccess from "@/components/ui/feedback/success-alert";
 import { Spinner } from "@/components/ui/loading/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useTransitionContext } from "@/contexts/transition-context";
+import { MAX_TEMPLATES_PER_TYPE } from "@/features/work-report/constants/work-report-constants";
 import {
   createExcelTemplateAction,
   updateExcelTemplateAction,
@@ -112,6 +119,9 @@ export default function TemplatesClientPage({
     }
     return templates;
   }, [activeTab, templates]);
+
+  // ユーザーが作成したテンプレート数が上限に達しているかチェック
+  const isTemplateLimitReached = templates.length >= MAX_TEMPLATES_PER_TYPE;
 
   useEffect(() => {
     startTransition(() => {
@@ -353,15 +363,32 @@ export default function TemplatesClientPage({
                 請求書
               </TabsTrigger>
             </TabsList>
-            <Button
-              onClick={() => {
-                setActiveDialog("create");
-              }}
-              className="flex items-center gap-1"
-            >
-              <Plus className="size-4" />
-              新規作成
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Button
+                      onClick={() => {
+                        setActiveDialog("create");
+                      }}
+                      className="flex items-center gap-1"
+                      disabled={isTemplateLimitReached}
+                    >
+                      <Plus className="size-4" />
+                      新規作成
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                {isTemplateLimitReached && (
+                  <TooltipContent>
+                    <p>
+                      テンプレートは最大{MAX_TEMPLATES_PER_TYPE}
+                      個までしか登録できません
+                    </p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           <div className="mt-4">
