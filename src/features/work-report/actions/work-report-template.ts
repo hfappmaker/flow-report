@@ -3,6 +3,7 @@
 import type { TemplateType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
+import { MAX_TEMPLATES_PER_TYPE } from "@/features/work-report/constants/work-report-constants";
 import {
   ExcelTemplateRepository,
   ExcelTemplateError,
@@ -71,6 +72,17 @@ export const createExcelTemplateAction = async (
   values: CreateExcelTemplateInput,
 ): Promise<ExcelTemplateWithFields> => {
   try {
+    // テンプレート数チェック
+    const existingTemplates = await repository.getByCreateUserIdAndType(
+      values.createUserId,
+      values.type,
+    );
+    if (existingTemplates.length >= MAX_TEMPLATES_PER_TYPE) {
+      throw new ExcelTemplateError(
+        `テンプレートは最大${MAX_TEMPLATES_PER_TYPE}個までしか登録できません`,
+      );
+    }
+
     // 同名チェック（タイプ含む）
     const exists = await repository.existsByNameAndUserIdAndType(
       values.name,
