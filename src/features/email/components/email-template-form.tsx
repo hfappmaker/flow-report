@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRef } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -32,10 +31,6 @@ export const EmailTemplateForm = ({
   submitButtonText,
   onCancel,
 }: EmailTemplateFormProps) => {
-  const subjectInputRef = useRef<HTMLInputElement>(null);
-  const bodyTextAreaRef = useRef<HTMLTextAreaElement>(null);
-  const activeFieldRef = useRef<"subject" | "body">("body");
-
   const form = useForm<EmailTemplateFormValues>({
     resolver: zodResolver(emailTemplateFormSchema),
     defaultValues: defaultValues ?? {
@@ -45,37 +40,12 @@ export const EmailTemplateForm = ({
     },
   });
 
-  const handleInsertPlaceholder = (placeholder: string) => {
-    const fieldName = activeFieldRef.current;
-    const currentValue = form.getValues(fieldName);
-    const inputElement =
-      fieldName === "subject"
-        ? subjectInputRef.current
-        : bodyTextAreaRef.current;
-
-    if (inputElement) {
-      const start = inputElement.selectionStart ?? currentValue.length;
-      const end = inputElement.selectionEnd ?? currentValue.length;
-      const newValue =
-        currentValue.slice(0, start) + placeholder + currentValue.slice(end);
-      form.setValue(fieldName, newValue, { shouldDirty: true });
-
-      // カーソル位置を更新
-      setTimeout(() => {
-        inputElement.focus();
-        const newPosition = start + placeholder.length;
-        inputElement.setSelectionRange(newPosition, newPosition);
-      }, 0);
-    } else {
-      form.setValue(fieldName, currentValue + placeholder, {
-        shouldDirty: true,
-      });
-    }
-  };
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="flex justify-end">
+          <PlaceholderHelp />
+        </div>
         <FormField
           control={form.control}
           name="name"
@@ -94,19 +64,9 @@ export const EmailTemplateForm = ({
           name="subject"
           render={({ field }) => (
             <FormItem>
-              <div className="flex items-center gap-2">
-                <FormLabel>件名</FormLabel>
-                <PlaceholderHelp onInsert={handleInsertPlaceholder} />
-              </div>
+              <FormLabel>件名</FormLabel>
               <FormControl>
-                <Input
-                  {...field}
-                  ref={subjectInputRef}
-                  placeholder="メールの件名を入力"
-                  onFocus={() => {
-                    activeFieldRef.current = "subject";
-                  }}
-                />
+                <Input {...field} placeholder="メールの件名を入力" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -117,20 +77,9 @@ export const EmailTemplateForm = ({
           name="body"
           render={({ field }) => (
             <FormItem>
-              <div className="flex items-center gap-2">
-                <FormLabel>本文</FormLabel>
-                <PlaceholderHelp onInsert={handleInsertPlaceholder} />
-              </div>
+              <FormLabel>本文</FormLabel>
               <FormControl>
-                <TextArea
-                  {...field}
-                  ref={bodyTextAreaRef}
-                  placeholder="メール本文を入力"
-                  rows={8}
-                  onFocus={() => {
-                    activeFieldRef.current = "body";
-                  }}
-                />
+                <TextArea {...field} placeholder="メール本文を入力" rows={8} />
               </FormControl>
               <FormMessage />
             </FormItem>
