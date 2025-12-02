@@ -31,7 +31,7 @@ export function PlaceholderHelp() {
           プレースホルダー
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-96 p-0">
+      <PopoverContent className="w-[calc(100vw-2rem)] max-w-96 p-0">
         <div className="p-4 pb-2">
           <h4 className="font-medium leading-none">
             利用可能なプレースホルダー
@@ -41,8 +41,9 @@ export function PlaceholderHelp() {
           </p>
         </div>
         <div
-          className="max-h-[300px] overflow-y-auto overscroll-contain px-4"
+          className="max-h-[300px] touch-pan-y overflow-y-auto overscroll-contain px-4"
           onWheel={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
         >
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-popover">
