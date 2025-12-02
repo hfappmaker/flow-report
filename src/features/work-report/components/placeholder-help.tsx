@@ -5,14 +5,10 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { AVAILABLE_PLACEHOLDERS } from "@/features/work-report/utils/placeholder-utils";
 
 export function PlaceholderHelp() {
@@ -28,23 +24,28 @@ export function PlaceholderHelp() {
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
+    <Popover>
+      <PopoverTrigger asChild>
         <Button variant="outline" size="sm" type="button">
           <HelpCircle className="mr-1 size-4" />
           プレースホルダー
         </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle>利用可能なプレースホルダー</DialogTitle>
-        </DialogHeader>
-        <p className="text-sm text-muted-foreground">
-          クリックでコピーできます。値に貼り付けると動的に置換されます。
-        </p>
-        <div className="max-h-[60vh] touch-pan-y overflow-y-auto overscroll-contain">
+      </PopoverTrigger>
+      <PopoverContent className="w-96 p-0">
+        <div className="p-4 pb-2">
+          <h4 className="font-medium leading-none">
+            利用可能なプレースホルダー
+          </h4>
+          <p className="mt-1 text-sm text-muted-foreground">
+            クリックでコピーできます
+          </p>
+        </div>
+        <div
+          className="max-h-[300px] overflow-y-auto overscroll-contain px-4"
+          onWheel={(e) => e.stopPropagation()}
+        >
           <table className="w-full text-sm">
-            <thead>
+            <thead className="sticky top-0 bg-popover">
               <tr className="border-b">
                 <th className="pb-2 text-left font-medium">
                   プレースホルダー
@@ -58,7 +59,7 @@ export function PlaceholderHelp() {
                   key={placeholder.key}
                   className="border-b last:border-0 hover:bg-muted/50"
                 >
-                  <td className="py-3">
+                  <td className="py-2">
                     <button
                       type="button"
                       onClick={() => {
@@ -74,7 +75,7 @@ export function PlaceholderHelp() {
                       )}
                     </button>
                   </td>
-                  <td className="py-3 text-muted-foreground">
+                  <td className="py-2 text-muted-foreground">
                     {placeholder.description}
                   </td>
                 </tr>
@@ -82,18 +83,13 @@ export function PlaceholderHelp() {
             </tbody>
           </table>
         </div>
-        <DialogFooter className="flex-col gap-2 border-t pt-4 sm:flex-col">
+        <div className="border-t p-4 pt-2">
           <p className="text-xs text-muted-foreground">
             例: <code className="bg-muted px-1">{`\${作業者名}様`}</code> →
             &quot;山田太郎様&quot;
           </p>
-          <DialogClose asChild>
-            <Button variant="outline" className="w-full">
-              閉じる
-            </Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

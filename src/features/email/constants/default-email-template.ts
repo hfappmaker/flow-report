@@ -12,7 +12,7 @@ export const DEFAULT_EMAIL_TEMPLATE_NAME = "デフォルト";
  * システムデフォルトメールテンプレートの件名
  */
 export const DEFAULT_EMAIL_TEMPLATE_SUBJECT =
-  "${作業者名}さんから${対象年}年${対象月}月の作業報告書";
+  "${対象年}年${対象月}月分作業報告書【${作業者名}】";
 
 /**
  * システムデフォルトメールテンプレートの本文
