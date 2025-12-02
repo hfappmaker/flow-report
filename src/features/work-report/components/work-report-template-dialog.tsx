@@ -245,11 +245,11 @@ export function ExcelTemplateDialog({
     >
       <DialogPortal>
         <DialogOverlay />
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
+        <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>{getDialogTitle()}</DialogTitle>
           </DialogHeader>
-          {renderContent()}
+          <div className="overflow-y-auto">{renderContent()}</div>
         </DialogContent>
       </DialogPortal>
     </Dialog>
