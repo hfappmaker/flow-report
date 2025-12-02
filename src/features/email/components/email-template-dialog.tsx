@@ -135,7 +135,7 @@ export const EmailTemplateDialog = ({
     >
       <DialogPortal>
         <DialogOverlay />
-        <DialogContent className="w-96 p-6">
+        <DialogContent className="max-w-96 p-6">
           <DialogHeader>
             <DialogTitle>{getDialogTitle()}</DialogTitle>
           </DialogHeader>
