@@ -17,7 +17,7 @@ export const DEFAULT_EMAIL_TEMPLATE_SUBJECT =
 /**
  * システムデフォルトメールテンプレートの本文
  */
-export const DEFAULT_EMAIL_TEMPLATE_BODY = `\${宛先名}様
+export const DEFAULT_EMAIL_TEMPLATE_BODY = `\${担当者名}様
 
 お世話になっております。\${作業者名}です。
 

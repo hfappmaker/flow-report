@@ -24,12 +24,6 @@ export interface PlaceholderDefinition {
 export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
   // メール用プレースホルダー
   {
-    key: "宛先名",
-    label: "宛先名",
-    description: "担当者名（なければクライアント名）",
-    example: "山田商事",
-  },
-  {
     key: "クライアント名",
     label: "クライアント名",
     description: "クライアントの名前",
@@ -628,7 +622,6 @@ export function generateEmailPlaceholderValues(
 
   // メール用プレースホルダーを追加
   const emailPlaceholders: Record<string, string> = {
-    宛先名: emailData.contactName ?? emailData.clientName,
     クライアント名: emailData.clientName,
     担当者名: emailData.contactName ?? "",
   };

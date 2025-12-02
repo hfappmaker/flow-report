@@ -35,7 +35,7 @@ export function PlaceholderHelp() {
           プレースホルダー
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>利用可能なプレースホルダー</DialogTitle>
         </DialogHeader>

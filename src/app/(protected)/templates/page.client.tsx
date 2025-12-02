@@ -33,6 +33,13 @@ import {
 } from "@/features/email/actions/email-template";
 import { EmailTemplateDialog } from "@/features/email/components/email-template-dialog";
 import type { EmailTemplateFormValues } from "@/features/email/schemas/email-template-form-schema";
+import {
+  DEFAULT_EMAIL_TEMPLATE_ID,
+  DEFAULT_EMAIL_TEMPLATE_NAME,
+  DEFAULT_EMAIL_TEMPLATE_SUBJECT,
+  DEFAULT_EMAIL_TEMPLATE_BODY,
+  isDefaultEmailTemplate,
+} from "@/features/email/constants/default-email-template";
 import type { DialogType as EmailDialogType } from "@/features/email/types/dialog";
 import type { EmailTemplate } from "@/features/email/types/email-template";
 import { MAX_TEMPLATES_PER_TYPE } from "@/features/work-report/constants/work-report-constants";
@@ -69,6 +76,17 @@ const SYSTEM_DEFAULT_WORK_REPORT_TEMPLATE: ExcelTemplateWithFields = {
   sheetName: null,
   createUserId: "system",
   fieldMappings: DEFAULT_TEMPLATE_FIELD_MAPPINGS,
+};
+
+/**
+ * システムデフォルトのメールテンプレート（読み取り専用）
+ */
+const SYSTEM_DEFAULT_EMAIL_TEMPLATE: EmailTemplate = {
+  id: DEFAULT_EMAIL_TEMPLATE_ID,
+  name: DEFAULT_EMAIL_TEMPLATE_NAME,
+  subject: DEFAULT_EMAIL_TEMPLATE_SUBJECT,
+  body: DEFAULT_EMAIL_TEMPLATE_BODY,
+  createUserId: "system",
 };
 
 /**
@@ -185,6 +203,11 @@ export default function TemplatesClientPage({
     }
     return [];
   }, [activeTab, workReportTemplates, invoiceTemplates]);
+
+  // メールタブの場合、デフォルトテンプレートを先頭に追加
+  const displayEmailTemplates = useMemo(() => {
+    return [SYSTEM_DEFAULT_EMAIL_TEMPLATE, ...emailTemplates];
+  }, [emailTemplates]);
 
   // ユーザーが作成したテンプレート数が上限に達しているかチェック
   const isTemplateLimitReached = templates.length >= MAX_TEMPLATES_PER_TYPE;
@@ -489,65 +512,77 @@ export default function TemplatesClientPage({
       );
     }
 
-    if (emailTemplates.length > 0) {
+    if (displayEmailTemplates.length > 0) {
       return (
         <div className="space-y-3">
-          {emailTemplates.map((template) => (
-            <div
-              key={template.id}
-              className="flex items-center justify-between rounded-lg border p-4 hover:bg-muted/50"
-            >
-              <button
-                type="button"
-                className="flex-1 cursor-pointer text-left"
-                onClick={() => {
-                  setActiveEmailTemplate(template);
-                  setActiveEmailDialog("details");
-                }}
+          {displayEmailTemplates.map((template) => {
+            const isSystem = isDefaultEmailTemplate(template.id);
+            return (
+              <div
+                key={template.id}
+                className="flex items-center justify-between rounded-lg border p-4 hover:bg-muted/50"
               >
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{template.name}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Mail className="size-4" />
-                  {template.subject}
-                </div>
-              </button>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
+                  type="button"
+                  className="flex-1 cursor-pointer text-left"
                   onClick={() => {
                     setActiveEmailTemplate(template);
                     setActiveEmailDialog("details");
                   }}
                 >
-                  <Eye className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setActiveEmailTemplate(template);
-                    setActiveEmailDialog("edit");
-                  }}
-                >
-                  <Edit className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setActiveEmailTemplate(template);
-                    setActiveEmailDialog("delete");
-                  }}
-                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                >
-                  <Trash2 className="size-4" />
-                </Button>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{template.name}</span>
+                    {isSystem && (
+                      <Badge variant="secondary" className="text-xs">
+                        システム
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Mail className="size-4" />
+                    {template.subject}
+                  </div>
+                </button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setActiveEmailTemplate(template);
+                      setActiveEmailDialog("details");
+                    }}
+                  >
+                    <Eye className="size-4" />
+                  </Button>
+                  {!isSystem && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setActiveEmailTemplate(template);
+                          setActiveEmailDialog("edit");
+                        }}
+                      >
+                        <Edit className="size-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setActiveEmailTemplate(template);
+                          setActiveEmailDialog("delete");
+                        }}
+                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       );
     }

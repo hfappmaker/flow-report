@@ -53,7 +53,6 @@ export function generateBasicEmailPlaceholderValues(params: {
   targetDate: Date;
 }): Record<string, string> {
   return {
-    宛先名: params.contactName ?? params.clientName,
     クライアント名: params.clientName,
     担当者名: params.contactName ?? "",
     作業者名: params.userName,
