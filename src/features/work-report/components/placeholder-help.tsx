@@ -32,7 +32,7 @@ export function PlaceholderHelp() {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" type="button">
           <HelpCircle className="mr-1 size-4" />
-          プレースホルダー一覧
+          プレースホルダー
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
