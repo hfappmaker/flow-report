@@ -66,12 +66,12 @@ export function PlaceholderHelp() {
                       }}
                       className="flex items-center gap-1 rounded bg-muted px-2 py-1 font-mono text-xs hover:bg-muted/80"
                     >
+                      {`\${${placeholder.key}}`}
                       {copiedKey === placeholder.key ? (
                         <Check className="size-3 text-green-600" />
                       ) : (
                         <Copy className="size-3" />
                       )}
-                      {`\${${placeholder.key}}`}
                     </button>
                   </td>
                   <td className="py-3 text-muted-foreground">
