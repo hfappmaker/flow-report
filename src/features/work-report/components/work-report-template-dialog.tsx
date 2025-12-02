@@ -245,7 +245,7 @@ export function ExcelTemplateDialog({
     >
       <DialogPortal>
         <DialogOverlay />
-        <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-[600px]">
+        <DialogContent className="flex max-h-[90vh] w-[95vw] max-w-[600px] flex-col">
           <DialogHeader>
             <DialogTitle>{getDialogTitle()}</DialogTitle>
           </DialogHeader>
