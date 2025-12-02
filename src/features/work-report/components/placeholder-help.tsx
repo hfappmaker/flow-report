@@ -6,7 +6,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -80,12 +82,17 @@ export function PlaceholderHelp() {
             </tbody>
           </table>
         </div>
-        <div className="border-t pt-2">
+        <DialogFooter className="flex-col gap-2 border-t pt-4 sm:flex-col">
           <p className="text-xs text-muted-foreground">
             例: <code className="bg-muted px-1">{`\${作業者名}様`}</code> →
             &quot;山田太郎様&quot;
           </p>
-        </div>
+          <DialogClose asChild>
+            <Button variant="outline" className="w-full">
+              閉じる
+            </Button>
+          </DialogClose>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
