@@ -622,7 +622,7 @@ export default function TemplatesClientPage({
           }}
           className="w-full"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <TabsList>
               <TabsTrigger
                 value="WORK_REPORT"
@@ -640,7 +640,7 @@ export default function TemplatesClientPage({
                 メール
               </TabsTrigger>
             </TabsList>
-            <div className="flex flex-col items-end gap-1">
+            <div className="flex flex-col items-start gap-1 sm:items-end">
               <Button
                 onClick={handleNewButtonClick}
                 className="flex items-center gap-1"
