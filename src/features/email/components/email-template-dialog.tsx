@@ -3,8 +3,6 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogOverlay,
-  DialogPortal,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { EmailTemplateForm } from "@/features/email/components/email-template-form";
@@ -133,15 +131,12 @@ export const EmailTemplateDialog = ({
         if (!open) onCancel();
       }}
     >
-      <DialogPortal>
-        <DialogOverlay />
-        <DialogContent className="w-[95vw] max-w-96 p-6">
-          <DialogHeader>
-            <DialogTitle>{getDialogTitle()}</DialogTitle>
-          </DialogHeader>
-          {renderContent()}
-        </DialogContent>
-      </DialogPortal>
+      <DialogContent className="max-w-96">
+        <DialogHeader>
+          <DialogTitle>{getDialogTitle()}</DialogTitle>
+        </DialogHeader>
+        {renderContent()}
+      </DialogContent>
     </Dialog>
   );
 };
