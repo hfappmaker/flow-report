@@ -131,7 +131,7 @@ export const EmailTemplateDialog = ({
         if (!open) onCancel();
       }}
     >
-      <DialogContent className="max-w-96">
+      <DialogContent className="sm:max-w-96">
         <DialogHeader>
           <DialogTitle>{getDialogTitle()}</DialogTitle>
         </DialogHeader>
