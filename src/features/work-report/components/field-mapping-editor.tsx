@@ -41,7 +41,10 @@ export function FieldMappingEditor({
 
   return (
     <div className="space-y-4">
-      <Label>フィールドマッピング</Label>
+      <div className="flex items-center justify-between">
+        <Label>フィールドマッピング</Label>
+        <PlaceholderHelp />
+      </div>
 
       <div className="space-y-3">
         {fieldMappings.map((mapping, index) => (
@@ -81,28 +84,17 @@ export function FieldMappingEditor({
                 >
                   値（プレースホルダー使用可）
                 </Label>
-                <div className="flex gap-2">
-                  <Input
-                    id={`valueTemplate-${String(index)}`}
-                    value={mapping.valueTemplate}
-                    onChange={(e) => {
-                      handleChange(index, "valueTemplate", e.target.value);
-                    }}
-                    placeholder="例: ${作業者名}様"
-                    className={
-                      errors?.[index]?.valueTemplate ? "border-red-500" : ""
-                    }
-                  />
-                  <PlaceholderHelp
-                    onInsert={(placeholder) => {
-                      handleChange(
-                        index,
-                        "valueTemplate",
-                        mapping.valueTemplate + placeholder,
-                      );
-                    }}
-                  />
-                </div>
+                <Input
+                  id={`valueTemplate-${String(index)}`}
+                  value={mapping.valueTemplate}
+                  onChange={(e) => {
+                    handleChange(index, "valueTemplate", e.target.value);
+                  }}
+                  placeholder="例: ${作業者名}様"
+                  className={
+                    errors?.[index]?.valueTemplate ? "border-red-500" : ""
+                  }
+                />
                 {errors?.[index]?.valueTemplate && (
                   <p className="mt-1 text-xs text-red-500">
                     {errors[index].valueTemplate}
