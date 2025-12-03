@@ -2,6 +2,7 @@ import { WorkReportStatus } from "@prisma/client";
 
 import { AttendanceDto } from "@/features/work-report/types/attendance";
 import { db } from "@/repositories/db";
+import { getBillingPeriod } from "@/utils/date-utils";
 
 export async function getWorkReportById(workReportId: string) {
   const workReport = await db.workReport.findUnique({
@@ -102,15 +103,29 @@ export async function getWorkReportsByContractIdAndYearMonthDateRange(
 }
 
 export async function getDraftWorkReportsUpToCurrentMonth(userId?: string) {
-  // 現在の年月の1日を計算（例: 2025-11-01）
+  // 日本時間 (UTC+9) で今日を計算
+  // サーバーがUTCで動作している場合でも、日本時間で正しく判定するため
   const now = new Date();
-  const currentMonthFirstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  const japanTimeMs = now.getTime() + 9 * 60 * 60 * 1000;
+  const japanTime = new Date(japanTimeMs);
+  const today = new Date(
+    Date.UTC(
+      japanTime.getUTCFullYear(),
+      japanTime.getUTCMonth(),
+      japanTime.getUTCDate()
+    )
+  );
+
+  // 来月の1日まで取得（締め日により来月の報告書が今日から始まる可能性があるため）
+  const nextMonthFirstDay = new Date(
+    Date.UTC(japanTime.getUTCFullYear(), japanTime.getUTCMonth() + 1, 1)
+  );
 
   const workReports = await db.workReport.findMany({
     where: {
       status: WorkReportStatus.DRAFT,
       targetDate: {
-        lte: currentMonthFirstDay,
+        lte: nextMonthFirstDay,
       },
       ...(userId && {
         contract: {
@@ -123,7 +138,21 @@ export async function getDraftWorkReportsUpToCurrentMonth(userId?: string) {
     },
   });
 
-  const groupedReports = workReports.reduce<
+  // 締め日を考慮して、今日が対象期間の開始日以降の報告書のみをフィルタリング
+  // （対象期間が始まっている、または過去の報告書のみ表示）
+  const filteredReports = workReports.filter((report) => {
+    const targetDate = report.targetDate;
+    const year = targetDate.getUTCFullYear();
+    const month = targetDate.getUTCMonth() + 1; // 1-12
+    const closingDay = report.contract.closingDay;
+
+    const { startDate } = getBillingPeriod(year, month, closingDay);
+
+    // 対象期間の開始日が今日以前の報告書を表示
+    return startDate <= today;
+  });
+
+  const groupedReports = filteredReports.reduce<
     Record<
       string,
       {
