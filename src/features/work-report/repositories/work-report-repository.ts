@@ -102,9 +102,14 @@ export async function getWorkReportsByContractIdAndYearMonthDateRange(
 }
 
 export async function getDraftWorkReportsUpToCurrentMonth(userId?: string) {
-  // 現在の年月の1日を計算（例: 2025-11-01）
+  // 日本時間 (UTC+9) で現在の年月の1日を計算
+  // サーバーがUTCで動作している場合でも、日本時間で今月の報告書を正しく表示するため
   const now = new Date();
-  const currentMonthFirstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  const japanTimeMs = now.getTime() + 9 * 60 * 60 * 1000;
+  const japanTime = new Date(japanTimeMs);
+  const currentMonthFirstDay = new Date(
+    Date.UTC(japanTime.getUTCFullYear(), japanTime.getUTCMonth(), 1)
+  );
 
   const workReports = await db.workReport.findMany({
     where: {
