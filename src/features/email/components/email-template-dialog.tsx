@@ -98,13 +98,13 @@ export const EmailTemplateDialog = ({
           <div className="space-y-4">
             <div>
               <h3 className="text-lg font-medium">基本情報</h3>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <div className="font-semibold">Name</div>
+              <div className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
+                <div className="font-semibold">テンプレート名</div>
                 <div>{template?.name}</div>
-                <div className="font-semibold">Subject</div>
+                <div className="font-semibold">件名</div>
                 <div>{template?.subject}</div>
-                <div className="font-semibold">Body</div>
-                <div>{template?.body}</div>
+                <div className="font-semibold">本文</div>
+                <div className="whitespace-pre-wrap">{template?.body}</div>
               </div>
             </div>
             <div className="mt-4 flex justify-end gap-2">
@@ -131,7 +131,7 @@ export const EmailTemplateDialog = ({
         if (!open) onCancel();
       }}
     >
-      <DialogContent className="sm:max-w-96">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{getDialogTitle()}</DialogTitle>
         </DialogHeader>
