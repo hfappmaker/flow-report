@@ -158,6 +158,7 @@ export async function getDraftWorkReportsUpToCurrentMonth(userId?: string) {
       {
         contractName: string;
         clientName: string;
+        closingDay: number | null;
         workReports: {
           id: string;
           targetDate: Date;
@@ -171,6 +172,7 @@ export async function getDraftWorkReportsUpToCurrentMonth(userId?: string) {
     acc[contractId] = acc[contractId] ?? {
       contractName: report.contract.name,
       clientName: report.contract.clientName,
+      closingDay: report.contract.closingDay,
       workReports: [],
     };
 
@@ -265,6 +267,7 @@ export async function getSubmittedWorkReportsByRecentMonths(
       {
         contractName: string;
         clientName: string;
+        closingDay: number | null;
         workReports: {
           id: string;
           targetDate: Date;
@@ -278,6 +281,7 @@ export async function getSubmittedWorkReportsByRecentMonths(
     acc[contractId] = acc[contractId] ?? {
       contractName: report.contract.name,
       clientName: report.contract.clientName,
+      closingDay: report.contract.closingDay,
       workReports: [],
     };
 

@@ -49,6 +49,70 @@ import {
   getWorkReportStatusDisplayText,
 } from "@/features/work-report/utils/status-utils";
 import { useMessageState } from "@/hooks/use-message-state";
+import { getTargetYearMonth } from "@/utils/date-utils";
+import {
+  type ContractDashboard,
+  type WorkReportDashboard,
+} from "@/features/dashboard/types/dashboard";
+
+/**
+ * 日本時間で今日の日付をUTC形式で取得する
+ */
+function getTodayInJapanTimeUTC(): Date {
+  const now = new Date();
+  const japanTimeMs = now.getTime() + 9 * 60 * 60 * 1000;
+  const japanTime = new Date(japanTimeMs);
+  return new Date(
+    Date.UTC(
+      japanTime.getUTCFullYear(),
+      japanTime.getUTCMonth(),
+      japanTime.getUTCDate(),
+    ),
+  );
+}
+
+/**
+ * 勤怠入力が可能かどうかを判定する
+ * 対象月のWorkReportがDRAFT状態で存在する場合のみ入力可能
+ */
+function getAttendanceEntryInfo(
+  contract: ContractDashboard,
+  contractId: string,
+  submittedWorkReports: Record<string, ContractDashboard>,
+): { canEnter: boolean; targetWorkReport: WorkReportDashboard | null } {
+  const todayUTC = getTodayInJapanTimeUTC();
+  const targetYearMonth = getTargetYearMonth(todayUTC, contract.closingDay);
+
+  // ドラフト一覧から対象月のWorkReportを探す
+  const draftWorkReport = contract.workReports.find((wr) => {
+    const wrYear = wr.targetDate.getFullYear();
+    const wrMonth = wr.targetDate.getMonth() + 1;
+    return wrYear === targetYearMonth.year && wrMonth === targetYearMonth.month;
+  });
+
+  if (draftWorkReport) {
+    return { canEnter: true, targetWorkReport: draftWorkReport };
+  }
+
+  // 対象月のWorkReportがsubmittedにあるかチェック（すでに作成済みの場合は無効）
+  const submittedContract = submittedWorkReports[contractId];
+  if (submittedContract) {
+    const submittedWorkReport = submittedContract.workReports.find((wr) => {
+      const wrYear = wr.targetDate.getFullYear();
+      const wrMonth = wr.targetDate.getMonth() + 1;
+      return (
+        wrYear === targetYearMonth.year && wrMonth === targetYearMonth.month
+      );
+    });
+    if (submittedWorkReport) {
+      // 作成済みなので入力不可
+      return { canEnter: false, targetWorkReport: null };
+    }
+  }
+
+  // 対象月のWorkReportが存在しない場合も入力不可
+  return { canEnter: false, targetWorkReport: null };
+}
 
 export default function DashboardClientPage({
   draftWorkReports,
@@ -282,28 +346,34 @@ export default function DashboardClientPage({
                   {contract.clientName}
                 </p>
               </div>
-              {contract.workReports.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    startTransition(() => {
-                      void (async () => {
-                        // 最新の作業報告書を取得（通常は1件のはず）
-                        const latestWorkReport = contract.workReports[0];
-                        await openAttendanceDialog(
-                          contractId,
-                          latestWorkReport.id,
-                        );
-                      })();
-                    });
-                  }}
-                >
-                  <Clock className="mr-2 size-4" />
-                  勤怠入力
-                </Button>
-              )}
+              {contract.workReports.length > 0 &&
+                (() => {
+                  const { canEnter, targetWorkReport } = getAttendanceEntryInfo(
+                    contract,
+                    contractId,
+                    submittedWorkReportsLast3Months,
+                  );
+                  return (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={!canEnter}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!canEnter || !targetWorkReport) return;
+                        startTransition(() => {
+                          void openAttendanceDialog(
+                            contractId,
+                            targetWorkReport.id,
+                          );
+                        });
+                      }}
+                    >
+                      <Clock className="mr-2 size-4" />
+                      勤怠入力
+                    </Button>
+                  );
+                })()}
             </div>
           </CardHeader>
           <CardContent>

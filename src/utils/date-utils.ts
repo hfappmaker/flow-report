@@ -121,3 +121,35 @@ export function getBillingPeriod(
 
   return { startDate, endDate };
 }
+
+/**
+ * 指定された日付と締め日から、その日付が属する対象年月を計算する
+ * getBillingPeriodの逆関数
+ * @param date 対象日付（UTCとして扱われる）
+ * @param closingDay 締め日（1-31）。nullの場合は月末締めとして扱う
+ * @returns 対象年月（year: 年, month: 月（1-12））
+ */
+export function getTargetYearMonth(
+  date: Date,
+  closingDay: number | null,
+): { year: number; month: number } {
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth() + 1; // 1-12
+  const day = date.getUTCDate();
+
+  // 締め日がnullまたは月末締めの場合、日付の属する月がそのまま対象月
+  if (!closingDay) {
+    return { year, month };
+  }
+
+  // 締め日より後の場合、翌月に属する
+  if (day > closingDay) {
+    if (month === 12) {
+      return { year: year + 1, month: 1 };
+    }
+    return { year, month: month + 1 };
+  }
+
+  // 締め日以前の場合、当月に属する
+  return { year, month };
+}

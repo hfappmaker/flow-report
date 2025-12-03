@@ -16,6 +16,7 @@ export type ContractDashboard = RenameProperty<
 > & {
   workReports: WorkReportDashboard[];
   clientName: string;
+  closingDay: number | null;
 };
 
 export interface ClientDashboard {
