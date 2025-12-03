@@ -190,6 +190,51 @@ export const contractFormSchema = z
       message: "契約期間は最長1年以内にしてください",
       path: ["endDate"],
     },
+  )
+  .refine(
+    (data) => {
+      if (data.dailyWorkMinutes === null || data.basicStartTime === null) {
+        return true;
+      }
+      const totalMinutes =
+        data.basicStartTime.getUTCHours() * 60 +
+        data.basicStartTime.getUTCMinutes();
+      return totalMinutes % data.dailyWorkMinutes === 0;
+    },
+    {
+      message: "基本開始時刻の分は作業単位の倍数である必要があります",
+      path: ["basicStartTime"],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.dailyWorkMinutes === null || data.basicEndTime === null) {
+        return true;
+      }
+      const totalMinutes =
+        data.basicEndTime.getUTCHours() * 60 +
+        data.basicEndTime.getUTCMinutes();
+      return totalMinutes % data.dailyWorkMinutes === 0;
+    },
+    {
+      message: "基本終了時刻の分は作業単位の倍数である必要があります",
+      path: ["basicEndTime"],
+    },
+  )
+  .refine(
+    (data) => {
+      if (
+        data.dailyWorkMinutes === null ||
+        data.basicBreakDuration === null
+      ) {
+        return true;
+      }
+      return data.basicBreakDuration % data.dailyWorkMinutes === 0;
+    },
+    {
+      message: "基本休憩時間は作業単位の倍数である必要があります",
+      path: ["basicBreakDuration"],
+    },
   );
 
 export type ContractFormValues = z.infer<typeof contractFormSchema>;
