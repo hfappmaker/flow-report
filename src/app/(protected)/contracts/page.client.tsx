@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/date-picker";
 import { DialogFooter } from "@/components/ui/dialog";
 import FormError from "@/components/ui/feedback/error-alert";
@@ -299,23 +299,23 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
   };
 
   return (
-    <div className="mx-auto min-w-96 max-w-6xl p-6">
-      <div className="mb-6">
-        <div className="mb-2 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">契約一覧</h1>
-          <Button
-            onClick={() => {
-              setActiveDialog("create");
-            }}
-          >
-            新しい契約を作成
-          </Button>
+    <Card className="w-full shadow-sm">
+      <CardHeader className="flex-row items-center justify-between gap-x-3">
+        <div>
+          <h1 className="text-2xl font-semibold">契約一覧</h1>
+          <p className="text-muted-foreground">あなたの契約を管理できます</p>
         </div>
-        <p className="text-muted-foreground">あなたの契約を管理できます</p>
-      </div>
-
-      <FormError message={error.message} resetSignal={error.date.getTime()} />
-      <FormSuccess
+        <Button
+          onClick={() => {
+            setActiveDialog("create");
+          }}
+        >
+          新しい契約を作成
+        </Button>
+      </CardHeader>
+      <CardContent>
+        <FormError message={error.message} resetSignal={error.date.getTime()} />
+        <FormSuccess
         message={success.message}
         resetSignal={success.date.getTime()}
       />
@@ -540,6 +540,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
           submitButtonText="作成"
         />
       </ContractDialog>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
