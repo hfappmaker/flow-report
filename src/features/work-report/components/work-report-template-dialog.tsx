@@ -8,8 +8,6 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogOverlay,
-  DialogPortal,
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
@@ -243,15 +241,12 @@ export function ExcelTemplateDialog({
         if (!open) onCancel();
       }}
     >
-      <DialogPortal>
-        <DialogOverlay />
-        <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>{getDialogTitle()}</DialogTitle>
-          </DialogHeader>
-          <div className="overflow-y-auto">{renderContent()}</div>
-        </DialogContent>
-      </DialogPortal>
+      <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>{getDialogTitle()}</DialogTitle>
+        </DialogHeader>
+        <div className="overflow-y-auto">{renderContent()}</div>
+      </DialogContent>
     </Dialog>
   );
 }
