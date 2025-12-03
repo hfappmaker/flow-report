@@ -23,6 +23,50 @@ export const editFormSchema = z.object({
   memo: z.string().nullable(),
 });
 
+// dailyWorkMinutesを受け取って動的にバリデーションを追加するスキーマビルダー
+export const createEditFormSchema = (dailyWorkMinutes: number) =>
+  editFormSchema
+    .refine(
+      (data) => {
+        if (dailyWorkMinutes === 0 || data.startTime === null) {
+          return true;
+        }
+        const totalMinutes =
+          data.startTime.getUTCHours() * 60 + data.startTime.getUTCMinutes();
+        return totalMinutes % dailyWorkMinutes === 0;
+      },
+      {
+        message: "出勤時間の分は作業単位の倍数である必要があります",
+        path: ["startTime"],
+      },
+    )
+    .refine(
+      (data) => {
+        if (dailyWorkMinutes === 0 || data.endTime === null) {
+          return true;
+        }
+        const totalMinutes =
+          data.endTime.getUTCHours() * 60 + data.endTime.getUTCMinutes();
+        return totalMinutes % dailyWorkMinutes === 0;
+      },
+      {
+        message: "退勤時間の分は作業単位の倍数である必要があります",
+        path: ["endTime"],
+      },
+    )
+    .refine(
+      (data) => {
+        if (dailyWorkMinutes === 0 || data.breakDuration === null) {
+          return true;
+        }
+        return data.breakDuration % dailyWorkMinutes === 0;
+      },
+      {
+        message: "休憩時間は作業単位の倍数である必要があります",
+        path: ["breakDuration"],
+      },
+    );
+
 export const bulkEditFormSchema = z.object({
   startDate: z
     .date()
@@ -44,6 +88,50 @@ export const bulkEditFormSchema = z.object({
   memo: z.string().nullable(),
   prompt: z.string().nullable(),
 });
+
+// dailyWorkMinutesを受け取って動的にバリデーションを追加するスキーマビルダー
+export const createBulkEditFormSchema = (dailyWorkMinutes: number) =>
+  bulkEditFormSchema
+    .refine(
+      (data) => {
+        if (dailyWorkMinutes === 0 || data.startTime === null) {
+          return true;
+        }
+        const totalMinutes =
+          data.startTime.getUTCHours() * 60 + data.startTime.getUTCMinutes();
+        return totalMinutes % dailyWorkMinutes === 0;
+      },
+      {
+        message: "出勤時間の分は作業単位の倍数である必要があります",
+        path: ["startTime"],
+      },
+    )
+    .refine(
+      (data) => {
+        if (dailyWorkMinutes === 0 || data.endTime === null) {
+          return true;
+        }
+        const totalMinutes =
+          data.endTime.getUTCHours() * 60 + data.endTime.getUTCMinutes();
+        return totalMinutes % dailyWorkMinutes === 0;
+      },
+      {
+        message: "退勤時間の分は作業単位の倍数である必要があります",
+        path: ["endTime"],
+      },
+    )
+    .refine(
+      (data) => {
+        if (dailyWorkMinutes === 0 || data.breakDuration === null) {
+          return true;
+        }
+        return data.breakDuration % dailyWorkMinutes === 0;
+      },
+      {
+        message: "休憩時間は作業単位の倍数である必要があります",
+        path: ["breakDuration"],
+      },
+    );
 
 export const templateUploadSchema = z.object({
   file: z

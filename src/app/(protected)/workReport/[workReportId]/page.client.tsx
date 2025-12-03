@@ -61,7 +61,7 @@ import { generateWorkReportExcel } from "@/features/work-report/libs/excel-repor
 import {
   type EditFormValues,
   type BulkEditFormValues,
-  bulkEditFormSchema,
+  createBulkEditFormSchema,
 } from "@/features/work-report/schemas/work-report-form-schemas";
 import { type AttendanceData } from "@/features/work-report/types/attendance";
 import type { ExportFile } from "@/features/work-report/types/export-types";
@@ -264,6 +264,12 @@ export default function ClientWorkReportPage({
       rateType,
       monthlyWorkMinutes,
     ],
+  );
+
+  // dailyWorkMinutesを使って動的にスキーマを生成
+  const bulkEditFormSchema = useMemo(
+    () => createBulkEditFormSchema(dailyWorkMinutes),
+    [dailyWorkMinutes],
   );
 
   // 一括編集用フォーム
@@ -1004,47 +1010,72 @@ export default function ClientWorkReportPage({
               {/* 勤怠情報 */}
               <div className="space-y-4">
                 <h3 className="text-sm font-medium">勤怠情報</h3>
-                <div className="flex flex-wrap gap-4">
-                  <TimePickerFieldForDate
-                    control={bulkEditForm.control}
-                    name="startTime"
-                    showClearButton={false}
-                    minuteStep={dailyWorkMinutes}
-                    label="出勤時間"
-                  />
-                  <TimePickerFieldForDate
-                    control={bulkEditForm.control}
-                    name="endTime"
-                    showClearButton={false}
-                    minuteStep={dailyWorkMinutes}
-                    label="退勤時間"
-                  />
-                  <TimePickerFieldForNumber
-                    control={bulkEditForm.control}
-                    name="breakDuration"
-                    showClearButton={false}
-                    minuteStep={dailyWorkMinutes}
-                    label="休憩時間"
-                  />
-                  <FormField
-                    control={bulkEditForm.control}
-                    name="memo"
-                    render={({ field }) => (
-                      <FormItem className="w-full">
-                        <FormLabel>作業内容</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="text"
-                            className="w-full max-w-[400px]"
-                            {...field}
-                            value={field.value ?? ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-4">
+                    <div className="w-[140px]">
+                      <TimePickerFieldForDate
+                        control={bulkEditForm.control}
+                        name="startTime"
+                        showClearButton={false}
+                        minuteStep={dailyWorkMinutes}
+                        label="出勤時間"
+                        showFormMessage={false}
+                      />
+                    </div>
+                    <div className="w-[140px]">
+                      <TimePickerFieldForDate
+                        control={bulkEditForm.control}
+                        name="endTime"
+                        showClearButton={false}
+                        minuteStep={dailyWorkMinutes}
+                        label="退勤時間"
+                        showFormMessage={false}
+                      />
+                    </div>
+                    <div className="w-[140px]">
+                      <TimePickerFieldForNumber
+                        control={bulkEditForm.control}
+                        name="breakDuration"
+                        showClearButton={false}
+                        minuteStep={dailyWorkMinutes}
+                        label="休憩時間"
+                        showFormMessage={false}
+                      />
+                    </div>
+                  </div>
+                  {/* バリデーションエラーをまとめて表示 */}
+                  {(bulkEditForm.formState.errors.startTime ||
+                    bulkEditForm.formState.errors.endTime ||
+                    bulkEditForm.formState.errors.breakDuration) && (
+                    <p className="text-sm font-medium text-destructive">
+                      {[
+                        bulkEditForm.formState.errors.startTime?.message,
+                        bulkEditForm.formState.errors.endTime?.message,
+                        bulkEditForm.formState.errors.breakDuration?.message,
+                      ]
+                        .filter(Boolean)
+                        .join(" / ")}
+                    </p>
+                  )}
                 </div>
+                <FormField
+                  control={bulkEditForm.control}
+                  name="memo"
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <FormLabel>作業内容</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          className="w-full max-w-[400px]"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
               <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 <Button

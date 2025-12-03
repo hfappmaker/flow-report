@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import { DatePicker } from "@/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +23,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { TimePickerFieldForDate } from "@/components/ui/time-picker";
 import { TimePickerFieldForNumber } from "@/components/ui/time-picker";
-import { editFormSchema } from "@/features/work-report/schemas/work-report-form-schemas";
+import {
+  editFormSchema,
+  createEditFormSchema,
+} from "@/features/work-report/schemas/work-report-form-schemas";
 import { type Holiday } from "@/features/holidays/types/holiday";
 import { formatDateAsUTC } from "@/utils/date-utils";
 
@@ -88,8 +90,14 @@ export function AttendanceEditDialog({
   dailyWorkMinutes,
   holidays = [],
 }: AttendanceEditDialogProps) {
+  // dailyWorkMinutesを使って動的にスキーマを生成
+  const formSchema = useMemo(
+    () => createEditFormSchema(dailyWorkMinutes),
+    [dailyWorkMinutes],
+  );
+
   const editForm = useForm<EditFormValues>({
-    resolver: zodResolver(editFormSchema),
+    resolver: zodResolver(formSchema),
     defaultValues: {
       startTime: defaultValues?.startTime ?? null,
       endTime: defaultValues?.endTime ?? null,
@@ -167,44 +175,69 @@ export function AttendanceEditDialog({
                   基本時間を入力
                 </Button>
               </div>
-              <div className="flex flex-wrap gap-4">
-                <TimePickerFieldForDate
-                  control={editForm.control}
-                  name="startTime"
-                  label="出勤時間"
-                  minuteStep={dailyWorkMinutes}
-                />
-                <TimePickerFieldForDate
-                  control={editForm.control}
-                  name="endTime"
-                  label="退勤時間"
-                  minuteStep={dailyWorkMinutes}
-                />
-                <TimePickerFieldForNumber
-                  control={editForm.control}
-                  name="breakDuration"
-                  label="休憩時間"
-                  minuteStep={dailyWorkMinutes}
-                />
-                <FormField
-                  control={editForm.control}
-                  name="memo"
-                  render={({ field }) => (
-                    <FormItem className="w-full">
-                      <FormLabel>作業内容</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          className="w-full max-w-[400px]"
-                          {...field}
-                          value={field.value ?? ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-4">
+                  <div className="w-[140px]">
+                    <TimePickerFieldForDate
+                      control={editForm.control}
+                      name="startTime"
+                      label="出勤時間"
+                      minuteStep={dailyWorkMinutes}
+                      showFormMessage={false}
+                    />
+                  </div>
+                  <div className="w-[140px]">
+                    <TimePickerFieldForDate
+                      control={editForm.control}
+                      name="endTime"
+                      label="退勤時間"
+                      minuteStep={dailyWorkMinutes}
+                      showFormMessage={false}
+                    />
+                  </div>
+                  <div className="w-[140px]">
+                    <TimePickerFieldForNumber
+                      control={editForm.control}
+                      name="breakDuration"
+                      label="休憩時間"
+                      minuteStep={dailyWorkMinutes}
+                      showFormMessage={false}
+                    />
+                  </div>
+                </div>
+                {/* バリデーションエラーをまとめて表示 */}
+                {(editForm.formState.errors.startTime ||
+                  editForm.formState.errors.endTime ||
+                  editForm.formState.errors.breakDuration) && (
+                  <p className="text-sm font-medium text-destructive">
+                    {[
+                      editForm.formState.errors.startTime?.message,
+                      editForm.formState.errors.endTime?.message,
+                      editForm.formState.errors.breakDuration?.message,
+                    ]
+                      .filter(Boolean)
+                      .join(" / ")}
+                  </p>
+                )}
               </div>
+              <FormField
+                control={editForm.control}
+                name="memo"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>作業内容</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        className="w-full max-w-[400px]"
+                        {...field}
+                        value={field.value ?? ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 <Button
                   type="button"

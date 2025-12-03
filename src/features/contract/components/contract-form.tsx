@@ -610,27 +610,52 @@ export const ContractForm = ({
           </div>
 
           {/* Basic Start Time, Basic End Time, and Basic Break Duration in the same row */}
-          <div className="flex flex-wrap gap-4">
-            <TimePickerFieldForDate
-              control={form.control}
-              name="basicStartTime"
-              minuteStep={form.getValues("dailyWorkMinutes") ?? 1}
-              label="基本開始時刻"
-            />
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-4">
+              <div className="w-[140px]">
+                <TimePickerFieldForDate
+                  control={form.control}
+                  name="basicStartTime"
+                  minuteStep={form.getValues("dailyWorkMinutes") ?? 1}
+                  label="基本開始時刻"
+                  showFormMessage={false}
+                />
+              </div>
 
-            <TimePickerFieldForDate
-              control={form.control}
-              name="basicEndTime"
-              minuteStep={form.getValues("dailyWorkMinutes") ?? 1}
-              label="基本終了時刻"
-            />
+              <div className="w-[140px]">
+                <TimePickerFieldForDate
+                  control={form.control}
+                  name="basicEndTime"
+                  minuteStep={form.getValues("dailyWorkMinutes") ?? 1}
+                  label="基本終了時刻"
+                  showFormMessage={false}
+                />
+              </div>
 
-            <TimePickerFieldForNumber
-              control={form.control}
-              name="basicBreakDuration"
-              minuteStep={form.getValues("dailyWorkMinutes") ?? 1}
-              label="基本休憩時間(分)"
-            />
+              <div className="w-[160px]">
+                <TimePickerFieldForNumber
+                  control={form.control}
+                  name="basicBreakDuration"
+                  minuteStep={form.getValues("dailyWorkMinutes") ?? 1}
+                  label="基本休憩時間(分)"
+                  showFormMessage={false}
+                />
+              </div>
+            </div>
+            {/* バリデーションエラーをまとめて表示 */}
+            {(form.formState.errors.basicStartTime ||
+              form.formState.errors.basicEndTime ||
+              form.formState.errors.basicBreakDuration) && (
+              <p className="text-sm font-medium text-destructive">
+                {[
+                  form.formState.errors.basicStartTime?.message,
+                  form.formState.errors.basicEndTime?.message,
+                  form.formState.errors.basicBreakDuration?.message,
+                ]
+                  .filter(Boolean)
+                  .join(" / ")}
+              </p>
+            )}
           </div>
 
           {/* Basic Memo */}
