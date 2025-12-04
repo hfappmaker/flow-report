@@ -36,7 +36,11 @@ import {
   convertContractFormValuesToContract,
   convertContractToFormValues,
 } from "@/features/contract/utils/contract-converter";
-import { type DashboardClientPageProps } from "@/features/dashboard/types/dashboard";
+import {
+  type ContractDashboard,
+  type DashboardClientPageProps,
+  type WorkReportDashboard,
+} from "@/features/dashboard/types/dashboard";
 import { SubscriptionStatus } from "@/features/subscription/components/subscription-status";
 import {
   getAttendanceByWorkReportIdAndDateAction,
@@ -50,10 +54,6 @@ import {
 } from "@/features/work-report/utils/status-utils";
 import { useMessageState } from "@/hooks/use-message-state";
 import { getTargetYearMonth } from "@/utils/date-utils";
-import {
-  type ContractDashboard,
-  type WorkReportDashboard,
-} from "@/features/dashboard/types/dashboard";
 
 /**
  * 日本時間で今日の日付をUTC形式で取得する
