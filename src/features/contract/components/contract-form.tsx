@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import dayjs from "dayjs";
+import { useMemo } from "react";
 import { useForm, Resolver } from "react-hook-form";
 import * as z from "zod";
 
@@ -22,220 +23,229 @@ import {
   TimePickerFieldForNumber,
 } from "@/components/ui/time-picker";
 
-export const contractFormSchema = z
-  .object({
-    name: z.string().min(1, "契約名は必須です"),
-    startDate: z.date({
-      message: "開始日は必須です",
-    }),
-    endDate: z.date({
-      message: "終了日は必須です",
-    }),
-    clientName: z.string().min(1, "クライアント名は必須です"),
-    clientContactName: z.string(),
-    clientEmail: z.union([
-      z.email("有効なメールアドレスを入力してください"),
-      z.literal(""),
-    ]),
-    unitPrice: z.number().nullable(),
-    settlementMin: z.number().nullable(),
-    settlementMax: z.number().nullable(),
-    rateType: z
-      .enum(["upperLower", "middle", "fixed", "hourlyRate"])
-      .default("upperLower"),
-    upperRate: z.number().nullable(),
-    lowerRate: z.number().nullable(),
-    middleRate: z.number().nullable(),
-    hourlyRate: z.number().nullable(),
-    dailyWorkMinutes: z.number().nullable(),
-    monthlyWorkMinutes: z.number().nullable(),
-    basicStartTime: z.date().nullable(),
-    basicEndTime: z.date().nullable(),
-    basicBreakDuration: z.number().nullable(),
-    basicMemo: z.string().nullable(),
-    closingDay: z
-      .number()
-      .int("整数で入力してください")
-      .min(1, "締め日は1日以上である必要があります")
-      .max(31, "締め日は31日以下である必要があります")
-      .nullable(),
-    paymentMonthOffset: z.number().int().min(0).max(2).default(1), // 0=当月, 1=翌月, 2=翌々月
-    paymentDay: z
-      .number()
-      .int("整数で入力してください")
-      .min(1, "支払日は1日以上である必要があります")
-      .max(31, "支払日は31日以下である必要があります")
-      .nullable(),
-    taxInclusiveType: z.enum(["INCLUSIVE", "EXCLUSIVE"]).default("EXCLUSIVE"),
-    taxRoundingType: z
-      .enum(["ROUND_DOWN", "ROUND_UP", "ROUND"])
-      .default("ROUND_DOWN"),
-  })
-  .refine(
-    (data) => {
-      // 固定精算と時間単価以外は月単価が必須
-      if (data.rateType !== "fixed" && data.rateType !== "hourlyRate") {
-        return data.unitPrice !== null;
-      }
-      // 固定精算の場合は月単価が必須
-      if (data.rateType === "fixed") {
-        return data.unitPrice !== null;
-      }
-      return true;
-    },
-    {
-      message: "月単価を入力してください",
-      path: ["unitPrice"],
-    },
-  )
-  .refine(
-    (data) => {
-      // 固定精算と時間単価は精算下限が不要
-      if (data.rateType === "fixed" || data.rateType === "hourlyRate") {
+const createContractFormSchema = (dailyWorkMinutes: number | null) =>
+  z
+    .object({
+      name: z.string().min(1, "契約名は必須です"),
+      startDate: z.date({
+        message: "開始日は必須です",
+      }),
+      endDate: z.date({
+        message: "終了日は必須です",
+      }),
+      clientName: z.string().min(1, "クライアント名は必須です"),
+      clientContactName: z.string(),
+      clientEmail: z.union([
+        z.email("有効なメールアドレスを入力してください"),
+        z.literal(""),
+      ]),
+      unitPrice: z.number().nullable(),
+      settlementMin: z.number().nullable(),
+      settlementMax: z.number().nullable(),
+      rateType: z
+        .enum(["upperLower", "middle", "fixed", "hourlyRate"])
+        .default("upperLower"),
+      upperRate: z.number().nullable(),
+      lowerRate: z.number().nullable(),
+      middleRate: z.number().nullable(),
+      hourlyRate: z.number().nullable(),
+      dailyWorkMinutes: z.number().nullable(),
+      monthlyWorkMinutes: z.number().nullable(),
+      basicStartTime: z.date().nullable(),
+      basicEndTime: z.date().nullable(),
+      basicBreakDuration: z.number().nullable(),
+      basicMemo: z.string().nullable(),
+      closingDay: z
+        .number()
+        .int("整数で入力してください")
+        .min(1, "締め日は1日以上である必要があります")
+        .max(31, "締め日は31日以下である必要があります")
+        .nullable(),
+      paymentMonthOffset: z.number().int().min(0).max(2).default(1), // 0=当月, 1=翌月, 2=翌々月
+      paymentDay: z
+        .number()
+        .int("整数で入力してください")
+        .min(1, "支払日は1日以上である必要があります")
+        .max(31, "支払日は31日以下である必要があります")
+        .nullable(),
+      taxInclusiveType: z.enum(["INCLUSIVE", "EXCLUSIVE"]).default("EXCLUSIVE"),
+      taxRoundingType: z
+        .enum(["ROUND_DOWN", "ROUND_UP", "ROUND"])
+        .default("ROUND_DOWN"),
+    })
+    .refine(
+      (data) => {
+        // 固定精算と時間単価以外は月単価が必須
+        if (data.rateType !== "fixed" && data.rateType !== "hourlyRate") {
+          return data.unitPrice !== null;
+        }
+        // 固定精算の場合は月単価が必須
+        if (data.rateType === "fixed") {
+          return data.unitPrice !== null;
+        }
         return true;
-      }
-      if (data.settlementMin === null) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "精算下限を入力してください",
-      path: ["settlementMin"],
-    },
-  )
-  .refine(
-    (data) => {
-      // 固定精算と時間単価は精算上限が不要
-      if (data.rateType === "fixed" || data.rateType === "hourlyRate") {
+      },
+      {
+        message: "月単価を入力してください",
+        path: ["unitPrice"],
+      },
+    )
+    .refine(
+      (data) => {
+        // 固定精算と時間単価は精算下限が不要
+        if (data.rateType === "fixed" || data.rateType === "hourlyRate") {
+          return true;
+        }
+        if (data.settlementMin === null) {
+          return false;
+        }
         return true;
-      }
-      if (data.settlementMax === null) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "精算上限を入力してください",
-      path: ["settlementMax"],
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.rateType === "upperLower" && data.upperRate === null) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "超過単価を入力してください",
-      path: ["upperRate"],
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.rateType === "upperLower" && data.lowerRate === null) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "控除単価を入力してください",
-      path: ["lowerRate"],
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.rateType === "middle" && data.middleRate === null) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "中間単価を入力してください",
-      path: ["middleRate"],
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.rateType === "hourlyRate" && data.hourlyRate === null) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "時間単価を入力してください",
-      path: ["hourlyRate"],
-    },
-  )
-  .refine(
-    (data) => {
-      const s = dayjs(data.startDate);
-      const e = dayjs(data.endDate);
-      return !s.isAfter(e);
-    },
-    {
-      message: "終了日は開始日以降の日付を選択してください",
-      path: ["endDate"],
-    },
-  )
-  .refine(
-    (data) => {
-      const s = dayjs(data.startDate);
-      const e = dayjs(data.endDate);
-      const oneYearLater = s.add(1, "year");
-      return e.isBefore(oneYearLater);
-    },
-    {
-      message: "契約期間は最長1年以内にしてください",
-      path: ["endDate"],
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.dailyWorkMinutes === null || data.basicStartTime === null) {
+      },
+      {
+        message: "精算下限を入力してください",
+        path: ["settlementMin"],
+      },
+    )
+    .refine(
+      (data) => {
+        // 固定精算と時間単価は精算上限が不要
+        if (data.rateType === "fixed" || data.rateType === "hourlyRate") {
+          return true;
+        }
+        if (data.settlementMax === null) {
+          return false;
+        }
         return true;
-      }
-      const totalMinutes =
-        data.basicStartTime.getUTCHours() * 60 +
-        data.basicStartTime.getUTCMinutes();
-      return totalMinutes % data.dailyWorkMinutes === 0;
-    },
-    {
-      message: "基本開始時刻の分は作業単位の倍数である必要があります",
-      path: ["basicStartTime"],
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.dailyWorkMinutes === null || data.basicEndTime === null) {
+      },
+      {
+        message: "精算上限を入力してください",
+        path: ["settlementMax"],
+      },
+    )
+    .refine(
+      (data) => {
+        if (data.rateType === "upperLower" && data.upperRate === null) {
+          return false;
+        }
         return true;
-      }
-      const totalMinutes =
-        data.basicEndTime.getUTCHours() * 60 +
-        data.basicEndTime.getUTCMinutes();
-      return totalMinutes % data.dailyWorkMinutes === 0;
-    },
-    {
-      message: "基本終了時刻の分は作業単位の倍数である必要があります",
-      path: ["basicEndTime"],
-    },
-  )
-  .refine(
-    (data) => {
-      if (
-        data.dailyWorkMinutes === null ||
-        data.basicBreakDuration === null
-      ) {
+      },
+      {
+        message: "超過単価を入力してください",
+        path: ["upperRate"],
+      },
+    )
+    .refine(
+      (data) => {
+        if (data.rateType === "upperLower" && data.lowerRate === null) {
+          return false;
+        }
         return true;
-      }
-      return data.basicBreakDuration % data.dailyWorkMinutes === 0;
-    },
-    {
-      message: "基本休憩時間は作業単位の倍数である必要があります",
-      path: ["basicBreakDuration"],
-    },
-  );
+      },
+      {
+        message: "控除単価を入力してください",
+        path: ["lowerRate"],
+      },
+    )
+    .refine(
+      (data) => {
+        if (data.rateType === "middle" && data.middleRate === null) {
+          return false;
+        }
+        return true;
+      },
+      {
+        message: "中間単価を入力してください",
+        path: ["middleRate"],
+      },
+    )
+    .refine(
+      (data) => {
+        if (data.rateType === "hourlyRate" && data.hourlyRate === null) {
+          return false;
+        }
+        return true;
+      },
+      {
+        message: "時間単価を入力してください",
+        path: ["hourlyRate"],
+      },
+    )
+    .refine(
+      (data) => {
+        const s = dayjs(data.startDate);
+        const e = dayjs(data.endDate);
+        return !s.isAfter(e);
+      },
+      {
+        message: "終了日は開始日以降の日付を選択してください",
+        path: ["endDate"],
+      },
+    )
+    .refine(
+      (data) => {
+        const s = dayjs(data.startDate);
+        const e = dayjs(data.endDate);
+        const oneYearLater = s.add(1, "year");
+        return e.isBefore(oneYearLater);
+      },
+      {
+        message: "契約期間は最長1年以内にしてください",
+        path: ["endDate"],
+      },
+    )
+    .refine(
+      (data) => {
+        if (dailyWorkMinutes === null || data.basicStartTime === null) {
+          return true;
+        }
+        const totalMinutes =
+          data.basicStartTime.getUTCHours() * 60 +
+          data.basicStartTime.getUTCMinutes();
+        return totalMinutes % dailyWorkMinutes === 0;
+      },
+      {
+        message:
+          dailyWorkMinutes !== null
+            ? `基本開始時刻は1日あたりの作業単位（${dailyWorkMinutes}分）で入力してください`
+            : "基本開始時刻は1日あたりの作業単位で入力してください",
+        path: ["basicStartTime"],
+      },
+    )
+    .refine(
+      (data) => {
+        if (dailyWorkMinutes === null || data.basicEndTime === null) {
+          return true;
+        }
+        const totalMinutes =
+          data.basicEndTime.getUTCHours() * 60 +
+          data.basicEndTime.getUTCMinutes();
+        return totalMinutes % dailyWorkMinutes === 0;
+      },
+      {
+        message:
+          dailyWorkMinutes !== null
+            ? `基本終了時刻は1日あたりの作業単位（${dailyWorkMinutes}分）で入力してください`
+            : "基本終了時刻は1日あたりの作業単位で入力してください",
+        path: ["basicEndTime"],
+      },
+    )
+    .refine(
+      (data) => {
+        if (dailyWorkMinutes === null || data.basicBreakDuration === null) {
+          return true;
+        }
+        return data.basicBreakDuration % dailyWorkMinutes === 0;
+      },
+      {
+        message:
+          dailyWorkMinutes !== null
+            ? `基本休憩時間は1日あたりの作業単位（${dailyWorkMinutes}分）の倍数である必要があります`
+            : "基本休憩時間は1日あたりの作業単位で入力してください",
+        path: ["basicBreakDuration"],
+      },
+    );
+
+export const contractFormSchema = createContractFormSchema(null);
 
 export type ContractFormValues = z.infer<typeof contractFormSchema>;
 
@@ -287,11 +297,32 @@ export const ContractForm = ({
 
   const rateType = form.watch("rateType");
   const taxInclusiveType = form.watch("taxInclusiveType");
+  const dailyWorkMinutes = form.watch("dailyWorkMinutes");
+
+  const dynamicSchema = useMemo(
+    () => createContractFormSchema(dailyWorkMinutes),
+    [dailyWorkMinutes],
+  );
+
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const values = form.getValues();
+    const result = dynamicSchema.safeParse(values);
+    if (!result.success) {
+      // エラーをフォームにセット
+      result.error.issues.forEach((issue) => {
+        const path = issue.path[0] as keyof ContractFormValues;
+        form.setError(path, { message: issue.message });
+      });
+      return;
+    }
+    onSubmit(result.data);
+  };
 
   return (
     <Form {...form}>
       <form
-        onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
+        onSubmit={handleFormSubmit}
         noValidate
         className="space-y-6"
       >

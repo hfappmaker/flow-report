@@ -36,7 +36,7 @@ export const createEditFormSchema = (dailyWorkMinutes: number) =>
         return totalMinutes % dailyWorkMinutes === 0;
       },
       {
-        message: "出勤時間の分は作業単位の倍数である必要があります",
+        message: `出勤時間は${dailyWorkMinutes}分単位で入力してください`,
         path: ["startTime"],
       },
     )
@@ -50,7 +50,7 @@ export const createEditFormSchema = (dailyWorkMinutes: number) =>
         return totalMinutes % dailyWorkMinutes === 0;
       },
       {
-        message: "退勤時間の分は作業単位の倍数である必要があります",
+        message: `退勤時間は${dailyWorkMinutes}分単位で入力してください`,
         path: ["endTime"],
       },
     )
@@ -62,7 +62,7 @@ export const createEditFormSchema = (dailyWorkMinutes: number) =>
         return data.breakDuration % dailyWorkMinutes === 0;
       },
       {
-        message: "休憩時間は作業単位の倍数である必要があります",
+        message: `休憩時間は${dailyWorkMinutes}分単位で入力してください`,
         path: ["breakDuration"],
       },
     );
@@ -102,7 +102,7 @@ export const createBulkEditFormSchema = (dailyWorkMinutes: number) =>
         return totalMinutes % dailyWorkMinutes === 0;
       },
       {
-        message: "出勤時間の分は作業単位の倍数である必要があります",
+        message: `出勤時間は${dailyWorkMinutes}分単位で入力してください`,
         path: ["startTime"],
       },
     )
@@ -116,7 +116,7 @@ export const createBulkEditFormSchema = (dailyWorkMinutes: number) =>
         return totalMinutes % dailyWorkMinutes === 0;
       },
       {
-        message: "退勤時間の分は作業単位の倍数である必要があります",
+        message: `退勤時間は${dailyWorkMinutes}分単位で入力してください`,
         path: ["endTime"],
       },
     )
@@ -128,7 +128,7 @@ export const createBulkEditFormSchema = (dailyWorkMinutes: number) =>
         return data.breakDuration % dailyWorkMinutes === 0;
       },
       {
-        message: "休憩時間は作業単位の倍数である必要があります",
+        message: `休憩時間は${dailyWorkMinutes}分単位で入力してください`,
         path: ["breakDuration"],
       },
     );
