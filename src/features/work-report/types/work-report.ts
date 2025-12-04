@@ -49,4 +49,6 @@ export interface WorkReportClientProps {
   taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
   taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
   rateType: "upperLower" | "middle" | "fixed" | "hourlyRate";
+  paymentMonthOffset: number;
+  paymentDay: number | null;
 }

@@ -6,6 +6,7 @@ import {
   calculateWorkAmountDetailed,
   calculateWorkingDays,
 } from "@/features/contract/utils/contract-calculation-utils";
+import { calculatePaymentDate } from "@/features/contract/utils/payment-utils";
 import type { WorkReportExcelData } from "@/features/work-report/libs/excel-report-generator";
 
 /**
@@ -228,7 +229,7 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
   {
     key: "支払期限",
     label: "支払期限",
-    description: "請求日の翌月末（YYYY/MM/DD形式）",
+    description: "契約の支払いサイトに基づく支払予定日（YYYY/MM/DD形式）",
     example: "2025/02/28",
   },
   // ユーザー情報
@@ -296,6 +297,8 @@ export interface InvoiceContractData {
   taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
   taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
   closingDay: number | null;
+  paymentMonthOffset: number;
+  paymentDay: number | null;
 }
 
 /**
@@ -344,13 +347,14 @@ function calculateInvoiceDate(
 }
 
 /**
- * 支払期限を計算（請求日の翌月末）
+ * 支払期限を計算（契約の支払いサイトに基づく）
  */
-function calculatePaymentDeadline(invoiceDate: Date): Date {
-  const year = invoiceDate.getFullYear();
-  const month = invoiceDate.getMonth();
-  // 翌月の最終日
-  return new Date(year, month + 2, 0);
+function calculatePaymentDeadline(
+  invoiceDate: Date,
+  paymentMonthOffset: number,
+  paymentDay: number | null,
+): Date {
+  return calculatePaymentDate(invoiceDate, null, paymentMonthOffset, paymentDay);
 }
 
 /**
@@ -530,7 +534,11 @@ export function generatePlaceholderValues(
     data.targetDate,
     contractData.closingDay,
   );
-  const paymentDeadline = calculatePaymentDeadline(invoiceDate);
+  const paymentDeadline = calculatePaymentDeadline(
+    invoiceDate,
+    contractData.paymentMonthOffset,
+    contractData.paymentDay,
+  );
   const closingDayValue =
     contractData.closingDay !== null
       ? String(contractData.closingDay)

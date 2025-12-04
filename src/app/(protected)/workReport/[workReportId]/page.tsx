@@ -75,6 +75,8 @@ export default async function WorkReportPage({
       taxInclusiveType={contract.taxInclusiveType}
       taxRoundingType={contract.taxRoundingType}
       rateType={contract.rateType}
+      paymentMonthOffset={contract.paymentMonthOffset}
+      paymentDay={contract.paymentDay}
     />
   );
 }

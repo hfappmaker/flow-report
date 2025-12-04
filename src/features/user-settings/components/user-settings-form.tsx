@@ -100,7 +100,7 @@ export function UserSettingsForm({ initialSettings }: UserSettingsFormProps) {
           {/* 基本情報セクション */}
           <div className="space-y-4">
             <h3 className="font-medium">基本情報</h3>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">名前</Label>
                 <Input

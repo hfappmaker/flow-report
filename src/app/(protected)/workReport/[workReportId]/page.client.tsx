@@ -120,6 +120,8 @@ export default function ClientWorkReportPage({
   taxInclusiveType,
   taxRoundingType,
   rateType,
+  paymentMonthOffset,
+  paymentDay,
 }: WorkReportClientProps) {
   const router = useRouter();
   const { error, success, showError, showSuccess } = useMessageState();
@@ -458,6 +460,8 @@ export default function ClientWorkReportPage({
         taxInclusiveType,
         taxRoundingType,
         closingDay,
+        paymentMonthOffset,
+        paymentDay,
       };
 
       // 作業報告書を生成
