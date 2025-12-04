@@ -1,4 +1,3 @@
-import { useId, useMemo } from "react";
 import { Control, Path, FieldValues } from "react-hook-form";
 
 import { Button } from "./button";
@@ -25,20 +24,6 @@ interface TimePickerFieldProps<T extends FieldValues, V> {
 const inputClassName =
   "flex h-9 w-full rounded-md border border-input bg-input px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50";
 
-// minuteStepに基づいて時刻の選択肢を生成
-const generateTimeOptions = (minuteStep: number): string[] => {
-  const options: string[] = [];
-  const totalMinutesInDay = 24 * 60;
-  for (let i = 0; i < totalMinutesInDay; i += minuteStep) {
-    const hours = Math.floor(i / 60)
-      .toString()
-      .padStart(2, "0");
-    const minutes = (i % 60).toString().padStart(2, "0");
-    options.push(`${hours}:${minutes}`);
-  }
-  return options;
-};
-
 // Date型用のTimePickerField
 export function TimePickerFieldForDate<T extends FieldValues>({
   control,
@@ -48,12 +33,6 @@ export function TimePickerFieldForDate<T extends FieldValues>({
   showFormMessage = true,
   label,
 }: TimePickerFieldProps<T, Date>) {
-  const datalistId = useId();
-  const timeOptions = useMemo(
-    () => generateTimeOptions(minuteStep),
-    [minuteStep],
-  );
-
   return (
     <FormField
       control={control}
@@ -99,14 +78,8 @@ export function TimePickerFieldForDate<T extends FieldValues>({
                 onChange={handleChange}
                 step={minuteStep * 60}
                 autoComplete="on"
-                list={datalistId}
               />
             </FormControl>
-            <datalist id={datalistId}>
-              {timeOptions.map((time) => (
-                <option key={time} value={time} />
-              ))}
-            </datalist>
             {showClearButton && (
               <Button
                 type="button"
@@ -135,12 +108,6 @@ export function TimePickerFieldForNumber<T extends FieldValues>({
   showFormMessage = true,
   label,
 }: TimePickerFieldProps<T, number>) {
-  const datalistId = useId();
-  const timeOptions = useMemo(
-    () => generateTimeOptions(minuteStep),
-    [minuteStep],
-  );
-
   return (
     <FormField
       control={control}
@@ -187,14 +154,8 @@ export function TimePickerFieldForNumber<T extends FieldValues>({
                 onChange={handleChange}
                 step={minuteStep * 60}
                 autoComplete="on"
-                list={datalistId}
               />
             </FormControl>
-            <datalist id={datalistId}>
-              {timeOptions.map((time) => (
-                <option key={time} value={time} />
-              ))}
-            </datalist>
             {showClearButton && (
               <Button
                 type="button"
