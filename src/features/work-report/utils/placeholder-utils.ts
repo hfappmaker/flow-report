@@ -15,7 +15,6 @@ import type { WorkReportExcelData } from "@/features/work-report/libs/excel-repo
 export const PLACEHOLDER_CATEGORIES = {
   workReport: "作業報告書情報",
   dailyAttendance: "日次勤怠",
-  recipient: "宛先情報",
   contract: "契約情報",
   user: "ユーザー情報",
   invoice: "請求情報",
@@ -124,15 +123,21 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
     example: "機能開発",
     category: "dailyAttendance",
   },
-  // 宛先情報
+  // 契約情報
+  {
+    key: "契約名",
+    label: "契約名",
+    description: "契約の名前",
+    example: "〇〇システム開発プロジェクト",
+    category: "contract",
+  },
   {
     key: "クライアント名",
     label: "クライアント名",
     description: "クライアントの名前",
     example: "山田商事",
-    category: "recipient",
+    category: "contract",
   },
-  // 契約情報
   {
     key: "基本開始時刻",
     label: "基本開始時刻",
@@ -405,7 +410,6 @@ export function getPlaceholdersByCategory(
   const categoryOrder: PlaceholderCategory[] = [
     "workReport",
     "dailyAttendance",
-    "recipient",
     "contract",
     "user",
     "invoice",
@@ -432,6 +436,8 @@ export function getPlaceholdersByCategory(
  * 請求書用の契約データ
  */
 export interface InvoiceContractData {
+  contractName: string;
+  clientName: string;
   unitPrice: number | null;
   hourlyRate: number | null;
   settlementMin: number | null;
@@ -591,6 +597,8 @@ export function generatePlaceholderValues(
 
   // 請求書用プレースホルダーを追加
   const invoicePlaceholders: Record<string, string> = {
+    契約名: contractData.contractName,
+    クライアント名: contractData.clientName,
     月単価:
       contractData.unitPrice !== null ? String(contractData.unitPrice) : "",
     時間単価:
@@ -765,32 +773,4 @@ export function validatePlaceholderKeys(template: string): {
     valid: invalidKeys.length === 0,
     invalidKeys,
   };
-}
-
-/**
- * メール用の追加データ
- */
-export interface EmailPlaceholderData {
-  clientName: string;
-}
-
-/**
- * メール用プレースホルダー値を生成
- * @param data 作業報告書データ
- * @param emailData メール用追加データ
- * @param contractData 請求書用の契約データ（オプション）
- */
-export function generateEmailPlaceholderValues(
-  data: WorkReportExcelData,
-  emailData: EmailPlaceholderData,
-  contractData?: InvoiceContractData,
-): Record<string, string> {
-  const basePlaceholders = generatePlaceholderValues(data, contractData);
-
-  // メール用プレースホルダーを追加
-  const emailPlaceholders: Record<string, string> = {
-    クライアント名: emailData.clientName,
-  };
-
-  return { ...basePlaceholders, ...emailPlaceholders };
 }

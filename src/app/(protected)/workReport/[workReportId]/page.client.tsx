@@ -451,6 +451,8 @@ export default function ClientWorkReportPage({
 
       // 請求書用の契約データ
       const contractData: InvoiceContractData = {
+        contractName,
+        clientName,
         unitPrice,
         hourlyRate,
         settlementMin,
