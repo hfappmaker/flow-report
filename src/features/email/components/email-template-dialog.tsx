@@ -103,6 +103,18 @@ export const EmailTemplateDialog = ({
               <div className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
                 <div className="font-semibold">テンプレート名</div>
                 <div>{template?.name}</div>
+                <div className="font-semibold">宛先</div>
+                <div>
+                  {template?.toAddresses && template.toAddresses.length > 0
+                    ? template.toAddresses.join(", ")
+                    : "（未設定）"}
+                </div>
+                <div className="font-semibold">CC</div>
+                <div>
+                  {template?.ccAddresses && template.ccAddresses.length > 0
+                    ? template.ccAddresses.join(", ")
+                    : "（未設定）"}
+                </div>
                 <div className="font-semibold">件名</div>
                 <div>{template?.subject}</div>
                 <div className="font-semibold">本文</div>

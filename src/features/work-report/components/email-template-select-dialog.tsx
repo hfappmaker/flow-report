@@ -29,7 +29,10 @@ import {
   isDefaultEmailTemplate,
 } from "@/features/email/constants/default-email-template";
 import type { EmailTemplate } from "@/features/email/types/email-template";
-import { replacePlaceholders } from "@/features/work-report/utils/placeholder-utils";
+import {
+  DAILY_ATTENDANCE_PLACEHOLDER_KEYS,
+  replacePlaceholders,
+} from "@/features/work-report/utils/placeholder-utils";
 
 interface SystemEmailTemplate {
   id: string;
@@ -85,12 +88,20 @@ export function EmailTemplateSelectDialog({
     (t) => t.id === selectedTemplateId,
   );
 
-  // プレビュー用にプレースホルダーを置換
+  // プレビュー用にプレースホルダーを置換（日次勤怠カテゴリは除外）
   const previewSubject = selectedTemplate
-    ? replacePlaceholders(selectedTemplate.subject, placeholderValues)
+    ? replacePlaceholders(
+        selectedTemplate.subject,
+        placeholderValues,
+        DAILY_ATTENDANCE_PLACEHOLDER_KEYS,
+      )
     : "";
   const previewBody = selectedTemplate
-    ? replacePlaceholders(selectedTemplate.body, placeholderValues)
+    ? replacePlaceholders(
+        selectedTemplate.body,
+        placeholderValues,
+        DAILY_ATTENDANCE_PLACEHOLDER_KEYS,
+      )
     : "";
 
   const handleSend = () => {

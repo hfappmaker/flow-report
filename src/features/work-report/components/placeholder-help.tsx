@@ -18,11 +18,15 @@ import {
 
 type PlaceholderHelpProps = {
   side?: "top" | "bottom" | "left" | "right";
+  excludeCategories?: PlaceholderCategory[];
 };
 
-export function PlaceholderHelp({ side = "top" }: PlaceholderHelpProps) {
+export function PlaceholderHelp({
+  side = "top",
+  excludeCategories,
+}: PlaceholderHelpProps) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  const placeholdersByCategory = getPlaceholdersByCategory();
+  const placeholdersByCategory = getPlaceholdersByCategory(excludeCategories);
   const categories = Object.keys(
     placeholdersByCategory,
   ) as PlaceholderCategory[];

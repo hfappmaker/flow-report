@@ -78,49 +78,49 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
   {
     key: "日付列",
     label: "日付列",
-    description: "日付列（最大31行）",
+    description: "日付列（最大31行）（例: 1, 2, 3, ...）",
     example: "1",
     category: "dailyAttendance",
   },
   {
     key: "曜日列",
     label: "曜日列",
-    description: "曜日列（最大31行）",
+    description: "曜日列（最大31行）（例: 月, 火, 水, ...）",
     example: "月",
     category: "dailyAttendance",
   },
   {
     key: "開始時刻列",
     label: "開始時刻列",
-    description: "開始時刻列（最大31行）",
+    description: "開始時刻列（最大31行）（例: 9:00, 10:00, ...）",
     example: "9:00",
     category: "dailyAttendance",
   },
   {
     key: "終了時刻列",
     label: "終了時刻列",
-    description: "終了時刻列（最大31行）",
+    description: "終了時刻列（最大31行）（例: 18:00, 19:00, ...）",
     example: "18:00",
     category: "dailyAttendance",
   },
   {
     key: "休憩時間列",
     label: "休憩時間列",
-    description: "休憩時間列（最大31行）",
+    description: "休憩時間列（最大31行）（例: 1:00, 0:30, ...）",
     example: "1:00",
     category: "dailyAttendance",
   },
   {
     key: "稼働時間列",
     label: "稼働時間列",
-    description: "稼働時間列（最大31行）",
+    description: "稼働時間列（最大31行）（例: 8:00, 7:30, ...）",
     example: "8:00",
     category: "dailyAttendance",
   },
   {
     key: "作業内容列",
     label: "作業内容列",
-    description: "作業内容列（最大31行）",
+    description: "作業内容列（最大31行）（例: 機能開発, バグ修正, ...）",
     example: "機能開発",
     category: "dailyAttendance",
   },
@@ -389,12 +389,19 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
 export const PLACEHOLDER_KEYS = AVAILABLE_PLACEHOLDERS.map((p) => p.key);
 
 /**
- * カテゴリ別にグループ化されたプレースホルダーを取得
+ * 日次勤怠カテゴリのプレースホルダーキー一覧
  */
-export function getPlaceholdersByCategory(): Record<
-  PlaceholderCategory,
-  PlaceholderDefinition[]
-> {
+export const DAILY_ATTENDANCE_PLACEHOLDER_KEYS = AVAILABLE_PLACEHOLDERS.filter(
+  (p) => p.category === "dailyAttendance",
+).map((p) => p.key);
+
+/**
+ * カテゴリ別にグループ化されたプレースホルダーを取得
+ * @param excludeCategories 除外するカテゴリ
+ */
+export function getPlaceholdersByCategory(
+  excludeCategories?: PlaceholderCategory[],
+): Record<PlaceholderCategory, PlaceholderDefinition[]> {
   const categoryOrder: PlaceholderCategory[] = [
     "workReport",
     "dailyAttendance",
@@ -404,7 +411,11 @@ export function getPlaceholdersByCategory(): Record<
     "invoice",
   ];
 
-  const grouped = categoryOrder.reduce(
+  const filteredCategories = excludeCategories
+    ? categoryOrder.filter((c) => !excludeCategories.includes(c))
+    : categoryOrder;
+
+  const grouped = filteredCategories.reduce(
     (acc, category) => {
       acc[category] = AVAILABLE_PLACEHOLDERS.filter(
         (p) => p.category === category,
@@ -697,13 +708,21 @@ export function generatePlaceholderValues(
 /**
  * テンプレート文字列内のプレースホルダーを置換する
  * 日本語のキーにも対応（例: ${名前}）
+ * @param template テンプレート文字列
+ * @param values プレースホルダー値のマップ
+ * @param excludeKeys 置換を除外するキー一覧（指定されたキーはそのまま残す）
  */
 export function replacePlaceholders(
   template: string,
   values: Record<string, string>,
+  excludeKeys?: string[],
 ): string {
   // 日本語キーも含むプレースホルダーパターン
   return template.replace(/\${([^}]+)}/g, (match, key: string) => {
+    // 除外キーに含まれる場合はそのまま返す
+    if (excludeKeys?.includes(key)) {
+      return match;
+    }
     if (key in values) {
       return values[key];
     }
