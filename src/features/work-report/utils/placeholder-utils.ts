@@ -318,7 +318,8 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
   {
     key: "基本金額",
     label: "基本金額",
-    description: "契約の基本金額（例: 500000）",
+    description:
+      "契約の基本金額。精算方式によって異なる。固定/上下割/中間割：月単価、時間単価：稼働時間×時間単価（例: 500000）",
     example: "500000",
     category: "invoice",
   },
