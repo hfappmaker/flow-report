@@ -40,7 +40,11 @@ export function PlaceholderHelp() {
           プレースホルダー
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[calc(100vw-2rem)] max-w-[480px] p-0">
+      <PopoverContent
+        className="w-[calc(100vw-2rem)] max-w-[480px] p-0"
+        side="bottom"
+        avoidCollisions={false}
+      >
         <div className="p-4 pb-2">
           <h4 className="font-medium leading-none">
             利用可能なプレースホルダー
