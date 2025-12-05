@@ -117,41 +117,6 @@ export default function TestLoginPage() {
             </Button>
           </form>
         </Form>
-
-        <div className="w-full space-y-2">
-          <p className="text-center text-sm text-muted-foreground">
-            クイックログイン
-          </p>
-          <div className="grid grid-cols-1 gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                handleQuickLogin("loadtest1@example.com", "LoadTest123!");
-              }}
-            >
-              テストユーザー1
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                handleQuickLogin("loadtest2@example.com", "LoadTest123!");
-              }}
-            >
-              テストユーザー2
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                handleQuickLogin("loadtest3@example.com", "LoadTest123!");
-              }}
-            >
-              テストユーザー3
-            </Button>
-          </div>
-        </div>
       </div>
     </main>
   );
