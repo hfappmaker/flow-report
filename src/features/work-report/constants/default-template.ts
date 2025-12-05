@@ -20,6 +20,11 @@ export const DEFAULT_TEMPLATE_NAME = "デフォルトテンプレート";
 export const DEFAULT_TEMPLATE_FILE_NAME = "work-report-default-template.xlsx";
 
 /**
+ * デフォルトテンプレートのシート名
+ */
+export const DEFAULT_TEMPLATE_SHEET_NAME = "作業報告書";
+
+/**
  * デフォルトテンプレートのフィールドマッピング
  * 作業報告書で利用可能な主要なプレースホルダーを設定
  */

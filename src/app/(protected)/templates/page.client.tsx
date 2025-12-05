@@ -58,6 +58,7 @@ import {
   DEFAULT_TEMPLATE_ID,
   DEFAULT_TEMPLATE_NAME,
   DEFAULT_TEMPLATE_FILE_NAME,
+  DEFAULT_TEMPLATE_SHEET_NAME,
   DEFAULT_TEMPLATE_FIELD_MAPPINGS,
   isDefaultTemplate,
 } from "@/features/work-report/constants/default-template";
@@ -73,7 +74,7 @@ const SYSTEM_DEFAULT_WORK_REPORT_TEMPLATE: ExcelTemplateWithFields = {
   type: "WORK_REPORT",
   fileData: "", // UIでは使用しない（エクスポート時はpublicフォルダから読み込み）
   fileName: DEFAULT_TEMPLATE_FILE_NAME,
-  sheetName: null,
+  sheetName: DEFAULT_TEMPLATE_SHEET_NAME,
   createUserId: "system",
   fieldMappings: DEFAULT_TEMPLATE_FIELD_MAPPINGS,
 };
