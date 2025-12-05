@@ -16,7 +16,11 @@ import {
   type PlaceholderCategory,
 } from "@/features/work-report/utils/placeholder-utils";
 
-export function PlaceholderHelp() {
+type PlaceholderHelpProps = {
+  side?: "top" | "left";
+};
+
+export function PlaceholderHelp({ side = "top" }: PlaceholderHelpProps) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const placeholdersByCategory = getPlaceholdersByCategory();
   const categories = Object.keys(
@@ -42,8 +46,8 @@ export function PlaceholderHelp() {
       </PopoverTrigger>
       <PopoverContent
         className="w-[calc(100vw-2rem)] max-w-[480px] p-0"
-        side="top"
-        align="end"
+        side={side}
+        align={side === "left" ? "start" : "end"}
         avoidCollisions={false}
       >
         <div className="p-4 pb-2">
