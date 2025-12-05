@@ -90,7 +90,7 @@ export function FieldMappingEditor({
                   onChange={(e) => {
                     handleChange(index, "valueTemplate", e.target.value);
                   }}
-                  placeholder="例: ${作業者名}様"
+                  placeholder="例: ${クライアント名}様"
                   className={
                     errors?.[index]?.valueTemplate ? "border-red-500" : ""
                   }

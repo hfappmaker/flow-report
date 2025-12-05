@@ -40,8 +40,8 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
     {
       id: "default-field-2",
       templateId: DEFAULT_TEMPLATE_ID,
-      namedRange: "作業者名",
-      valueTemplate: "${作業者名}",
+      namedRange: "名前",
+      valueTemplate: "${名前}",
       numFmt: null,
     },
     {

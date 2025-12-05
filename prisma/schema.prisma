@@ -269,7 +269,7 @@ model ExcelTemplateField {
   templateId    String
   template      ExcelTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
   namedRange    String        // Excelの名前付き範囲名
-  valueTemplate String        // 値テンプレート（例: "${作業者名}様"）
+  valueTemplate String        // 値テンプレート（例: "${クライアント名}様"）
   numFmt        String?       // 数値フォーマット（例: "[h]:mm"）
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
