@@ -16,7 +16,10 @@ export async function GET() {
     console.log("Getting subscription info for user:", user.id);
     const subscriptionInfo = await getSubscriptionInfoByUserId(user.id);
     console.log("Subscription info retrieved:", subscriptionInfo);
-    return NextResponse.json(subscriptionInfo);
+    if (!subscriptionInfo.success) {
+      throw new Error(subscriptionInfo.error);
+    }
+    return NextResponse.json(subscriptionInfo.data, { status: 200 });
   } catch (error) {
     console.error("Error checking subscription:", error);
     return NextResponse.json(
