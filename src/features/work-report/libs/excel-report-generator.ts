@@ -124,6 +124,14 @@ export async function generateWorkReportExcel(
       newSheet.mergeCells(mergeRange);
     });
 
+    // 行の高さをコピー
+    for (let rowNumber = 1; rowNumber <= worksheet.rowCount; rowNumber++) {
+      const row = worksheet.getRow(rowNumber);
+      if (row.height) {
+        newSheet.getRow(rowNumber).height = row.height;
+      }
+    }
+
     // セルのスタイルと値をコピー
     worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
       const newRow = newSheet.getRow(rowNumber);
@@ -133,6 +141,47 @@ export async function generateWorkReportExcel(
         newCell.value = cell.value;
       });
     });
+
+    // 画像をコピー
+    const images = worksheet.getImages();
+    for (const imageInfo of images) {
+      try {
+        // テンプレートワークブックから画像データを取得
+        // imageInfo.imageIdは文字列だが、getImageは数値を要求するため変換
+        const imageId = parseInt(imageInfo.imageId, 10);
+
+        // 画像IDが有効な数値でない場合はスキップ
+        if (isNaN(imageId)) {
+          console.warn(
+            `シート "${worksheet.name}" の画像ID "${imageInfo.imageId}" が無効です`,
+          );
+          continue;
+        }
+
+        // テンプレートから画像データを取得
+        const imageData = templateWorkbook.getImage(imageId);
+
+        // 画像データが存在しない場合はスキップ
+        if (!imageData) {
+          console.warn(
+            `シート "${worksheet.name}" の画像ID ${imageId} のデータが見つかりません`,
+          );
+          continue;
+        }
+
+        // 新しいワークブックに画像を追加（新しいIDが返される）
+        const newImageId = workbook.addImage(imageData);
+
+        // 新しいシートに画像を配置（位置情報を保持）
+        newSheet.addImage(newImageId, imageInfo.range);
+      } catch (error) {
+        // 個別の画像コピーが失敗してもエラーをスローせず、警告のみ表示
+        console.error(
+          `シート "${worksheet.name}" の画像コピー中にエラーが発生しました:`,
+          error,
+        );
+      }
+    }
   }
 
   // コピー元のテンプレートに定義された名前付き範囲を新しいワークブックに追加する
