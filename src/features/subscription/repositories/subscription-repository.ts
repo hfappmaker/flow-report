@@ -63,7 +63,7 @@ export async function upsertUserSubscription(
   data: {
     stripeSubscriptionId: string;
     status: SubscriptionStatus;
-    currentPeriodEnd?: Date | null;
+    cancelAt?: Date | null;
   },
   created: Date,
 ): Promise<Result<Subscription>> {

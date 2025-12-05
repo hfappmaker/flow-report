@@ -18,9 +18,8 @@ export default function SubscriptionInfoClientPage({
 }: SubscriptionInfoClientPageProps) {
   // 管理ボタンを表示するステータス
   const showManageButton =
-    subscriptionInfo?.status === "TRIAL" ||
-    subscriptionInfo?.status === "ACTIVE" ||
-    subscriptionInfo?.status === "CANCELED";
+    subscriptionInfo?.status === "trialing" ||
+    subscriptionInfo?.status === "active";
 
   return (
     <Card className="w-full shadow-sm">

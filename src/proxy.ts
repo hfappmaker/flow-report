@@ -10,6 +10,7 @@ import {
 } from "@/app/routes";
 import authConfig from "@/features/auth/libs/auth-edge.config";
 import { SubscriptionInfo } from "@/features/subscription/types/subscription";
+import { isSubscriptionValid } from "@/features/subscription/utils/subscription-utils";
 
 const { auth } = NextAuth(authConfig);
 
@@ -62,10 +63,10 @@ async function handleAuthenticatedUser(req: NextRequest) {
       return Response.redirect(new URL("/subscription", nextUrl));
     }
 
-    const isExpired =
-      subscriptionInfo.status == "CANCELED" &&
-      !!subscriptionInfo.currentPeriodEnd &&
-      new Date(subscriptionInfo.currentPeriodEnd) < new Date();
+    const isExpired = !isSubscriptionValid(
+      subscriptionInfo.status,
+      subscriptionInfo.cancelAt,
+    );
     // サブスクリプションが有効でない場合は、サブスクリプション期限切れページにリダイレクト
     if (isExpired) {
       console.log(

@@ -43,9 +43,14 @@ enum TaxRoundingType {
 }
 
 enum SubscriptionStatus {
-  TRIAL      // トライアル期間中
-  ACTIVE     // 有料プラン利用中
-  CANCELED   // キャンセル済み
+  active               // 有料プラン利用中
+  trialing             // トライアル期間中
+  canceled             // キャンセル済み
+  past_due             // 支払い期限超過
+  unpaid               // 未支払い
+  paused               // 一時停止
+  incomplete           // 設定未完了
+  incomplete_expired   // 設定期限切れ
 }
 
 enum TemplateType {
@@ -238,14 +243,14 @@ model StripeCustomer {
 }
 
 model Subscription {
-  id                   String            @id @default(cuid())
+  id                   String             @id @default(cuid())
   stripeCustomerId     String
-  stripeSubscriptionId String            @unique
+  stripeSubscriptionId String             @unique
   status               SubscriptionStatus
-  currentPeriodEnd     DateTime?         // 現在の請求期間の終了日時
+  cancelAt             DateTime?          // キャンセル予定日時
   created              DateTime
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
 }
 
 model ExcelTemplate {

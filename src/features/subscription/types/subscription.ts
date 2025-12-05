@@ -3,8 +3,19 @@ import type { SubscriptionStatus } from "@prisma/client";
 
 export interface SubscriptionInfo {
   status: SubscriptionStatus | null;
-  currentPeriodEnd: Date | null;
+  cancelAt: Date | null;
 }
+
+export const STATUS_DISPLAY_MAP: Record<SubscriptionStatus, string> = {
+  active: "ご利用中",
+  trialing: "トライアル期間中",
+  canceled: "キャンセル済み",
+  past_due: "支払い期限超過",
+  unpaid: "未支払い",
+  paused: "一時停止",
+  incomplete: "設定未完了",
+  incomplete_expired: "設定期限切れ",
+};
 
 export interface CreateSubscriptionResult {
   success?: boolean;

@@ -51,7 +51,7 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
     const subscriptionInfo = subscriptionInfoResult.data;
 
     // 既に有効なサブスクリプションがある場合
-    if (subscriptionInfo?.status === "ACTIVE") {
+    if (subscriptionInfo?.status === "active") {
       return { error: "既に有効なサブスクリプションがあります" };
     }
 

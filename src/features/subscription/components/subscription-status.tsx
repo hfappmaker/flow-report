@@ -1,7 +1,11 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { SubscriptionInfo } from "@/features/subscription/types/subscription";
+import {
+  SubscriptionInfo,
+  STATUS_DISPLAY_MAP,
+} from "@/features/subscription/types/subscription";
+import { formatCancelAtMessage } from "@/features/subscription/utils/subscription-utils";
 
 interface SubscriptionStatusProps {
   subscriptionInfo: SubscriptionInfo;
@@ -10,66 +14,42 @@ interface SubscriptionStatusProps {
 export function SubscriptionStatus({
   subscriptionInfo,
 }: SubscriptionStatusProps) {
-  const getStatusBadge = () => {
-    const formatTimeLeft = (endDate: Date): string => {
-      const now = new Date();
-      const diffMs = endDate.getTime() - now.getTime();
+  if (!subscriptionInfo?.status) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium">ステータス:</span>
+        <Badge variant="secondary" className="pointer-events-none">
+          未登録
+        </Badge>
+      </div>
+    );
+  }
 
-      if (diffMs <= 0) return "期限切れ";
+  const { status, cancelAt } = subscriptionInfo;
 
-      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-      const hours = Math.floor(
-        (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
-      );
-      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  // ステータスに応じた表示
+  let displayText = STATUS_DISPLAY_MAP[status] || status;
 
-      const parts = [];
-      if (days > 0) parts.push(`${String(days)}日`);
-      if (hours > 0) parts.push(`${String(hours)}時間`);
-      if (minutes > 0) parts.push(`${String(minutes)}分`);
-
-      return parts.length > 0 ? parts.join("") : "1分未満";
-    };
-
-    const timeLeft = subscriptionInfo.currentPeriodEnd
-      ? formatTimeLeft(subscriptionInfo.currentPeriodEnd)
-      : "期限不明";
-
-    switch (subscriptionInfo.status) {
-      case "ACTIVE":
-        return (
-          <Badge variant="success" className="pointer-events-none">
-            ご利用中 (次回更新日時:{" "}
-            {subscriptionInfo.currentPeriodEnd?.toLocaleString("ja-JP", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-            }) ?? "不明"}
-            )
-          </Badge>
-        );
-      case "CANCELED":
-        return (
-          <Badge variant="destructive" className="pointer-events-none">
-            キャンセル済み (残り{timeLeft})
-          </Badge>
-        );
-      case "TRIAL": {
-        return (
-          <Badge variant="warning" className="pointer-events-none">
-            トライアル期間中 (残り{timeLeft})
-          </Badge>
-        );
-      }
+  // cancelAtがある場合はキャンセル予定メッセージを追加
+  if (cancelAt) {
+    const cancelMessage = formatCancelAtMessage(cancelAt);
+    if (cancelMessage) {
+      displayText = `${displayText} | ${cancelMessage}`;
     }
+  }
+
+  const getVariant = (): "default" | "secondary" | "destructive" => {
+    if (status === "active") return "default";
+    if (status === "trialing") return "secondary";
+    return "destructive";
   };
 
   return (
     <div className="flex items-center gap-2">
       <span className="text-sm font-medium">ステータス:</span>
-      {getStatusBadge()}
+      <Badge variant={getVariant()} className="pointer-events-none">
+        {displayText}
+      </Badge>
     </div>
   );
 }

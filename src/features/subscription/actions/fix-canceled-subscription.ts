@@ -7,6 +7,7 @@ import {
   upsertUserSubscription,
   getStripeCustomerByUserId,
 } from "@/features/subscription/repositories/subscription-repository";
+import { getSubscriptionCancelAt } from "@/features/subscription/utils/subscription-utils";
 import { formatDateAsUTC } from "@/utils/date-utils";
 
 export async function fixCanceledSubscription() {
@@ -28,7 +29,7 @@ export async function fixCanceledSubscription() {
       return { error: "サブスクリプション情報が見つかりません" };
     }
 
-    if (subscriptionInfo.status !== "CANCELED") {
+    if (subscriptionInfo.status !== "canceled") {
       return { error: "キャンセル済みのサブスクリプションではありません" };
     }
 
@@ -39,12 +40,10 @@ export async function fixCanceledSubscription() {
 
     console.log("Stripe subscription data:", stripeSubscription);
 
-    const currentPeriodEnd =
-      stripeSubscription.items.data[0].current_period_end;
+    const cancelAt = getSubscriptionCancelAt(stripeSubscription);
 
-    if (currentPeriodEnd) {
-      const periodEndDate = new Date(currentPeriodEnd * 1000);
-      console.log("Updating currentPeriodEnd to:", periodEndDate);
+    if (cancelAt) {
+      console.log("Updating cancelAt to:", cancelAt);
 
       const stripeCustomerResult = await getStripeCustomerByUserId(user.id);
       if (!stripeCustomerResult.success) {
@@ -60,7 +59,7 @@ export async function fixCanceledSubscription() {
         {
           stripeSubscriptionId: subscriptionInfo.stripeSubscriptionId,
           status: subscriptionInfo.status,
-          currentPeriodEnd: periodEndDate,
+          cancelAt,
         },
         new Date(stripeSubscription.created * 1000),
       );
@@ -69,12 +68,12 @@ export async function fixCanceledSubscription() {
         return { error: upsertResult.error };
       }
 
-      const formattedDate = formatDateAsUTC(periodEndDate);
+      const formattedDate = formatDateAsUTC(cancelAt);
       return {
-        success: `サブスクリプション期間を修正しました。${formattedDate}まで利用可能です。`,
+        success: `キャンセル予定日を修正しました。${formattedDate}にキャンセルされます。`,
       };
     } else {
-      return { error: "Stripeから期間終了日を取得できませんでした" };
+      return { error: "Stripeからキャンセル予定日を取得できませんでした" };
     }
   } catch (error) {
     console.error("Failed to fix canceled subscription:", error);

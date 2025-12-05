@@ -8,7 +8,7 @@ import {
   upsertStripeCustomer,
 } from "@/features/subscription/repositories/subscription-repository";
 import {
-  getSubscriptionPeriodEnd,
+  getSubscriptionCancelAt,
   getSubscriptionStatus,
 } from "@/features/subscription/utils/subscription-utils";
 
@@ -91,25 +91,18 @@ export async function POST(req: Request) {
         console.log(`   - Customer ID: ${subscription.customer as string}`);
         console.log(`   - Status: ${subscription.status}`);
         console.log(
-          `   - Trial end: ${subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : "N/A"}`,
-        );
-        console.log(
-          `   - Current period end: ${new Date(subscription.items.data[0].current_period_end * 1000).toISOString()}`,
-        );
-        console.log(
-          `   - Cancel at period end: ${subscription.cancel_at_period_end}`,
+          `   - Cancel at: ${subscription.cancel_at ? new Date(subscription.cancel_at * 1000).toISOString() : "N/A"}`,
         );
 
         const newStatus = getSubscriptionStatus(subscription);
-
-        const newCurrentPeriodEnd = getSubscriptionPeriodEnd(subscription);
+        const cancelAt = getSubscriptionCancelAt(subscription);
 
         const result = await upsertUserSubscription(
           subscription.customer as string,
           {
             stripeSubscriptionId: subscription.id,
             status: newStatus,
-            currentPeriodEnd: newCurrentPeriodEnd,
+            cancelAt,
           },
           created,
         );

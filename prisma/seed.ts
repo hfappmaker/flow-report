@@ -86,8 +86,8 @@ async function main() {
           data: {
             stripeCustomerId: stripeCustomer.stripeCustomerId,
             stripeSubscriptionId: `sub_test_${user.id}`,
-            status: "ACTIVE",
-            currentPeriodEnd: oneMonthLater,
+            status: "active",
+            cancelAt: oneMonthLater,
             created: new Date(),
           },
         });
@@ -106,8 +106,8 @@ async function main() {
           data: {
             stripeCustomerId: stripeCustomer.stripeCustomerId,
             stripeSubscriptionId: `sub_test_${user.id}`,
-            status: "CANCELED",
-            currentPeriodEnd: new Date(),
+            status: "canceled",
+            cancelAt: new Date(),
             created: new Date(),
           },
         });

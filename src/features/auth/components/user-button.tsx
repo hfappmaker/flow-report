@@ -39,21 +39,6 @@ const UserButton = () => {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-48" align="end">
-        {/* サブスクリプション管理ボタン */}
-        {(subscriptionInfo?.status === "TRIAL" ||
-          subscriptionInfo?.status === "ACTIVE" ||
-          subscriptionInfo?.status === "CANCELED") && (
-            <>
-              <ManageSubscriptionButton onSuccess={handleCancelSuccess}>
-                <button className="flex w-full items-center justify-center rounded-sm px-2 py-1.5 text-center text-sm hover:bg-sky-400 hover:text-primary-foreground focus:bg-sky-400 focus:text-primary-foreground">
-                  <MdSettings className="mr-2 size-4" />
-                  サブスクリプションを管理
-                </button>
-              </ManageSubscriptionButton>
-              <DropdownMenuSeparator />
-            </>
-          )}
-
         {/* ログアウトボタン */}
         <LogoutButton>
           <DropdownMenuItem className="justify-center text-center hover:bg-sky-400 hover:text-primary-foreground focus:bg-sky-400 focus:text-primary-foreground">
