@@ -66,7 +66,12 @@ export function PlaceholderHelp() {
           {categories.map((category) => {
             const placeholders = placeholdersByCategory[category];
             return (
-              <TabsContent key={category} value={category} className="mt-0">
+              <TabsContent
+                key={category}
+                value={category}
+                className="mt-0 data-[state=inactive]:hidden"
+                forceMount
+              >
                 <div
                   className="max-h-[250px] touch-pan-y overflow-y-auto overscroll-contain px-4"
                   onWheel={(e) => e.stopPropagation()}
