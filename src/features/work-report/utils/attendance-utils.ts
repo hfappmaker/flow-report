@@ -104,6 +104,30 @@ export function parseRangeReference(
   return [null, ref];
 }
 
+/**
+ * 範囲参照のシート名を置き換える
+ * @param ref - 元の範囲参照 (例: "'請求書（上下割　税込）'!A1:A26")
+ * @param newSheetName - 新しいシート名
+ * @returns シート名を置き換えた範囲参照 (例: "'請求書（上下割　税抜）'!A1:A26")
+ */
+export function replaceSheetNameInReference(
+  ref: string,
+  newSheetName: string,
+): string {
+  // 既存のparseRangeReference()の正規表現を再利用
+  const match = /(?:'([^']+)'|([^!]+))!(.+)/.exec(ref);
+
+  if (match) {
+    // シート参照が存在する場合、新しいシート名に置き換え
+    const cellAddress = match[3];
+    // シート名に特殊文字が含まれる可能性があるため、常にシングルクォートで囲む
+    return `'${newSheetName}'!${cellAddress}`;
+  }
+
+  // シート参照がない場合、新規追加
+  return `'${newSheetName}'!${ref}`;
+}
+
 export function parseExcelRange(range: string): ExcelRange {
   const match = /(\$?)([A-Z]+)(\$?)(\d+):(\$?)([A-Z]+)(\$?)(\d+)/.exec(range);
   if (match) {

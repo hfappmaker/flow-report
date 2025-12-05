@@ -5,6 +5,7 @@ import type { AttendanceData } from "@/features/work-report/types/attendance";
 import {
   parseExcelRange,
   parseRangeReference,
+  replaceSheetNameInReference,
 } from "@/features/work-report/utils/attendance-utils";
 import {
   FIELD_NAMES,
@@ -135,12 +136,25 @@ export async function generateWorkReportExcel(
   }
 
   // コピー元のテンプレートに定義された名前付き範囲を新しいワークブックに追加する
+  // targetSheetNameが指定されている場合、シート参照を新しいワークブックのシート名に置き換える
   for (const definedName of templateWorkbook.definedNames.model) {
     // Get the named ranges for "name"
     const ranges = templateWorkbook.definedNames.getRanges(definedName.name);
     if (ranges.ranges.length > 0) {
       for (const range of ranges.ranges) {
-        workbook.definedNames.add(range, definedName.name);
+        // 新しいワークブックに追加されたシートの名前を取得
+        const targetSheetForRange = worksheetsToProcess[0]?.name;
+        if (targetSheetForRange) {
+          // シート参照を新しいワークブックのシート名に置き換え
+          const adjustedRange = replaceSheetNameInReference(
+            range,
+            targetSheetForRange,
+          );
+          workbook.definedNames.add(adjustedRange, definedName.name);
+        } else {
+          // targetSheetNameが指定されていない場合は元の範囲文字列を使用
+          workbook.definedNames.add(range, definedName.name);
+        }
       }
     }
   }
