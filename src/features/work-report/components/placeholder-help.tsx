@@ -9,10 +9,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { AVAILABLE_PLACEHOLDERS } from "@/features/work-report/utils/placeholder-utils";
+import {
+  getPlaceholdersByCategory,
+  PLACEHOLDER_CATEGORIES,
+  type PlaceholderCategory,
+} from "@/features/work-report/utils/placeholder-utils";
 
 export function PlaceholderHelp() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const placeholdersByCategory = getPlaceholdersByCategory();
 
   const handleCopy = async (key: string) => {
     const placeholder = `\${${key}}`;
@@ -55,32 +60,50 @@ export function PlaceholderHelp() {
               </tr>
             </thead>
             <tbody>
-              {AVAILABLE_PLACEHOLDERS.map((placeholder) => (
-                <tr
-                  key={placeholder.key}
-                  className="border-b last:border-0 hover:bg-muted/50"
-                >
-                  <td className="py-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        void handleCopy(placeholder.key);
-                      }}
-                      className="flex items-center gap-1 rounded bg-muted px-2 py-1 font-mono text-xs hover:bg-muted/80"
-                    >
-                      {`\${${placeholder.key}}`}
-                      {copiedKey === placeholder.key ? (
-                        <Check className="size-3 text-green-600" />
-                      ) : (
-                        <Copy className="size-3" />
-                      )}
-                    </button>
-                  </td>
-                  <td className="py-2 text-muted-foreground">
-                    {placeholder.description}
-                  </td>
-                </tr>
-              ))}
+              {(
+                Object.keys(placeholdersByCategory) as PlaceholderCategory[]
+              ).map((category) => {
+                const placeholders = placeholdersByCategory[category];
+                if (placeholders.length === 0) return null;
+                return (
+                  <>
+                    <tr key={category} className="bg-muted/30">
+                      <td
+                        colSpan={2}
+                        className="py-2 text-xs font-semibold text-muted-foreground"
+                      >
+                        {PLACEHOLDER_CATEGORIES[category]}
+                      </td>
+                    </tr>
+                    {placeholders.map((placeholder) => (
+                      <tr
+                        key={placeholder.key}
+                        className="border-b last:border-0 hover:bg-muted/50"
+                      >
+                        <td className="py-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              void handleCopy(placeholder.key);
+                            }}
+                            className="flex items-center gap-1 rounded bg-muted px-2 py-1 font-mono text-xs hover:bg-muted/80"
+                          >
+                            {`\${${placeholder.key}}`}
+                            {copiedKey === placeholder.key ? (
+                              <Check className="size-3 text-green-600" />
+                            ) : (
+                              <Copy className="size-3" />
+                            )}
+                          </button>
+                        </td>
+                        <td className="py-2 text-muted-foreground">
+                          {placeholder.description}
+                        </td>
+                      </tr>
+                    ))}
+                  </>
+                );
+              })}
             </tbody>
           </table>
         </div>

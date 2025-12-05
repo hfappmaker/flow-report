@@ -10,6 +10,20 @@ import { calculatePaymentDate } from "@/features/contract/utils/payment-utils";
 import type { WorkReportExcelData } from "@/features/work-report/libs/excel-report-generator";
 
 /**
+ * プレースホルダーカテゴリ定義
+ */
+export const PLACEHOLDER_CATEGORIES = {
+  workReport: "作業報告書情報",
+  dailyAttendance: "日次勤怠",
+  recipient: "宛先情報",
+  contract: "契約情報",
+  user: "ユーザー情報",
+  invoice: "請求情報",
+} as const;
+
+export type PlaceholderCategory = keyof typeof PLACEHOLDER_CATEGORIES;
+
+/**
  * プレースホルダー定義
  */
 export interface PlaceholderDefinition {
@@ -17,306 +31,354 @@ export interface PlaceholderDefinition {
   label: string;
   description: string;
   example: string;
+  category: PlaceholderCategory;
 }
 
 /**
  * 利用可能なプレースホルダー一覧
  */
 export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
-  // メール用プレースホルダー
-  {
-    key: "クライアント名",
-    label: "クライアント名",
-    description: "クライアントの名前",
-    example: "山田商事",
-  },
-  {
-    key: "担当者名",
-    label: "担当者名",
-    description: "クライアントの担当者名",
-    example: "鈴木一郎",
-  },
-  // 基本プレースホルダー
+  // 作業報告書情報
   {
     key: "対象年",
     label: "対象年",
     description: "対象月の年（例: 2025）",
     example: "2025",
+    category: "workReport",
   },
   {
     key: "対象月",
     label: "対象月",
     description: "対象月の月（例: 1）",
     example: "1",
-  },
-  {
-    key: "作業者名",
-    label: "作業者名",
-    description: "ログインユーザーの名前（例: 山田太郎）",
-    example: "山田太郎",
-  },
-  {
-    key: "基本開始時刻",
-    label: "基本開始時刻",
-    description: "契約で設定された基本開始時刻（例: 9:00）",
-    example: "9:00",
-  },
-  {
-    key: "基本終了時刻",
-    label: "基本終了時刻",
-    description: "契約で設定された基本終了時刻（例: 18:00）",
-    example: "18:00",
-  },
-  {
-    key: "基本休憩時間",
-    label: "基本休憩時間",
-    description: "契約で設定された基本休憩時間（例: 1:00）",
-    example: "1:00",
-  },
-  {
-    key: "1日あたりの作業単位(分)",
-    label: "1日あたりの作業単位(分)",
-    description: "契約の日次作業単位(分)（例: 15）",
-    example: "15",
-  },
-  {
-    key: "1ヶ月あたりの作業単位(分)",
-    label: "1ヶ月あたりの作業単位(分)",
-    description: "契約の月次作業単位(分)（例: 30）",
-    example: "30",
+    category: "workReport",
   },
   {
     key: "備考",
     label: "備考",
     description: "作業報告書の備考欄に入力した内容（例: 〇〇対応完了）",
     example: "〇〇対応完了",
+    category: "workReport",
   },
   {
     key: "総稼働時間",
     label: "総稼働時間",
     description: "当月の総稼働時間（例: 168:00）",
     example: "168:00",
-  },
-  {
-    key: "基本稼働時間",
-    label: "基本稼働時間",
-    description: "1日あたりの基本稼働時間（例: 8:00）",
-    example: "8:00",
+    category: "workReport",
   },
   {
     key: "稼働日数",
     label: "稼働日数",
     description: "当月の稼働日数（例: 21）",
     example: "21",
+    category: "workReport",
   },
-  // 日次勤怠プレースホルダー
+  // 日次勤怠
   {
     key: "日付列",
     label: "日付列",
     description: "日付列（最大31行）",
     example: "1",
+    category: "dailyAttendance",
   },
   {
     key: "曜日列",
     label: "曜日列",
     description: "曜日列（最大31行）",
     example: "月",
+    category: "dailyAttendance",
   },
   {
     key: "開始時刻列",
     label: "開始時刻列",
     description: "開始時刻列（最大31行）",
     example: "9:00",
+    category: "dailyAttendance",
   },
   {
     key: "終了時刻列",
     label: "終了時刻列",
     description: "終了時刻列（最大31行）",
     example: "18:00",
+    category: "dailyAttendance",
   },
   {
     key: "休憩時間列",
     label: "休憩時間列",
     description: "休憩時間列（最大31行）",
     example: "1:00",
+    category: "dailyAttendance",
   },
   {
     key: "稼働時間列",
     label: "稼働時間列",
     description: "稼働時間列（最大31行）",
     example: "8:00",
+    category: "dailyAttendance",
   },
   {
     key: "作業内容列",
     label: "作業内容列",
     description: "作業内容列（最大31行）",
     example: "機能開発",
+    category: "dailyAttendance",
   },
-  // 請求書用プレースホルダー（契約情報）
+  // 宛先情報
+  {
+    key: "クライアント名",
+    label: "クライアント名",
+    description: "クライアントの名前",
+    example: "山田商事",
+    category: "recipient",
+  },
+  {
+    key: "担当者名",
+    label: "担当者名",
+    description: "クライアントの担当者名",
+    example: "鈴木一郎",
+    category: "recipient",
+  },
+  // 契約情報
+  {
+    key: "基本開始時刻",
+    label: "基本開始時刻",
+    description: "契約で設定された基本開始時刻（例: 9:00）",
+    example: "9:00",
+    category: "contract",
+  },
+  {
+    key: "基本終了時刻",
+    label: "基本終了時刻",
+    description: "契約で設定された基本終了時刻（例: 18:00）",
+    example: "18:00",
+    category: "contract",
+  },
+  {
+    key: "基本休憩時間",
+    label: "基本休憩時間",
+    description: "契約で設定された基本休憩時間（例: 1:00）",
+    example: "1:00",
+    category: "contract",
+  },
+  {
+    key: "基本稼働時間",
+    label: "基本稼働時間",
+    description: "1日あたりの基本稼働時間（例: 8:00）",
+    example: "8:00",
+    category: "contract",
+  },
+  {
+    key: "1日あたりの作業単位(分)",
+    label: "1日あたりの作業単位(分)",
+    description: "契約の日次作業単位(分)（例: 15）",
+    example: "15",
+    category: "contract",
+  },
+  {
+    key: "1ヶ月あたりの作業単位(分)",
+    label: "1ヶ月あたりの作業単位(分)",
+    description: "契約の月次作業単位(分)（例: 30）",
+    example: "30",
+    category: "contract",
+  },
   {
     key: "月単価",
     label: "月単価",
     description: "契約の月単価（例: 500000）",
     example: "500000",
+    category: "contract",
   },
   {
     key: "時間単価",
     label: "時間単価",
     description: "契約の時間単価（例: 3000）",
     example: "3000",
+    category: "contract",
   },
   {
     key: "精算下限",
     label: "精算下限",
     description: "精算幅の下限時間（例: 140）",
     example: "140",
+    category: "contract",
   },
   {
     key: "精算上限",
     label: "精算上限",
     description: "精算幅の上限時間（例: 180）",
     example: "180",
+    category: "contract",
   },
   {
     key: "超過時間単価",
     label: "超過時間単価",
     description: "超過時の時間単価（例: 3500）",
     example: "3500",
+    category: "contract",
   },
   {
     key: "控除時間単価",
     label: "控除時間単価",
     description: "控除時の時間単価（例: 3000）",
     example: "3000",
+    category: "contract",
   },
   {
     key: "中間割時間単価",
     label: "中間割時間単価",
     description: "中間割の時間単価（例: 3200）",
     example: "3200",
+    category: "contract",
   },
   {
     key: "精算方式",
     label: "精算方式",
     description: "精算方式名（上下割/中間割/固定/時間単価）",
     example: "上下割",
-  },
-  // 計算結果
-  {
-    key: "基本金額",
-    label: "基本金額",
-    description: "契約の基本金額（例: 500000）",
-    example: "500000",
-  },
-  {
-    key: "超過時間",
-    label: "超過時間",
-    description: "超過した時間数（例: 5.5）",
-    example: "5.5",
-  },
-  {
-    key: "超過金額",
-    label: "超過金額",
-    description: "超過時間 × 超過時間単価（例: 19250）",
-    example: "19250",
-  },
-  {
-    key: "控除時間",
-    label: "控除時間",
-    description: "控除された時間数（例: 3.0）",
-    example: "3.0",
-  },
-  {
-    key: "控除金額",
-    label: "控除金額",
-    description: "控除時間 × 控除時間単価（例: 9000）",
-    example: "9000",
-  },
-  {
-    key: "請求金額（税抜）",
-    label: "請求金額（税抜）",
-    description: "請求金額（税抜）（例: 510250）",
-    example: "510250",
-  },
-  {
-    key: "消費税額",
-    label: "消費税額",
-    description: "消費税額（例: 51025）",
-    example: "51025",
-  },
-  {
-    key: "請求金額（税込）",
-    label: "請求金額（税込）",
-    description: "請求金額（税込）（例: 561275）",
-    example: "561275",
+    category: "contract",
   },
   {
     key: "税込税抜",
     label: "税込税抜",
     description: "契約の税込/税抜設定（例: 税抜）",
     example: "税抜",
+    category: "contract",
   },
-  // 日付関連
   {
     key: "締め日",
     label: "締め日",
     description: "契約の締め日（未設定時は対象月の最終日）（例: 20）",
     example: "20",
-  },
-  {
-    key: "請求日",
-    label: "請求日",
-    description: "対象月の締め日の日付（YYYY/MM/DD形式）",
-    example: "2025/01/20",
-  },
-  {
-    key: "支払期限",
-    label: "支払期限",
-    description: "契約の支払いサイトに基づく支払予定日（YYYY/MM/DD形式）",
-    example: "2025/02/28",
+    category: "contract",
   },
   // ユーザー情報
+  {
+    key: "作業者名",
+    label: "作業者名",
+    description: "ログインユーザーの名前（例: 山田太郎）",
+    example: "山田太郎",
+    category: "user",
+  },
   {
     key: "郵便番号",
     label: "郵便番号",
     description: "ユーザーの郵便番号",
     example: "123-4567",
+    category: "user",
   },
   {
     key: "住所",
     label: "住所",
     description: "ユーザーの住所",
     example: "東京都渋谷区...",
+    category: "user",
   },
   {
     key: "銀行名",
     label: "銀行名",
     description: "振込先銀行名",
     example: "○○銀行",
+    category: "user",
   },
   {
     key: "支店名",
     label: "支店名",
     description: "振込先支店名",
     example: "○○支店",
+    category: "user",
   },
   {
     key: "口座種別",
     label: "口座種別",
     description: "口座種別（普通/当座）",
     example: "普通",
+    category: "user",
   },
   {
     key: "口座番号",
     label: "口座番号",
     description: "口座番号",
     example: "1234567",
+    category: "user",
   },
   {
     key: "口座名義",
     label: "口座名義",
     description: "口座名義",
     example: "ヤマダ タロウ",
+    category: "user",
+  },
+  // 請求情報
+  {
+    key: "基本金額",
+    label: "基本金額",
+    description: "契約の基本金額（例: 500000）",
+    example: "500000",
+    category: "invoice",
+  },
+  {
+    key: "超過時間",
+    label: "超過時間",
+    description: "超過した時間数（例: 5.5）",
+    example: "5.5",
+    category: "invoice",
+  },
+  {
+    key: "超過金額",
+    label: "超過金額",
+    description: "超過時間 × 超過時間単価（例: 19250）",
+    example: "19250",
+    category: "invoice",
+  },
+  {
+    key: "控除時間",
+    label: "控除時間",
+    description: "控除された時間数（例: 3.0）",
+    example: "3.0",
+    category: "invoice",
+  },
+  {
+    key: "控除金額",
+    label: "控除金額",
+    description: "控除時間 × 控除時間単価（例: 9000）",
+    example: "9000",
+    category: "invoice",
+  },
+  {
+    key: "請求金額（税抜）",
+    label: "請求金額（税抜）",
+    description: "請求金額（税抜）（例: 510250）",
+    example: "510250",
+    category: "invoice",
+  },
+  {
+    key: "消費税額",
+    label: "消費税額",
+    description: "消費税額（例: 51025）",
+    example: "51025",
+    category: "invoice",
+  },
+  {
+    key: "請求金額（税込）",
+    label: "請求金額（税込）",
+    description: "請求金額（税込）（例: 561275）",
+    example: "561275",
+    category: "invoice",
+  },
+  {
+    key: "請求日",
+    label: "請求日",
+    description: "対象月の締め日の日付（YYYY/MM/DD形式）",
+    example: "2025/01/20",
+    category: "invoice",
+  },
+  {
+    key: "支払期限",
+    label: "支払期限",
+    description: "契約の支払いサイトに基づく支払予定日（YYYY/MM/DD形式）",
+    example: "2025/02/28",
+    category: "invoice",
   },
 ];
 
@@ -324,6 +386,35 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
  * プレースホルダーのキー一覧
  */
 export const PLACEHOLDER_KEYS = AVAILABLE_PLACEHOLDERS.map((p) => p.key);
+
+/**
+ * カテゴリ別にグループ化されたプレースホルダーを取得
+ */
+export function getPlaceholdersByCategory(): Record<
+  PlaceholderCategory,
+  PlaceholderDefinition[]
+> {
+  const categoryOrder: PlaceholderCategory[] = [
+    "workReport",
+    "dailyAttendance",
+    "recipient",
+    "contract",
+    "user",
+    "invoice",
+  ];
+
+  const grouped = categoryOrder.reduce(
+    (acc, category) => {
+      acc[category] = AVAILABLE_PLACEHOLDERS.filter(
+        (p) => p.category === category,
+      );
+      return acc;
+    },
+    {} as Record<PlaceholderCategory, PlaceholderDefinition[]>,
+  );
+
+  return grouped;
+}
 
 /**
  * 請求書用の契約データ
