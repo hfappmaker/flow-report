@@ -10,6 +10,7 @@ import { fetchHolidays } from "@/features/holidays/libs/google-calendar";
 import {
   getDraftWorkReportsUpToCurrentMonth,
   getSubmittedWorkReportsByRecentMonths,
+  type GroupedWorkReports,
 } from "@/features/work-report/repositories/work-report-repository";
 
 export const metadata: Metadata = {
@@ -21,7 +22,7 @@ const convertDecimalToNumber = (value: Decimal | null): number | null =>
   value ? Number(value) : null;
 
 const convertWorkReportsForClient = (
-  reports: Awaited<ReturnType<typeof getDraftWorkReportsUpToCurrentMonth>>,
+  reports: GroupedWorkReports,
 ): Record<string, ContractDashboard> => {
   return Object.fromEntries(
     Object.entries(reports).map(([contractId, contract]) => [
@@ -57,9 +58,9 @@ export default async function DashboardPage() {
   const currentYear = new Date().getFullYear();
 
   const [
-    draftWorkReportsRaw,
-    submittedWorkReportsRaw,
-    contracts,
+    draftWorkReportsResult,
+    submittedWorkReportsResult,
+    contractsResult,
     holidays,
   ] = await Promise.all([
     getDraftWorkReportsUpToCurrentMonth(userId),
@@ -67,6 +68,14 @@ export default async function DashboardPage() {
     getContractsByUserId(userId),
     fetchHolidays(currentYear),
   ]);
+
+  const draftWorkReportsRaw = draftWorkReportsResult.success
+    ? draftWorkReportsResult.data
+    : {};
+  const submittedWorkReportsRaw = submittedWorkReportsResult.success
+    ? submittedWorkReportsResult.data
+    : {};
+  const contracts = contractsResult.success ? contractsResult.data : [];
 
   const draftWorkReports = convertWorkReportsForClient(draftWorkReportsRaw);
   const submittedWorkReportsLast3Months = convertWorkReportsForClient(

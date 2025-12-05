@@ -8,23 +8,25 @@ export const ensureMonthlyWorkReportsExistForUser = async (
 ): Promise<void> => {
   const today = new Date();
   const todayISO = today.toISOString();
-  const activeContracts = await searchContracts(
+  const activeContractsResult = await searchContracts(
     userId,
     undefined,
     todayISO,
     todayISO,
   );
 
-  for (const contract of activeContracts) {
-    try {
-      await createWorkReportAction(contract.id, today);
-    } catch (error: any) {
-      if (!error.message.includes("既に存在します")) {
-        console.error(
-          `Failed to create work report for contract ${contract.id}:`,
-          error,
-        );
-      }
+  if (!activeContractsResult.success) {
+    console.error("Failed to search contracts:", activeContractsResult.error);
+    return;
+  }
+
+  for (const contract of activeContractsResult.data) {
+    const result = await createWorkReportAction(contract.id, today);
+    if (!result.success && !result.error.includes("既に存在します")) {
+      console.error(
+        `Failed to create work report for contract ${contract.id}:`,
+        result.error,
+      );
     }
   }
 };

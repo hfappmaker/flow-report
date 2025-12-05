@@ -36,6 +36,8 @@ interface SystemEmailTemplate {
   name: string;
   subject: string;
   body: string;
+  toAddresses: string[];
+  ccAddresses: string[];
   createUserId: string;
 }
 
@@ -44,7 +46,12 @@ interface EmailTemplateSelectDialogProps {
   onOpenChange: (open: boolean) => void;
   emailTemplates: EmailTemplate[];
   placeholderValues: Record<string, string>;
-  onSend: (subject: string, body: string) => void;
+  onSend: (
+    subject: string,
+    body: string,
+    toAddresses: string[],
+    ccAddresses: string[],
+  ) => void;
 }
 
 export function EmailTemplateSelectDialog({
@@ -64,6 +71,8 @@ export function EmailTemplateSelectDialog({
     name: DEFAULT_EMAIL_TEMPLATE_NAME,
     subject: DEFAULT_EMAIL_TEMPLATE_SUBJECT,
     body: DEFAULT_EMAIL_TEMPLATE_BODY,
+    toAddresses: [],
+    ccAddresses: [],
     createUserId: "system",
   };
 
@@ -86,7 +95,12 @@ export function EmailTemplateSelectDialog({
 
   const handleSend = () => {
     if (selectedTemplate) {
-      onSend(previewSubject, previewBody);
+      onSend(
+        previewSubject,
+        previewBody,
+        selectedTemplate.toAddresses ?? [],
+        selectedTemplate.ccAddresses ?? [],
+      );
       onOpenChange(false);
     }
   };
@@ -134,6 +148,24 @@ export function EmailTemplateSelectDialog({
 
           {selectedTemplate && (
             <div className="space-y-3 rounded-lg border bg-muted/50 p-4">
+              {(selectedTemplate.toAddresses?.length ?? 0) > 0 && (
+                <div>
+                  <Label className="text-xs text-muted-foreground">
+                    宛先（To）
+                  </Label>
+                  <p className="mt-1 text-sm">
+                    {selectedTemplate.toAddresses?.join(", ")}
+                  </p>
+                </div>
+              )}
+              {(selectedTemplate.ccAddresses?.length ?? 0) > 0 && (
+                <div>
+                  <Label className="text-xs text-muted-foreground">CC</Label>
+                  <p className="mt-1 text-sm">
+                    {selectedTemplate.ccAddresses?.join(", ")}
+                  </p>
+                </div>
+              )}
               <div>
                 <Label className="text-xs text-muted-foreground">
                   件名プレビュー

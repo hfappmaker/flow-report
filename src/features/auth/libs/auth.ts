@@ -32,17 +32,28 @@ export const {
       // Allow OAuth without email verification
       if (account?.provider !== "credentials") return true;
 
-      const existingUser = await getUserById(user.id ?? "");
+      const existingUserResult = await getUserById(user.id ?? "");
 
       // Prevent sign in without email verification
-      if (!existingUser?.emailVerified) return false;
+      if (
+        !existingUserResult.success ||
+        !existingUserResult.data?.emailVerified
+      )
+        return false;
+
+      const existingUser = existingUserResult.data;
 
       if (existingUser.isTwoFactorEnabled) {
-        const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(
-          existingUser.id,
-        );
+        const twoFactorConfirmationResult =
+          await getTwoFactorConfirmationByUserId(existingUser.id);
 
-        if (!twoFactorConfirmation) return false;
+        if (
+          !twoFactorConfirmationResult.success ||
+          !twoFactorConfirmationResult.data
+        )
+          return false;
+
+        const twoFactorConfirmation = twoFactorConfirmationResult.data;
 
         // Delete two factor confirmation for next sign in
         await baseDb.twoFactorConfirmation.delete({
@@ -72,13 +83,16 @@ export const {
     async jwt({ token }) {
       if (!token.sub) return token;
 
-      const existingUser = await getUserById(token.sub);
+      const existingUserResult = await getUserById(token.sub);
 
-      if (!existingUser) return token;
+      if (!existingUserResult.success || !existingUserResult.data) return token;
 
-      const existingAccount = await getAccountByUserId(existingUser.id);
+      const existingUser = existingUserResult.data;
 
-      token.isOAuth = !!existingAccount;
+      const existingAccountResult = await getAccountByUserId(existingUser.id);
+
+      token.isOAuth =
+        existingAccountResult.success && !!existingAccountResult.data;
       token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;
       token.name = existingUser.name;
       token.email = existingUser.email;

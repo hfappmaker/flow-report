@@ -40,13 +40,15 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
       return { error: "サーバー設定エラーが発生しました" };
     }
 
-    let subscriptionInfo;
-    try {
-      subscriptionInfo = await getSubscriptionInfoByUserId(user.id);
-    } catch (error) {
-      console.error("Error fetching subscription info:", error);
-      throw error;
+    const subscriptionInfoResult = await getSubscriptionInfoByUserId(user.id);
+    if (!subscriptionInfoResult.success) {
+      console.error(
+        "Error fetching subscription info:",
+        subscriptionInfoResult.error,
+      );
+      return { error: subscriptionInfoResult.error };
     }
+    const subscriptionInfo = subscriptionInfoResult.data;
 
     // 既に有効なサブスクリプションがある場合
     if (subscriptionInfo?.status === "ACTIVE") {
@@ -54,8 +56,15 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
     }
 
     // StripeCustomer情報を取得
-    const stripeCustomer = await getStripeCustomerByUserId(user.id);
-    let customerId = stripeCustomer?.stripeCustomerId;
+    const stripeCustomerResult = await getStripeCustomerByUserId(user.id);
+    if (!stripeCustomerResult.success) {
+      console.error(
+        "Error fetching stripe customer:",
+        stripeCustomerResult.error,
+      );
+      return { error: stripeCustomerResult.error };
+    }
+    let customerId = stripeCustomerResult.data?.stripeCustomerId;
 
     // Stripeカスタマーが存在しない場合は作成（API呼び出しを最小限に）
     if (!customerId) {

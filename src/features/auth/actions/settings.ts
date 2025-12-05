@@ -20,7 +20,13 @@ export const settings = async (values: z.infer<typeof SettingsSchema>) => {
     return { error: "Unauthorized" };
   }
 
-  const dbUser = await getUserById(user.id);
+  const dbUserResult = await getUserById(user.id);
+
+  if (!dbUserResult.success) {
+    return { error: dbUserResult.error };
+  }
+
+  const dbUser = dbUserResult.data;
 
   if (!dbUser) {
     return { error: "Unauthorized" };
@@ -34,7 +40,13 @@ export const settings = async (values: z.infer<typeof SettingsSchema>) => {
   }
 
   if (values.email && values.email !== user.email) {
-    const existingUser = await getUserByEmail(values.email);
+    const existingUserResult = await getUserByEmail(values.email);
+
+    if (!existingUserResult.success) {
+      return { error: existingUserResult.error };
+    }
+
+    const existingUser = existingUserResult.data;
 
     if (existingUser && existingUser.id !== user.id) {
       return { error: "Email already in use!" };

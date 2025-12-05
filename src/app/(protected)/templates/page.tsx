@@ -19,12 +19,25 @@ export default async function TemplatesPage() {
 
   const excelRepository = new ExcelTemplateRepository();
   const emailRepository = new EmailTemplateRepository();
-  const [workReportTemplates, invoiceTemplates, emailTemplates] =
-    await Promise.all([
-      excelRepository.getByCreateUserIdAndType(user.id, "WORK_REPORT"),
-      excelRepository.getByCreateUserIdAndType(user.id, "INVOICE"),
-      emailRepository.getByCreateUserId(user.id),
-    ]);
+  const [
+    workReportTemplatesResult,
+    invoiceTemplatesResult,
+    emailTemplatesResult,
+  ] = await Promise.all([
+    excelRepository.getByCreateUserIdAndType(user.id, "WORK_REPORT"),
+    excelRepository.getByCreateUserIdAndType(user.id, "INVOICE"),
+    emailRepository.getByCreateUserId(user.id),
+  ]);
+
+  const workReportTemplates = workReportTemplatesResult.success
+    ? workReportTemplatesResult.data
+    : [];
+  const invoiceTemplates = invoiceTemplatesResult.success
+    ? invoiceTemplatesResult.data
+    : [];
+  const emailTemplates = emailTemplatesResult.success
+    ? emailTemplatesResult.data
+    : [];
 
   return (
     <TemplatesClientPage

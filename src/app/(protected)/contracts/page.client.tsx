@@ -53,13 +53,12 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
 
   // 契約一覧を取得
   const fetchContracts = useCallback(async () => {
-    try {
-      const contractsData = await getContractsByUserIdAction(userId);
-      setContracts(contractsData);
-    } catch (error: unknown) {
-      console.error(error);
-      showError("契約の取得に失敗しました");
+    const result = await getContractsByUserIdAction(userId);
+    if (!result.success) {
+      showError(result.error);
+      return;
     }
+    setContracts(result.data);
   }, [userId, showError]);
 
   // 検索処理
@@ -78,18 +77,17 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
     setIsSearching(true);
     startTransition(() => {
       void (async () => {
-        try {
-          const searchResults = await searchContractsAction(
-            userId,
-            searchQuery || undefined,
-            periodFrom || undefined,
-            periodTo || undefined,
-          );
-          setContracts(searchResults);
-        } catch (error: unknown) {
-          console.error(error);
-          showError("検索に失敗しました");
+        const result = await searchContractsAction(
+          userId,
+          searchQuery || undefined,
+          periodFrom || undefined,
+          periodTo || undefined,
+        );
+        if (!result.success) {
+          showError(result.error);
+          return;
         }
+        setContracts(result.data);
       })();
     });
   };

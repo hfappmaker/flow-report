@@ -155,7 +155,13 @@ export async function refreshAccessToken(
  * 有効なアクセストークンを取得（必要に応じてリフレッシュ）
  */
 export async function getValidAccessToken(userId: string): Promise<string> {
-  let tokenData = await getFreeeToken(userId);
+  const tokenResult = await getFreeeToken(userId);
+
+  if (!tokenResult.success) {
+    throw new Error(tokenResult.error);
+  }
+
+  let tokenData = tokenResult.data;
 
   if (!tokenData) {
     throw new Error("freeeとの連携が必要です");
@@ -166,7 +172,10 @@ export async function getValidAccessToken(userId: string): Promise<string> {
     // トークンをリフレッシュ
     try {
       tokenData = await refreshAccessToken(tokenData.refreshToken);
-      await saveFreeeToken(userId, tokenData);
+      const saveResult = await saveFreeeToken(userId, tokenData);
+      if (!saveResult.success) {
+        throw new Error(saveResult.error);
+      }
     } catch (error) {
       console.error("Failed to refresh freee token:", error);
       throw new Error(

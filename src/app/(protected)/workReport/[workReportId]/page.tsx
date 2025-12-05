@@ -19,22 +19,33 @@ export default async function WorkReportPage({
 }) {
   const { workReportId } = await params;
   const user = await currentUser();
-  // 作業報告書と契約情報を一緒に取得（N+1クエリを回避）
-  const workReportWithContract =
-    await getWorkReportWithContractById(workReportId);
-  if (!workReportWithContract) {
+  if (!user?.id) {
     return notFound();
   }
 
+  // 作業報告書と契約情報を一緒に取得（N+1クエリを回避）
+  const workReportWithContractResult =
+    await getWorkReportWithContractById(workReportId);
+  if (
+    !workReportWithContractResult.success ||
+    !workReportWithContractResult.data
+  ) {
+    return notFound();
+  }
+
+  const workReportWithContract = workReportWithContractResult.data;
+
   // 契約の作成者がログインユーザーと一致するか確認
-  if (workReportWithContract.contract.userId !== user?.id) {
+  if (workReportWithContract.contract.userId !== user.id) {
     return notFound();
   }
 
   const workReport = workReportWithContract;
   const contract = workReportWithContract.contract;
 
-  const attendances = await getAttendancesByWorkReportIdAction(workReportId);
+  const attendancesResult =
+    await getAttendancesByWorkReportIdAction(workReportId);
+  const attendances = attendancesResult.success ? attendancesResult.data : [];
 
   const year = workReport.targetDate.getFullYear();
   const holidayData = await fetchHolidays(year);
@@ -50,8 +61,6 @@ export default async function WorkReportPage({
       attendances={attendances}
       contractName={contract.name}
       clientName={contract.clientName}
-      contactName={contract.clientContactName}
-      clientEmail={contract.clientEmail}
       dailyWorkMinutes={contract.dailyWorkMinutes ?? 1}
       monthlyWorkMinutes={contract.monthlyWorkMinutes ?? 1}
       basicStartTime={contract.basicStartTime}

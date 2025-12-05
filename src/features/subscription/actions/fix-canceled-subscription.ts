@@ -18,7 +18,11 @@ export async function fixCanceledSubscription() {
       return { error: "認証が必要です" };
     }
 
-    const subscriptionInfo = await getSubscriptionInfoByUserId(user.id);
+    const subscriptionInfoResult = await getSubscriptionInfoByUserId(user.id);
+    if (!subscriptionInfoResult.success) {
+      return { error: subscriptionInfoResult.error };
+    }
+    const subscriptionInfo = subscriptionInfoResult.data;
 
     if (!subscriptionInfo?.stripeSubscriptionId) {
       return { error: "サブスクリプション情報が見つかりません" };
@@ -42,12 +46,16 @@ export async function fixCanceledSubscription() {
       const periodEndDate = new Date(currentPeriodEnd * 1000);
       console.log("Updating currentPeriodEnd to:", periodEndDate);
 
-      const stripeCustomer = await getStripeCustomerByUserId(user.id);
+      const stripeCustomerResult = await getStripeCustomerByUserId(user.id);
+      if (!stripeCustomerResult.success) {
+        return { error: stripeCustomerResult.error };
+      }
+      const stripeCustomer = stripeCustomerResult.data;
       if (!stripeCustomer) {
         return { error: "Stripe顧客情報が見つかりません" };
       }
 
-      await upsertUserSubscription(
+      const upsertResult = await upsertUserSubscription(
         stripeCustomer.stripeCustomerId,
         {
           stripeSubscriptionId: subscriptionInfo.stripeSubscriptionId,
@@ -56,6 +64,10 @@ export async function fixCanceledSubscription() {
         },
         new Date(stripeSubscription.created * 1000),
       );
+
+      if (!upsertResult.success) {
+        return { error: upsertResult.error };
+      }
 
       const formattedDate = formatDateAsUTC(periodEndDate);
       return {

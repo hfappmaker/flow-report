@@ -81,6 +81,8 @@ const SYSTEM_DEFAULT_EMAIL_TEMPLATE: EmailTemplate = {
   name: DEFAULT_EMAIL_TEMPLATE_NAME,
   subject: DEFAULT_EMAIL_TEMPLATE_SUBJECT,
   body: DEFAULT_EMAIL_TEMPLATE_BODY,
+  toAddresses: [],
+  ccAddresses: [],
   createUserId: "system",
 };
 
@@ -164,25 +166,30 @@ export default function TemplatesClientPage({
 
   const refreshTemplates = useCallback(
     async (tabToRefresh: TabType) => {
+      setManualPending(true);
       try {
-        setManualPending(true);
         if (tabToRefresh === "EMAIL") {
-          const data = await getEmailTemplatesByCreateUserIdAction(userId);
-          setEmailTemplates(data);
+          const result = await getEmailTemplatesByCreateUserIdAction(userId);
+          if (result.success) {
+            setEmailTemplates(result.data);
+          } else {
+            showError(result.error);
+          }
         } else {
-          const data = await getExcelTemplatesByUserIdAndTypeAction(
+          const result = await getExcelTemplatesByUserIdAndTypeAction(
             userId,
             tabToRefresh,
           );
-          if (tabToRefresh === "WORK_REPORT") {
-            setWorkReportTemplates(data);
+          if (result.success) {
+            if (tabToRefresh === "WORK_REPORT") {
+              setWorkReportTemplates(result.data);
+            } else {
+              setInvoiceTemplates(result.data);
+            }
           } else {
-            setInvoiceTemplates(data);
+            showError(result.error);
           }
         }
-      } catch (err) {
-        console.error(err);
-        showError("テンプレートの取得に失敗しました");
       } finally {
         setManualPending(false);
       }
@@ -212,16 +219,23 @@ export default function TemplatesClientPage({
   // 初回マウント時に全タブのデータを取得（タブ切り替え時には再取得しない）
   useEffect(() => {
     const loadInitialData = async () => {
+      setManualPending(true);
       try {
-        setManualPending(true);
-        const [workReportData, invoiceData, emailData] = await Promise.all([
-          getExcelTemplatesByUserIdAndTypeAction(userId, "WORK_REPORT"),
-          getExcelTemplatesByUserIdAndTypeAction(userId, "INVOICE"),
-          getEmailTemplatesByCreateUserIdAction(userId),
-        ]);
-        setWorkReportTemplates(workReportData);
-        setInvoiceTemplates(invoiceData);
-        setEmailTemplates(emailData);
+        const [workReportResult, invoiceResult, emailResult] =
+          await Promise.all([
+            getExcelTemplatesByUserIdAndTypeAction(userId, "WORK_REPORT"),
+            getExcelTemplatesByUserIdAndTypeAction(userId, "INVOICE"),
+            getEmailTemplatesByCreateUserIdAction(userId),
+          ]);
+        if (workReportResult.success) {
+          setWorkReportTemplates(workReportResult.data);
+        }
+        if (invoiceResult.success) {
+          setInvoiceTemplates(invoiceResult.data);
+        }
+        if (emailResult.success) {
+          setEmailTemplates(emailResult.data);
+        }
       } catch (err) {
         console.error(err);
         showError("テンプレートの取得に失敗しました");
@@ -356,6 +370,8 @@ export default function TemplatesClientPage({
         name: data.name,
         subject: data.subject,
         body: data.body,
+        toAddresses: data.toAddresses,
+        ccAddresses: data.ccAddresses,
         createUserId: userId,
       });
       showSuccess(`メールテンプレート '${data.name}' を作成しました`);
@@ -383,6 +399,8 @@ export default function TemplatesClientPage({
         name: data.name,
         subject: data.subject,
         body: data.body,
+        toAddresses: data.toAddresses,
+        ccAddresses: data.ccAddresses,
         createUserId: userId,
       });
       showSuccess(`メールテンプレート '${data.name}' を更新しました`);

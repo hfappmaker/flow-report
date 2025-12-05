@@ -63,6 +63,8 @@ export const EmailTemplateDialog = ({
                     name: template.name,
                     subject: template.subject,
                     body: template.body,
+                    toAddresses: template.toAddresses ?? [],
+                    ccAddresses: template.ccAddresses ?? [],
                   }
                 : undefined
             }

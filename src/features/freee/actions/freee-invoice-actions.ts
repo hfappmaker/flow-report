@@ -49,8 +49,14 @@ export async function createFreeeInvoiceFromWorkReportAction(
     }
 
     // freee連携確認
-    const tokenData = await getFreeeToken(user.id);
-    if (!tokenData) {
+    const tokenResult = await getFreeeToken(user.id);
+    if (!tokenResult.success) {
+      return {
+        success: false,
+        message: tokenResult.error,
+      };
+    }
+    if (!tokenResult.data) {
       return {
         success: false,
         message: "freeeとの連携が必要です",
@@ -58,28 +64,52 @@ export async function createFreeeInvoiceFromWorkReportAction(
     }
 
     // 作業報告書データを取得
-    const workReport = await getWorkReportById(workReportId);
-    if (!workReport) {
+    const workReportResult = await getWorkReportById(workReportId);
+    if (!workReportResult.success) {
+      return {
+        success: false,
+        message: workReportResult.error,
+      };
+    }
+    if (!workReportResult.data) {
       return {
         success: false,
         message: "作業報告書が見つかりません",
       };
     }
 
-    const attendances = await getAttendancesByWorkReportId(workReportId);
+    const attendancesResult = await getAttendancesByWorkReportId(workReportId);
+    if (!attendancesResult.success) {
+      return {
+        success: false,
+        message: attendancesResult.error,
+      };
+    }
 
     // 契約情報を取得
-    const contract = await getContractById(workReport.contractId);
-    if (!contract) {
+    const contractResult = await getContractById(
+      workReportResult.data.contractId,
+    );
+    if (!contractResult.success) {
+      return {
+        success: false,
+        message: contractResult.error,
+      };
+    }
+    if (!contractResult.data) {
       return {
         success: false,
         message: "契約情報が見つかりません",
       };
     }
 
+    const workReport = workReportResult.data;
+    const contract = contractResult.data;
+    const attendances = attendancesResult.data;
+
     // 作業報告書データをfreee請求書データに変換
     const invoiceRequest = mapWorkReportToFreeeInvoice(
-      tokenData.companyId,
+      tokenResult.data.companyId,
       partnerId,
       {
         targetDate: workReport.targetDate,

@@ -96,11 +96,9 @@ export default function ClientWorkReportPage({
   attendances,
   contractName,
   clientName,
-  contactName,
   closingDay,
   userName,
   userEmail,
-  clientEmail,
   targetDate,
   dailyWorkMinutes,
   monthlyWorkMinutes,
@@ -202,14 +200,20 @@ export default function ClientWorkReportPage({
   // テンプレートを取得（作業報告書、請求書、メールを並行して取得）
   useEffect(() => {
     const fetchTemplates = async () => {
-      const [workReportTpls, invoiceTpls, emailTpls] = await Promise.all([
+      const [workReportResult, invoiceResult, emailResult] = await Promise.all([
         getExcelTemplatesByUserIdAndTypeAction(userId, "WORK_REPORT"),
         getExcelTemplatesByUserIdAndTypeAction(userId, "INVOICE"),
         getEmailTemplatesByCreateUserIdAction(userId),
       ]);
-      setWorkReportTemplates(workReportTpls);
-      setInvoiceTemplates(invoiceTpls);
-      setEmailTemplates(emailTpls);
+      if (workReportResult.success) {
+        setWorkReportTemplates(workReportResult.data);
+      }
+      if (invoiceResult.success) {
+        setInvoiceTemplates(invoiceResult.data);
+      }
+      if (emailResult.success) {
+        setEmailTemplates(emailResult.data);
+      }
     };
     void fetchTemplates();
   }, [userId]);
@@ -577,12 +581,11 @@ export default function ClientWorkReportPage({
   const emailPlaceholderValues = useMemo(
     () =>
       generateBasicEmailPlaceholderValues({
-        contactName,
         clientName,
         userName,
         targetDate,
       }),
-    [contactName, clientName, userName, targetDate],
+    [clientName, userName, targetDate],
   );
 
   // メールテンプレート選択ダイアログを開く
@@ -592,10 +595,16 @@ export default function ClientWorkReportPage({
 
   // メール送信処理（テンプレート選択後に呼ばれる）
   const handleEmailSend = useCallback(
-    (subject: string, body: string) => {
+    (
+      subject: string,
+      body: string,
+      toAddresses: string[],
+      ccAddresses: string[],
+    ) => {
       try {
         const mailtoUrl = buildMailtoUrlFromTemplate({
-          clientEmail,
+          toAddresses,
+          ccAddresses,
           subject,
           body,
         });
@@ -605,7 +614,7 @@ export default function ClientWorkReportPage({
         showError("メール送信に失敗しました");
       }
     },
-    [clientEmail, showError],
+    [showError],
   );
 
   // 月締め処理を実行

@@ -16,7 +16,11 @@ export const updateUserInfo = async (
     return { error: "認証されていません" };
   }
 
-  const dbUser = await getUserById(user.id);
+  const dbUserResult = await getUserById(user.id);
+  if (!dbUserResult.success) {
+    return { error: dbUserResult.error };
+  }
+  const dbUser = dbUserResult.data;
 
   if (!dbUser) {
     return { error: "ユーザーが見つかりません" };
@@ -46,11 +50,11 @@ export const getUserInfo = async () => {
     return null;
   }
 
-  const dbUser = await getUserById(user.id);
-
-  if (!dbUser) {
+  const dbUserResult = await getUserById(user.id);
+  if (!dbUserResult.success || !dbUserResult.data) {
     return null;
   }
+  const dbUser = dbUserResult.data;
 
   return {
     name: dbUser.name ?? "",

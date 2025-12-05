@@ -34,11 +34,6 @@ const createContractFormSchema = (dailyWorkMinutes: number | null) =>
         message: "終了日は必須です",
       }),
       clientName: z.string().min(1, "クライアント名は必須です"),
-      clientContactName: z.string(),
-      clientEmail: z.union([
-        z.email("有効なメールアドレスを入力してください"),
-        z.literal(""),
-      ]),
       unitPrice: z.number().nullable(),
       settlementMin: z.number().nullable(),
       settlementMax: z.number().nullable(),
@@ -271,8 +266,6 @@ export const ContractForm = ({
       startDate: new Date(),
       endDate: new Date(new Date().setMonth(new Date().getMonth() + 3)),
       clientName: "",
-      clientContactName: "",
-      clientEmail: "",
       unitPrice: null,
       settlementMin: null,
       settlementMax: null,
@@ -321,11 +314,7 @@ export const ContractForm = ({
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={handleFormSubmit}
-        noValidate
-        className="space-y-6"
-      >
+      <form onSubmit={handleFormSubmit} noValidate className="space-y-6">
         {/* 基本情報 */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium">基本情報</h3>
@@ -809,48 +798,6 @@ export const ContractForm = ({
               支払日が未入力の場合と月末日がない場合（例：2月31日）は末日になります。
             </p>
           </div>
-        </div>
-
-        {/* メール宛先情報 */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">メール宛先情報</h3>
-
-          <FormField
-            control={form.control}
-            name="clientContactName"
-            render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel>担当者名</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    value={field.value}
-                    placeholder="担当者名を入力"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="clientEmail"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>担当者メールアドレス</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    value={field.value}
-                    placeholder="メールアドレスを入力"
-                    type="email"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
 
         <DialogFooter sticky className="p-6">

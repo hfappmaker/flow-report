@@ -1,9 +1,9 @@
-import { buildMailtoUrl, buildWorkReportMailtoUrl } from "./mailto-url-builder";
+import { buildMailtoUrl } from "./mailto-url-builder";
 
 describe("buildMailtoUrl", () => {
   it("基本的なmailto URLを構築する", () => {
     const params = {
-      recipient: "test@example.com",
+      recipients: ["test@example.com"],
       subject: "テスト件名",
       body: "テスト本文",
     };
@@ -15,9 +15,39 @@ describe("buildMailtoUrl", () => {
     expect(result).toContain("body=");
   });
 
+  it("複数の宛先を正しく処理する", () => {
+    const params = {
+      recipients: ["test1@example.com", "test2@example.com"],
+      subject: "テスト件名",
+      body: "テスト本文",
+    };
+
+    const result = buildMailtoUrl(params);
+
+    expect(result).toContain("mailto:test1@example.com,test2@example.com");
+    expect(result).toContain("subject=");
+    expect(result).toContain("body=");
+  });
+
+  it("CC宛先を正しく追加する", () => {
+    const params = {
+      recipients: ["test@example.com"],
+      ccRecipients: ["cc1@example.com", "cc2@example.com"],
+      subject: "テスト件名",
+      body: "テスト本文",
+    };
+
+    const result = buildMailtoUrl(params);
+
+    expect(result).toContain("mailto:test@example.com");
+    expect(result).toContain("cc=cc1@example.com,cc2@example.com");
+    expect(result).toContain("subject=");
+    expect(result).toContain("body=");
+  });
+
   it("件名と本文がURLエンコードされる", () => {
     const params = {
-      recipient: "test@example.com",
+      recipients: ["test@example.com"],
       subject: "テスト 件名【重要】",
       body: "こんにちは\n改行あり",
     };
@@ -31,7 +61,7 @@ describe("buildMailtoUrl", () => {
 
   it("特殊文字を含む件名と本文を正しく処理する", () => {
     const params = {
-      recipient: "test@example.com",
+      recipients: ["test@example.com"],
       subject: "件名 & 記号 = テスト",
       body: "本文 <> 記号 @ テスト",
     };
@@ -50,7 +80,7 @@ describe("buildMailtoUrl", () => {
 
   it("正しいURL形式を生成する", () => {
     const params = {
-      recipient: "test@example.com",
+      recipients: ["test@example.com"],
       subject: "件名",
       body: "本文",
     };
@@ -59,137 +89,67 @@ describe("buildMailtoUrl", () => {
 
     expect(result).toMatch(/^mailto:.+\?subject=.+&body=.+$/);
   });
-});
 
-describe("buildWorkReportMailtoUrl", () => {
-  it("作業報告書用のmailto URLを構築する", () => {
+  it("CCがない場合はcc=パラメータを含まない", () => {
     const params = {
-      clientEmail: "client@example.com",
-      contactName: "田中太郎",
-      clientName: "株式会社テスト",
-      userName: "山田花子",
-      targetDate: new Date(Date.UTC(2025, 0, 15)),
+      recipients: ["test@example.com"],
+      subject: "件名",
+      body: "本文",
     };
 
-    const result = buildWorkReportMailtoUrl(params);
+    const result = buildMailtoUrl(params);
 
-    expect(result).toContain("mailto:client@example.com");
-    expect(result).toContain("subject=");
-    expect(result).toContain("body=");
+    expect(result).not.toContain("cc=");
   });
 
-  it("件名に正しいフォーマットが含まれる", () => {
+  it("空のCC配列の場合はcc=パラメータを含まない", () => {
     const params = {
-      clientEmail: "client@example.com",
-      contactName: "田中太郎",
-      clientName: "株式会社テスト",
-      userName: "山田花子",
-      targetDate: new Date(Date.UTC(2025, 2, 10)),
+      recipients: ["test@example.com"],
+      ccRecipients: [],
+      subject: "件名",
+      body: "本文",
     };
 
-    const result = buildWorkReportMailtoUrl(params);
+    const result = buildMailtoUrl(params);
 
-    // URLから件名をデコード
-    const urlObj = new URL(result);
-    const subject = decodeURIComponent(
-      urlObj.searchParams.get("subject") ?? "",
-    );
-
-    expect(subject).toContain("【作業報告書】");
-    expect(subject).toContain("2025年3月分");
-    expect(subject).toContain("山田花子");
+    expect(result).not.toContain("cc=");
   });
 
-  it("本文にcontactNameを含む正しいメッセージが生成される", () => {
+  it("宛先が空の配列の場合も正しく処理する", () => {
     const params = {
-      clientEmail: "client@example.com",
-      contactName: "田中太郎",
-      clientName: "株式会社テスト",
-      userName: "山田花子",
-      targetDate: new Date(Date.UTC(2025, 5, 1)),
+      recipients: [],
+      subject: "件名",
+      body: "本文",
     };
 
-    const result = buildWorkReportMailtoUrl(params);
+    const result = buildMailtoUrl(params);
 
-    // URLから本文をデコード
-    const urlObj = new URL(result);
-    const body = decodeURIComponent(urlObj.searchParams.get("body") ?? "");
-
-    expect(body).toContain("田中太郎様");
-    expect(body).toContain("お世話になっております。山田花子です。");
-    expect(body).toContain("2025年6月分の作業報告書を送付いたします。");
-    expect(body).toContain("ご確認のほど、よろしくお願いいたします。");
+    expect(result).toMatch(/^mailto:\?subject=.+&body=.+$/);
   });
 
-  it("contactNameがnullの場合、clientNameが本文に使用される", () => {
+  it("特殊文字を含むメールアドレスを正しく処理する", () => {
     const params = {
-      clientEmail: "client@example.com",
-      contactName: null,
-      clientName: "株式会社テスト",
-      userName: "山田花子",
-      targetDate: new Date(Date.UTC(2025, 0, 1)),
+      recipients: ["test+tag@example.com"],
+      ccRecipients: ["cc+tag@example.com"],
+      subject: "件名",
+      body: "本文",
     };
 
-    const result = buildWorkReportMailtoUrl(params);
-
-    const urlObj = new URL(result);
-    const body = decodeURIComponent(urlObj.searchParams.get("body") ?? "");
-
-    expect(body).toContain("株式会社テスト様");
-    expect(body).not.toContain("null");
-  });
-
-  it("12月の日付を正しく処理する", () => {
-    const params = {
-      clientEmail: "client@example.com",
-      contactName: "田中太郎",
-      clientName: "株式会社テスト",
-      userName: "山田花子",
-      targetDate: new Date(Date.UTC(2024, 11, 25)),
-    };
-
-    const result = buildWorkReportMailtoUrl(params);
-
-    const urlObj = new URL(result);
-    const subject = decodeURIComponent(
-      urlObj.searchParams.get("subject") ?? "",
-    );
-    const body = decodeURIComponent(urlObj.searchParams.get("body") ?? "");
-
-    expect(subject).toContain("2024年12月分");
-    expect(body).toContain("2024年12月分の作業報告書を送付いたします。");
-  });
-
-  it("特殊文字を含むメールアドレスと名前を正しく処理する", () => {
-    const params = {
-      clientEmail: "test+tag@example.com",
-      contactName: "田中 太郎（部長）",
-      clientName: "株式会社テスト",
-      userName: "山田 花子",
-      targetDate: new Date(Date.UTC(2025, 3, 1)),
-    };
-
-    const result = buildWorkReportMailtoUrl(params);
+    const result = buildMailtoUrl(params);
 
     expect(result).toContain("mailto:test+tag@example.com");
-
-    const urlObj = new URL(result);
-    const body = decodeURIComponent(urlObj.searchParams.get("body") ?? "");
-
-    expect(body).toContain("田中 太郎（部長）様");
-    expect(body).toContain("お世話になっております。山田 花子です。");
+    expect(result).toContain("cc=cc+tag@example.com");
   });
 
   it("生成されたURLが有効なURL形式である", () => {
     const params = {
-      clientEmail: "client@example.com",
-      contactName: "田中太郎",
-      clientName: "株式会社テスト",
-      userName: "山田花子",
-      targetDate: new Date(Date.UTC(2025, 0, 1)),
+      recipients: ["client@example.com"],
+      ccRecipients: ["cc@example.com"],
+      subject: "テスト件名",
+      body: "テスト本文",
     };
 
-    const result = buildWorkReportMailtoUrl(params);
+    const result = buildMailtoUrl(params);
 
     // URLとして解析できることを確認
     expect(() => new URL(result)).not.toThrow();
@@ -197,8 +157,8 @@ describe("buildWorkReportMailtoUrl", () => {
     // mailto URLであることを確認
     const urlObj = new URL(result);
     expect(urlObj.protocol).toBe("mailto:");
-    expect(urlObj.pathname).toBe("client@example.com");
     expect(urlObj.searchParams.has("subject")).toBe(true);
     expect(urlObj.searchParams.has("body")).toBe(true);
+    expect(urlObj.searchParams.has("cc")).toBe(true);
   });
 });

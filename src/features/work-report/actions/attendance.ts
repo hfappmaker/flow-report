@@ -17,44 +17,47 @@ import {
 
 export const getAttendancesByWorkReportIdAction = async (
   workReportId: string,
-): Promise<AttendanceDto[]> => {
-  try {
-    const attendances = await getAttendancesByWorkReportId(workReportId);
-    return attendances;
-  } catch (error) {
-    console.error("Error fetching attendances:", error);
-    throw new Error("Failed to fetch attendances");
+): Promise<
+  { success: true; data: AttendanceDto[] } | { success: false; error: string }
+> => {
+  const result = await getAttendancesByWorkReportId(workReportId);
+  if (!result.success) {
+    return { success: false, error: result.error };
   }
+  return { success: true, data: result.data };
 };
 
 export const getAttendanceByWorkReportIdAndDateAction = async (
   workReportId: string,
   date: Date,
-): Promise<AttendanceDto | null> => {
-  try {
-    const attendance = await getAttendanceByWorkReportIdAndDate(
-      workReportId,
-      date,
-    );
-    return attendance;
-  } catch (error) {
-    console.error("Error fetching attendance:", error);
-    throw new Error("Failed to fetch attendance");
+): Promise<
+  | { success: true; data: AttendanceDto | null }
+  | { success: false; error: string }
+> => {
+  const result = await getAttendanceByWorkReportIdAndDate(workReportId, date);
+  if (!result.success) {
+    return { success: false, error: result.error };
   }
+  return { success: true, data: result.data };
 };
 
 export const updateWorkReportAttendanceAction = async (
   workReportId: string,
   date: Date,
   attendance: AttendanceDto,
-): Promise<AttendanceDto> => {
-  const updatedAttendance = await updateWorkReportAttendance(
+): Promise<
+  { success: true; data: AttendanceDto } | { success: false; error: string }
+> => {
+  const result = await updateWorkReportAttendance(
     workReportId,
     date,
     attendance,
   );
+  if (!result.success) {
+    return { success: false, error: result.error };
+  }
   revalidatePath(`/workReport/${workReportId}`);
-  return updatedAttendance;
+  return { success: true, data: result.data };
 };
 
 export const createAttendancesByPromptAction = async (

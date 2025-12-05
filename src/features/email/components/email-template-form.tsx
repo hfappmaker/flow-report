@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { TextArea } from "@/components/ui/textarea";
+import { EmailAddressInput } from "@/features/email/components/email-address-input";
 import {
   emailTemplateFormSchema,
   type EmailTemplateFormValues,
@@ -37,6 +38,8 @@ export const EmailTemplateForm = ({
       name: "",
       subject: "",
       body: "",
+      toAddresses: [],
+      ccAddresses: [],
     },
   });
 
@@ -54,6 +57,40 @@ export const EmailTemplateForm = ({
               <FormLabel>テンプレート名</FormLabel>
               <FormControl>
                 <Input {...field} placeholder="テンプレート名を入力" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="toAddresses"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>宛先（To）</FormLabel>
+              <FormControl>
+                <EmailAddressInput
+                  value={field.value ?? []}
+                  onChange={field.onChange}
+                  placeholder="メールアドレスを入力してEnterで追加"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="ccAddresses"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>CC</FormLabel>
+              <FormControl>
+                <EmailAddressInput
+                  value={field.value ?? []}
+                  onChange={field.onChange}
+                  placeholder="メールアドレスを入力してEnterで追加"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

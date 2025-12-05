@@ -132,13 +132,6 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
     example: "山田商事",
     category: "recipient",
   },
-  {
-    key: "担当者名",
-    label: "担当者名",
-    description: "クライアントの担当者名",
-    example: "鈴木一郎",
-    category: "recipient",
-  },
   // 契約情報
   {
     key: "基本開始時刻",
@@ -760,7 +753,6 @@ export function validatePlaceholderKeys(template: string): {
  */
 export interface EmailPlaceholderData {
   clientName: string;
-  contactName: string | null;
 }
 
 /**
@@ -779,7 +771,6 @@ export function generateEmailPlaceholderValues(
   // メール用プレースホルダーを追加
   const emailPlaceholders: Record<string, string> = {
     クライアント名: emailData.clientName,
-    担当者名: emailData.contactName ?? "",
   };
 
   return { ...basePlaceholders, ...emailPlaceholders };

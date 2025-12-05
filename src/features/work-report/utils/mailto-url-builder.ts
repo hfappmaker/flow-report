@@ -1,49 +1,30 @@
-import { formatWorkReportEmailSubject } from "./date-formatting";
-import { buildWorkReportEmailBody } from "./email-body-builder";
-
 /**
- * mailto URLを構築
+ * mailto URLを構築（複数宛先・CC対応）
+ * RFC 6068準拠: mailto:a@example.com,b@example.com?cc=c@example.com&subject=...
  * @param params mailto URL構築パラメータ
  * @returns 構築されたmailto URL
  */
 export function buildMailtoUrl(params: {
-  recipient: string;
+  recipients: string[];
+  ccRecipients?: string[];
   subject: string;
   body: string;
 }): string {
   const encodedSubject = encodeURIComponent(params.subject);
   const encodedBody = encodeURIComponent(params.body);
-  return `mailto:${params.recipient}?subject=${encodedSubject}&body=${encodedBody}`;
-}
 
-/**
- * 作業報告書送付用のmailto URLを構築
- * @param params 作業報告書メールパラメータ
- * @returns 構築されたmailto URL
- */
-export function buildWorkReportMailtoUrl(params: {
-  clientEmail: string;
-  contactName: string | null;
-  clientName: string;
-  userName: string;
-  targetDate: Date;
-}): string {
-  const subject = formatWorkReportEmailSubject(
-    params.targetDate,
-    params.userName,
-  );
-  const body = buildWorkReportEmailBody({
-    contactName: params.contactName,
-    clientName: params.clientName,
-    userName: params.userName,
-    targetDate: params.targetDate,
-  });
+  // RFC 6068: 複数宛先はカンマ区切り
+  const toAddresses = params.recipients.join(",");
 
-  return buildMailtoUrl({
-    recipient: params.clientEmail,
-    subject,
-    body,
-  });
+  let url = `mailto:${toAddresses}?subject=${encodedSubject}&body=${encodedBody}`;
+
+  // CCがある場合は追加
+  if (params.ccRecipients && params.ccRecipients.length > 0) {
+    const ccAddresses = params.ccRecipients.join(",");
+    url += `&cc=${ccAddresses}`;
+  }
+
+  return url;
 }
 
 /**
@@ -52,12 +33,14 @@ export function buildWorkReportMailtoUrl(params: {
  * @returns 構築されたmailto URL
  */
 export function buildMailtoUrlFromTemplate(params: {
-  clientEmail: string;
+  toAddresses: string[];
+  ccAddresses?: string[];
   subject: string;
   body: string;
 }): string {
   return buildMailtoUrl({
-    recipient: params.clientEmail,
+    recipients: params.toAddresses,
+    ccRecipients: params.ccAddresses,
     subject: params.subject,
     body: params.body,
   });

@@ -32,8 +32,14 @@ export async function getFreeePartnersAction(options?: {
     }
 
     // freee連携確認
-    const tokenData = await getFreeeToken(user.id);
-    if (!tokenData) {
+    const tokenResult = await getFreeeToken(user.id);
+    if (!tokenResult.success) {
+      return {
+        success: false,
+        message: tokenResult.error,
+      };
+    }
+    if (!tokenResult.data) {
       return {
         success: false,
         message: "freeeとの連携が必要です",
@@ -43,7 +49,7 @@ export async function getFreeePartnersAction(options?: {
     // freee取引先一覧を取得
     const response = await getFreeePartners(
       user.id,
-      tokenData.companyId,
+      tokenResult.data.companyId,
       options,
     );
 

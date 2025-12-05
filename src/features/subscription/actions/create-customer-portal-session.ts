@@ -13,7 +13,11 @@ export async function createCustomerPortalSession(): Promise<CustomerPortalSessi
       return { error: "認証が必要です" };
     }
 
-    const stripeCustomer = await getStripeCustomerByUserId(user.id);
+    const stripeCustomerResult = await getStripeCustomerByUserId(user.id);
+    if (!stripeCustomerResult.success) {
+      return { error: stripeCustomerResult.error };
+    }
+    const stripeCustomer = stripeCustomerResult.data;
 
     if (!stripeCustomer?.stripeCustomerId) {
       return { error: "顧客情報が見つかりません" };

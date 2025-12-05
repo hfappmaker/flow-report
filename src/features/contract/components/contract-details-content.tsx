@@ -292,24 +292,6 @@ export const ContractDetailsContent = ({
         </div>
       </div>
 
-      <div>
-        <h3 className="mb-3 text-lg font-medium">メール宛先情報</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="col-span-2">
-            <Label className="text-sm font-medium text-muted-foreground">
-              担当者名
-            </Label>
-            <p className="mt-1">{contract.clientContactName}</p>
-          </div>
-          <div className="col-span-2">
-            <Label className="text-sm font-medium text-muted-foreground">
-              担当者メールアドレス
-            </Label>
-            <p className="mt-1">{contract.clientEmail}</p>
-          </div>
-        </div>
-      </div>
-
       <DialogFooter sticky className="p-6">
         {showWorkReportsButton && onNavigateToWorkReports && (
           <Button

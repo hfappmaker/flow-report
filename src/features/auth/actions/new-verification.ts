@@ -5,7 +5,13 @@ import { getVerificationTokenByToken } from "@/features/auth/repositories/verifi
 import { db } from "@/repositories/db";
 
 export const newVerification = async (token: string) => {
-  const existingToken = await getVerificationTokenByToken(token);
+  const existingTokenResult = await getVerificationTokenByToken(token);
+
+  if (!existingTokenResult.success) {
+    return { error: existingTokenResult.error };
+  }
+
+  const existingToken = existingTokenResult.data;
 
   if (!existingToken) {
     return { error: "Token does not exist!" };
@@ -17,7 +23,13 @@ export const newVerification = async (token: string) => {
     return { error: "Token has expired!" };
   }
 
-  const existingUser = await getUserByEmail(existingToken.email);
+  const existingUserResult = await getUserByEmail(existingToken.email);
+
+  if (!existingUserResult.success) {
+    return { error: existingUserResult.error };
+  }
+
+  const existingUser = existingUserResult.data;
 
   if (!existingUser) {
     return { error: "User not registered!" };

@@ -17,7 +17,10 @@ export default async function SubscriptionInfoPage() {
     return notFound();
   }
 
-  const subscriptionInfo = await getSubscriptionInfoByUserId(userId);
+  const subscriptionInfoResult = await getSubscriptionInfoByUserId(userId);
+  const subscriptionInfo = subscriptionInfoResult.success
+    ? subscriptionInfoResult.data
+    : null;
 
   return <SubscriptionInfoClientPage subscriptionInfo={subscriptionInfo} />;
 }

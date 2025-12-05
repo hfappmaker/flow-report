@@ -44,35 +44,33 @@ export default function ContractClientPage({
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     startTransition(async () => {
-      try {
-        const contractData = await getContractByIdAction(contractId);
-        if (!contractData) {
-          showError("契約情報が見つかりません");
-          return;
-        }
-        setContract(contractData);
-      } catch (error: unknown) {
-        console.error(error);
-        showError("契約情報の取得に失敗しました");
+      const result = await getContractByIdAction(contractId);
+      if (!result.success) {
+        showError(result.error);
+        return;
       }
+      if (!result.data) {
+        showError("契約情報が見つかりません");
+        return;
+      }
+      setContract(result.data);
     });
   }, [contractId, showError, startTransition]);
 
   // Fetch work time reports for the project
   const fetchReports = useCallback(
     async (fromDate: Date | null, toDate: Date | null) => {
-      try {
-        const data =
-          await getWorkReportsByContractIdAndYearMonthDateRangeAction(
-            contractId,
-            fromDate ?? undefined,
-            toDate ?? undefined,
-          );
-        setWorkReports(data);
-      } catch (error: unknown) {
-        console.error(error);
-        showError("作業報告書の取得に失敗しました");
+      const result =
+        await getWorkReportsByContractIdAndYearMonthDateRangeAction(
+          contractId,
+          fromDate ?? undefined,
+          toDate ?? undefined,
+        );
+      if (!result.success) {
+        showError(result.error);
+        return;
       }
+      setWorkReports(result.data);
     },
     [contractId, showError],
   );
@@ -199,7 +197,6 @@ export default function ContractClientPage({
             <ClipboardList className="text-3xl text-sky-400" />
             <h1 className="text-2xl">作業報告書一覧（{contract?.name}）</h1>
           </div>
-          <p className="text-muted-foreground">作業報告書を管理できます</p>
         </div>
         <Button onClick={handleNavigateToContracts}>契約一覧へ</Button>
       </CardHeader>

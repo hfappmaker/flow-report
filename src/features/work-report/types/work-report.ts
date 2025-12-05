@@ -24,11 +24,9 @@ export interface WorkReportClientProps {
   attendances: AttendanceDto[];
   contractName: string;
   clientName: string;
-  contactName: string;
   closingDay: number | null;
   userName: string;
   userEmail: string;
-  clientEmail: string;
   targetDate: Date;
   dailyWorkMinutes: number;
   monthlyWorkMinutes: number;

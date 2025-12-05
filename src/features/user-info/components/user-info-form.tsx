@@ -87,7 +87,7 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
   };
 
   return (
-    <Card className="w-auto shadow-sm">
+    <Card className="w-full shadow-sm">
       <CardHeader className="font-semibold">
         <div className="flex items-center gap-x-3">
           <UserCog className="text-3xl text-sky-400" />

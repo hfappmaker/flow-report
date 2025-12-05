@@ -210,14 +210,14 @@ export default function DashboardClientPage({
   };
 
   const openContractDetailsDialog = async (contractId: string) => {
-    try {
-      const contractData = await getContractByIdAction(contractId);
-      if (contractData) {
-        setActiveContract(contractData);
-        setActiveDialog("details");
-      }
-    } catch (error) {
-      console.error("Error fetching contract details:", error);
+    const result = await getContractByIdAction(contractId);
+    if (!result.success) {
+      console.error("Error fetching contract details:", result.error);
+      return;
+    }
+    if (result.data) {
+      setActiveContract(result.data);
+      setActiveDialog("details");
     }
   };
 
@@ -238,24 +238,27 @@ export default function DashboardClientPage({
     if (!activeContract) return;
     startTransition(() => {
       void (async () => {
-        try {
-          const contractData = convertContractFormValuesToContract(
-            data,
-            activeContract.userId,
-          );
-          await updateContractAction(activeContract.id, contractData);
-          const newContractData = await getContractByIdAction(
-            activeContract.id,
-          );
-          // 更新されたデータで activeContract を更新
-          setActiveContract(newContractData);
-          showSuccess(`契約 '${data.name}' を編集しました`);
-        } catch (error: unknown) {
-          console.error(error);
-          showError("契約の更新に失敗しました");
-        } finally {
+        const contractData = convertContractFormValuesToContract(
+          data,
+          activeContract.userId,
+        );
+        const updateResult = await updateContractAction(
+          activeContract.id,
+          contractData,
+        );
+        if (!updateResult.success) {
+          showError(updateResult.error);
           closeDialog();
+          return;
         }
+        const newContractResult = await getContractByIdAction(
+          activeContract.id,
+        );
+        if (newContractResult.success && newContractResult.data) {
+          setActiveContract(newContractResult.data);
+        }
+        showSuccess(`契約 '${data.name}' を編集しました`);
+        closeDialog();
       })();
     });
   };
@@ -279,37 +282,41 @@ export default function DashboardClientPage({
     contractId: string,
     workReportId: string,
   ) => {
-    try {
-      const contractData = await getContractByIdAction(contractId);
-      if (contractData) {
-        const today = new Date();
-        const date = new Date(
-          Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()),
-        );
-        const attendanceData = await getAttendanceByWorkReportIdAndDateAction(
-          workReportId,
-          date,
-        );
-        setAttendanceDialogState({
-          isOpen: true,
-          contractId,
-          workReportId,
-          contract: contractData,
-          date,
-          startTime: attendanceData?.startTime
-            ? new Date(attendanceData.startTime)
-            : null,
-          endTime: attendanceData?.endTime
-            ? new Date(attendanceData.endTime)
-            : null,
-          breakDuration: attendanceData?.breakDuration ?? null,
-          memo: attendanceData?.memo ?? null,
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching contract details:", error);
-      showError("契約情報の取得に失敗しました");
+    const contractResult = await getContractByIdAction(contractId);
+    if (!contractResult.success) {
+      showError(contractResult.error);
+      return;
     }
+    if (!contractResult.data) {
+      showError("契約情報が見つかりません");
+      return;
+    }
+    const today = new Date();
+    const date = new Date(
+      Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()),
+    );
+    const attendanceResult = await getAttendanceByWorkReportIdAndDateAction(
+      workReportId,
+      date,
+    );
+    const attendanceData = attendanceResult.success
+      ? attendanceResult.data
+      : null;
+    setAttendanceDialogState({
+      isOpen: true,
+      contractId,
+      workReportId,
+      contract: contractResult.data,
+      date,
+      startTime: attendanceData?.startTime
+        ? new Date(attendanceData.startTime)
+        : null,
+      endTime: attendanceData?.endTime
+        ? new Date(attendanceData.endTime)
+        : null,
+      breakDuration: attendanceData?.breakDuration ?? null,
+      memo: attendanceData?.memo ?? null,
+    });
   };
 
   // 勤怠入力ダイアログを閉じる
@@ -429,8 +436,11 @@ export default function DashboardClientPage({
               <CardContent>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {contract.workReports.map((workReport) => {
-                    const { totalWorkTimeText, baseAmountText, taxIncludedAmountText } =
-                      calculateWorkReportSummary(workReport, contract);
+                    const {
+                      totalWorkTimeText,
+                      baseAmountText,
+                      taxIncludedAmountText,
+                    } = calculateWorkReportSummary(workReport, contract);
                     return (
                       <button
                         key={workReport.id}
@@ -492,8 +502,11 @@ export default function DashboardClientPage({
                 <CardContent>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {contract.workReports.map((workReport) => {
-                      const { totalWorkTimeText, baseAmountText, taxIncludedAmountText } =
-                        calculateWorkReportSummary(workReport, contract);
+                      const {
+                        totalWorkTimeText,
+                        baseAmountText,
+                        taxIncludedAmountText,
+                      } = calculateWorkReportSummary(workReport, contract);
                       return (
                         <button
                           key={workReport.id}
@@ -513,7 +526,9 @@ export default function DashboardClientPage({
                                 workReport.status,
                               )} pointer-events-none`}
                             >
-                              {getWorkReportStatusDisplayText(workReport.status)}
+                              {getWorkReportStatusDisplayText(
+                                workReport.status,
+                              )}
                             </Badge>
                           </div>
                           <div className="space-y-1 text-xs text-muted-foreground">

@@ -33,8 +33,6 @@ export const convertContractFormValuesToContract = (
     taxRoundingType: data.taxRoundingType,
     userId,
     clientName: data.clientName,
-    clientContactName: data.clientContactName,
-    clientEmail: data.clientEmail,
   };
 };
 
@@ -46,8 +44,6 @@ export const convertContractToFormValues = (
     startDate: new Date(contract.startDate),
     endDate: new Date(contract.endDate),
     clientName: contract.clientName,
-    clientContactName: contract.clientContactName,
-    clientEmail: contract.clientEmail,
     unitPrice: contract.unitPrice ? Number(contract.unitPrice) : null,
     settlementMin: contract.settlementMin
       ? Number(contract.settlementMin)

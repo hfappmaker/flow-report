@@ -50,8 +50,11 @@ export async function checkFreeeConnectionAction(): Promise<boolean> {
       return false;
     }
 
-    const connected = await isFreeeConnected(user.id);
-    return connected;
+    const connectedResult = await isFreeeConnected(user.id);
+    if (!connectedResult.success) {
+      return false;
+    }
+    return connectedResult.data;
   } catch (error) {
     console.error("Failed to check freee connection:", error);
     return false;
@@ -71,8 +74,14 @@ export async function getFreeeConnectionInfoAction(): Promise<FreeeConnectionInf
       };
     }
 
-    const tokenData = await getFreeeToken(user.id);
-    if (!tokenData) {
+    const tokenResult = await getFreeeToken(user.id);
+    if (!tokenResult.success) {
+      return {
+        success: false,
+        message: tokenResult.error,
+      };
+    }
+    if (!tokenResult.data) {
       return {
         success: false,
         message: "freeeとの連携が必要です",
@@ -82,9 +91,9 @@ export async function getFreeeConnectionInfoAction(): Promise<FreeeConnectionInf
     return {
       success: true,
       data: {
-        companyId: tokenData.companyId,
-        expiresAt: tokenData.expiresAt,
-        scope: tokenData.scope,
+        companyId: tokenResult.data.companyId,
+        expiresAt: tokenResult.data.expiresAt,
+        scope: tokenResult.data.scope,
       },
       message: "freee連携情報を取得しました",
     };
@@ -112,7 +121,13 @@ export async function disconnectFreeeAction(): Promise<DisconnectFreeeResult> {
       };
     }
 
-    await deleteFreeeToken(user.id);
+    const deleteResult = await deleteFreeeToken(user.id);
+    if (!deleteResult.success) {
+      return {
+        success: false,
+        message: deleteResult.error,
+      };
+    }
 
     return {
       success: true,

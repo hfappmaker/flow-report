@@ -71,6 +71,63 @@ Immutability rules are enforced by ESLint:
 - Use immutable array methods (`map`, `filter`, `reduce`, `toSorted`, `toReversed`)
 - Use spread operator for object updates (`{ ...obj, prop: value }`)
 
+### 2.5 Repository Layer Error Handling
+
+**Result Type Pattern:**
+
+- All repository functions must return `Result<T>` type instead of throwing exceptions
+- Import from `@/types/result`: `import { Result, ok, err } from "@/types/result"`
+- Wrap database operations in try-catch and return error messages
+- Do not throw exceptions from repositories; use `err("message")` instead
+
+**Result Type Definition:**
+
+```typescript
+type Result<T> = { success: true; data: T } | { success: false; error: string }
+```
+
+**Examples:**
+
+```typescript
+// Query operation
+async function getById(id: string): Promise<Result<Entity | null>> {
+  try {
+    const entity = await db.entity.findUnique({ where: { id } });
+    return ok(entity);
+  } catch (error) {
+    console.error("Error:", error);
+    return err("データの取得に失敗しました");
+  }
+}
+
+// Create operation with validation
+async function create(data: Input): Promise<Result<Entity>> {
+  if (!isValid(data)) {
+    return err("入力データが不正です");
+  }
+  try {
+    const entity = await db.entity.create({ data });
+    return ok(entity);
+  } catch (error) {
+    console.error("Error:", error);
+    return err("データの作成に失敗しました");
+  }
+}
+```
+
+**Consuming Result in Server Actions:**
+
+```typescript
+export const createAction = async (data: Input) => {
+  const result = await repository.create(data);
+  if (!result.success) {
+    return { success: false, error: result.error };
+  }
+  revalidatePath("/path");
+  return { success: true, data: result.data };
+};
+```
+
 ## 3. Commit Messages
 
 Use conventional commit prefixes:

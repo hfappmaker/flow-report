@@ -24,19 +24,11 @@ export default function SubscriptionInfoClientPage({
 
   return (
     <Card className="w-full shadow-sm">
-      <CardHeader className="flex-row items-center justify-between gap-x-3">
-        <div className="flex items-center gap-x-3 font-semibold">
+      <CardHeader className="font-semibold">
+        <div className="flex items-center gap-x-3">
           <CreditCard className="text-3xl text-sky-400" />
           <h1 className="text-2xl">サブスクリプション情報</h1>
         </div>
-        {showManageButton && (
-          <ManageSubscriptionButton>
-            <Button variant="outline" size="sm">
-              <MdSettings className="mr-2 size-4" />
-              サブスクリプションを管理
-            </Button>
-          </ManageSubscriptionButton>
-        )}
       </CardHeader>
       <CardContent>
         {subscriptionInfo ? (
@@ -45,6 +37,16 @@ export default function SubscriptionInfoClientPage({
           <p className="text-muted-foreground">
             サブスクリプション情報がありません
           </p>
+        )}
+        {showManageButton && (
+          <div className="mt-6">
+            <ManageSubscriptionButton>
+              <Button variant="outline" size="sm">
+                <MdSettings className="mr-2 size-4" />
+                サブスクリプションを管理
+              </Button>
+            </ManageSubscriptionButton>
+          </div>
         )}
       </CardContent>
     </Card>
