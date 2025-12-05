@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 const getTestUserPassword = () => {
-  const password = process.env.SEED_TEST_USER_PASSWORD;
+  const password = process.env.SEED_TEST_USER_PASSWORD || "";
   if (!password) {
     throw new Error("SEED_TEST_USER_PASSWORD environment variable is required");
   }
