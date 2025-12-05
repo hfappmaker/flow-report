@@ -162,30 +162,33 @@ export default function TemplatesClientPage({
     }
   })();
 
-  const refreshTemplates = useCallback(async () => {
-    try {
-      setManualPending(true);
-      if (activeTab === "EMAIL") {
-        const data = await getEmailTemplatesByCreateUserIdAction(userId);
-        setEmailTemplates(data);
-      } else {
-        const data = await getExcelTemplatesByUserIdAndTypeAction(
-          userId,
-          activeTab,
-        );
-        if (activeTab === "WORK_REPORT") {
-          setWorkReportTemplates(data);
+  const refreshTemplates = useCallback(
+    async (tabToRefresh: TabType) => {
+      try {
+        setManualPending(true);
+        if (tabToRefresh === "EMAIL") {
+          const data = await getEmailTemplatesByCreateUserIdAction(userId);
+          setEmailTemplates(data);
         } else {
-          setInvoiceTemplates(data);
+          const data = await getExcelTemplatesByUserIdAndTypeAction(
+            userId,
+            tabToRefresh,
+          );
+          if (tabToRefresh === "WORK_REPORT") {
+            setWorkReportTemplates(data);
+          } else {
+            setInvoiceTemplates(data);
+          }
         }
+      } catch (err) {
+        console.error(err);
+        showError("テンプレートの取得に失敗しました");
+      } finally {
+        setManualPending(false);
       }
-    } catch (err) {
-      console.error(err);
-      showError("テンプレートの取得に失敗しました");
-    } finally {
-      setManualPending(false);
-    }
-  }, [userId, activeTab, showError, setManualPending]);
+    },
+    [userId, showError, setManualPending],
+  );
 
   // 作業報告書タブの場合、デフォルトテンプレートを先頭に追加
   const displayExcelTemplates = useMemo(() => {
@@ -206,11 +209,33 @@ export default function TemplatesClientPage({
   // ユーザーが作成したテンプレート数が上限に達しているかチェック
   const isTemplateLimitReached = templates.length >= MAX_TEMPLATES_PER_TYPE;
 
+  // 初回マウント時に全タブのデータを取得（タブ切り替え時には再取得しない）
   useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        setManualPending(true);
+        const [workReportData, invoiceData, emailData] = await Promise.all([
+          getExcelTemplatesByUserIdAndTypeAction(userId, "WORK_REPORT"),
+          getExcelTemplatesByUserIdAndTypeAction(userId, "INVOICE"),
+          getEmailTemplatesByCreateUserIdAction(userId),
+        ]);
+        setWorkReportTemplates(workReportData);
+        setInvoiceTemplates(invoiceData);
+        setEmailTemplates(emailData);
+      } catch (err) {
+        console.error(err);
+        showError("テンプレートの取得に失敗しました");
+      } finally {
+        setManualPending(false);
+      }
+    };
+
     startTransition(() => {
-      refreshTemplates().catch(console.error);
+      loadInitialData();
     });
-  }, [refreshTemplates, startTransition]);
+    // 初回マウント時のみ実行
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const closeDialog = () => {
     setActiveDialog(null);
@@ -251,7 +276,7 @@ export default function TemplatesClientPage({
       });
       showSuccess(`テンプレート '${data.name}' を作成しました`);
       closeDialog();
-      await refreshTemplates();
+      await refreshTemplates(activeTab);
     } catch (err) {
       console.error(err);
       if (err instanceof Error) {
@@ -292,7 +317,7 @@ export default function TemplatesClientPage({
       await updateExcelTemplateAction(activeTemplate.id, updateData);
       showSuccess(`テンプレート '${data.name}' を更新しました`);
       closeDialog();
-      await refreshTemplates();
+      await refreshTemplates(activeTab);
     } catch (err) {
       console.error(err);
       if (err instanceof Error) {
@@ -314,7 +339,7 @@ export default function TemplatesClientPage({
       await deleteExcelTemplateAction(activeTemplate.id);
       showSuccess(`テンプレート '${activeTemplate.name}' を削除しました`);
       closeDialog();
-      await refreshTemplates();
+      await refreshTemplates(activeTab);
     } catch (err) {
       console.error(err);
       showError("テンプレートの削除に失敗しました");
@@ -335,7 +360,7 @@ export default function TemplatesClientPage({
       });
       showSuccess(`メールテンプレート '${data.name}' を作成しました`);
       closeEmailDialog();
-      await refreshTemplates();
+      await refreshTemplates("EMAIL");
     } catch (err) {
       console.error(err);
       if (err instanceof Error) {
@@ -362,7 +387,7 @@ export default function TemplatesClientPage({
       });
       showSuccess(`メールテンプレート '${data.name}' を更新しました`);
       closeEmailDialog();
-      await refreshTemplates();
+      await refreshTemplates("EMAIL");
     } catch (err) {
       console.error(err);
       if (err instanceof Error) {
@@ -386,7 +411,7 @@ export default function TemplatesClientPage({
         `メールテンプレート '${activeEmailTemplate.name}' を削除しました`,
       );
       closeEmailDialog();
-      await refreshTemplates();
+      await refreshTemplates("EMAIL");
     } catch (err) {
       console.error(err);
       showError("メールテンプレートの削除に失敗しました");

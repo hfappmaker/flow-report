@@ -6,7 +6,7 @@ export const DEFAULT_EMAIL_TEMPLATE_ID = "system-default-email";
 /**
  * システムデフォルトメールテンプレートの名前
  */
-export const DEFAULT_EMAIL_TEMPLATE_NAME = "デフォルト";
+export const DEFAULT_EMAIL_TEMPLATE_NAME = "デフォルトテンプレート";
 
 /**
  * システムデフォルトメールテンプレートの件名
