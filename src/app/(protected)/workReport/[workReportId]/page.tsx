@@ -46,6 +46,7 @@ export default async function WorkReportPage({
       userId={user.id}
       targetDate={workReport.targetDate}
       userName={user.name ?? ""}
+      userEmail={user.email ?? ""}
       attendances={attendances}
       contractName={contract.name}
       clientName={contract.clientName}

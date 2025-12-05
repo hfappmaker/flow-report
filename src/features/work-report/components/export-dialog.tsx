@@ -180,8 +180,8 @@ export function ExportDialog({
           setIsInvoiceEnabled(true);
         }
       }
-      // タブ状態を復元
-      setActiveTabState(settings.activeTab);
+      // タブ状態を復元（freeeタブは一時的に非表示のため、excelに強制）
+      setActiveTabState("excel");
     }
   }, [isLoaded, settings, workReportTemplates, invoiceTemplates]);
 
@@ -411,14 +411,15 @@ export function ExportDialog({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-1">
             <TabsTrigger value="excel" className="flex items-center gap-2">
               <FileSpreadsheet className="size-4" />
               Excelエクスポート
             </TabsTrigger>
-            <TabsTrigger value="freee" className="flex items-center gap-2">
+            {/* freee請求書タブは将来の変更に備えて一時的に非表示 */}
+            {/* <TabsTrigger value="freee" className="flex items-center gap-2">
               freee請求書
-            </TabsTrigger>
+            </TabsTrigger> */}
           </TabsList>
 
           {/* Excelエクスポートタブ */}

@@ -44,7 +44,7 @@ export const EmailTemplateForm = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div className="flex justify-end">
-          <PlaceholderHelp side="left" />
+          <PlaceholderHelp side="bottom" />
         </div>
         <FormField
           control={form.control}

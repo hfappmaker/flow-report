@@ -17,7 +17,7 @@ import {
 } from "@/features/work-report/utils/placeholder-utils";
 
 type PlaceholderHelpProps = {
-  side?: "top" | "left";
+  side?: "top" | "bottom" | "left" | "right";
 };
 
 export function PlaceholderHelp({ side = "top" }: PlaceholderHelpProps) {
@@ -47,7 +47,7 @@ export function PlaceholderHelp({ side = "top" }: PlaceholderHelpProps) {
       <PopoverContent
         className="w-[calc(100vw-2rem)] max-w-[480px] p-0"
         side={side}
-        align={side === "left" ? "start" : "end"}
+        align="end"
         avoidCollisions={false}
       >
         <div className="p-4 pb-2">

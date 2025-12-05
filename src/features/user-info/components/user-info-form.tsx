@@ -42,9 +42,7 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
 
   // フォームの状態
   const [name, setName] = useState(initialInfo?.name ?? "");
-  const [postalCode, setPostalCode] = useState(
-    initialInfo?.postalCode ?? "",
-  );
+  const [postalCode, setPostalCode] = useState(initialInfo?.postalCode ?? "");
   const [address, setAddress] = useState(initialInfo?.address ?? "");
   const [bankName, setBankName] = useState(initialInfo?.bankName ?? "");
   const [bankBranchName, setBankBranchName] = useState(
@@ -95,9 +93,6 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
           <UserCog className="text-3xl text-sky-400" />
           <h1 className="text-2xl">ユーザー情報</h1>
         </div>
-        <p className="text-sm font-normal text-muted-foreground">
-          住所や銀行口座情報を設定すると、請求書テンプレートのプレースホルダーとして使用できます
-        </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -126,91 +121,95 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
             </div>
           </div>
 
-          {/* 住所セクション */}
-          <div className="space-y-4 border-t pt-4">
-            <h3 className="font-medium">住所情報</h3>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="postalCode">郵便番号</Label>
-                <Input
-                  id="postalCode"
-                  value={postalCode}
-                  onChange={(e) => setPostalCode(e.target.value)}
-                  placeholder="例: 123-4567"
-                />
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="address">住所</Label>
-                <Input
-                  id="address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="例: 東京都渋谷区..."
-                />
+          {/* 住所セクション - 将来の変更のため一時的に非表示 */}
+          {false && (
+            <div className="space-y-4 border-t pt-4">
+              <h3 className="font-medium">住所情報</h3>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="postalCode">郵便番号</Label>
+                  <Input
+                    id="postalCode"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    placeholder="例: 123-4567"
+                  />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="address">住所</Label>
+                  <Input
+                    id="address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="例: 東京都渋谷区..."
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* 銀行口座セクション */}
-          <div className="space-y-4 border-t pt-4">
-            <h3 className="font-medium">銀行口座情報</h3>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="bankName">銀行名</Label>
-                <Input
-                  id="bankName"
-                  value={bankName}
-                  onChange={(e) => setBankName(e.target.value)}
-                  placeholder="例: ○○銀行"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bankBranchName">支店名</Label>
-                <Input
-                  id="bankBranchName"
-                  value={bankBranchName}
-                  onChange={(e) => setBankBranchName(e.target.value)}
-                  placeholder="例: ○○支店"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bankAccountType">口座種別</Label>
-                <Select
-                  value={bankAccountType}
-                  onValueChange={setBankAccountType}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="選択してください" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BANK_ACCOUNT_TYPES.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bankAccountNumber">口座番号</Label>
-                <Input
-                  id="bankAccountNumber"
-                  value={bankAccountNumber}
-                  onChange={(e) => setBankAccountNumber(e.target.value)}
-                  placeholder="例: 1234567"
-                />
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="bankAccountHolder">口座名義</Label>
-                <Input
-                  id="bankAccountHolder"
-                  value={bankAccountHolder}
-                  onChange={(e) => setBankAccountHolder(e.target.value)}
-                  placeholder="例: ヤマダ タロウ"
-                />
+          {/* 銀行口座セクション - 将来の変更のため一時的に非表示 */}
+          {false && (
+            <div className="space-y-4 border-t pt-4">
+              <h3 className="font-medium">銀行口座情報</h3>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="bankName">銀行名</Label>
+                  <Input
+                    id="bankName"
+                    value={bankName}
+                    onChange={(e) => setBankName(e.target.value)}
+                    placeholder="例: ○○銀行"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bankBranchName">支店名</Label>
+                  <Input
+                    id="bankBranchName"
+                    value={bankBranchName}
+                    onChange={(e) => setBankBranchName(e.target.value)}
+                    placeholder="例: ○○支店"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bankAccountType">口座種別</Label>
+                  <Select
+                    value={bankAccountType}
+                    onValueChange={setBankAccountType}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="選択してください" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BANK_ACCOUNT_TYPES.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bankAccountNumber">口座番号</Label>
+                  <Input
+                    id="bankAccountNumber"
+                    value={bankAccountNumber}
+                    onChange={(e) => setBankAccountNumber(e.target.value)}
+                    placeholder="例: 1234567"
+                  />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="bankAccountHolder">口座名義</Label>
+                  <Input
+                    id="bankAccountHolder"
+                    value={bankAccountHolder}
+                    onChange={(e) => setBankAccountHolder(e.target.value)}
+                    placeholder="例: ヤマダ タロウ"
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           <ErrorAlert message={error} />
           <SuccessAlert message={success} />

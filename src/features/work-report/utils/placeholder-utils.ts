@@ -254,61 +254,69 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
   },
   // ユーザー情報
   {
-    key: "作業者名",
-    label: "作業者名",
+    key: "名前",
+    label: "名前",
     description: "ログインユーザーの名前（例: 山田太郎）",
     example: "山田太郎",
     category: "user",
   },
   {
-    key: "郵便番号",
-    label: "郵便番号",
-    description: "ユーザーの郵便番号",
-    example: "123-4567",
+    key: "メールアドレス",
+    label: "メールアドレス",
+    description: "ログインユーザーのメールアドレス",
+    example: "example@example.com",
     category: "user",
   },
-  {
-    key: "住所",
-    label: "住所",
-    description: "ユーザーの住所",
-    example: "東京都渋谷区...",
-    category: "user",
-  },
-  {
-    key: "銀行名",
-    label: "銀行名",
-    description: "振込先銀行名",
-    example: "○○銀行",
-    category: "user",
-  },
-  {
-    key: "支店名",
-    label: "支店名",
-    description: "振込先支店名",
-    example: "○○支店",
-    category: "user",
-  },
-  {
-    key: "口座種別",
-    label: "口座種別",
-    description: "口座種別（普通/当座）",
-    example: "普通",
-    category: "user",
-  },
-  {
-    key: "口座番号",
-    label: "口座番号",
-    description: "口座番号",
-    example: "1234567",
-    category: "user",
-  },
-  {
-    key: "口座名義",
-    label: "口座名義",
-    description: "口座名義",
-    example: "ヤマダ タロウ",
-    category: "user",
-  },
+  // 将来の変更のため一時的にコメントアウト
+  // {
+  //   key: "郵便番号",
+  //   label: "郵便番号",
+  //   description: "ユーザーの郵便番号",
+  //   example: "123-4567",
+  //   category: "user",
+  // },
+  // {
+  //   key: "住所",
+  //   label: "住所",
+  //   description: "ユーザーの住所",
+  //   example: "東京都渋谷区...",
+  //   category: "user",
+  // },
+  // {
+  //   key: "銀行名",
+  //   label: "銀行名",
+  //   description: "振込先銀行名",
+  //   example: "○○銀行",
+  //   category: "user",
+  // },
+  // {
+  //   key: "支店名",
+  //   label: "支店名",
+  //   description: "振込先支店名",
+  //   example: "○○支店",
+  //   category: "user",
+  // },
+  // {
+  //   key: "口座種別",
+  //   label: "口座種別",
+  //   description: "口座種別（普通/当座）",
+  //   example: "普通",
+  //   category: "user",
+  // },
+  // {
+  //   key: "口座番号",
+  //   label: "口座番号",
+  //   description: "口座番号",
+  //   example: "1234567",
+  //   category: "user",
+  // },
+  // {
+  //   key: "口座名義",
+  //   label: "口座名義",
+  //   description: "口座名義",
+  //   example: "ヤマダ タロウ",
+  //   category: "user",
+  // },
   // 請求情報
   {
     key: "基本金額",
@@ -488,7 +496,12 @@ function calculatePaymentDeadline(
   paymentMonthOffset: number,
   paymentDay: number | null,
 ): Date {
-  return calculatePaymentDate(invoiceDate, null, paymentMonthOffset, paymentDay);
+  return calculatePaymentDate(
+    invoiceDate,
+    null,
+    paymentMonthOffset,
+    paymentDay,
+  );
 }
 
 /**
@@ -537,7 +550,8 @@ export function generatePlaceholderValues(
   const basePlaceholders: Record<string, string> = {
     対象年: String(data.targetDate.getFullYear()),
     対象月: String(data.targetDate.getMonth() + 1),
-    作業者名: data.userName,
+    名前: data.userName,
+    メールアドレス: data.email ?? "",
     基本開始時刻: formatTimeString(data.basicStartTime),
     基本終了時刻: formatTimeString(data.basicEndTime),
     基本休憩時間: data.basicBreakDuration
@@ -556,14 +570,14 @@ export function generatePlaceholderValues(
         ? formatMinutesToTimeString(basicWorkMinutes)
         : "",
     稼働日数: String(workingDays),
-    // ユーザー情報
-    郵便番号: data.postalCode ?? "",
-    住所: data.address ?? "",
-    銀行名: data.bankName ?? "",
-    支店名: data.bankBranchName ?? "",
-    口座種別: data.bankAccountType ?? "",
-    口座番号: data.bankAccountNumber ?? "",
-    口座名義: data.bankAccountHolder ?? "",
+    // ユーザー情報 - 将来の変更のため一時的にコメントアウト
+    // 郵便番号: data.postalCode ?? "",
+    // 住所: data.address ?? "",
+    // 銀行名: data.bankName ?? "",
+    // 支店名: data.bankBranchName ?? "",
+    // 口座種別: data.bankAccountType ?? "",
+    // 口座番号: data.bankAccountNumber ?? "",
+    // 口座名義: data.bankAccountHolder ?? "",
   };
 
   // 契約データがない場合は基本プレースホルダーのみ返す
@@ -689,7 +703,7 @@ export function generatePlaceholderValues(
 
 /**
  * テンプレート文字列内のプレースホルダーを置換する
- * 日本語のキーにも対応（例: ${作業者名}）
+ * 日本語のキーにも対応（例: ${名前}）
  */
 export function replacePlaceholders(
   template: string,

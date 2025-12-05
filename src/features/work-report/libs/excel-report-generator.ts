@@ -32,13 +32,14 @@ export interface WorkReportExcelData {
   attendances: AttendanceData[];
   targetDate: Date;
   userName: string;
+  email?: string | null;
   basicStartTime: Date | null;
   basicEndTime: Date | null;
   basicBreakDuration: number | null;
   dailyWorkMinutes: number | null;
   monthlyWorkMinutes: number | null;
   remarks?: string | null;
-  // ユーザー情報（請求書用）
+  // ユーザー情報（請求書用）- 将来の変更のため一時的にコメントアウト
   postalCode?: string | null;
   address?: string | null;
   bankName?: string | null;

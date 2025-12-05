@@ -27,6 +27,7 @@ export interface WorkReportClientProps {
   contactName: string;
   closingDay: number | null;
   userName: string;
+  userEmail: string;
   clientEmail: string;
   targetDate: Date;
   dailyWorkMinutes: number;
