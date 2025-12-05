@@ -169,14 +169,14 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
     category: "contract",
   },
   {
-    key: "1日あたりの作業単位(分)",
+    key: "1日あたりの作業単位",
     label: "1日あたりの作業単位(分)",
     description: "契約の日次作業単位(分)（例: 15）",
     example: "15",
     category: "contract",
   },
   {
-    key: "1ヶ月あたりの作業単位(分)",
+    key: "1ヶ月あたりの作業単位",
     label: "1ヶ月あたりの作業単位(分)",
     description: "契約の月次作業単位(分)（例: 30）",
     example: "30",
