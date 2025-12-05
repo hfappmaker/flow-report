@@ -39,6 +39,7 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
   // フォームの状態
   const [name, setName] = useState(initialInfo?.name ?? "");
@@ -57,6 +58,13 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
   const [bankAccountHolder, setBankAccountHolder] = useState(
     initialInfo?.bankAccountHolder ?? "",
   );
+
+  const handleCancel = () => {
+    setName(initialInfo?.name ?? "");
+    setIsEditing(false);
+    setError("");
+    setSuccess("");
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,6 +90,7 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
         setError(result.error);
       } else if (result.success) {
         setSuccess(result.success);
+        setIsEditing(false);
       }
     });
   };
@@ -101,22 +110,23 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
             <h3 className="font-medium">基本情報</h3>
             <div className="grid gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">名前</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="例: 山田 太郎"
-                />
+                <Label>名前</Label>
+                {isEditing ? (
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="例: 山田 太郎"
+                  />
+                ) : (
+                  <p className="py-2 text-sm">
+                    {initialInfo?.name || "未設定"}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">メールアドレス</Label>
-                <Input
-                  id="email"
-                  value={initialInfo?.email ?? ""}
-                  disabled
-                  className="bg-muted"
-                />
+                <Label>メールアドレス</Label>
+                <p className="py-2 text-sm">{initialInfo?.email || "未設定"}</p>
               </div>
             </div>
           </div>
@@ -214,10 +224,26 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
           <ErrorAlert message={error} />
           <SuccessAlert message={success} />
 
-          <div className="flex justify-end">
-            <Button type="submit" disabled={isPending}>
-              {isPending ? "保存中..." : "保存"}
-            </Button>
+          <div className="flex justify-end gap-2">
+            {isEditing ? (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCancel}
+                  disabled={isPending}
+                >
+                  キャンセル
+                </Button>
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? "保存中..." : "保存"}
+                </Button>
+              </>
+            ) : (
+              <Button type="button" onClick={() => setIsEditing(true)}>
+                編集
+              </Button>
+            )}
           </div>
         </form>
       </CardContent>
