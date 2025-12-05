@@ -265,56 +265,55 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
     example: "example@example.com",
     category: "user",
   },
-  // 将来の変更のため一時的にコメントアウト
-  // {
-  //   key: "郵便番号",
-  //   label: "郵便番号",
-  //   description: "ユーザーの郵便番号",
-  //   example: "123-4567",
-  //   category: "user",
-  // },
-  // {
-  //   key: "住所",
-  //   label: "住所",
-  //   description: "ユーザーの住所",
-  //   example: "東京都渋谷区...",
-  //   category: "user",
-  // },
-  // {
-  //   key: "銀行名",
-  //   label: "銀行名",
-  //   description: "振込先銀行名",
-  //   example: "○○銀行",
-  //   category: "user",
-  // },
-  // {
-  //   key: "支店名",
-  //   label: "支店名",
-  //   description: "振込先支店名",
-  //   example: "○○支店",
-  //   category: "user",
-  // },
-  // {
-  //   key: "口座種別",
-  //   label: "口座種別",
-  //   description: "口座種別（普通/当座）",
-  //   example: "普通",
-  //   category: "user",
-  // },
-  // {
-  //   key: "口座番号",
-  //   label: "口座番号",
-  //   description: "口座番号",
-  //   example: "1234567",
-  //   category: "user",
-  // },
-  // {
-  //   key: "口座名義",
-  //   label: "口座名義",
-  //   description: "口座名義",
-  //   example: "ヤマダ タロウ",
-  //   category: "user",
-  // },
+  {
+    key: "郵便番号",
+    label: "郵便番号",
+    description: "ユーザーの郵便番号（例: 123-4567）",
+    example: "123-4567",
+    category: "user",
+  },
+  {
+    key: "住所",
+    label: "住所",
+    description: "ユーザーの住所（例: 東京都渋谷区〇〇1-2-3）",
+    example: "東京都渋谷区〇〇1-2-3",
+    category: "user",
+  },
+  {
+    key: "銀行名",
+    label: "銀行名",
+    description: "振込先銀行名（例: 〇〇銀行）",
+    example: "〇〇銀行",
+    category: "user",
+  },
+  {
+    key: "支店名",
+    label: "支店名",
+    description: "振込先支店名（例: 〇〇支店）",
+    example: "〇〇支店",
+    category: "user",
+  },
+  {
+    key: "口座種別",
+    label: "口座種別",
+    description: "口座種別（例: 普通、当座）",
+    example: "普通",
+    category: "user",
+  },
+  {
+    key: "口座番号",
+    label: "口座番号",
+    description: "口座番号（例: 1234567）",
+    example: "1234567",
+    category: "user",
+  },
+  {
+    key: "口座名義",
+    label: "口座名義",
+    description: "口座名義（例: ヤマダ タロウ）",
+    example: "ヤマダ タロウ",
+    category: "user",
+  },
   // 請求情報
   {
     key: "基本金額",
@@ -584,14 +583,14 @@ export function generatePlaceholderValues(
         ? formatMinutesToTimeString(basicWorkMinutes)
         : "",
     稼働日数: String(workingDays),
-    // ユーザー情報 - 将来の変更のため一時的にコメントアウト
-    // 郵便番号: data.postalCode ?? "",
-    // 住所: data.address ?? "",
-    // 銀行名: data.bankName ?? "",
-    // 支店名: data.bankBranchName ?? "",
-    // 口座種別: data.bankAccountType ?? "",
-    // 口座番号: data.bankAccountNumber ?? "",
-    // 口座名義: data.bankAccountHolder ?? "",
+    // ユーザー情報
+    郵便番号: data.postalCode ?? "",
+    住所: data.address ?? "",
+    銀行名: data.bankName ?? "",
+    支店名: data.bankBranchName ?? "",
+    口座種別: data.bankAccountType ?? "",
+    口座番号: data.bankAccountNumber ?? "",
+    口座名義: data.bankAccountHolder ?? "",
   };
 
   // 契約データがない場合は基本プレースホルダーのみ返す

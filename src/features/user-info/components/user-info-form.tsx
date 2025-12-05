@@ -62,6 +62,13 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
 
   const handleCancel = () => {
     setName(initialInfo?.name ?? "");
+    setPostalCode(initialInfo?.postalCode ?? "");
+    setAddress(initialInfo?.address ?? "");
+    setBankName(initialInfo?.bankName ?? "");
+    setBankBranchName(initialInfo?.bankBranchName ?? "");
+    setBankAccountType(initialInfo?.bankAccountType ?? "");
+    setBankAccountNumber(initialInfo?.bankAccountNumber ?? "");
+    setBankAccountHolder(initialInfo?.bankAccountHolder ?? "");
     setIsEditing(false);
     setError("");
     setSuccess("");
@@ -133,8 +140,8 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
             </div>
           </div>
 
-          {/* 住所セクション - 将来の変更のため一時的に非表示 */}
-          {false && (
+          {/* 住所セクション */}
+          {isEditing && (
             <div className="space-y-4 border-t pt-4">
               <h3 className="font-medium">住所情報</h3>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -153,15 +160,15 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
                     id="address"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    placeholder="例: 東京都渋谷区..."
+                    placeholder="例: 東京都渋谷区〇〇1-2-3"
                   />
                 </div>
               </div>
             </div>
           )}
 
-          {/* 銀行口座セクション - 将来の変更のため一時的に非表示 */}
-          {false && (
+          {/* 銀行口座セクション */}
+          {isEditing && (
             <div className="space-y-4 border-t pt-4">
               <h3 className="font-medium">銀行口座情報</h3>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -171,7 +178,7 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
                     id="bankName"
                     value={bankName}
                     onChange={(e) => setBankName(e.target.value)}
-                    placeholder="例: ○○銀行"
+                    placeholder="例: 〇〇銀行"
                   />
                 </div>
                 <div className="space-y-2">
@@ -180,7 +187,7 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
                     id="bankBranchName"
                     value={bankBranchName}
                     onChange={(e) => setBankBranchName(e.target.value)}
-                    placeholder="例: ○○支店"
+                    placeholder="例: 〇〇支店"
                   />
                 </div>
                 <div className="space-y-2">

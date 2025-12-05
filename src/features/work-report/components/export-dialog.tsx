@@ -33,6 +33,14 @@ import {
   DEFAULT_TEMPLATE_SHEET_NAME,
   DEFAULT_TEMPLATE_FIELD_MAPPINGS,
   isDefaultTemplate,
+  DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+  DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+  DEFAULT_INVOICE_TEMPLATE_FILE_NAME,
+  DEFAULT_INVOICE_TAX_INCLUSIVE_SHEET_NAME,
+  DEFAULT_INVOICE_TAX_EXCLUSIVE_SHEET_NAME,
+  DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS,
+  DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS,
+  isDefaultInvoiceTemplate,
 } from "@/features/work-report/constants/default-template";
 import { useExportSettings } from "@/features/work-report/hooks/use-export-settings";
 import type {
@@ -55,6 +63,34 @@ const SYSTEM_DEFAULT_WORK_REPORT_TEMPLATE: ExcelTemplateWithFields = {
   sheetName: DEFAULT_TEMPLATE_SHEET_NAME,
   createUserId: "system",
   fieldMappings: DEFAULT_TEMPLATE_FIELD_MAPPINGS,
+};
+
+/**
+ * システムデフォルトの請求書テンプレート（上下割・税込）
+ */
+const SYSTEM_DEFAULT_INVOICE_TAX_INCLUSIVE_TEMPLATE: ExcelTemplateWithFields = {
+  id: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+  name: "デフォルトテンプレート（上下割・税込）",
+  type: "INVOICE",
+  fileData: "",
+  fileName: DEFAULT_INVOICE_TEMPLATE_FILE_NAME,
+  sheetName: DEFAULT_INVOICE_TAX_INCLUSIVE_SHEET_NAME,
+  createUserId: "system",
+  fieldMappings: DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS,
+};
+
+/**
+ * システムデフォルトの請求書テンプレート（上下割・税抜）
+ */
+const SYSTEM_DEFAULT_INVOICE_TAX_EXCLUSIVE_TEMPLATE: ExcelTemplateWithFields = {
+  id: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+  name: "デフォルトテンプレート（上下割・税抜）",
+  type: "INVOICE",
+  fileData: "",
+  fileName: DEFAULT_INVOICE_TEMPLATE_FILE_NAME,
+  sheetName: DEFAULT_INVOICE_TAX_EXCLUSIVE_SHEET_NAME,
+  createUserId: "system",
+  fieldMappings: DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS,
 };
 
 /**
@@ -157,6 +193,16 @@ export function ExportDialog({
     [workReportTemplates],
   );
 
+  // 請求書テンプレート一覧にデフォルトテンプレートを追加
+  const allInvoiceTemplates = useMemo(
+    () => [
+      SYSTEM_DEFAULT_INVOICE_TAX_INCLUSIVE_TEMPLATE,
+      SYSTEM_DEFAULT_INVOICE_TAX_EXCLUSIVE_TEMPLATE,
+      ...invoiceTemplates,
+    ],
+    [invoiceTemplates],
+  );
+
   // localStorageから設定を復元
   useEffect(() => {
     if (isLoaded) {
@@ -172,9 +218,9 @@ export function ExportDialog({
         }
       }
       if (settings.invoiceTemplateId) {
-        const exists = invoiceTemplates.some(
-          (t) => t.id === settings.invoiceTemplateId,
-        );
+        const exists =
+          isDefaultInvoiceTemplate(settings.invoiceTemplateId) ||
+          invoiceTemplates.some((t) => t.id === settings.invoiceTemplateId);
         if (exists) {
           setInvoiceTemplateIdState(settings.invoiceTemplateId);
           setIsInvoiceEnabled(true);
@@ -331,6 +377,34 @@ export function ExportDialog({
 
       const invoiceTemplate = isInvoiceEnabled
         ? await (async () => {
+            // デフォルトテンプレートの場合はpublicフォルダから読み込み
+            if (isDefaultInvoiceTemplate(invoiceTemplateId ?? "")) {
+              const response = await fetch(
+                `/${DEFAULT_INVOICE_TEMPLATE_FILE_NAME}`,
+              );
+              if (!response.ok) {
+                throw new Error(
+                  "デフォルト請求書テンプレートの読み込みに失敗しました",
+                );
+              }
+              const arrayBuffer = await response.arrayBuffer();
+              const workbook = new ExcelJS.Workbook();
+              await workbook.xlsx.load(arrayBuffer);
+
+              // どちらのテンプレートかを判定
+              const template = allInvoiceTemplates.find(
+                (t) => t.id === invoiceTemplateId,
+              );
+              if (!template) return null;
+
+              return {
+                workbook,
+                fieldMappings: template.fieldMappings,
+                sheetName: template.sheetName,
+              };
+            }
+
+            // カスタムテンプレートの場合
             const template = invoiceTemplates.find(
               (t) => t.id === invoiceTemplateId,
             );
@@ -381,7 +455,7 @@ export function ExportDialog({
   const selectedWorkReportTemplate = allWorkReportTemplates.find(
     (t) => t.id === workReportTemplateId,
   );
-  const selectedInvoiceTemplate = invoiceTemplates.find(
+  const selectedInvoiceTemplate = allInvoiceTemplates.find(
     (t) => t.id === invoiceTemplateId,
   );
 
@@ -391,7 +465,7 @@ export function ExportDialog({
     (isWorkReportEnabled &&
       allWorkReportTemplates.length > 0 &&
       !workReportTemplateId) ||
-    (isInvoiceEnabled && invoiceTemplates.length > 0 && !invoiceTemplateId);
+    (isInvoiceEnabled && allInvoiceTemplates.length > 0 && !invoiceTemplateId);
 
   const isFreeeCreateDisabled =
     isCreatingFreeeInvoice ||
@@ -503,7 +577,7 @@ export function ExportDialog({
               {isInvoiceEnabled && (
                 <div className="space-y-2 pl-6">
                   <Label htmlFor="invoiceTemplate">テンプレート</Label>
-                  {invoiceTemplates.length > 0 ? (
+                  {allInvoiceTemplates.length > 0 ? (
                     <>
                       <Select
                         value={invoiceTemplateId ?? ""}
@@ -513,11 +587,19 @@ export function ExportDialog({
                           <SelectValue placeholder="テンプレートを選択" />
                         </SelectTrigger>
                         <SelectContent>
-                          {invoiceTemplates.map((template) => (
+                          {allInvoiceTemplates.map((template) => (
                             <SelectItem key={template.id} value={template.id}>
                               <div className="flex items-center gap-2">
                                 <FileText className="size-4" />
                                 <span>{template.name}</span>
+                                {isDefaultInvoiceTemplate(template.id) && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="ml-1 text-xs"
+                                  >
+                                    システム
+                                  </Badge>
+                                )}
                               </div>
                             </SelectItem>
                           ))}

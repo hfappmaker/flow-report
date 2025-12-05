@@ -163,3 +163,408 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
  */
 export const isDefaultTemplate = (templateId: string): boolean =>
   templateId === DEFAULT_TEMPLATE_ID;
+
+/**
+ * 請求書デフォルトテンプレートの定数定義
+ */
+
+/**
+ * 請求書デフォルトテンプレート（上下割・税込）のID
+ */
+export const DEFAULT_INVOICE_TAX_INCLUSIVE_ID =
+  "system-default-invoice-tax-inclusive";
+
+/**
+ * 請求書デフォルトテンプレート（上下割・税抜）のID
+ */
+export const DEFAULT_INVOICE_TAX_EXCLUSIVE_ID =
+  "system-default-invoice-tax-exclusive";
+
+/**
+ * 請求書デフォルトテンプレートのファイル名
+ */
+export const DEFAULT_INVOICE_TEMPLATE_FILE_NAME =
+  "invoice-default-template.xlsx";
+
+/**
+ * 請求書デフォルトテンプレート（上下割・税込）のシート名
+ */
+export const DEFAULT_INVOICE_TAX_INCLUSIVE_SHEET_NAME =
+  "請求書（上下割　税込）";
+
+/**
+ * 請求書デフォルトテンプレート（上下割・税抜）のシート名
+ */
+export const DEFAULT_INVOICE_TAX_EXCLUSIVE_SHEET_NAME =
+  "請求書（上下割　税抜）";
+
+/**
+ * 請求書デフォルトテンプレート（上下割・税込）のフィールドマッピング
+ */
+export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMappings"] =
+  [
+    {
+      id: "default-invoice-inclusive-1",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "請求日",
+      valueTemplate: "${請求日}",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-inclusive-2",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "名前",
+      valueTemplate: "${名前}",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-inclusive-3",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "郵便番号",
+      valueTemplate: "${郵便番号}",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-inclusive-4",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "住所",
+      valueTemplate: "${住所}",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-inclusive-5",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "クライアント名",
+      valueTemplate: "${クライアント名}　御中",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-inclusive-6",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "基本単価項目",
+      valueTemplate: "基本月単価",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-inclusive-7",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "基本単価数量",
+      valueTemplate: "1",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-inclusive-8",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "基本単価単位",
+      valueTemplate: "人月",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-inclusive-9",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "基本単価",
+      valueTemplate: "${月単価}",
+      numFmt: "#,##0",
+    },
+    {
+      id: "default-invoice-inclusive-10",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "基本金額",
+      valueTemplate: "${基本金額}",
+      numFmt: "#,##0",
+    },
+    {
+      id: "default-invoice-inclusive-11",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "超過単価項目",
+      valueTemplate: "超過単価",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-inclusive-12",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "超過単価数量",
+      valueTemplate: "${超過時間}",
+      numFmt: "0.0",
+    },
+    {
+      id: "default-invoice-inclusive-13",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "超過単価単位",
+      valueTemplate: "時間",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-inclusive-14",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "超過単価",
+      valueTemplate: "${超過時間単価}",
+      numFmt: "#,##0",
+    },
+    {
+      id: "default-invoice-inclusive-15",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "超過金額",
+      valueTemplate: "${超過金額}",
+      numFmt: "#,##0",
+    },
+    {
+      id: "default-invoice-inclusive-16",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "控除単価項目",
+      valueTemplate: "控除単価",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-inclusive-17",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "控除単価数量",
+      valueTemplate: "${控除時間}",
+      numFmt: "0.0",
+    },
+    {
+      id: "default-invoice-inclusive-18",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "控除単価単位",
+      valueTemplate: "時間",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-inclusive-19",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "控除単価",
+      valueTemplate: "${控除時間単価}",
+      numFmt: "#,##0",
+    },
+    {
+      id: "default-invoice-inclusive-20",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "控除金額",
+      valueTemplate: "${控除金額}",
+      numFmt: "#,##0",
+    },
+    {
+      id: "default-invoice-inclusive-21",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "振込期日",
+      valueTemplate: "${支払期限}",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-inclusive-22",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "振込口座",
+      valueTemplate: "${銀行名} ${支店名}\n${口座種別} ${口座番号} ${口座名義}",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-inclusive-23",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "対象額",
+      valueTemplate: "${請求金額（税込）}",
+      numFmt: "#,##0",
+    },
+    {
+      id: "default-invoice-inclusive-24",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "内税",
+      valueTemplate: "${消費税額}",
+      numFmt: "#,##0",
+    },
+    {
+      id: "default-invoice-inclusive-25",
+      templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+      namedRange: "税込合計",
+      valueTemplate: "${請求金額（税込）}",
+      numFmt: "#,##0",
+    },
+  ];
+
+/**
+ * 請求書デフォルトテンプレート（上下割・税抜）のフィールドマッピング
+ */
+export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMappings"] =
+  [
+    {
+      id: "default-invoice-exclusive-1",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "請求日",
+      valueTemplate: "${請求日}",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-exclusive-2",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "名前",
+      valueTemplate: "${名前}",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-exclusive-3",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "郵便番号",
+      valueTemplate: "${郵便番号}",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-exclusive-4",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "住所",
+      valueTemplate: "${住所}",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-exclusive-5",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "クライアント名",
+      valueTemplate: "${クライアント名}　御中",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-exclusive-6",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "基本単価項目",
+      valueTemplate: "基本月単価",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-exclusive-7",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "基本単価数量",
+      valueTemplate: "1",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-exclusive-8",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "基本単価単位",
+      valueTemplate: "人月",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-exclusive-9",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "基本単価",
+      valueTemplate: "${月単価}",
+      numFmt: "#,##0",
+    },
+    {
+      id: "default-invoice-exclusive-10",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "基本金額",
+      valueTemplate: "${基本金額}",
+      numFmt: "#,##0",
+    },
+    {
+      id: "default-invoice-exclusive-11",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "超過単価項目",
+      valueTemplate: "超過単価",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-exclusive-12",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "超過単価数量",
+      valueTemplate: "${超過時間}",
+      numFmt: "0.0",
+    },
+    {
+      id: "default-invoice-exclusive-13",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "超過単価単位",
+      valueTemplate: "時間",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-exclusive-14",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "超過単価",
+      valueTemplate: "${超過時間単価}",
+      numFmt: "#,##0",
+    },
+    {
+      id: "default-invoice-exclusive-15",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "超過金額",
+      valueTemplate: "${超過金額}",
+      numFmt: "#,##0",
+    },
+    {
+      id: "default-invoice-exclusive-16",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "控除単価項目",
+      valueTemplate: "控除単価",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-exclusive-17",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "控除単価数量",
+      valueTemplate: "${控除時間}",
+      numFmt: "0.0",
+    },
+    {
+      id: "default-invoice-exclusive-18",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "控除単価単位",
+      valueTemplate: "時間",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-exclusive-19",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "控除単価",
+      valueTemplate: "${控除時間単価}",
+      numFmt: "#,##0",
+    },
+    {
+      id: "default-invoice-exclusive-20",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "控除金額",
+      valueTemplate: "${控除金額}",
+      numFmt: "#,##0",
+    },
+    {
+      id: "default-invoice-exclusive-21",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "振込期日",
+      valueTemplate: "${支払期限}",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-exclusive-22",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "振込口座",
+      valueTemplate: "${銀行名} ${支店名}\n${口座種別} ${口座番号} ${口座名義}",
+      numFmt: null,
+    },
+    {
+      id: "default-invoice-exclusive-23",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "対象額",
+      valueTemplate: "${請求金額（税抜）}",
+      numFmt: "#,##0",
+    },
+    {
+      id: "default-invoice-exclusive-24",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "外税",
+      valueTemplate: "${消費税額}",
+      numFmt: "#,##0",
+    },
+    {
+      id: "default-invoice-exclusive-25",
+      templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+      namedRange: "税込合計",
+      valueTemplate: "${請求金額（税込）}",
+      numFmt: "#,##0",
+    },
+  ];
+
+/**
+ * 指定されたテンプレートIDが請求書デフォルトかどうかを判定
+ */
+export const isDefaultInvoiceTemplate = (templateId: string): boolean =>
+  templateId === DEFAULT_INVOICE_TAX_INCLUSIVE_ID ||
+  templateId === DEFAULT_INVOICE_TAX_EXCLUSIVE_ID;

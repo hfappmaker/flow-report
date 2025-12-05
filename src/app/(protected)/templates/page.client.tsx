@@ -55,6 +55,14 @@ import {
   DEFAULT_TEMPLATE_SHEET_NAME,
   DEFAULT_TEMPLATE_FIELD_MAPPINGS,
   isDefaultTemplate,
+  DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+  DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+  DEFAULT_INVOICE_TEMPLATE_FILE_NAME,
+  DEFAULT_INVOICE_TAX_INCLUSIVE_SHEET_NAME,
+  DEFAULT_INVOICE_TAX_EXCLUSIVE_SHEET_NAME,
+  DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS,
+  DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS,
+  isDefaultInvoiceTemplate,
 } from "@/features/work-report/constants/default-template";
 import type { ExcelTemplateWithFields } from "@/features/work-report/types/work-report-template";
 import { useMessageState } from "@/hooks/use-message-state";
@@ -84,6 +92,34 @@ const SYSTEM_DEFAULT_EMAIL_TEMPLATE: EmailTemplate = {
   toAddresses: [],
   ccAddresses: [],
   createUserId: "system",
+};
+
+/**
+ * システムデフォルトの請求書テンプレート（上下割・税込）
+ */
+const SYSTEM_DEFAULT_INVOICE_TAX_INCLUSIVE_TEMPLATE: ExcelTemplateWithFields = {
+  id: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
+  name: "デフォルトテンプレート（上下割・税込）",
+  type: "INVOICE",
+  fileData: "",
+  fileName: DEFAULT_INVOICE_TEMPLATE_FILE_NAME,
+  sheetName: DEFAULT_INVOICE_TAX_INCLUSIVE_SHEET_NAME,
+  createUserId: "system",
+  fieldMappings: DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS,
+};
+
+/**
+ * システムデフォルトの請求書テンプレート（上下割・税抜）
+ */
+const SYSTEM_DEFAULT_INVOICE_TAX_EXCLUSIVE_TEMPLATE: ExcelTemplateWithFields = {
+  id: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
+  name: "デフォルトテンプレート（上下割・税抜）",
+  type: "INVOICE",
+  fileData: "",
+  fileName: DEFAULT_INVOICE_TEMPLATE_FILE_NAME,
+  sheetName: DEFAULT_INVOICE_TAX_EXCLUSIVE_SHEET_NAME,
+  createUserId: "system",
+  fieldMappings: DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS,
 };
 
 /**
@@ -199,12 +235,17 @@ export default function TemplatesClientPage({
   );
 
   // 作業報告書タブの場合、デフォルトテンプレートを先頭に追加
+  // 請求書タブの場合、2つのデフォルトテンプレートを先頭に追加
   const displayExcelTemplates = useMemo(() => {
     if (activeTab === "WORK_REPORT") {
       return [SYSTEM_DEFAULT_WORK_REPORT_TEMPLATE, ...workReportTemplates];
     }
     if (activeTab === "INVOICE") {
-      return invoiceTemplates;
+      return [
+        SYSTEM_DEFAULT_INVOICE_TAX_INCLUSIVE_TEMPLATE,
+        SYSTEM_DEFAULT_INVOICE_TAX_EXCLUSIVE_TEMPLATE,
+        ...invoiceTemplates,
+      ];
     }
     return [];
   }, [activeTab, workReportTemplates, invoiceTemplates]);
@@ -428,7 +469,9 @@ export default function TemplatesClientPage({
       return (
         <div className="space-y-3">
           {displayExcelTemplates.map((template) => {
-            const isSystem = isDefaultTemplate(template.id);
+            const isSystem =
+              isDefaultTemplate(template.id) ||
+              isDefaultInvoiceTemplate(template.id);
             return (
               <div
                 key={template.id}
