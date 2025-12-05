@@ -132,8 +132,8 @@ export function PlaceholderHelp({
         </Tabs>
         <div className="border-t p-4 pt-2">
           <p className="text-xs text-muted-foreground">
-            例: <code className="bg-muted px-1">{`\${作業者名}様`}</code> →
-            &quot;山田太郎様&quot;
+            例: <code className="bg-muted px-1">{`\${クライアント名}様`}</code>{" "}
+            → &quot;株式会社〇〇様&quot;
           </p>
         </div>
       </PopoverContent>
