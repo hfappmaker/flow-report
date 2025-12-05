@@ -4,8 +4,8 @@ import { getUserSettings } from "@/features/user-settings/actions/update-user-se
 import { UserSettingsForm } from "@/features/user-settings/components/user-settings-form";
 
 export const metadata: Metadata = {
-  title: "ユーザー設定",
-  description: "ユーザー設定",
+  title: "ユーザー情報",
+  description: "ユーザー情報",
 };
 
 export default async function UserSettingsPage() {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings } from "lucide-react";
+import { UserCog } from "lucide-react";
 import { useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -92,8 +92,8 @@ export function UserSettingsForm({ initialSettings }: UserSettingsFormProps) {
     <Card className="w-auto shadow-sm">
       <CardHeader className="font-semibold">
         <div className="flex items-center gap-x-3">
-          <Settings className="text-3xl text-sky-400" />
-          <h1 className="text-2xl">ユーザー設定</h1>
+          <UserCog className="text-3xl text-sky-400" />
+          <h1 className="text-2xl">ユーザー情報</h1>
         </div>
         <p className="text-sm font-normal text-muted-foreground">
           住所や銀行口座情報を設定すると、請求書テンプレートのプレースホルダーとして使用できます
