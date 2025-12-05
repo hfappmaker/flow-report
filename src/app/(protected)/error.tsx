@@ -26,9 +26,7 @@ export default function ProtectedError({
           エラーが発生しました
         </h2>
         <p className="mb-8 text-muted-foreground">
-          申し訳ございません。予期しないエラーが発生しました。
-          <br />
-          リトライするか、ダッシュボードに戻ってください。
+          問題が解決されない場合は、管理者にお問い合わせください。
         </p>
 
         {!isProduction() && (

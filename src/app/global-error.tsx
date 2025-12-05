@@ -24,11 +24,9 @@ export default function GlobalError({
           <div className="max-w-md text-center">
             <h1 className="mb-4 text-6xl font-bold text-red-600">500</h1>
             <h2 className="mb-4 text-2xl font-semibold text-muted-foreground">
-              予期しないエラーが発生しました
+              エラーが発生しました
             </h2>
             <p className="mb-8 text-muted-foreground">
-              申し訳ございません。システムエラーが発生しました。
-              <br />
               問題が解決されない場合は、管理者にお問い合わせください。
             </p>
 
@@ -47,9 +45,6 @@ export default function GlobalError({
             )}
 
             <div className="space-x-4">
-              <Button onClick={reset} variant="default">
-                リトライ
-              </Button>
               <Button
                 onClick={() => (window.location.href = "/")}
                 variant="outline"
