@@ -8,13 +8,13 @@ import type { AttendanceData } from "@/features/work-report/types/attendance";
  * Excel名前付き範囲のフィールド名
  */
 export const FIELD_NAMES = [
-  "日付",
-  "曜日",
-  "開始時刻",
-  "終了時刻",
-  "休憩時間",
-  "稼働時間",
-  "作業内容",
+  "日付列",
+  "曜日列",
+  "開始時刻列",
+  "終了時刻列",
+  "休憩時間列",
+  "稼働時間列",
+  "作業内容列",
 ] as const;
 
 export type FieldName = (typeof FIELD_NAMES)[number];
@@ -36,18 +36,18 @@ type FieldHandler = (entry: AttendanceData) => FieldValue | null;
  * 各フィールド名に対応する値取得・フォーマット処理のマッパー
  */
 export const fieldMappers: Record<FieldName, FieldHandler> = {
-  日付: (entry) => ({
+  日付列: (entry) => ({
     value: formatMonthDay(entry.date.toISOString()),
   }),
 
-  曜日: (entry) => ({
+  曜日列: (entry) => ({
     value: entry.date.toLocaleDateString("ja-JP", {
       weekday: "short",
       timeZone: "UTC",
     }),
   }),
 
-  開始時刻: (entry) => {
+  開始時刻列: (entry) => {
     if (!entry.startTime) return null;
     const value = msToSerial(
       (entry.startTime.getUTCHours() * 60 + entry.startTime.getUTCMinutes()) *
@@ -56,7 +56,7 @@ export const fieldMappers: Record<FieldName, FieldHandler> = {
     return { value, numFmt: "[h]:mm" };
   },
 
-  終了時刻: (entry) => {
+  終了時刻列: (entry) => {
     if (!entry.endTime) return null;
     const value = msToSerial(
       (entry.endTime.getUTCHours() * 60 + entry.endTime.getUTCMinutes()) *
@@ -65,13 +65,13 @@ export const fieldMappers: Record<FieldName, FieldHandler> = {
     return { value, numFmt: "[h]:mm" };
   },
 
-  休憩時間: (entry) => {
+  休憩時間列: (entry) => {
     if (!entry.breakDuration) return null;
     const value = msToSerial(entry.breakDuration * 60000);
     return { value, numFmt: "[h]:mm" };
   },
 
-  稼働時間: (entry) => {
+  稼働時間列: (entry) => {
     if (!entry.startTime || !entry.endTime) return null;
     const startMs = entry.startTime.getTime();
     let endMs = entry.endTime.getTime();
@@ -84,7 +84,7 @@ export const fieldMappers: Record<FieldName, FieldHandler> = {
     return { value, numFmt: "[h]:mm" };
   },
 
-  作業内容: (entry) => {
+  作業内容列: (entry) => {
     if (!entry.memo) return null;
     return { value: entry.memo };
   },
