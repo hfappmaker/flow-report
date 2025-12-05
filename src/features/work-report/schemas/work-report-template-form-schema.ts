@@ -43,12 +43,14 @@ export type ExcelTemplateEditFormValues = z.infer<
  * ファイルアップロードのバリデーション
  */
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-export const ACCEPTED_FILE_TYPE =
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+export const ACCEPTED_FILE_TYPES = [
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.template", // .xltx
+];
 
 export function validateExcelFile(file: File): string | null {
-  if (file.type !== ACCEPTED_FILE_TYPE) {
-    return "ファイル形式が正しくありません。.xlsxファイルを選択してください。";
+  if (!ACCEPTED_FILE_TYPES.includes(file.type)) {
+    return "ファイル形式が正しくありません。.xlsxまたは.xltxファイルを選択してください。";
   }
   if (file.size > MAX_FILE_SIZE) {
     return "ファイルサイズが大きすぎます。5MB以下のファイルを選択してください。";
@@ -75,14 +77,16 @@ export function validateNamedRange(name: string): string | null {
   // ひらがな: \u3040-\u309F
   // カタカナ: \u30A0-\u30FF
   // 漢字: \u4E00-\u9FFF
-  const validFirstCharPattern = /^[a-zA-Z_\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/;
+  const validFirstCharPattern =
+    /^[a-zA-Z_\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/;
   if (!validFirstCharPattern.test(trimmedName)) {
     return "先頭は英文字、ひらがな、カタカナ、漢字、またはアンダースコア（_）にしてください";
   }
 
   // 無効な文字のチェック（空白、特殊記号など）
   // 許可: 英数字、ひらがな、カタカナ、漢字、アンダースコア、ピリオド、バックスラッシュ
-  const invalidCharPattern = /[\s!@#$%^&*()+\-=\[\]{};':"\\|,<>\/?～！＠＃＄％＾＆＊（）＋－＝［］｛｝；'："＼｜，＜＞／？　]/;
+  const invalidCharPattern =
+    /[\s!@#$%^&*()+\-=\[\]{};':"\\|,<>\/?～！＠＃＄％＾＆＊（）＋－＝［］｛｝；'："＼｜，＜＞／？　]/;
   if (invalidCharPattern.test(trimmedName)) {
     return "空白や無効な記号は使用できません";
   }

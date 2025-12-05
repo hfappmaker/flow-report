@@ -141,10 +141,12 @@ export const templateUploadSchema = z.object({
     })
     .refine(
       (file) =>
-        file.type ===
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        [
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.template", // .xltx
+        ].includes(file.type),
       {
-        message: ".xlsx形式のファイルを選択してください",
+        message: ".xlsxまたは.xltx形式のファイルを選択してください",
       },
     ),
 });

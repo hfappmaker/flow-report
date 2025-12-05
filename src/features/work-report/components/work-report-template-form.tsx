@@ -148,7 +148,7 @@ export function ExcelTemplateForm({
 
       <div className="space-y-2">
         <Label htmlFor="file">
-          Excelテンプレートファイル (.xlsx)
+          Excelテンプレートファイル (.xlsx, .xltx)
           {isEditMode && " - 変更する場合のみ選択"}
         </Label>
         {isEditMode && defaultValues?.fileName && !file && (
@@ -163,7 +163,7 @@ export function ExcelTemplateForm({
           <Input
             id="file"
             type="file"
-            accept=".xlsx"
+            accept=".xlsx,.xltx"
             ref={fileInputRef}
             onChange={handleFileChange}
             className={`cursor-pointer ${errors.file ? "border-red-500" : ""}`}
