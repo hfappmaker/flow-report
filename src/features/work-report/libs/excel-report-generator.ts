@@ -119,11 +119,6 @@ export async function generateWorkReportExcel(
       }
     });
 
-    // マージセル情報をコピーする
-    worksheet.model.merges.forEach((mergeRange) => {
-      newSheet.mergeCells(mergeRange);
-    });
-
     // 行の高さをコピー
     for (let rowNumber = 1; rowNumber <= worksheet.rowCount; rowNumber++) {
       const row = worksheet.getRow(rowNumber);
@@ -131,6 +126,11 @@ export async function generateWorkReportExcel(
         newSheet.getRow(rowNumber).height = row.height;
       }
     }
+
+    // マージセル情報をコピーする
+    worksheet.model.merges.forEach((mergeRange) => {
+      newSheet.mergeCells(mergeRange);
+    });
 
     // セルのスタイルと値をコピー
     worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
