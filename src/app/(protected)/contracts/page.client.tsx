@@ -303,7 +303,6 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
       <CardHeader className="flex-row items-center justify-between gap-x-3">
         <div>
           <h1 className="text-2xl font-semibold">契約一覧</h1>
-          <p className="text-muted-foreground">あなたの契約を管理できます</p>
         </div>
         <Button
           onClick={() => {
@@ -343,7 +342,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
           <label className="text-sm font-medium text-muted-foreground">
             期間検索（契約期間と重複する期間を検索）
           </label>
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
             <DatePicker
               placeholder="期間開始"
               value={periodFrom}

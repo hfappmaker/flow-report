@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import FormError from "@/components/ui/feedback/error-alert";
 import FormSuccess from "@/components/ui/feedback/success-alert";
 import { useTransitionContext } from "@/contexts/transition-context";
@@ -190,50 +191,55 @@ export default function ContractClientPage({
   };
 
   return (
-    <div className="p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold">
-          作業報告書一覧（{contract?.name}）
-        </h1>
-        <Button onClick={handleNavigateToContracts}>契約一覧へ</Button>
-      </div>
-      <FormError message={error.message} resetSignal={error.date.getTime()} />
-      <FormSuccess
-        message={success.message}
-        resetSignal={success.date.getTime()}
-      />
-
-      {workReports.length === 0 ? (
-        <div className="py-12 text-center text-muted-foreground">
-          <p>作業報告書がありません</p>
+    <Card className="w-full shadow-sm">
+      <CardHeader className="flex-row items-center justify-between gap-x-3">
+        <div>
+          <h1 className="text-2xl font-semibold">
+            作業報告書一覧（{contract?.name}）
+          </h1>
+          <p className="text-muted-foreground">作業報告書を管理できます</p>
         </div>
-      ) : (
-        <>
-          {/* 作成中の作業報告書セクション */}
-          {draftWorkReports.length > 0 && (
-            <div className="mb-12">
-              <h2 className="mb-4 text-xl font-bold">作成中</h2>
-              <div className="space-y-3">
-                {draftWorkReports.map((workReport) =>
-                  renderWorkReportCard(workReport),
-                )}
-              </div>
-            </div>
-          )}
+        <Button onClick={handleNavigateToContracts}>契約一覧へ</Button>
+      </CardHeader>
+      <CardContent>
+        <FormError message={error.message} resetSignal={error.date.getTime()} />
+        <FormSuccess
+          message={success.message}
+          resetSignal={success.date.getTime()}
+        />
 
-          {/* 作成済みの作業報告書セクション */}
-          {submittedWorkReports.length > 0 && (
-            <div>
-              <h2 className="mb-4 text-xl font-bold">作成済み</h2>
-              <div className="space-y-3">
-                {submittedWorkReports.map((workReport) =>
-                  renderWorkReportCard(workReport),
-                )}
+        {workReports.length === 0 ? (
+          <div className="py-12 text-center text-muted-foreground">
+            <p>作業報告書がありません</p>
+          </div>
+        ) : (
+          <>
+            {/* 作成中の作業報告書セクション */}
+            {draftWorkReports.length > 0 && (
+              <div className="mb-12">
+                <h2 className="mb-4 text-xl font-bold">作成中</h2>
+                <div className="space-y-3">
+                  {draftWorkReports.map((workReport) =>
+                    renderWorkReportCard(workReport),
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-        </>
-      )}
-    </div>
+            )}
+
+            {/* 作成済みの作業報告書セクション */}
+            {submittedWorkReports.length > 0 && (
+              <div>
+                <h2 className="mb-4 text-xl font-bold">作成済み</h2>
+                <div className="space-y-3">
+                  {submittedWorkReports.map((workReport) =>
+                    renderWorkReportCard(workReport),
+                  )}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 }

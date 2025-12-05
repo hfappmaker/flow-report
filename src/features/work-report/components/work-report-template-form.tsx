@@ -130,7 +130,7 @@ export function ExcelTemplateForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 px-1">
       <div className="space-y-2">
         <Label htmlFor="name">テンプレート名</Label>
         <Input
