@@ -1,14 +1,14 @@
 # タスク完了時のチェックリスト
 
 ## 必須実行コマンド
-1. **リント**: `pnpm run lint`
-2. **型チェック**: `pnpm exec tsc --noEmit`
-3. **テスト**: `pnpm run test:run` (適用可能な場合)
-4. **フォーマット**: `pnpm exec prettier --write .`
+1. **型チェック**: `pnpm exec tsc --noEmit`
+2. **テスト**: `pnpm run test:run` (適用可能な場合)
+3. **フォーマット**: `pnpm exec prettier --write .`
+
+**注意**: ESLint (`pnpm run lint`) は直接実行しない
 
 ## コード品質チェック
 - TypeScript厳格モードに準拠
-- **ESLintエラーとwarningが両方とも0件**
 - 型エラーが0件
 - テストが通過
 - セキュリティベストプラクティスに準拠

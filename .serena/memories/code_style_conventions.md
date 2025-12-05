@@ -40,13 +40,28 @@
 ```
 src/
   ├── app/              // ルーティング
+  │   ├── api/          // API定義
+  ├── assets/           // 静的ファイル
   ├── components/       // 汎用コンポーネント
+  ├── config/           // グローバル設定
   ├── features/         // 機能モジュール
+  │   ├── actions/      // Server Actions
   │   ├── assets/       // 機能固有の静的ファイル
   │   ├── components/   // 機能固有のコンポーネント
   │   ├── hooks/        // 機能固有のフック
+  │   ├── libs/         // 機能固有のライブラリ
   │   ├── repositories/ // 機能固有のリポジトリ
-  │   └── types/        // 機能固有の型定義
+  │   ├── schemas/      // Zodスキーマ
+  │   ├── stores/       // 状態管理
+  │   ├── testing/      // テストユーティリティ
+  │   ├── types/        // 機能固有の型定義
+  │   └── utils/        // 機能固有のユーティリティ
+  ├── hooks/            // 汎用フック
+  ├── libs/             // 汎用ライブラリ
+  ├── repositories/     // 汎用リポジトリ
+  ├── stores/           // 汎用状態管理
+  ├── testing/          // 汎用テストユーティリティ
+  ├── types/            // 汎用型定義
   └── utils/            // 汎用ユーティリティ
 ```
 

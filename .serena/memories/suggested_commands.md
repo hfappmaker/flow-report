@@ -10,10 +10,11 @@
 - `pnpm start`: プロダクション起動（ポート80、マイグレーション実行）
 
 ## コード品質
-- `pnpm run lint`: ESLintによるコード解析
+- `pnpm exec tsc --noEmit`: 型チェック
 - `pnpm exec prettier --write .`: コードフォーマット
-- `pnpm exec eslint "<file>" --fix`: 特定ファイルのESLint自動修正
 - `pnpm exec prettier --write "<file>"`: 特定ファイルのフォーマット
+
+**注意**: ESLint (`pnpm run lint`, `pnpm exec eslint`) は直接実行しない（CLAUDE.mdで禁止）
 
 ## テスト
 - `pnpm run test`: Vitestウォッチモード
@@ -31,4 +32,7 @@
 - `pnpm run seed:test-users`: テストユーザーデータ挿入
 
 ## Claude Codeカスタムコマンド
-- `/commit-push`: ESLint/Prettier自動フォーマット→警告修正→コミット→プッシュの一括実行
+- `/commit-push`: Prettier自動フォーマット→コミット→プッシュの一括実行
+- `/create-pr`: PRを作成
+- `/refactor`: リファクタリング支援
+- `/sync-serena-memories`: Serenaメモリーをコードベースと同期
