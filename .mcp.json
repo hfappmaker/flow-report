@@ -1,21 +1,5 @@
 {
   "mcpServers": {
-    "playwright": {
-      "type": "stdio",
-      "command": "pnpm",
-      "args": ["dlx", "@playwright/mcp@latest", "--no-sandbox", "--isolated"],
-      "env": {}
-    },
-    "postgresql": {
-      "type": "stdio",
-      "command": "pnpm",
-      "args": [
-        "dlx",
-        "@modelcontextprotocol/server-postgres@latest",
-        "postgresql://user:password@db:5432/worktime_management"
-      ],
-      "env": {}
-    },
     "serena": {
       "command": "uvx",
       "args": [

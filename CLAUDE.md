@@ -112,6 +112,17 @@ Use conventional commit prefixes:
 
 ## 4. Claude Code Specific Instructions
 
+### ESLint実行の禁止
+
+**Claude CodeはESLintを実行してはいけません。**
+
+- `pnpm exec eslint` を実行しない
+- `eslint` コマンドを直接実行しない
+
+コード品質の確認が必要な場合は、TypeScriptの型チェック（`pnpm exec tsc`）を使用してください。
+
+### 一般的な指針
+
 - Maintain the existing code style and patterns
 - Follow the folder structure when creating new files
 - Prioritize editing existing files over creating new ones

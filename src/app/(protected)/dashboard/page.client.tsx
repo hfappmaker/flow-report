@@ -37,6 +37,12 @@ import {
   convertContractToFormValues,
 } from "@/features/contract/utils/contract-converter";
 import {
+  calculateTotalWorkMinutes,
+  calculateWorkAmount,
+  formatAmount,
+  formatWorkTime,
+} from "@/features/contract/utils/contract-calculation-utils";
+import {
   type ContractDashboard,
   type DashboardClientPageProps,
   type WorkReportDashboard,
@@ -68,6 +74,51 @@ function getTodayInJapanTimeUTC(): Date {
       japanTime.getUTCDate(),
     ),
   );
+}
+
+/**
+ * 作業報告書の金額・時間情報を計算する
+ */
+function calculateWorkReportSummary(
+  workReport: WorkReportDashboard,
+  contract: ContractDashboard,
+): {
+  totalWorkTimeText: string;
+  baseAmountText: string;
+  taxIncludedAmountText: string;
+} {
+  const totalWorkMinutes = calculateTotalWorkMinutes(
+    workReport.attendances,
+    contract.monthlyWorkMinutes,
+  );
+  const totalWorkTimeText = formatWorkTime(totalWorkMinutes);
+
+  const amountCalculation = calculateWorkAmount(totalWorkMinutes, {
+    unitPrice: contract.unitPrice,
+    settlementMin: contract.settlementMin,
+    settlementMax: contract.settlementMax,
+    upperRate: contract.upperRate,
+    lowerRate: contract.lowerRate,
+    middleRate: contract.middleRate,
+    hourlyRate: contract.hourlyRate,
+    taxInclusiveType: contract.taxInclusiveType,
+    taxRoundingType: contract.taxRoundingType,
+    rateType: contract.rateType,
+    monthlyWorkMinutes: contract.monthlyWorkMinutes,
+  });
+
+  const baseAmountText = amountCalculation
+    ? formatAmount(amountCalculation.baseAmount)
+    : "¥---,---";
+  const taxIncludedAmountText = amountCalculation
+    ? formatAmount(amountCalculation.baseAmount + amountCalculation.taxAmount)
+    : "¥---,---";
+
+  return {
+    totalWorkTimeText,
+    baseAmountText,
+    taxIncludedAmountText,
+  };
 }
 
 /**
@@ -377,30 +428,41 @@ export default function DashboardClientPage({
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {contract.workReports.map((workReport) => (
-                    <button
-                      key={workReport.id}
-                      type="button"
-                      className="block w-full cursor-pointer rounded-lg border bg-background p-4 text-left transition-colors hover:bg-muted/50"
-                      onClick={() => {
-                        handleNavigation(workReport.id);
-                      }}
-                    >
-                      <div className="mb-2 flex items-start justify-between space-x-2">
-                        <div className="text-lg font-medium">
-                          {workReport.targetDate.getFullYear()}年
-                          {workReport.targetDate.getMonth() + 1}月
+                  {contract.workReports.map((workReport) => {
+                    const { totalWorkTimeText, baseAmountText, taxIncludedAmountText } =
+                      calculateWorkReportSummary(workReport, contract);
+                    return (
+                      <button
+                        key={workReport.id}
+                        type="button"
+                        className="block w-full cursor-pointer rounded-lg border bg-background p-4 text-left transition-colors hover:bg-muted/50"
+                        onClick={() => {
+                          handleNavigation(workReport.id);
+                        }}
+                      >
+                        <div className="mb-2 flex items-start justify-between space-x-2">
+                          <div className="text-lg font-medium">
+                            {workReport.targetDate.getFullYear()}年
+                            {workReport.targetDate.getMonth() + 1}月
+                          </div>
+                          <Badge
+                            className={`${getWorkReportStatusColor(
+                              workReport.status,
+                            )} pointer-events-none`}
+                          >
+                            {getWorkReportStatusDisplayText(workReport.status)}
+                          </Badge>
                         </div>
-                        <Badge
-                          className={`${getWorkReportStatusColor(
-                            workReport.status,
-                          )} pointer-events-none`}
-                        >
-                          {getWorkReportStatusDisplayText(workReport.status)}
-                        </Badge>
-                      </div>
-                    </button>
-                  ))}
+                        <div className="space-y-1 text-xs text-muted-foreground">
+                          <div>総稼働時間: {totalWorkTimeText}</div>
+                          <div className="flex gap-2">
+                            <span>税抜: {baseAmountText}</span>
+                            <span>税込: {taxIncludedAmountText}</span>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
@@ -429,30 +491,41 @@ export default function DashboardClientPage({
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {contract.workReports.map((workReport) => (
-                      <button
-                        key={workReport.id}
-                        type="button"
-                        className="block w-full cursor-pointer rounded-lg border bg-background p-4 text-left transition-colors hover:bg-muted/50"
-                        onClick={() => {
-                          handleNavigation(workReport.id);
-                        }}
-                      >
-                        <div className="mb-2 flex items-start justify-between space-x-2">
-                          <div className="text-lg font-medium">
-                            {workReport.targetDate.getFullYear()}年
-                            {workReport.targetDate.getMonth() + 1}月
+                    {contract.workReports.map((workReport) => {
+                      const { totalWorkTimeText, baseAmountText, taxIncludedAmountText } =
+                        calculateWorkReportSummary(workReport, contract);
+                      return (
+                        <button
+                          key={workReport.id}
+                          type="button"
+                          className="block w-full cursor-pointer rounded-lg border bg-background p-4 text-left transition-colors hover:bg-muted/50"
+                          onClick={() => {
+                            handleNavigation(workReport.id);
+                          }}
+                        >
+                          <div className="mb-2 flex items-start justify-between space-x-2">
+                            <div className="text-lg font-medium">
+                              {workReport.targetDate.getFullYear()}年
+                              {workReport.targetDate.getMonth() + 1}月
+                            </div>
+                            <Badge
+                              className={`${getWorkReportStatusColor(
+                                workReport.status,
+                              )} pointer-events-none`}
+                            >
+                              {getWorkReportStatusDisplayText(workReport.status)}
+                            </Badge>
                           </div>
-                          <Badge
-                            className={`${getWorkReportStatusColor(
-                              workReport.status,
-                            )} pointer-events-none`}
-                          >
-                            {getWorkReportStatusDisplayText(workReport.status)}
-                          </Badge>
-                        </div>
-                      </button>
-                    ))}
+                          <div className="space-y-1 text-xs text-muted-foreground">
+                            <div>総稼働時間: {totalWorkTimeText}</div>
+                            <div className="flex gap-2">
+                              <span>税抜: {baseAmountText}</span>
+                              <span>税込: {taxIncludedAmountText}</span>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>

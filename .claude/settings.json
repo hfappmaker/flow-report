@@ -18,10 +18,8 @@
       "Bash(pnpm install)",
       "Bash(pnpm run build:*)",
       "Bash(pnpm run dev:*)",
-      "Bash(pnpm run lint)",
       "Bash(pnpm run test:*)",
       "Bash(pnpm view:*)",
-      "Bash(pnpm exec eslint:*)",
       "Bash(pnpm exec playwright:*)",
       "Bash(pnpm exec prettier:*)",
       "Bash(pnpm exec tsc:*)",
@@ -89,9 +87,18 @@
       "mcp__github__get_pull_request_files",
       "mcp__github__get_pull_request_status",
       "mcp__github__get_pull_request_comments",
-      "mcp__github__get_pull_request_reviews"
+      "mcp__github__get_pull_request_reviews",
+      "Bash(pnpm add:*)",
+      "Bash(xargs cat:*)"
     ],
-    "deny": ["Read(.env*)", "Write(.env*)"]
+    "deny": [
+      "Read(.env*)",
+      "Write(.env*)",
+      "Bash(pnpm exec eslint:*)",
+      "Bash(eslint:*)"
+    ]
   },
-  "enabledMcpjsonServers": ["next-devtools", "serena", "github"]
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": ["next-devtools", "serena", "github"],
+  "outputStyle": "default"
 }

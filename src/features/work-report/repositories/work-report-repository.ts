@@ -1,4 +1,10 @@
-import { WorkReportStatus } from "@prisma/client";
+import {
+  ContractRateType,
+  TaxInclusiveType,
+  TaxRoundingType,
+  WorkReportStatus,
+} from "@prisma/client";
+import { Decimal } from "@prisma/client/runtime/library";
 
 import { AttendanceDto } from "@/features/work-report/types/attendance";
 import { db } from "@/repositories/db";
@@ -135,6 +141,7 @@ export async function getDraftWorkReportsUpToCurrentMonth(userId?: string) {
     },
     include: {
       contract: true,
+      attendances: true,
     },
   });
 
@@ -159,10 +166,22 @@ export async function getDraftWorkReportsUpToCurrentMonth(userId?: string) {
         contractName: string;
         clientName: string;
         closingDay: number | null;
+        unitPrice: Decimal | null;
+        settlementMin: Decimal | null;
+        settlementMax: Decimal | null;
+        rateType: ContractRateType;
+        upperRate: Decimal | null;
+        lowerRate: Decimal | null;
+        middleRate: Decimal | null;
+        hourlyRate: Decimal | null;
+        taxInclusiveType: TaxInclusiveType;
+        taxRoundingType: TaxRoundingType;
+        monthlyWorkMinutes: number;
         workReports: {
           id: string;
           targetDate: Date;
           status: WorkReportStatus;
+          attendances: AttendanceDto[];
         }[];
       }
     >
@@ -173,6 +192,17 @@ export async function getDraftWorkReportsUpToCurrentMonth(userId?: string) {
       contractName: report.contract.name,
       clientName: report.contract.clientName,
       closingDay: report.contract.closingDay,
+      unitPrice: report.contract.unitPrice,
+      settlementMin: report.contract.settlementMin,
+      settlementMax: report.contract.settlementMax,
+      rateType: report.contract.rateType,
+      upperRate: report.contract.upperRate,
+      lowerRate: report.contract.lowerRate,
+      middleRate: report.contract.middleRate,
+      hourlyRate: report.contract.hourlyRate,
+      taxInclusiveType: report.contract.taxInclusiveType,
+      taxRoundingType: report.contract.taxRoundingType,
+      monthlyWorkMinutes: report.contract.monthlyWorkMinutes,
       workReports: [],
     };
 
@@ -180,6 +210,14 @@ export async function getDraftWorkReportsUpToCurrentMonth(userId?: string) {
       id: report.id,
       targetDate: report.targetDate,
       status: report.status,
+      attendances: report.attendances.map((att) => ({
+        date: att.date,
+        startTime: att.startTime,
+        endTime: att.endTime,
+        breakDuration: att.breakDuration,
+        memo: att.memo,
+        workReportId: att.workReportId,
+      })),
     });
 
     return acc;
@@ -258,6 +296,7 @@ export async function getSubmittedWorkReportsByRecentMonths(
     },
     include: {
       contract: true,
+      attendances: true,
     },
   });
 
@@ -268,10 +307,22 @@ export async function getSubmittedWorkReportsByRecentMonths(
         contractName: string;
         clientName: string;
         closingDay: number | null;
+        unitPrice: Decimal | null;
+        settlementMin: Decimal | null;
+        settlementMax: Decimal | null;
+        rateType: ContractRateType;
+        upperRate: Decimal | null;
+        lowerRate: Decimal | null;
+        middleRate: Decimal | null;
+        hourlyRate: Decimal | null;
+        taxInclusiveType: TaxInclusiveType;
+        taxRoundingType: TaxRoundingType;
+        monthlyWorkMinutes: number;
         workReports: {
           id: string;
           targetDate: Date;
           status: WorkReportStatus;
+          attendances: AttendanceDto[];
         }[];
       }
     >
@@ -282,6 +333,17 @@ export async function getSubmittedWorkReportsByRecentMonths(
       contractName: report.contract.name,
       clientName: report.contract.clientName,
       closingDay: report.contract.closingDay,
+      unitPrice: report.contract.unitPrice,
+      settlementMin: report.contract.settlementMin,
+      settlementMax: report.contract.settlementMax,
+      rateType: report.contract.rateType,
+      upperRate: report.contract.upperRate,
+      lowerRate: report.contract.lowerRate,
+      middleRate: report.contract.middleRate,
+      hourlyRate: report.contract.hourlyRate,
+      taxInclusiveType: report.contract.taxInclusiveType,
+      taxRoundingType: report.contract.taxRoundingType,
+      monthlyWorkMinutes: report.contract.monthlyWorkMinutes,
       workReports: [],
     };
 
@@ -289,6 +351,14 @@ export async function getSubmittedWorkReportsByRecentMonths(
       id: report.id,
       targetDate: report.targetDate,
       status: report.status,
+      attendances: report.attendances.map((att) => ({
+        date: att.date,
+        startTime: att.startTime,
+        endTime: att.endTime,
+        breakDuration: att.breakDuration,
+        memo: att.memo,
+        workReportId: att.workReportId,
+      })),
     });
 
     return acc;
