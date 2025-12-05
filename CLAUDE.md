@@ -42,7 +42,6 @@ src/
 
 - Only include necessary folders in each feature module
 - Avoid barrel files to prevent tree-shaking issues; use direct imports
-- Use ESLint rules to restrict cross-feature imports and maintain unidirectional code structure
 
 ### 2.2 Naming Conventions
 
@@ -53,7 +52,6 @@ src/
 ### 2.3 Coding Standards
 
 - Use TypeScript strict mode
-- Follow ESLint and Prettier configurations
 - Prefer function components
 - Explicitly define Props types
 - Avoid `any` type (except when using libraries where unavoidable - add comments explaining why)
@@ -67,36 +65,11 @@ src/
 
 ### 2.4 Functional Programming Standards
 
-**CRITICAL: Claude Code must strictly adhere to these functional programming principles when writing code:**
+Immutability rules are enforced by ESLint:
 
-- **NEVER use `let` for variable declarations** - always use `const`
-- **NEVER use mutable array methods** such as:
-  - `array.push()` → use `[...array, newItem]` or `array.concat(newItem)`
-  - `array.pop()` → use `array.slice(0, -1)`
-  - `array.shift()` → use `array.slice(1)`
-  - `array.unshift()` → use `[newItem, ...array]`
-  - `array.splice()` → use `array.slice()` and spread operator
-  - `array.sort()` → use `[...array].sort()` or `array.toSorted()`
-  - `array.reverse()` → use `[...array].reverse()` or `array.toReversed()`
-- **NEVER reassign object properties** - use spread operator or object methods:
-  - Instead of `obj.prop = value`, use `{ ...obj, prop: value }`
-  - Instead of `delete obj.prop`, use object destructuring with rest
-- **Use immutable patterns**:
-  - Array transformations: `map()`, `filter()`, `reduce()`, `slice()`, `concat()`
-  - Object transformations: spread operator `{...}`, `Object.assign()` (creating new objects)
-  - Modern immutable methods: `toSorted()`, `toReversed()`, `toSpliced()`, `with()`
-- **Exceptions** (allowed by ESLint configuration):
-  - React refs: `ref.current = value`
-  - React component displayName: `Component.displayName = "Name"`
-
-**Rationale**: Functional programming with immutable data structures leads to:
-
-- More predictable and testable code
-- Easier debugging and reasoning about code behavior
-- Prevention of unintended side effects
-- Better compatibility with React's rendering model
-
-ESLint will warn about violations of these rules. Claude Code must write code that produces zero warnings.
+- Use `const` only (no `let`)
+- Use immutable array methods (`map`, `filter`, `reduce`, `toSorted`, `toReversed`)
+- Use spread operator for object updates (`{ ...obj, prop: value }`)
 
 ## 3. Commit Messages
 
@@ -112,50 +85,12 @@ Use conventional commit prefixes:
 
 ## 4. Claude Code Specific Instructions
 
-### ESLint実行の禁止
+### Do Not Run ESLint
 
-**Claude CodeはESLintを実行してはいけません。**
-
-- `pnpm exec eslint` を実行しない
-- `eslint` コマンドを直接実行しない
-
-コード品質の確認が必要な場合は、TypeScriptの型チェック（`pnpm exec tsc`）を使用してください。
-
-### 一般的な指針
-
-- Maintain the existing code style and patterns
-- Follow the folder structure when creating new files
-- Prioritize editing existing files over creating new ones
-- Use the project's existing testing framework (check package.json or codebase)
+- Do not run `pnpm exec eslint` or `eslint` directly
+- Use `pnpm exec tsc` for type checking instead
 
 ### MCP Settings Management
 
-- **ALWAYS** manage MCP permissions and settings in `.claude/settings.json` for repository-wide sharing
-- **NEVER** create or modify `.claude/settings.local.json` files
-- All MCP server configurations and permissions must be committed to the repository
-- When adding new MCP permissions, update `.claude/settings.json` directly
-- This ensures consistent MCP settings across all team members and environments
-
-### Files to Ignore
-
-Claude Code should avoid processing these files and directories:
-
-- `node_modules/` - Package dependencies
-- `.next/` - Next.js build output
-- `dist/` - Distribution/build files
-- `build/` - Build output
-- `coverage/` - Test coverage reports
-- `.env*` - Environment variable files
-- `*.log` - Log files
-- `test-results/` - Playwright test results
-- `playwright-report/` - Playwright HTML reports
-- `prisma/migrations/` - Database migration files
-- `.git/` - Git repository data
-- `*.lock` - Lock files (package-lock.json, yarn.lock)
-
-# Important Instruction Reminders
-
-Do what has been asked; nothing more, nothing less.
-NEVER create files unless they're absolutely necessary for achieving your goal.
-ALWAYS prefer editing an existing file to creating a new one.
-NEVER proactively create documentation files (\*.md) or README files. Only create documentation files if explicitly requested by the User.
+- Manage MCP settings in `.claude/settings.json` (not `.claude/settings.local.json`)
+- Commit all MCP configurations to the repository
