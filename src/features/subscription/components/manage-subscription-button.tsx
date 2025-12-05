@@ -46,14 +46,15 @@ const ManageSubscriptionButton = ({
   };
 
   return (
-    <div
+    <span
       role="button"
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      className="inline-block"
     >
       {children}
-    </div>
+    </span>
   );
 };
 
