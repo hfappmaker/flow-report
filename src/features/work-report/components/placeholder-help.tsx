@@ -9,6 +9,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   getPlaceholdersByCategory,
   PLACEHOLDER_CATEGORIES,
@@ -18,6 +19,9 @@ import {
 export function PlaceholderHelp() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const placeholdersByCategory = getPlaceholdersByCategory();
+  const categories = Object.keys(
+    placeholdersByCategory,
+  ) as PlaceholderCategory[];
 
   const handleCopy = async (key: string) => {
     const placeholder = `\${${key}}`;
@@ -36,7 +40,7 @@ export function PlaceholderHelp() {
           プレースホルダー
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[calc(100vw-2rem)] max-w-96 p-0">
+      <PopoverContent className="w-[calc(100vw-2rem)] max-w-[480px] p-0">
         <div className="p-4 pb-2">
           <h4 className="font-medium leading-none">
             利用可能なプレースホルダー
@@ -45,68 +49,74 @@ export function PlaceholderHelp() {
             クリックでコピーできます
           </p>
         </div>
-        <div
-          className="max-h-[300px] touch-pan-y overflow-y-auto overscroll-contain px-4"
-          onWheel={(e) => e.stopPropagation()}
-          onTouchMove={(e) => e.stopPropagation()}
-        >
-          <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-popover">
-              <tr className="border-b">
-                <th className="pb-2 text-left font-medium">
-                  プレースホルダー
-                </th>
-                <th className="pb-2 text-left font-medium">説明</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(
-                Object.keys(placeholdersByCategory) as PlaceholderCategory[]
-              ).map((category) => {
-                const placeholders = placeholdersByCategory[category];
-                if (placeholders.length === 0) return null;
-                return (
-                  <>
-                    <tr key={category} className="bg-muted/30">
-                      <td
-                        colSpan={2}
-                        className="py-2 text-xs font-semibold text-muted-foreground"
-                      >
-                        {PLACEHOLDER_CATEGORIES[category]}
-                      </td>
-                    </tr>
-                    {placeholders.map((placeholder) => (
-                      <tr
-                        key={placeholder.key}
-                        className="border-b last:border-0 hover:bg-muted/50"
-                      >
-                        <td className="py-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              void handleCopy(placeholder.key);
-                            }}
-                            className="flex items-center gap-1 rounded bg-muted px-2 py-1 font-mono text-xs hover:bg-muted/80"
-                          >
-                            {`\${${placeholder.key}}`}
-                            {copiedKey === placeholder.key ? (
-                              <Check className="size-3 text-green-600" />
-                            ) : (
-                              <Copy className="size-3" />
-                            )}
-                          </button>
-                        </td>
-                        <td className="py-2 text-muted-foreground">
-                          {placeholder.description}
-                        </td>
+        <Tabs defaultValue={categories[0]} className="w-full">
+          <div className="px-4">
+            <TabsList className="flex h-auto flex-wrap gap-1 bg-transparent p-0">
+              {categories.map((category) => (
+                <TabsTrigger
+                  key={category}
+                  value={category}
+                  className="h-7 rounded-full px-3 text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
+                  {PLACEHOLDER_CATEGORIES[category]}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+          {categories.map((category) => {
+            const placeholders = placeholdersByCategory[category];
+            return (
+              <TabsContent key={category} value={category} className="mt-0">
+                <div
+                  className="max-h-[250px] touch-pan-y overflow-y-auto overscroll-contain px-4"
+                  onWheel={(e) => e.stopPropagation()}
+                  onTouchMove={(e) => e.stopPropagation()}
+                >
+                  <table className="w-full text-sm">
+                    <thead className="sticky top-0 bg-popover">
+                      <tr className="border-b">
+                        <th className="pb-2 pt-2 text-left font-medium">
+                          プレースホルダー
+                        </th>
+                        <th className="pb-2 pt-2 text-left font-medium">
+                          説明
+                        </th>
                       </tr>
-                    ))}
-                  </>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                    </thead>
+                    <tbody>
+                      {placeholders.map((placeholder) => (
+                        <tr
+                          key={placeholder.key}
+                          className="border-b last:border-0 hover:bg-muted/50"
+                        >
+                          <td className="py-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                void handleCopy(placeholder.key);
+                              }}
+                              className="flex items-center gap-1 rounded bg-muted px-2 py-1 font-mono text-xs hover:bg-muted/80"
+                            >
+                              {`\${${placeholder.key}}`}
+                              {copiedKey === placeholder.key ? (
+                                <Check className="size-3 text-green-600" />
+                              ) : (
+                                <Copy className="size-3" />
+                              )}
+                            </button>
+                          </td>
+                          <td className="py-2 text-muted-foreground">
+                            {placeholder.description}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </TabsContent>
+            );
+          })}
+        </Tabs>
         <div className="border-t p-4 pt-2">
           <p className="text-xs text-muted-foreground">
             例: <code className="bg-muted px-1">{`\${作業者名}様`}</code> →
