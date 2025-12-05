@@ -89,7 +89,7 @@ Immutability rules are enforced by ESLint:
 **Result Type Definition:**
 
 ```typescript
-type Result<T> = { success: true; data: T } | { success: false; error: string }
+type Result<T> = { success: true; data: T } | { success: false; error: string };
 ```
 
 **Examples:**
@@ -181,6 +181,17 @@ Use conventional commit prefixes:
 - `chore`: Build process or tool changes
 
 ## 4. Claude Code Specific Instructions
+
+### Communication Language
+
+**CRITICAL: All communication with users must be in Japanese:**
+
+- All responses, explanations, and messages to the user must be written in Japanese
+- Code comments should be in Japanese when explaining implementation
+- Error messages and warnings should be in Japanese
+- Commit messages must use English prefixes (feat, fix, docs, etc.) but descriptions should be in Japanese (e.g., `feat: ユーザー認証機能を追加`)
+- Exception: Code itself (variable names, function names, etc.) should follow English naming conventions as specified in section 2.2
+- Exception: Technical terms that are commonly used in English (e.g., "repository", "component") can remain in English within Japanese sentences
 
 ### Do Not Run ESLint
 
