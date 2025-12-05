@@ -127,14 +127,14 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
   {
     key: "契約名",
     label: "契約名",
-    description: "契約の名前",
+    description: "契約の名前（例: 〇〇システム開発プロジェクト）",
     example: "〇〇システム開発プロジェクト",
     category: "contract",
   },
   {
     key: "クライアント名",
     label: "クライアント名",
-    description: "クライアントの名前",
+    description: "クライアントの名前（例: 山田商事）",
     example: "山田商事",
     category: "contract",
   },
@@ -190,7 +190,7 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
   {
     key: "時間単価",
     label: "時間単価",
-    description: "契約の時間単価（例: 3000）",
+    description: "契約の時間単価（例: 3000）※精算方式が時間単価の場合のみ",
     example: "3000",
     category: "contract",
   },
@@ -211,21 +211,21 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
   {
     key: "超過時間単価",
     label: "超過時間単価",
-    description: "超過時の時間単価（例: 3500）",
+    description: "超過時の時間単価（例: 3500）※精算方式が上下割の場合のみ",
     example: "3500",
     category: "contract",
   },
   {
     key: "控除時間単価",
     label: "控除時間単価",
-    description: "控除時の時間単価（例: 3000）",
+    description: "控除時の時間単価（例: 3000）※精算方式が上下割の場合のみ",
     example: "3000",
     category: "contract",
   },
   {
     key: "中間割時間単価",
     label: "中間割時間単価",
-    description: "中間割の時間単価（例: 3200）",
+    description: "中間割の時間単価（例: 3200）※精算方式が中間割の場合のみ",
     example: "3200",
     category: "contract",
   },
@@ -261,7 +261,7 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
   {
     key: "メールアドレス",
     label: "メールアドレス",
-    description: "ログインユーザーのメールアドレス",
+    description: "ログインユーザーのメールアドレス（例: example@example.com）",
     example: "example@example.com",
     category: "user",
   },
@@ -326,28 +326,32 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
   {
     key: "超過時間",
     label: "超過時間",
-    description: "超過した時間数（例: 5.5）",
+    description:
+      "超過した時間数（例: 5.5）※精算方式が上下割または中間割の場合のみ",
     example: "5.5",
-    category: "invoice",
+    category: "workReport",
   },
   {
     key: "超過金額",
     label: "超過金額",
-    description: "超過時間 × 超過時間単価（例: 19250）",
+    description:
+      "超過時間 × 超過時間単価（例: 19250）※精算方式が上下割または中間割の場合のみ",
     example: "19250",
     category: "invoice",
   },
   {
     key: "控除時間",
     label: "控除時間",
-    description: "控除された時間数（例: 3.0）",
+    description:
+      "控除された時間数（例: 3.0）※精算方式が上下割または中間割の場合のみ",
     example: "3.0",
-    category: "invoice",
+    category: "workReport",
   },
   {
     key: "控除金額",
     label: "控除金額",
-    description: "控除時間 × 控除時間単価（例: 9000）",
+    description:
+      "控除時間 × 控除時間単価（例: 9000）※精算方式が上下割または中間割の場合のみ",
     example: "9000",
     category: "invoice",
   },
