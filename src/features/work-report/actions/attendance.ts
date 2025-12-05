@@ -72,9 +72,9 @@ export const createAttendancesByPromptAction = async (
   const schema = z.object({
     attendances: z.array(
       z.object({
-        date: z.string().datetime(),
-        startTime: z.string().datetime().nullable(),
-        endTime: z.string().datetime().nullable(),
+        date: z.iso.datetime(),
+        startTime: z.iso.datetime().nullable(),
+        endTime: z.iso.datetime().nullable(),
         breakDuration: z.number().min(0).max(1440).nullable(),
         memo: z.string().nullable(),
       }),

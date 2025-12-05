@@ -64,21 +64,19 @@ export async function POST(req: Request) {
 
         // ユーザーのStripeカスタマーIDをDBに保存
         if (customer.metadata.userId) {
-          try {
-            await upsertStripeCustomer(
-              customer.metadata.userId,
-              customer.id,
-              created,
-            );
+          const result = await upsertStripeCustomer(
+            customer.metadata.userId,
+            customer.id,
+            created,
+          );
+          if (result.success) {
             console.log(
               `[${created}] ✅ Successfully linked Stripe customer to user DB`,
             );
-          } catch (error) {
-            console.error(
-              `[${created}] ❌ Failed to link Stripe customer:`,
-              error,
-            );
-            throw error;
+          } else {
+            const error = `[${created}] ❌ Failed to link Stripe customer: ${result.error}`;
+            console.error(error);
+            throw new Error(error);
           }
         }
         break;
@@ -106,23 +104,21 @@ export async function POST(req: Request) {
 
         const newCurrentPeriodEnd = getSubscriptionPeriodEnd(subscription);
 
-        try {
-          await upsertUserSubscription(
-            subscription.customer as string,
-            {
-              stripeSubscriptionId: subscription.id,
-              status: newStatus,
-              currentPeriodEnd: newCurrentPeriodEnd,
-            },
-            created,
-          );
+        const result = await upsertUserSubscription(
+          subscription.customer as string,
+          {
+            stripeSubscriptionId: subscription.id,
+            status: newStatus,
+            currentPeriodEnd: newCurrentPeriodEnd,
+          },
+          created,
+        );
+        if (result.success) {
           console.log(`[${created}] ✅ Subscription updated: ${newStatus}`);
-        } catch (error) {
-          console.error(
-            `[${created}] ❌ Failed to update subscription:`,
-            error,
-          );
-          throw error;
+        } else {
+          const error = `[${created}] ❌ Failed to update subscription: ${result.error}`;
+          console.error(error);
+          throw new Error(error);
         }
         break;
       }

@@ -372,44 +372,44 @@ export default function ClientWorkReportPage({
   // 編集フォームの送信処理
   const onEditSubmit = useCallback(
     async (date: Date, data: EditFormValues) => {
-      try {
-        startTransition(() => {
-          void (async () => {
-            const updatedValues = currentAttendances.map((attendance) => {
-              if (attendance.date.getTime() === date.getTime()) {
-                return {
-                  ...attendance,
-                  startTime: data.startTime,
-                  endTime: data.endTime,
-                  breakDuration: data.breakDuration,
-                  memo: data.memo,
-                };
-              }
-              return attendance;
-            });
-            // フォームの値を更新
-            const attendance = updatedValues.find(
-              (attendance) => attendance.date.getTime() === date.getTime(),
-            );
-            if (attendance) {
-              await updateWorkReportAttendanceAction(
-                workReportId,
-                attendance.date,
-                {
-                  ...attendance,
-                  workReportId: workReportId,
-                },
-              );
+      startTransition(() => {
+        void (async () => {
+          const updatedValues = currentAttendances.map((attendance) => {
+            if (attendance.date.getTime() === date.getTime()) {
+              return {
+                ...attendance,
+                startTime: data.startTime,
+                endTime: data.endTime,
+                breakDuration: data.breakDuration,
+                memo: data.memo,
+              };
             }
-            setCurrentAttendances(updatedValues);
-            setEditingDate(null);
-          })();
-        });
-        showSuccess("編集を適用しました");
-      } catch (error) {
-        console.error("編集の適用に失敗しました", error);
-        showError("編集の適用に失敗しました");
-      }
+            return attendance;
+          });
+          // フォームの値を更新
+          const attendance = updatedValues.find(
+            (attendance) => attendance.date.getTime() === date.getTime(),
+          );
+          if (attendance) {
+            const result = await updateWorkReportAttendanceAction(
+              workReportId,
+              attendance.date,
+              {
+                ...attendance,
+                workReportId: workReportId,
+              },
+            );
+            if (result.success) {
+              setCurrentAttendances(updatedValues);
+              showSuccess("編集を適用しました");
+            } else {
+              console.error(result.error);
+              showError(result.error || "勤怠情報の保存に失敗しました");
+            }
+          }
+          setEditingDate(null);
+        })();
+      });
     },
     [currentAttendances, workReportId, startTransition, showSuccess, showError],
   );

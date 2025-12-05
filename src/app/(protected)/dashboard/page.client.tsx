@@ -339,27 +339,31 @@ export default function DashboardClientPage({
     const { workReportId } = attendanceDialogState;
     if (!workReportId) return;
 
-    try {
-      startTransition(() => {
-        void (async () => {
-          await updateWorkReportAttendanceAction(workReportId, date, {
+    startTransition(() => {
+      void (async () => {
+        const result = await updateWorkReportAttendanceAction(
+          workReportId,
+          date,
+          {
             date,
             startTime: data.startTime,
             endTime: data.endTime,
             breakDuration: data.breakDuration,
             memo: data.memo,
             workReportId,
-          });
+          },
+        );
+        if (result.success) {
           showSuccess("勤怠情報を保存しました");
           closeAttendanceDialog();
           // ページをリフレッシュしてデータを更新
           router.refresh();
-        })();
-      });
-    } catch (error) {
-      console.error("勤怠情報の保存に失敗しました", error);
-      showError("勤怠情報の保存に失敗しました");
-    }
+        } else {
+          console.error(result.error);
+          showError(result.error || "勤怠情報の保存に失敗しました");
+        }
+      })();
+    });
   };
 
   return (

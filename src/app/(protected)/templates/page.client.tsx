@@ -273,169 +273,147 @@ export default function TemplatesClientPage({
     }
 
     setManualPending(true);
-    try {
-      const fileData = await fileToBase64(data.file);
-      await createExcelTemplateAction({
-        name: data.name,
-        type: activeTab,
-        fileData,
-        fileName: data.file.name,
-        sheetName: data.sheetName,
-        createUserId: userId,
-        fieldMappings: data.fieldMappings.map((m) => ({
-          namedRange: m.namedRange,
-          valueTemplate: m.valueTemplate,
-          numFmt: m.numFmt ?? null,
-        })),
-      });
+    const fileData = await fileToBase64(data.file);
+    const result = await createExcelTemplateAction({
+      name: data.name,
+      type: activeTab,
+      fileData,
+      fileName: data.file.name,
+      sheetName: data.sheetName,
+      createUserId: userId,
+      fieldMappings: data.fieldMappings.map((m) => ({
+        namedRange: m.namedRange,
+        valueTemplate: m.valueTemplate,
+        numFmt: m.numFmt ?? null,
+      })),
+    });
+    if (result.success) {
       showSuccess(`テンプレート '${data.name}' を作成しました`);
       closeDialog();
       await refreshTemplates(activeTab);
-    } catch (err) {
-      console.error(err);
-      if (err instanceof Error) {
-        showError(err.message);
-      } else {
-        showError("テンプレートの作成に失敗しました");
-      }
-    } finally {
-      setManualPending(false);
+    } else {
+      console.error(result.error);
+      showError(result.error);
     }
+    setManualPending(false);
   };
 
   // テンプレート編集
   const onEditTemplate = async (data: ExcelTemplateFormValues) => {
     if (!activeTemplate) return;
-
     setManualPending(true);
-    try {
-      const baseUpdateData = {
-        name: data.name,
-        sheetName: data.sheetName,
-        fieldMappings: data.fieldMappings.map((m) => ({
-          namedRange: m.namedRange,
-          valueTemplate: m.valueTemplate,
-          numFmt: m.numFmt ?? null,
-        })),
-      };
+    const baseUpdateData = {
+      name: data.name,
+      sheetName: data.sheetName,
+      fieldMappings: data.fieldMappings.map((m) => ({
+        namedRange: m.namedRange,
+        valueTemplate: m.valueTemplate,
+        numFmt: m.numFmt ?? null,
+      })),
+    };
 
-      // ファイルが選択されている場合のみ更新
-      const updateData = data.file
-        ? {
-            ...baseUpdateData,
-            fileData: await fileToBase64(data.file),
-            fileName: data.file.name,
-          }
-        : baseUpdateData;
+    // ファイルが選択されている場合のみ更新
+    const updateData = data.file
+      ? {
+          ...baseUpdateData,
+          fileData: await fileToBase64(data.file),
+          fileName: data.file.name,
+        }
+      : baseUpdateData;
 
-      await updateExcelTemplateAction(activeTemplate.id, updateData);
+    const result = await updateExcelTemplateAction(
+      activeTemplate.id,
+      updateData,
+    );
+    if (result.success) {
       showSuccess(`テンプレート '${data.name}' を更新しました`);
       closeDialog();
       await refreshTemplates(activeTab);
-    } catch (err) {
-      console.error(err);
-      if (err instanceof Error) {
-        showError(err.message);
-      } else {
-        showError("テンプレートの更新に失敗しました");
-      }
-    } finally {
-      setManualPending(false);
+    } else {
+      console.error(result.error);
+      showError(result.error);
     }
+    setManualPending(false);
   };
 
   // テンプレート削除
   const onDeleteTemplate = async () => {
     if (!activeTemplate) return;
-
     setManualPending(true);
-    try {
-      await deleteExcelTemplateAction(activeTemplate.id);
+    const result = await deleteExcelTemplateAction(activeTemplate.id);
+    if (result.success) {
       showSuccess(`テンプレート '${activeTemplate.name}' を削除しました`);
       closeDialog();
       await refreshTemplates(activeTab);
-    } catch (err) {
-      console.error(err);
-      showError("テンプレートの削除に失敗しました");
-    } finally {
-      setManualPending(false);
+    } else {
+      console.error(result.error);
+      showError(result.error);
     }
+    setManualPending(false);
   };
 
   // メールテンプレート作成
   const onCreateEmailTemplate = async (data: EmailTemplateFormValues) => {
     setManualPending(true);
-    try {
-      await createEmailTemplateAction({
-        name: data.name,
-        subject: data.subject,
-        body: data.body,
-        toAddresses: data.toAddresses,
-        ccAddresses: data.ccAddresses,
-        createUserId: userId,
-      });
+    const result = await createEmailTemplateAction({
+      name: data.name,
+      subject: data.subject,
+      body: data.body,
+      toAddresses: data.toAddresses,
+      ccAddresses: data.ccAddresses,
+      createUserId: userId,
+    });
+    if (result.success) {
       showSuccess(`メールテンプレート '${data.name}' を作成しました`);
       closeEmailDialog();
       await refreshTemplates("EMAIL");
-    } catch (err) {
-      console.error(err);
-      if (err instanceof Error) {
-        showError(err.message);
-      } else {
-        showError("メールテンプレートの作成に失敗しました");
-      }
-    } finally {
-      setManualPending(false);
+      return;
+    } else {
+      console.error(result.error);
+      showError(result.error);
     }
+    setManualPending(false);
   };
 
   // メールテンプレート編集
   const onEditEmailTemplate = async (data: EmailTemplateFormValues) => {
     if (!activeEmailTemplate) return;
-
     setManualPending(true);
-    try {
-      await updateEmailTemplateAction(activeEmailTemplate.id, {
-        name: data.name,
-        subject: data.subject,
-        body: data.body,
-        toAddresses: data.toAddresses,
-        ccAddresses: data.ccAddresses,
-        createUserId: userId,
-      });
+    const result = await updateEmailTemplateAction(activeEmailTemplate.id, {
+      name: data.name,
+      subject: data.subject,
+      body: data.body,
+      toAddresses: data.toAddresses,
+      ccAddresses: data.ccAddresses,
+      createUserId: userId,
+    });
+    if (result.success) {
       showSuccess(`メールテンプレート '${data.name}' を更新しました`);
       closeEmailDialog();
       await refreshTemplates("EMAIL");
-    } catch (err) {
-      console.error(err);
-      if (err instanceof Error) {
-        showError(err.message);
-      } else {
-        showError("メールテンプレートの更新に失敗しました");
-      }
-    } finally {
-      setManualPending(false);
+    } else {
+      console.error(result.error);
+      showError(result.error);
     }
+    setManualPending(false);
   };
 
   // メールテンプレート削除
   const onDeleteEmailTemplate = async () => {
     if (!activeEmailTemplate) return;
-
     setManualPending(true);
-    try {
-      await deleteEmailTemplateAction(activeEmailTemplate.id);
+    const result = await deleteEmailTemplateAction(activeEmailTemplate.id);
+    if (result.success) {
       showSuccess(
         `メールテンプレート '${activeEmailTemplate.name}' を削除しました`,
       );
       closeEmailDialog();
       await refreshTemplates("EMAIL");
-    } catch (err) {
-      console.error(err);
-      showError("メールテンプレートの削除に失敗しました");
-    } finally {
-      setManualPending(false);
+    } else {
+      console.error(result.error);
+      showError(result.error);
     }
+    setManualPending(false);
   };
 
   const tabConfig = TAB_CONFIG[activeTab];

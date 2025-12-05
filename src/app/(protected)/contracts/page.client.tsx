@@ -128,16 +128,15 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
     if (!activeContract) return;
     startTransition(() => {
       void (async () => {
-        try {
-          await deleteContractAction(activeContract.id);
+        const result = await deleteContractAction(activeContract.id);
+        if (result.success) {
           showSuccess(`契約 '${activeContract.name}' を削除しました`);
           await fetchContracts();
-        } catch (error: unknown) {
-          console.error(error);
-          showError("契約の削除に失敗しました。");
-        } finally {
-          closeDialog();
+        } else {
+          console.error(result.error);
+          showError(result.error || "契約の削除に失敗しました。");
         }
+        closeDialog();
       })();
     });
   };
@@ -146,28 +145,17 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
   const onCreateContract = (data: ContractFormValues) => {
     startTransition(() => {
       void (async () => {
-        try {
-          const contractData = convertContractFormValuesToContract(
-            data,
-            userId,
-          );
-          const result = await createContractAction(contractData);
+        const contractData = convertContractFormValuesToContract(data, userId);
+        const result = await createContractAction(contractData);
 
-          if (!result.success) {
-            showError(result.error || "契約の作成に失敗しました");
-            return;
-          }
-
+        if (result.success) {
           showSuccess(`契約 '${data.name}' を作成しました`);
           await fetchContracts();
-        } catch (error: unknown) {
-          console.error(error);
-          const errorMessage =
-            error instanceof Error ? error.message : "契約の作成に失敗しました";
-          showError(errorMessage);
-        } finally {
-          closeDialog();
+        } else {
+          console.error(result.error);
+          showError(result.error || "契約の作成に失敗しました");
         }
+        closeDialog();
       })();
     });
   };
@@ -177,20 +165,19 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
     if (!activeContract) return;
     startTransition(() => {
       void (async () => {
-        try {
-          const contractData = convertContractFormValuesToContract(
-            data,
-            userId,
-          );
-          await updateContractAction(activeContract.id, contractData);
+        const contractData = convertContractFormValuesToContract(data, userId);
+        const result = await updateContractAction(
+          activeContract.id,
+          contractData,
+        );
+        if (result.success) {
           showSuccess(`契約 '${data.name}' を編集しました`);
           await fetchContracts();
-        } catch (error: unknown) {
-          console.error(error);
-          showError("契約の更新に失敗しました");
-        } finally {
-          closeDialog();
+        } else {
+          console.error(result.error);
+          showError(result.error || "契約の更新に失敗しました");
         }
+        closeDialog();
       })();
     });
   };
@@ -199,30 +186,17 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
   const onCopyContract = (data: ContractFormValues) => {
     startTransition(() => {
       void (async () => {
-        try {
-          const contractData = convertContractFormValuesToContract(
-            data,
-            userId,
-          );
-          const result = await createContractAction(contractData);
+        const contractData = convertContractFormValuesToContract(data, userId);
+        const result = await createContractAction(contractData);
 
-          if (!result.success) {
-            showError(result.error || "契約のコピーに失敗しました");
-            return;
-          }
-
+        if (result.success) {
           showSuccess(`契約 '${data.name}' をコピーして作成しました`);
           await fetchContracts();
-        } catch (error: unknown) {
-          console.error(error);
-          const errorMessage =
-            error instanceof Error
-              ? error.message
-              : "契約のコピーに失敗しました";
-          showError(errorMessage);
-        } finally {
-          closeDialog();
+        } else {
+          console.error(result.error);
+          showError(result.error || "契約のコピーに失敗しました");
         }
+        closeDialog();
       })();
     });
   };
