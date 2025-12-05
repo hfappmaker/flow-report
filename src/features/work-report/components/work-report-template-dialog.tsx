@@ -24,7 +24,7 @@ const highlightPlaceholders = (text: string): React.ReactNode => {
   const parts = text.split(/(\$\{[^}]+\})/g);
   return parts.map((part, index) =>
     part.startsWith("${") ? (
-      <span key={index} className="text-primary">
+      <span key={index} className="text-blue-600 dark:text-blue-400">
         {part}
       </span>
     ) : (

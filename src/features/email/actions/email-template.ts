@@ -5,6 +5,7 @@ import { StrictOmit } from "ts-essentials";
 
 import { EmailTemplateRepository } from "@/features/email/repositories/email-template-repository";
 import { EmailTemplate } from "@/features/email/types/email-template";
+import { MAX_TEMPLATES_PER_TYPE } from "@/features/work-report/constants/work-report-constants";
 
 const repository = new EmailTemplateRepository();
 
@@ -25,6 +26,18 @@ export const createEmailTemplateAction = async (
 ): Promise<
   { success: true; data: EmailTemplate } | { success: false; error: string }
 > => {
+  // テンプレート数チェック
+  const existingResult = await repository.getByCreateUserId(values.createUserId);
+  if (!existingResult.success) {
+    return { success: false, error: existingResult.error };
+  }
+  if (existingResult.data.length >= MAX_TEMPLATES_PER_TYPE) {
+    return {
+      success: false,
+      error: `テンプレートは最大${MAX_TEMPLATES_PER_TYPE}個までしか登録できません`,
+    };
+  }
+
   const result = await repository.create(values);
   if (!result.success) {
     return { success: false, error: result.error };
