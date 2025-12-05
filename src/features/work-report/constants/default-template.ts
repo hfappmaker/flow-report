@@ -76,14 +76,14 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       id: "default-field-7",
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "_1日あたりの作業単位",
-      valueTemplate: "${1日あたりの作業単位(分)}",
+      valueTemplate: "${1日あたりの作業単位(分)}分",
       numFmt: "null",
     },
     {
       id: "default-field-8",
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "_1ヶ月あたりの作業単位",
-      valueTemplate: "${1ヶ月あたりの作業単位(分)}",
+      valueTemplate: "${1ヶ月あたりの作業単位(分)}分",
       numFmt: "null",
     },
     {

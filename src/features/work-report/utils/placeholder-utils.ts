@@ -40,7 +40,7 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
   {
     key: "対象年",
     label: "対象年",
-    description: "対象月の年度（例: 2025）",
+    description: "対象月の年（例: 2025）",
     example: "2025",
   },
   {
@@ -76,14 +76,14 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
   {
     key: "1日あたりの作業単位(分)",
     label: "1日あたりの作業単位(分)",
-    description: "契約の日次作業単位（例: 0:15）",
-    example: "0:15",
+    description: "契約の日次作業単位(分)（例: 15）",
+    example: "15",
   },
   {
     key: "1ヶ月あたりの作業単位(分)",
     label: "1ヶ月あたりの作業単位(分)",
-    description: "契約の月次作業単位（例: 0:30）",
-    example: "0:30",
+    description: "契約の月次作業単位(分)（例: 30）",
+    example: "30",
   },
   {
     key: "備考",
@@ -162,7 +162,7 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
   {
     key: "基本金額",
     label: "基本金額",
-    description: "精算前の基本金額（例: 500000）",
+    description: "契約の基本金額（例: 500000）",
     example: "500000",
   },
   {
@@ -190,9 +190,9 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
     example: "9000",
   },
   {
-    key: "小計金額",
-    label: "小計金額",
-    description: "基本金額 + 超過金額 - 控除金額（例: 510250）",
+    key: "請求金額（税抜）",
+    label: "請求金額（税抜）",
+    description: "請求金額（税抜）（例: 510250）",
     example: "510250",
   },
   {
@@ -202,9 +202,9 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
     example: "51025",
   },
   {
-    key: "合計金額",
-    label: "合計金額",
-    description: "小計 + 消費税（例: 561275）",
+    key: "請求金額（税込）",
+    label: "請求金額（税込）",
+    description: "請求金額（税込）（例: 561275）",
     example: "561275",
   },
   {
@@ -217,7 +217,7 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
   {
     key: "締め日",
     label: "締め日",
-    description: "契約の締め日（未設定時は対象月の最終日）",
+    description: "契約の締め日（未設定時は対象月の最終日）（例: 20）",
     example: "20",
   },
   {
@@ -410,10 +410,10 @@ export function generatePlaceholderValues(
       ? formatMinutesToTimeString(data.basicBreakDuration)
       : "",
     "1日あたりの作業単位": data.dailyWorkMinutes
-      ? formatMinutesToTimeString(data.dailyWorkMinutes)
+      ? String(data.dailyWorkMinutes)
       : "",
     "1ヶ月あたりの作業単位": data.monthlyWorkMinutes
-      ? formatMinutesToTimeString(data.monthlyWorkMinutes)
+      ? String(data.monthlyWorkMinutes)
       : "",
     備考: data.remarks ?? "",
     総稼働時間: formatMinutesToTimeString(totalWorkMinutes),
@@ -511,9 +511,9 @@ export function generatePlaceholderValues(
       超過金額: String(Math.round(amountDetails.excessInfo.amount)),
       控除時間: String(amountDetails.deductionInfo.hours),
       控除金額: String(Math.round(amountDetails.deductionInfo.amount)),
-      小計金額: String(Math.round(subtotal)),
+      "請求金額（税抜）": String(Math.round(subtotal)),
       消費税額: String(taxAmount),
-      合計金額: String(Math.round(totalAmount)),
+      "請求金額（税込）": String(Math.round(totalAmount)),
     });
   } else {
     // 計算できない場合は空文字
@@ -523,9 +523,9 @@ export function generatePlaceholderValues(
       超過金額: "",
       控除時間: "",
       控除金額: "",
-      小計金額: "",
+      "請求金額（税抜）": "",
       消費税額: "",
-      合計金額: "",
+      "請求金額（税込）": "",
     });
   }
 
