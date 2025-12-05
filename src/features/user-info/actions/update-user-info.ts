@@ -4,11 +4,11 @@ import * as z from "zod";
 
 import { currentUser } from "@/features/auth/libs/auth";
 import { getUserById } from "@/features/auth/repositories/user-repository";
-import { userSettingsFormSchema } from "@/features/user-settings/schemas/user-settings-form-schema";
+import { userInfoFormSchema } from "@/features/user-info/schemas/user-info-form-schema";
 import { db } from "@/repositories/db";
 
-export const updateUserSettings = async (
-  values: z.infer<typeof userSettingsFormSchema>,
+export const updateUserInfo = async (
+  values: z.infer<typeof userInfoFormSchema>,
 ) => {
   const user = await currentUser();
 
@@ -39,7 +39,7 @@ export const updateUserSettings = async (
   return { success: "設定を更新しました" };
 };
 
-export const getUserSettings = async () => {
+export const getUserInfo = async () => {
   const user = await currentUser();
 
   if (!user?.id) {

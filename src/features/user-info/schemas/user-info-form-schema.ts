@@ -9,7 +9,7 @@ export type BankAccountType = (typeof BANK_ACCOUNT_TYPES)[number];
 /**
  * ユーザー情報フォームのスキーマ
  */
-export const userSettingsFormSchema = z.object({
+export const userInfoFormSchema = z.object({
   // 基本情報
   name: z.string().optional(),
 
@@ -25,4 +25,4 @@ export const userSettingsFormSchema = z.object({
   bankAccountHolder: z.string().optional(),
 });
 
-export type UserSettingsFormValues = z.infer<typeof userSettingsFormSchema>;
+export type UserInfoFormValues = z.infer<typeof userInfoFormSchema>;

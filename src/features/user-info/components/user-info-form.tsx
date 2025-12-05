@@ -16,10 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { updateUserSettings } from "@/features/user-settings/actions/update-user-settings";
-import { BANK_ACCOUNT_TYPES } from "@/features/user-settings/schemas/user-settings-form-schema";
+import { updateUserInfo } from "@/features/user-info/actions/update-user-info";
+import { BANK_ACCOUNT_TYPES } from "@/features/user-info/schemas/user-info-form-schema";
 
-type UserSettings = {
+type UserInfo = {
   name: string;
   email: string;
   postalCode: string;
@@ -31,33 +31,33 @@ type UserSettings = {
   bankAccountHolder: string;
 };
 
-type UserSettingsFormProps = {
-  initialSettings: UserSettings | null;
+type UserInfoFormProps = {
+  initialInfo: UserInfo | null;
 };
 
-export function UserSettingsForm({ initialSettings }: UserSettingsFormProps) {
+export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   // フォームの状態
-  const [name, setName] = useState(initialSettings?.name ?? "");
+  const [name, setName] = useState(initialInfo?.name ?? "");
   const [postalCode, setPostalCode] = useState(
-    initialSettings?.postalCode ?? "",
+    initialInfo?.postalCode ?? "",
   );
-  const [address, setAddress] = useState(initialSettings?.address ?? "");
-  const [bankName, setBankName] = useState(initialSettings?.bankName ?? "");
+  const [address, setAddress] = useState(initialInfo?.address ?? "");
+  const [bankName, setBankName] = useState(initialInfo?.bankName ?? "");
   const [bankBranchName, setBankBranchName] = useState(
-    initialSettings?.bankBranchName ?? "",
+    initialInfo?.bankBranchName ?? "",
   );
   const [bankAccountType, setBankAccountType] = useState<string>(
-    initialSettings?.bankAccountType ?? "",
+    initialInfo?.bankAccountType ?? "",
   );
   const [bankAccountNumber, setBankAccountNumber] = useState(
-    initialSettings?.bankAccountNumber ?? "",
+    initialInfo?.bankAccountNumber ?? "",
   );
   const [bankAccountHolder, setBankAccountHolder] = useState(
-    initialSettings?.bankAccountHolder ?? "",
+    initialInfo?.bankAccountHolder ?? "",
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -66,7 +66,7 @@ export function UserSettingsForm({ initialSettings }: UserSettingsFormProps) {
     setSuccess("");
 
     startTransition(async () => {
-      const result = await updateUserSettings({
+      const result = await updateUserInfo({
         name: name || undefined,
         postalCode: postalCode || undefined,
         address: address || undefined,
@@ -118,7 +118,7 @@ export function UserSettingsForm({ initialSettings }: UserSettingsFormProps) {
                 <Label htmlFor="email">メールアドレス</Label>
                 <Input
                   id="email"
-                  value={initialSettings?.email ?? ""}
+                  value={initialInfo?.email ?? ""}
                   disabled
                   className="bg-muted"
                 />

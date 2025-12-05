@@ -4,7 +4,7 @@ import {
   FileText,
   LayoutDashboard,
   LucideIcon,
-  Settings,
+  UserCog,
 } from "lucide-react";
 
 type NavLink = {
@@ -30,9 +30,9 @@ export const NAV_LINKS: NavLink[] = [
     icon: FileSpreadsheet,
   },
   {
-    title: "ユーザー設定",
-    path: "/user-settings",
-    icon: Settings,
+    title: "ユーザー情報",
+    path: "/user-info",
+    icon: UserCog,
   },
   {
     title: "サブスクリプション情報",
