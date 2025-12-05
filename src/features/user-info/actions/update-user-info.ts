@@ -1,11 +1,12 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import * as z from "zod";
 
 import { currentUser } from "@/features/auth/libs/auth";
 import { getUserById } from "@/features/auth/repositories/user-repository";
 import { userInfoFormSchema } from "@/features/user-info/schemas/user-info-form-schema";
-import { db } from "@/repositories/db";
+import { updateUserInfo as updateUserInfoRepository } from "../repositories/user-info-repository";
 
 export const updateUserInfo = async (
   values: z.infer<typeof userInfoFormSchema>,
@@ -26,21 +27,14 @@ export const updateUserInfo = async (
     return { error: "ユーザーが見つかりません" };
   }
 
-  await db.user.update({
-    where: { id: dbUser.id },
-    data: {
-      name: values.name ?? null,
-      postalCode: values.postalCode ?? null,
-      address: values.address ?? null,
-      bankName: values.bankName ?? null,
-      bankBranchName: values.bankBranchName ?? null,
-      bankAccountType: values.bankAccountType ?? null,
-      bankAccountNumber: values.bankAccountNumber ?? null,
-      bankAccountHolder: values.bankAccountHolder ?? null,
-    },
-  });
+  const result = await updateUserInfoRepository(dbUser.id, values);
+  if (!result.success) {
+    return { error: result.error };
+  }
 
-  return { success: "設定を更新しました" };
+  revalidatePath("/user-info");
+
+  return { success: "ユーザー情報を更新しました" };
 };
 
 export const getUserInfo = async () => {

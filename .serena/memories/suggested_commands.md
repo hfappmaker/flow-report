@@ -29,7 +29,7 @@
 ## データベース
 - `pnpm exec prisma generate`: Prismaクライアント生成
 - `pnpm exec prisma migrate deploy`: マイグレーション実行
-- `pnpm run seed:test-users`: テストユーザーデータ挿入
+
 - `pnpm run reset:dev`: 開発DBリセット＆シード
 - `pnpm run reset:preview`: プレビューDBリセット＆シード
 

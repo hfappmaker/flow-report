@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
 interface MessageState {
   message: string;
@@ -6,6 +6,8 @@ interface MessageState {
 }
 
 type MessageType = "error" | "success";
+
+const AUTO_CLOSE_DELAY = 5000;
 
 export const useMessageState = () => {
   const [error, setError] = useState<MessageState>({
@@ -16,6 +18,41 @@ export const useMessageState = () => {
     message: "",
     date: new Date(),
   });
+
+  const errorTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const successTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (errorTimerRef.current) {
+      clearTimeout(errorTimerRef.current);
+    }
+    if (error.message) {
+      errorTimerRef.current = setTimeout(() => {
+        setError({ message: "", date: new Date() });
+      }, AUTO_CLOSE_DELAY);
+    }
+    return () => {
+      if (errorTimerRef.current) {
+        clearTimeout(errorTimerRef.current);
+      }
+    };
+  }, [error.date]);
+
+  useEffect(() => {
+    if (successTimerRef.current) {
+      clearTimeout(successTimerRef.current);
+    }
+    if (success.message) {
+      successTimerRef.current = setTimeout(() => {
+        setSuccess({ message: "", date: new Date() });
+      }, AUTO_CLOSE_DELAY);
+    }
+    return () => {
+      if (successTimerRef.current) {
+        clearTimeout(successTimerRef.current);
+      }
+    };
+  }, [success.date]);
 
   const showError = useCallback((message: string) => {
     setError({ message, date: new Date() });

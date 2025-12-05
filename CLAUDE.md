@@ -73,6 +73,12 @@ Immutability rules are enforced by ESLint:
 
 ### 2.5 Repository Layer Error Handling
 
+**Database Access Rules:**
+
+- Server Actions must NOT access the database directly; always go through repository layer
+- Create feature-specific repository files (e.g., `features/user-info/repositories/user-info-repository.ts`)
+- Place shared repositories in `src/repositories/`
+
 **Result Type Pattern:**
 
 - All repository functions must return `Result<T>` type instead of throwing exceptions
@@ -127,6 +133,40 @@ export const createAction = async (data: Input) => {
   return { success: true, data: result.data };
 };
 ```
+
+### 2.6 Loading Processing Rules
+
+**Always use `useTransitionContext` for loading handling:**
+
+- Import from `@/contexts/transition-context`: `import { useTransitionContext } from "@/contexts/transition-context"`
+- Do NOT use `useState` for individual loading states
+- Do NOT use `useTransition` directly from React
+- Do NOT implement custom loading spinners or overlays
+- Exception: Only deviate from this rule when the user explicitly requests a different approach
+
+**Required pattern for server actions and async operations:**
+
+```typescript
+const { isPending, startTransition } = useTransitionContext();
+
+const handleAction = () => {
+  startTransition(async () => {
+    const result = await serverAction(data);
+    // Handle result...
+  });
+};
+
+// Use isPending to disable buttons during loading
+<Button onClick={handleAction} disabled={isPending}>
+  Submit
+</Button>
+```
+
+**What `useTransitionContext` provides:**
+
+- `startTransition`: Wraps async operations and automatically manages loading state
+- `isPending`: Boolean indicating loading state (use for disabling UI elements)
+- `setManualPending`: For manual loading control in special cases
 
 ## 3. Commit Messages
 

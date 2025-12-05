@@ -1,7 +1,7 @@
 "use client";
 
 import { UserCog } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTransitionContext } from "@/contexts/transition-context";
 import { updateUserInfo } from "@/features/user-info/actions/update-user-info";
 import { BANK_ACCOUNT_TYPES } from "@/features/user-info/schemas/user-info-form-schema";
 
@@ -36,7 +37,7 @@ type UserInfoFormProps = {
 };
 
 export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
-  const [isPending, startTransition] = useTransition();
+  const { isPending, startTransition } = useTransitionContext();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -105,6 +106,9 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          <ErrorAlert message={error} />
+          <SuccessAlert message={success} />
+
           {/* 基本情報セクション */}
           <div className="space-y-4">
             <h3 className="font-medium">基本情報</h3>
@@ -119,9 +123,7 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
                     placeholder="例: 山田 太郎"
                   />
                 ) : (
-                  <p className="py-2 text-sm">
-                    {initialInfo?.name || "未設定"}
-                  </p>
+                  <p className="py-2 text-sm">{name || "未設定"}</p>
                 )}
               </div>
               <div className="space-y-2">
@@ -220,9 +222,6 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
               </div>
             </div>
           )}
-
-          <ErrorAlert message={error} />
-          <SuccessAlert message={success} />
 
           <div className="flex justify-end gap-2">
             {isEditing ? (

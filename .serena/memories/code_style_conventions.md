@@ -77,6 +77,14 @@ src/
 - データベース操作はtry-catchでラップし、エラーメッセージを返す
 - 例: `return ok(entity)` または `return err("エラーメッセージ")`
 
+## ローディング処理のルール
+- ローディング処理には必ず `useTransitionContext` を使用
+- `@/contexts/transition-context` からインポート
+- `useState` で個別のローディング状態を管理しない
+- Reactの `useTransition` を直接使用しない
+- カスタムのローディングスピナーやオーバーレイを実装しない
+- ユーザーからの明示的な指示がある場合のみ例外を許可
+
 ## その他
 - barrel filesを避ける（tree-shakingの問題）
 - 直接インポートを使用
