@@ -27,7 +27,8 @@ import { useMessageState } from "@/hooks/use-message-state";
 
 const RegisterForm = () => {
   const isClient = useIsClient();
-  const { error, success, showError, showSuccess } = useMessageState();
+  const { error, success, showError, showSuccess, clearError, clearSuccess } =
+    useMessageState();
   const { isPending, startTransition } = useTransitionContext();
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
@@ -147,7 +148,12 @@ const RegisterForm = () => {
               )}
             />
           </div>
-          <MessageDisplay error={error} success={success} />
+          <MessageDisplay
+            error={error}
+            success={success}
+            onCloseError={clearError}
+            onCloseSuccess={clearSuccess}
+          />
           <Button
             type="submit"
             disabled={isPending}

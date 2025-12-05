@@ -123,7 +123,8 @@ export default function ClientWorkReportPage({
   paymentDay,
 }: WorkReportClientProps) {
   const router = useRouter();
-  const { error, success, showError, showSuccess } = useMessageState();
+  const { error, success, showError, showSuccess, clearError, clearSuccess } =
+    useMessageState();
   const { startTransition, setManualPending } = useTransitionContext();
 
   // モーダルの状態管理
@@ -673,11 +674,8 @@ export default function ClientWorkReportPage({
           作業報告書一覧へ
         </Button>
       </div>
-      <FormError message={error.message} resetSignal={error.date.getTime()} />
-      <FormSuccess
-        message={success.message}
-        resetSignal={success.date.getTime()}
-      />
+      <FormError message={error} onClose={clearError} />
+      <FormSuccess message={success} onClose={clearSuccess} />
 
       {/* Work Hours and Amount Summary */}
       <div className="mb-6 rounded-lg border bg-muted/30 p-4">

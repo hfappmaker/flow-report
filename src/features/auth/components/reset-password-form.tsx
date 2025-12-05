@@ -22,7 +22,8 @@ import { ResetSchema } from "@/features/auth/schemas/reset";
 import { useMessageState } from "@/hooks/use-message-state";
 
 const ResetPasswordForm = () => {
-  const { error, success, showError, showSuccess } = useMessageState();
+  const { error, success, showError, showSuccess, clearError, clearSuccess } =
+    useMessageState();
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<z.infer<typeof ResetSchema>>({
@@ -74,7 +75,12 @@ const ResetPasswordForm = () => {
               )}
             />
           </div>
-          <MessageDisplay error={error} success={success} />
+          <MessageDisplay
+            error={error}
+            success={success}
+            onCloseError={clearError}
+            onCloseSuccess={clearSuccess}
+          />
           <Button
             disabled={isPending}
             type="submit"

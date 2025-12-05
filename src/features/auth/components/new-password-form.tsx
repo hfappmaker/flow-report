@@ -26,7 +26,8 @@ const NewPasswordForm = () => {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
-  const { error, success, showError, showSuccess } = useMessageState();
+  const { error, success, showError, showSuccess, clearError, clearSuccess } =
+    useMessageState();
   const { isPending, startTransition } = useTransitionContext();
 
   const form = useForm<z.infer<typeof NewPasswordSchema>>({
@@ -98,7 +99,12 @@ const NewPasswordForm = () => {
               )}
             />
           </div>
-          <MessageDisplay error={error} success={success} />
+          <MessageDisplay
+            error={error}
+            success={success}
+            onCloseError={clearError}
+            onCloseSuccess={clearSuccess}
+          />
           <Button
             disabled={isPending}
             type="submit"

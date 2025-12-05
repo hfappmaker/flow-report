@@ -37,7 +37,8 @@ import { useMessageState } from "@/hooks/use-message-state";
 import { formatDateLongAsUTC } from "@/utils/date-utils";
 
 export default function ContractsClientPage({ userId }: { userId: string }) {
-  const { error, success, showError, showSuccess } = useMessageState();
+  const { error, success, showError, showSuccess, clearError, clearSuccess } =
+    useMessageState();
   const [contracts, setContracts] = useState<ContractOutput[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [periodFrom, setPeriodFrom] = useState("");
@@ -287,11 +288,8 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
         </Button>
       </CardHeader>
       <CardContent>
-        <FormError message={error.message} resetSignal={error.date.getTime()} />
-        <FormSuccess
-          message={success.message}
-          resetSignal={success.date.getTime()}
-        />
+        <FormError message={error} onClose={clearError} />
+        <FormSuccess message={success} onClose={clearSuccess} />
 
         {/* 検索フォーム */}
         <div className="mb-6 space-y-4">

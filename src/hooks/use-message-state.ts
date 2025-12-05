@@ -1,65 +1,17 @@
-import { useState, useCallback, useEffect, useRef } from "react";
-
-interface MessageState {
-  message: string;
-  date: Date;
-}
+import { useState, useCallback } from "react";
 
 type MessageType = "error" | "success";
 
-const AUTO_CLOSE_DELAY = 5000;
-
 export const useMessageState = () => {
-  const [error, setError] = useState<MessageState>({
-    message: "",
-    date: new Date(),
-  });
-  const [success, setSuccess] = useState<MessageState>({
-    message: "",
-    date: new Date(),
-  });
-
-  const errorTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const successTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (errorTimerRef.current) {
-      clearTimeout(errorTimerRef.current);
-    }
-    if (error.message) {
-      errorTimerRef.current = setTimeout(() => {
-        setError({ message: "", date: new Date() });
-      }, AUTO_CLOSE_DELAY);
-    }
-    return () => {
-      if (errorTimerRef.current) {
-        clearTimeout(errorTimerRef.current);
-      }
-    };
-  }, [error.date]);
-
-  useEffect(() => {
-    if (successTimerRef.current) {
-      clearTimeout(successTimerRef.current);
-    }
-    if (success.message) {
-      successTimerRef.current = setTimeout(() => {
-        setSuccess({ message: "", date: new Date() });
-      }, AUTO_CLOSE_DELAY);
-    }
-    return () => {
-      if (successTimerRef.current) {
-        clearTimeout(successTimerRef.current);
-      }
-    };
-  }, [success.date]);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const showError = useCallback((message: string) => {
-    setError({ message, date: new Date() });
+    setError(message);
   }, []);
 
   const showSuccess = useCallback((message: string) => {
-    setSuccess({ message, date: new Date() });
+    setSuccess(message);
   }, []);
 
   const setMessage = useCallback(
@@ -73,10 +25,27 @@ export const useMessageState = () => {
     [showError, showSuccess],
   );
 
-  const clearMessages = useCallback(() => {
-    setError({ message: "", date: new Date() });
-    setSuccess({ message: "", date: new Date() });
+  const clearError = useCallback(() => {
+    setError("");
   }, []);
 
-  return { error, success, showError, showSuccess, setMessage, clearMessages };
+  const clearSuccess = useCallback(() => {
+    setSuccess("");
+  }, []);
+
+  const clearMessages = useCallback(() => {
+    setError("");
+    setSuccess("");
+  }, []);
+
+  return {
+    error,
+    success,
+    showError,
+    showSuccess,
+    setMessage,
+    clearError,
+    clearSuccess,
+    clearMessages,
+  };
 };

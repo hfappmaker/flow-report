@@ -106,8 +106,8 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <ErrorAlert message={error} />
-          <SuccessAlert message={success} />
+          <ErrorAlert message={error} onClose={() => setError("")} />
+          <SuccessAlert message={success} onClose={() => setSuccess("")} />
 
           {/* 基本情報セクション */}
           <div className="space-y-4">

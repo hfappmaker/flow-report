@@ -31,7 +31,8 @@ export default function ContractClientPage({
 }: {
   contractId: string;
 }) {
-  const { error, success, showError } = useMessageState();
+  const { error, success, showError, clearError, clearSuccess } =
+    useMessageState();
   const [workReports, setWorkReports] = useState<WorkReportWithAttendances[]>(
     [],
   );
@@ -201,11 +202,8 @@ export default function ContractClientPage({
         <Button onClick={handleNavigateToContracts}>契約一覧へ</Button>
       </CardHeader>
       <CardContent>
-        <FormError message={error.message} resetSignal={error.date.getTime()} />
-        <FormSuccess
-          message={success.message}
-          resetSignal={success.date.getTime()}
-        />
+        <FormError message={error} onClose={clearError} />
+        <FormSuccess message={success} onClose={clearSuccess} />
 
         {workReports.length === 0 ? (
           <div className="py-12 text-center text-muted-foreground">

@@ -148,7 +148,8 @@ export default function TemplatesClientPage({
     useState<EmailDialogType>(null);
   const [activeEmailTemplate, setActiveEmailTemplate] =
     useState<EmailTemplate | null>(null);
-  const { error, success, showError, showSuccess } = useMessageState();
+  const { error, success, showError, showSuccess, clearError, clearSuccess } =
+    useMessageState();
   const { isPending, startTransition, setManualPending } =
     useTransitionContext();
 
@@ -670,16 +671,10 @@ export default function TemplatesClientPage({
           </div>
 
           <div className="mt-4">
-            <FormError
-              message={error.message}
-              resetSignal={error.date.getTime()}
-            />
+            <FormError message={error} onClose={clearError} />
           </div>
           <div className="mb-4">
-            <FormSuccess
-              message={success.message}
-              resetSignal={success.date.getTime()}
-            />
+            <FormSuccess message={success} onClose={clearSuccess} />
           </div>
 
           <TabsContent value="WORK_REPORT">

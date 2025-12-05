@@ -21,10 +21,7 @@ import { login } from "@/features/auth/actions/login";
 import { LoginSchema } from "@/features/auth/schemas/login";
 
 export default function TestLoginPage() {
-  const [error, setError] = useState<{ message: string; date: Date }>({
-    message: "",
-    date: new Date(),
-  });
+  const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<z.infer<typeof LoginSchema>>({
@@ -40,7 +37,7 @@ export default function TestLoginPage() {
       await login(values).then((data) => {
         if (data?.error) {
           form.reset();
-          setError({ message: data.error, date: new Date() });
+          setError(data.error);
         }
       });
     });
@@ -113,10 +110,7 @@ export default function TestLoginPage() {
                 </FormItem>
               )}
             />
-            <ErrorAlert
-              message={error.message}
-              resetSignal={error.date.getTime()}
-            />
+            <ErrorAlert message={error} onClose={() => setError("")} />
 
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? "ログイン中..." : "テストログイン"}

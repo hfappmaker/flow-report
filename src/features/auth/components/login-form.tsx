@@ -34,14 +34,8 @@ const LoginForm = () => {
 
   const [showTwoFactor, setShowTwoFactor] = useState(false);
 
-  const [error, setError] = useState<{ message: string; date: Date }>({
-    message: "",
-    date: new Date(),
-  });
-  const [success, setSuccess] = useState<{ message: string; date: Date }>({
-    message: "",
-    date: new Date(),
-  });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const { isPending, startTransition } = useTransitionContext();
 
@@ -62,26 +56,25 @@ const LoginForm = () => {
         const data = await login(values, callbackUrl);
         if (data?.error) {
           form.reset();
-          setError({ message: data.error, date: new Date() });
+          setError(data.error);
         }
 
         if (data?.success) {
           form.reset();
-          setSuccess({ message: data.success, date: new Date() });
+          setSuccess(data.success);
         }
 
         if (data?.twoFactor) {
           setShowTwoFactor(true);
         }
       } catch (err) {
-        setError({
-          message: `Something went wrong! Error: ${err instanceof Error ? err.message : String(err)}`,
-          date: new Date(),
-        });
+        setError(
+          `Something went wrong! Error: ${err instanceof Error ? err.message : String(err)}`,
+        );
       } finally {
         setShowTwoFactor(false);
-        setSuccess({ message: "", date: new Date() });
-        setError({ message: "", date: new Date() });
+        setSuccess("");
+        setError("");
       }
     });
   };
@@ -174,14 +167,8 @@ const LoginForm = () => {
               </>
             )}
           </div>
-          <FormError
-            message={error.message}
-            resetSignal={error.date.getTime()}
-          />
-          <FormSuccess
-            message={success.message}
-            resetSignal={success.date.getTime()}
-          />
+          <FormError message={error} onClose={() => setError("")} />
+          <FormSuccess message={success} onClose={() => setSuccess("")} />
           <Button
             type="submit"
             disabled={isPending}

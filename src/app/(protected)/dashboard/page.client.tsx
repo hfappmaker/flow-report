@@ -172,7 +172,8 @@ export default function DashboardClientPage({
 }: DashboardClientPageProps) {
   const router = useRouter();
   const { startTransition } = useTransitionContext();
-  const { error, success, showError, showSuccess } = useMessageState();
+  const { error, success, showError, showSuccess, clearError, clearSuccess } =
+    useMessageState();
   const [activeContract, setActiveContract] = useState<ContractOutput | null>(
     null,
   );
@@ -376,14 +377,8 @@ export default function DashboardClientPage({
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <FormError
-            message={error.message}
-            resetSignal={error.date.getTime()}
-          />
-          <FormSuccess
-            message={success.message}
-            resetSignal={success.date.getTime()}
-          />
+          <FormError message={error} onClose={clearError} />
+          <FormSuccess message={success} onClose={clearSuccess} />
 
           <h2 className="text-xl font-bold">作成中の作業報告書一覧</h2>
 
