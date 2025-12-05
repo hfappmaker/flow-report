@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchParams } from "next/navigation";
-import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -20,6 +19,7 @@ import { newPassword } from "@/features/auth/actions/new-password";
 import CardWrapper from "@/features/auth/components/card-wrapper";
 import { PasswordInput } from "@/features/auth/components/password-input";
 import { NewPasswordSchema } from "@/features/auth/schemas/new-password";
+import { useTransitionContext } from "@/contexts/transition-context";
 import { useMessageState } from "@/hooks/use-message-state";
 
 const NewPasswordForm = () => {
@@ -27,7 +27,7 @@ const NewPasswordForm = () => {
   const token = searchParams.get("token");
 
   const { error, success, showError, showSuccess } = useMessageState();
-  const [isPending, startTransition] = useTransition();
+  const { isPending, startTransition } = useTransitionContext();
 
   const form = useForm<z.infer<typeof NewPasswordSchema>>({
     resolver: zodResolver(NewPasswordSchema),

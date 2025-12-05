@@ -1,5 +1,6 @@
 "use client";
 
+import { FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 
@@ -301,8 +302,9 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
   return (
     <Card className="w-full shadow-sm">
       <CardHeader className="flex-row items-center justify-between gap-x-3">
-        <div>
-          <h1 className="text-2xl font-semibold">契約一覧</h1>
+        <div className="flex items-center gap-x-3 font-semibold">
+          <FileText className="text-3xl text-sky-400" />
+          <h1 className="text-2xl">契約一覧</h1>
         </div>
         <Button
           onClick={() => {
@@ -315,230 +317,234 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
       <CardContent>
         <FormError message={error.message} resetSignal={error.date.getTime()} />
         <FormSuccess
-        message={success.message}
-        resetSignal={success.date.getTime()}
-      />
+          message={success.message}
+          resetSignal={success.date.getTime()}
+        />
 
-      {/* 検索フォーム */}
-      <div className="mb-6 space-y-4">
-        <div className="flex gap-2">
-          <Input
-            type="text"
-            placeholder="契約名またはクライアント名で検索..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleSearch();
-              }
-            }}
-            className="flex-1"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">
-            期間検索（契約期間と重複する期間を検索）
-          </label>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <DatePicker
-              placeholder="期間開始"
-              value={periodFrom}
-              onChange={(date) => {
-                setPeriodFrom(date);
+        {/* 検索フォーム */}
+        <div className="mb-6 space-y-4">
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              placeholder="契約名またはクライアント名で検索..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
               }}
-              className="flex-1"
-            />
-            <span className="flex items-center text-muted-foreground">〜</span>
-            <DatePicker
-              placeholder="期間終了"
-              value={periodTo}
-              onChange={(date) => {
-                setPeriodTo(date);
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSearch();
+                }
               }}
               className="flex-1"
             />
           </div>
-        </div>
 
-        <div className="flex gap-2">
-          <Button
-            onClick={handleSearch}
-            disabled={!searchQuery.trim() && !periodFrom && !periodTo}
-          >
-            検索
-          </Button>
-          {isSearching && (
-            <Button variant="outline" onClick={handleClearSearch}>
-              クリア
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground">
+              期間検索（契約期間と重複する期間を検索）
+            </label>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <DatePicker
+                placeholder="期間開始"
+                value={periodFrom}
+                onChange={(date) => {
+                  setPeriodFrom(date);
+                }}
+                className="flex-1"
+              />
+              <span className="flex items-center text-muted-foreground">
+                〜
+              </span>
+              <DatePicker
+                placeholder="期間終了"
+                value={periodTo}
+                onChange={(date) => {
+                  setPeriodTo(date);
+                }}
+                className="flex-1"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              onClick={handleSearch}
+              disabled={!searchQuery.trim() && !periodFrom && !periodTo}
+            >
+              検索
             </Button>
-          )}
+            {isSearching && (
+              <Button variant="outline" onClick={handleClearSearch}>
+                クリア
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* 契約一覧 */}
-      {contracts.length === 0 ? (
-        <div className="py-12 text-center">
-          <p className="text-lg text-muted-foreground">
-            {isSearching ? "検索結果がありません" : "契約がありません"}
-          </p>
-          {!isSearching && (
-            <p className="mt-2 text-muted-foreground">
-              新しい契約を作成してください
+        {/* 契約一覧 */}
+        {contracts.length === 0 ? (
+          <div className="py-12 text-center">
+            <p className="text-lg text-muted-foreground">
+              {isSearching ? "検索結果がありません" : "契約がありません"}
             </p>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {contracts.map((contract) => {
-            const statusInfo = getContractStatus(contract);
-            return (
-              <Card
-                key={contract.id}
-                className="w-full transition-all duration-200 hover:bg-muted/50 hover:shadow-lg"
-              >
-                <div className="p-4">
-                  <div className="flex w-full items-center justify-between">
-                    <div
-                      className="flex min-w-0 flex-1 cursor-pointer items-center gap-6"
-                      onClick={() => {
-                        handleNavigateToWorkReports(contract.id);
-                      }}
-                    >
-                      <div className="min-w-48">
-                        <h3 className="truncate text-lg font-semibold text-foreground">
-                          {contract.name}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {contract.clientName}
-                        </p>
-                      </div>
-                      <div className="hidden items-center gap-4 text-sm text-muted-foreground sm:flex">
-                        <div>開始: {formatDate(contract.startDate)}</div>
-                        <div>終了: {formatDate(contract.endDate)}</div>
-                      </div>
-                    </div>
-                    <div className="ml-4 flex shrink-0 items-center gap-3">
-                      <span
-                        className={`text-sm font-medium ${statusInfo.color}`}
-                      >
-                        {statusInfo.status}
-                      </span>
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openDetailsDialog(contract);
+            {!isSearching && (
+              <p className="mt-2 text-muted-foreground">
+                新しい契約を作成してください
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {contracts.map((contract) => {
+              const statusInfo = getContractStatus(contract);
+              return (
+                <Card
+                  key={contract.id}
+                  className="w-full transition-all duration-200 hover:bg-muted/50 hover:shadow-lg"
+                >
+                  <div className="p-4">
+                    <div className="flex w-full items-center justify-between">
+                      <div
+                        className="flex min-w-0 flex-1 cursor-pointer items-center gap-6"
+                        onClick={() => {
+                          handleNavigateToWorkReports(contract.id);
                         }}
-                        size="sm"
-                        variant="outline"
                       >
-                        詳細
-                      </Button>
+                        <div className="min-w-48">
+                          <h3 className="truncate text-lg font-semibold text-foreground">
+                            {contract.name}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {contract.clientName}
+                          </p>
+                        </div>
+                        <div className="hidden items-center gap-4 text-sm text-muted-foreground sm:flex">
+                          <div>開始: {formatDate(contract.startDate)}</div>
+                          <div>終了: {formatDate(contract.endDate)}</div>
+                        </div>
+                      </div>
+                      <div className="ml-4 flex shrink-0 items-center gap-3">
+                        <span
+                          className={`text-sm font-medium ${statusInfo.color}`}
+                        >
+                          {statusInfo.status}
+                        </span>
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openDetailsDialog(contract);
+                          }}
+                          size="sm"
+                          variant="outline"
+                        >
+                          詳細
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
-      <ContractDialog
-        type="details"
-        isOpen={activeDialog === "details"}
-        onClose={closeDialog}
-      >
-        {activeContract && (
-          <ContractDetailsContent
-            contract={activeContract}
-            onNavigateToWorkReports={handleNavigateToWorkReports}
-            onEdit={() => {
-              setActiveDialog("edit");
-            }}
-            onCopy={() => {
-              setActiveDialog("copy");
-            }}
-            onDelete={() => {
-              setActiveDialog("delete");
-            }}
-            onClose={closeDialog}
-            showWorkReportsButton
-            showEditButton
-            showCopyButton
-            showDeleteButton
-          />
+                </Card>
+              );
+            })}
+          </div>
         )}
-      </ContractDialog>
 
-      <ContractDialog
-        type="create"
-        isOpen={activeDialog === "create"}
-        onClose={closeDialog}
-      >
-        <ContractForm
-          onSubmit={onCreateContract}
-          onCancel={closeDialog}
-          submitButtonText="作成"
-        />
-      </ContractDialog>
+        <ContractDialog
+          type="details"
+          isOpen={activeDialog === "details"}
+          onClose={closeDialog}
+        >
+          {activeContract && (
+            <ContractDetailsContent
+              contract={activeContract}
+              onNavigateToWorkReports={handleNavigateToWorkReports}
+              onEdit={() => {
+                setActiveDialog("edit");
+              }}
+              onCopy={() => {
+                setActiveDialog("copy");
+              }}
+              onDelete={() => {
+                setActiveDialog("delete");
+              }}
+              onClose={closeDialog}
+              showWorkReportsButton
+              showEditButton
+              showCopyButton
+              showDeleteButton
+            />
+          )}
+        </ContractDialog>
 
-      <ContractDialog
-        type="edit"
-        isOpen={activeDialog === "edit"}
-        onClose={closeDialog}
-      >
-        <ContractForm
-          defaultValues={
-            activeContract
-              ? convertContractToFormValues(activeContract)
-              : undefined
-          }
-          onSubmit={onEditContract}
-          onCancel={closeDialog}
-          submitButtonText="更新"
-          isEditing
-        />
-      </ContractDialog>
+        <ContractDialog
+          type="create"
+          isOpen={activeDialog === "create"}
+          onClose={closeDialog}
+        >
+          <ContractForm
+            onSubmit={onCreateContract}
+            onCancel={closeDialog}
+            submitButtonText="作成"
+          />
+        </ContractDialog>
 
-      <ContractDialog
-        type="delete"
-        isOpen={activeDialog === "delete"}
-        onClose={closeDialog}
-      >
-        <div>
-          <p>本当に契約 &quot;{activeContract?.name}&quot; を削除しますか？</p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            関連する作業報告書も削除されます。この操作は元に戻すことができません。
-          </p>
-        </div>
-        <DialogFooter sticky className="p-6">
-          <Button variant="outline" onClick={closeDialog}>
-            キャンセル
-          </Button>
-          <Button variant="destructive" onClick={onDeleteContract}>
-            削除
-          </Button>
-        </DialogFooter>
-      </ContractDialog>
+        <ContractDialog
+          type="edit"
+          isOpen={activeDialog === "edit"}
+          onClose={closeDialog}
+        >
+          <ContractForm
+            defaultValues={
+              activeContract
+                ? convertContractToFormValues(activeContract)
+                : undefined
+            }
+            onSubmit={onEditContract}
+            onCancel={closeDialog}
+            submitButtonText="更新"
+            isEditing
+          />
+        </ContractDialog>
 
-      <ContractDialog
-        type="copy"
-        isOpen={activeDialog === "copy"}
-        onClose={closeDialog}
-      >
-        <ContractForm
-          defaultValues={
-            activeContract
-              ? convertContractToCopyFormValues(activeContract)
-              : undefined
-          }
-          onSubmit={onCopyContract}
-          onCancel={closeDialog}
-          submitButtonText="作成"
-        />
-      </ContractDialog>
+        <ContractDialog
+          type="delete"
+          isOpen={activeDialog === "delete"}
+          onClose={closeDialog}
+        >
+          <div>
+            <p>
+              本当に契約 &quot;{activeContract?.name}&quot; を削除しますか？
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              関連する作業報告書も削除されます。この操作は元に戻すことができません。
+            </p>
+          </div>
+          <DialogFooter sticky className="p-6">
+            <Button variant="outline" onClick={closeDialog}>
+              キャンセル
+            </Button>
+            <Button variant="destructive" onClick={onDeleteContract}>
+              削除
+            </Button>
+          </DialogFooter>
+        </ContractDialog>
+
+        <ContractDialog
+          type="copy"
+          isOpen={activeDialog === "copy"}
+          onClose={closeDialog}
+        >
+          <ContractForm
+            defaultValues={
+              activeContract
+                ? convertContractToCopyFormValues(activeContract)
+                : undefined
+            }
+            onSubmit={onCopyContract}
+            onCancel={closeDialog}
+            submitButtonText="作成"
+          />
+        </ContractDialog>
       </CardContent>
     </Card>
   );

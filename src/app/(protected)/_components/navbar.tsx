@@ -45,24 +45,28 @@ const Navbar = () => {
             className="shrink-0"
           />
           <div className="flex gap-x-2">
-            {NAV_LINKS.map((link, index) => (
-              <Button
-                key={index}
-                asChild
-                variant={pathName === link.path ? "default" : "outline"}
-                className="w-full hover:bg-sky-400 hover:text-primary-foreground"
-              >
-                <Link
-                  role="link"
-                  href={link.path}
-                  onClick={() => {
-                    handleNavigation(link.path);
-                  }}
+            {NAV_LINKS.map((link, index) => {
+              const Icon = link.icon;
+              return (
+                <Button
+                  key={index}
+                  asChild
+                  variant={pathName === link.path ? "default" : "outline"}
+                  className="w-full hover:bg-sky-400 hover:text-primary-foreground"
                 >
-                  {link.title}
-                </Link>
-              </Button>
-            ))}
+                  <Link
+                    role="link"
+                    href={link.path}
+                    onClick={() => {
+                      handleNavigation(link.path);
+                    }}
+                  >
+                    <Icon className="mr-2 size-4" />
+                    {link.title}
+                  </Link>
+                </Button>
+              );
+            })}
           </div>
         </div>
         <div className="flex items-center gap-x-2">
@@ -99,24 +103,28 @@ const Navbar = () => {
               />
             </div>
             <div className="flex-col p-2">
-              {NAV_LINKS.map((link, index) => (
-                <Button
-                  key={index}
-                  asChild
-                  variant={pathName === link.path ? "default" : "outline"}
-                  className="my-2 w-full hover:bg-sky-400 hover:text-primary-foreground"
-                >
-                  <Link
-                    role="link"
-                    href={link.path}
-                    onClick={() => {
-                      handleNavigation(link.path);
-                    }}
+              {NAV_LINKS.map((link, index) => {
+                const Icon = link.icon;
+                return (
+                  <Button
+                    key={index}
+                    asChild
+                    variant={pathName === link.path ? "default" : "outline"}
+                    className="my-2 w-full hover:bg-sky-400 hover:text-primary-foreground"
                   >
-                    {link.title}
-                  </Link>
-                </Button>
-              ))}
+                    <Link
+                      role="link"
+                      href={link.path}
+                      onClick={() => {
+                        handleNavigation(link.path);
+                      }}
+                    >
+                      <Icon className="mr-2 size-4" />
+                      {link.title}
+                    </Link>
+                  </Button>
+                );
+              })}
             </div>
           </SheetContent>
         </Sheet>

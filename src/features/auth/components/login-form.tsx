@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -23,6 +23,7 @@ import { Spinner } from "@/components/ui/loading/spinner";
 import { login } from "@/features/auth/actions/login";
 import CardWrapper from "@/features/auth/components/card-wrapper";
 import { PasswordInput } from "@/features/auth/components/password-input";
+import { useTransitionContext } from "@/contexts/transition-context";
 import { useIsClient } from "@/hooks/use-is-client";
 
 import { LoginSchema } from "../schemas/login";
@@ -42,7 +43,7 @@ const LoginForm = () => {
     date: new Date(),
   });
 
-  const [isPending, startTransition] = useTransition();
+  const { isPending, startTransition } = useTransitionContext();
 
   const isClient = useIsClient();
 

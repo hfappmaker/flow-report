@@ -19,8 +19,7 @@ import { useSubscription } from "@/hooks/use-subscription";
 
 const UserButton = () => {
   const user = useCurrentUser();
-  const { subscriptionInfo, isLoading, refreshSubscription } =
-    useSubscription();
+  const { subscriptionInfo, refreshSubscription } = useSubscription();
 
   const handleCancelSuccess = () => {
     // サブスクリプション情報をリフレッシュ
@@ -41,10 +40,9 @@ const UserButton = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-48" align="end">
         {/* サブスクリプション管理ボタン */}
-        {!isLoading &&
-          (subscriptionInfo?.status === "TRIAL" ||
-            subscriptionInfo?.status === "ACTIVE" ||
-            subscriptionInfo?.status === "CANCELED") && (
+        {(subscriptionInfo?.status === "TRIAL" ||
+          subscriptionInfo?.status === "ACTIVE" ||
+          subscriptionInfo?.status === "CANCELED") && (
             <>
               <ManageSubscriptionButton onSuccess={handleCancelSuccess}>
                 <button className="flex w-full items-center justify-center rounded-sm px-2 py-1.5 text-center text-sm hover:bg-sky-400 hover:text-primary-foreground focus:bg-sky-400 focus:text-primary-foreground">

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 
+import { useTransitionContext } from "@/contexts/transition-context";
 import { getFreeePartnersAction } from "@/features/freee/actions/freee-accounting-actions";
 import type { FreeePartner } from "@/features/freee/types/freee-accounting-types";
 import { useMessageState } from "@/hooks/use-message-state";
@@ -21,16 +22,16 @@ export const useFreeePartners = ({
   onConnectionLost,
 }: UseFreeePartnersProps) => {
   const { showError } = useMessageState();
+  const { setManualPending } = useTransitionContext();
   const [partners, setPartners] = useState<FreeePartner[]>([]);
   const [selectedPartnerId, setSelectedPartnerId] = useState<
     number | undefined
   >();
-  const [isLoadingPartners, setIsLoadingPartners] = useState(false);
 
   useEffect(() => {
     if (isDialogOpen && isFreeeConnected && partners.length === 0) {
       const fetchPartners = async () => {
-        setIsLoadingPartners(true);
+        setManualPending(true);
         try {
           const result = await getFreeePartnersAction();
           if (result.success && result.partners) {
@@ -55,7 +56,7 @@ export const useFreeePartners = ({
           console.error("Failed to fetch partners:", error);
           showError("取引先一覧の取得に失敗しました");
         } finally {
-          setIsLoadingPartners(false);
+          setManualPending(false);
         }
       };
 
@@ -68,12 +69,12 @@ export const useFreeePartners = ({
     clientName,
     showError,
     onConnectionLost,
+    setManualPending,
   ]);
 
   return {
     partners,
     selectedPartnerId,
     setSelectedPartnerId,
-    isLoadingPartners,
   };
 };

@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { useTransitionContext } from "@/contexts/transition-context";
 import {
   Dialog,
   DialogContent,
@@ -15,32 +16,33 @@ import LogoutButton from "@/features/auth/components/logout-button";
 import { createCheckoutSession } from "@/features/subscription/actions/create-checkout-session";
 
 export function TrialSubscriptionPrompt() {
-  const [isLoading, setIsLoading] = useState(false);
+  const { isPending, startTransition } = useTransitionContext();
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(true);
 
-  const handleSubscribe = async () => {
-    setIsLoading(true);
+  const handleSubscribe = () => {
     setError(null);
 
-    try {
-      const result = await createCheckoutSession();
+    startTransition(() => {
+      void (async () => {
+        try {
+          const result = await createCheckoutSession();
 
-      if (result.error) {
-        setError(result.error);
-        return;
-      }
+          if (result.error) {
+            setError(result.error);
+            return;
+          }
 
-      if (result.url) {
-        // eslint-disable-next-line functional/immutable-data -- Browser API requires direct assignment
-        window.location.href = result.url;
-      }
-    } catch (error) {
-      console.error("Subscription error:", error);
-      setError("エラーが発生しました。もう一度お試しください。");
-    } finally {
-      setIsLoading(false);
-    }
+          if (result.url) {
+            // eslint-disable-next-line functional/immutable-data -- Browser API requires direct assignment
+            window.location.href = result.url;
+          }
+        } catch (err) {
+          console.error("Subscription error:", err);
+          setError("エラーが発生しました。もう一度お試しください。");
+        }
+      })();
+    });
   };
 
   const getDialogContent = () => {
@@ -72,13 +74,11 @@ export function TrialSubscriptionPrompt() {
 
         <DialogFooter className="flex-col gap-2">
           <Button
-            onClick={() => {
-              void handleSubscribe();
-            }}
-            disabled={isLoading}
+            onClick={handleSubscribe}
+            disabled={isPending}
             className="w-full"
           >
-            {isLoading ? "処理中..." : buttonText}
+            {buttonText}
           </Button>
           <LogoutButton>
             <Button variant="outline" className="w-full">

@@ -1,5 +1,6 @@
 "use client";
 
+import { ClipboardList } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 
@@ -194,9 +195,10 @@ export default function ContractClientPage({
     <Card className="w-full shadow-sm">
       <CardHeader className="flex-row items-center justify-between gap-x-3">
         <div>
-          <h1 className="text-2xl font-semibold">
-            作業報告書一覧（{contract?.name}）
-          </h1>
+          <div className="flex items-center gap-x-3 font-semibold">
+            <ClipboardList className="text-3xl text-sky-400" />
+            <h1 className="text-2xl">作業報告書一覧（{contract?.name}）</h1>
+          </div>
           <p className="text-muted-foreground">作業報告書を管理できます</p>
         </div>
         <Button onClick={handleNavigateToContracts}>契約一覧へ</Button>

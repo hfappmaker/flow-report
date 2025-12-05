@@ -147,21 +147,17 @@ export default function ClientWorkReportPage({
   } = useFreeeConnection();
 
   // freee取引先管理
-  const {
-    partners,
-    selectedPartnerId,
-    setSelectedPartnerId,
-    isLoadingPartners,
-  } = useFreeePartners({
-    isDialogOpen: isExportDialogOpen,
-    isFreeeConnected,
-    clientName,
-    onConnectionLost: () => {
-      setIsFreeeConnected(false);
-      setIsExportDialogOpen(false);
-      setShowReauthDialog(true);
-    },
-  });
+  const { partners, selectedPartnerId, setSelectedPartnerId } =
+    useFreeePartners({
+      isDialogOpen: isExportDialogOpen,
+      isFreeeConnected,
+      clientName,
+      onConnectionLost: () => {
+        setIsFreeeConnected(false);
+        setIsExportDialogOpen(false);
+        setShowReauthDialog(true);
+      },
+    });
   const [remarks, setRemarks] = useState<string>(initialRemarks ?? "");
   const [isRemarksDialogOpen, setIsRemarksDialogOpen] = useState(false);
   const [workReportTemplates, setWorkReportTemplates] = useState<
@@ -1136,7 +1132,6 @@ export default function ClientWorkReportPage({
         partners={partners}
         selectedPartnerId={selectedPartnerId}
         onPartnerIdChange={setSelectedPartnerId}
-        isLoadingPartners={isLoadingPartners}
         workReportId={workReportId}
         clientName={clientName}
         workTimeText={workTimeText}

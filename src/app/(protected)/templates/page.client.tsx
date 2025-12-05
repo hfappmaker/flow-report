@@ -10,21 +10,15 @@ import {
   Eye,
   Mail,
 } from "lucide-react";
-import {
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  useTransition,
-} from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import FormError from "@/components/ui/feedback/error-alert";
 import FormSuccess from "@/components/ui/feedback/success-alert";
-import { Spinner } from "@/components/ui/loading/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTransitionContext } from "@/contexts/transition-context";
 import {
   getEmailTemplatesByCreateUserIdAction,
   createEmailTemplateAction,
@@ -152,10 +146,9 @@ export default function TemplatesClientPage({
     useState<EmailDialogType>(null);
   const [activeEmailTemplate, setActiveEmailTemplate] =
     useState<EmailTemplate | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { error, success, showError, showSuccess } = useMessageState();
-  const [, startTransition] = useTransition();
+  const { isPending, startTransition, setManualPending } =
+    useTransitionContext();
 
   // ユーザーが作成したテンプレートのみをカウント（デフォルトテンプレートは除く）
   const templates = (() => {
@@ -171,7 +164,7 @@ export default function TemplatesClientPage({
 
   const refreshTemplates = useCallback(async () => {
     try {
-      setIsLoading(true);
+      setManualPending(true);
       if (activeTab === "EMAIL") {
         const data = await getEmailTemplatesByCreateUserIdAction(userId);
         setEmailTemplates(data);
@@ -190,9 +183,9 @@ export default function TemplatesClientPage({
       console.error(err);
       showError("テンプレートの取得に失敗しました");
     } finally {
-      setIsLoading(false);
+      setManualPending(false);
     }
-  }, [userId, activeTab, showError]);
+  }, [userId, activeTab, showError, setManualPending]);
 
   // 作業報告書タブの場合、デフォルトテンプレートを先頭に追加
   const displayExcelTemplates = useMemo(() => {
@@ -240,7 +233,7 @@ export default function TemplatesClientPage({
       return;
     }
 
-    setIsSubmitting(true);
+    setManualPending(true);
     try {
       const fileData = await fileToBase64(data.file);
       await createExcelTemplateAction({
@@ -267,7 +260,7 @@ export default function TemplatesClientPage({
         showError("テンプレートの作成に失敗しました");
       }
     } finally {
-      setIsSubmitting(false);
+      setManualPending(false);
     }
   };
 
@@ -275,7 +268,7 @@ export default function TemplatesClientPage({
   const onEditTemplate = async (data: ExcelTemplateFormValues) => {
     if (!activeTemplate) return;
 
-    setIsSubmitting(true);
+    setManualPending(true);
     try {
       const baseUpdateData = {
         name: data.name,
@@ -308,7 +301,7 @@ export default function TemplatesClientPage({
         showError("テンプレートの更新に失敗しました");
       }
     } finally {
-      setIsSubmitting(false);
+      setManualPending(false);
     }
   };
 
@@ -316,7 +309,7 @@ export default function TemplatesClientPage({
   const onDeleteTemplate = async () => {
     if (!activeTemplate) return;
 
-    setIsSubmitting(true);
+    setManualPending(true);
     try {
       await deleteExcelTemplateAction(activeTemplate.id);
       showSuccess(`テンプレート '${activeTemplate.name}' を削除しました`);
@@ -326,13 +319,13 @@ export default function TemplatesClientPage({
       console.error(err);
       showError("テンプレートの削除に失敗しました");
     } finally {
-      setIsSubmitting(false);
+      setManualPending(false);
     }
   };
 
   // メールテンプレート作成
   const onCreateEmailTemplate = async (data: EmailTemplateFormValues) => {
-    setIsSubmitting(true);
+    setManualPending(true);
     try {
       await createEmailTemplateAction({
         name: data.name,
@@ -351,7 +344,7 @@ export default function TemplatesClientPage({
         showError("メールテンプレートの作成に失敗しました");
       }
     } finally {
-      setIsSubmitting(false);
+      setManualPending(false);
     }
   };
 
@@ -359,7 +352,7 @@ export default function TemplatesClientPage({
   const onEditEmailTemplate = async (data: EmailTemplateFormValues) => {
     if (!activeEmailTemplate) return;
 
-    setIsSubmitting(true);
+    setManualPending(true);
     try {
       await updateEmailTemplateAction(activeEmailTemplate.id, {
         name: data.name,
@@ -378,7 +371,7 @@ export default function TemplatesClientPage({
         showError("メールテンプレートの更新に失敗しました");
       }
     } finally {
-      setIsSubmitting(false);
+      setManualPending(false);
     }
   };
 
@@ -386,7 +379,7 @@ export default function TemplatesClientPage({
   const onDeleteEmailTemplate = async () => {
     if (!activeEmailTemplate) return;
 
-    setIsSubmitting(true);
+    setManualPending(true);
     try {
       await deleteEmailTemplateAction(activeEmailTemplate.id);
       showSuccess(
@@ -398,19 +391,15 @@ export default function TemplatesClientPage({
       console.error(err);
       showError("メールテンプレートの削除に失敗しました");
     } finally {
-      setIsSubmitting(false);
+      setManualPending(false);
     }
   };
 
   const tabConfig = TAB_CONFIG[activeTab];
 
   const renderExcelTemplateList = () => {
-    if (isLoading) {
-      return (
-        <div className="flex h-64 items-center justify-center">
-          <Spinner />
-        </div>
-      );
+    if (isPending) {
+      return null;
     }
 
     if (displayExcelTemplates.length > 0) {
@@ -505,12 +494,8 @@ export default function TemplatesClientPage({
   };
 
   const renderEmailTemplateList = () => {
-    if (isLoading) {
-      return (
-        <div className="flex h-64 items-center justify-center">
-          <Spinner />
-        </div>
-      );
+    if (isPending) {
+      return null;
     }
 
     if (displayEmailTemplates.length > 0) {
@@ -690,7 +675,7 @@ export default function TemplatesClientPage({
           }
           onDelete={onDeleteTemplate}
           onCancel={closeDialog}
-          isSubmitting={isSubmitting}
+          isSubmitting={isPending}
         />
 
         <EmailTemplateDialog

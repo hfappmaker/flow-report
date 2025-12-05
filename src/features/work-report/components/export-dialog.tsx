@@ -86,7 +86,6 @@ interface ExportDialogProps {
   partners: FreeePartner[];
   selectedPartnerId: number | undefined;
   onPartnerIdChange: (partnerId: number) => void;
-  isLoadingPartners: boolean;
   workReportId: string;
   clientName: string;
   workTimeText: string;
@@ -121,7 +120,6 @@ export function ExportDialog({
   partners,
   selectedPartnerId,
   onPartnerIdChange,
-  isLoadingPartners,
   clientName,
   workTimeText,
   baseAmount,
@@ -567,33 +565,27 @@ export function ExportDialog({
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="partner-select">取引先（必須）</Label>
-                  {isLoadingPartners ? (
-                    <p className="text-sm text-muted-foreground">
-                      取引先を読み込み中...
-                    </p>
-                  ) : (
-                    <Select
-                      value={selectedPartnerId?.toString()}
-                      onValueChange={(value) => {
-                        onPartnerIdChange(parseInt(value, 10));
-                      }}
-                    >
-                      <SelectTrigger id="partner-select">
-                        <SelectValue placeholder="取引先を選択してください" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {partners.map((partner) => (
-                          <SelectItem
-                            key={partner.id}
-                            value={partner.id.toString()}
-                          >
-                            {partner.name}
-                            {partner.code ? ` (${partner.code})` : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
+                  <Select
+                    value={selectedPartnerId?.toString()}
+                    onValueChange={(value) => {
+                      onPartnerIdChange(parseInt(value, 10));
+                    }}
+                  >
+                    <SelectTrigger id="partner-select">
+                      <SelectValue placeholder="取引先を選択してください" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {partners.map((partner) => (
+                        <SelectItem
+                          key={partner.id}
+                          value={partner.id.toString()}
+                        >
+                          {partner.name}
+                          {partner.code ? ` (${partner.code})` : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">

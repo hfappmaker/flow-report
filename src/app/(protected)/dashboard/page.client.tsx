@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock } from "lucide-react";
+import { Clock, LayoutDashboard } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -308,7 +308,10 @@ export default function DashboardClientPage({
     <>
       <Card className="w-full shadow-sm">
         <CardHeader className="flex-row items-center justify-between gap-x-3">
-          <h1 className="text-2xl font-semibold">ダッシュボード</h1>
+          <div className="flex items-center gap-x-3 font-semibold">
+            <LayoutDashboard className="text-3xl text-sky-400" />
+            <h1 className="text-2xl">ダッシュボード</h1>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <FormError

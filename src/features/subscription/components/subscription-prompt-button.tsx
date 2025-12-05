@@ -1,42 +1,42 @@
 "use client";
 
-import { useState } from "react";
-
 import { Button } from "@/components/ui/button";
+import { useTransitionContext } from "@/contexts/transition-context";
 import { createCheckoutSession } from "@/features/subscription/actions/create-checkout-session";
 
 export function SubscriptionPromptButton() {
-  const [isLoading, setIsLoading] = useState(false);
+  const { isPending, startTransition } = useTransitionContext();
 
-  const handleSubscribe = async () => {
-    setIsLoading(true);
+  const handleSubscribe = () => {
+    startTransition(() => {
+      void (async () => {
+        try {
+          const result = await createCheckoutSession();
 
-    try {
-      const result = await createCheckoutSession();
+          if (result.error) {
+            console.error("Subscription error:", result.error);
+            return;
+          }
 
-      if (result.error) {
-        console.error("Subscription error:", result.error);
-        return;
-      }
-
-      if (result.url) {
-        window.location.href = result.url;
-      }
-    } catch (error) {
-      console.error("Subscription error:", error);
-    } finally {
-      setIsLoading(false);
-    }
+          if (result.url) {
+            // eslint-disable-next-line functional/immutable-data -- Browser API requires direct assignment
+            window.location.href = result.url;
+          }
+        } catch (err) {
+          console.error("Subscription error:", err);
+        }
+      })();
+    });
   };
 
   return (
     <Button
       onClick={handleSubscribe}
-      disabled={isLoading}
+      disabled={isPending}
       className="w-full"
       size="lg"
     >
-      {isLoading ? "処理中..." : "有料プランに登録"}
+      有料プランに登録
     </Button>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { CreditCard } from "lucide-react";
 import { MdSettings } from "react-icons/md";
 
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,10 @@ export default function SubscriptionInfoClientPage({
   return (
     <Card className="w-full shadow-sm">
       <CardHeader className="flex-row items-center justify-between gap-x-3">
-        <h1 className="text-2xl font-semibold">サブスクリプション情報</h1>
+        <div className="flex items-center gap-x-3 font-semibold">
+          <CreditCard className="text-3xl text-sky-400" />
+          <h1 className="text-2xl">サブスクリプション情報</h1>
+        </div>
         {showManageButton && (
           <ManageSubscriptionButton>
             <Button variant="outline" size="sm">
