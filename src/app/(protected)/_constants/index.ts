@@ -15,4 +15,8 @@ export const NAV_LINKS = [
     title: "ユーザー設定",
     path: "/user-settings",
   },
+  {
+    title: "サブスクリプション情報",
+    path: "/subscription-info",
+  },
 ];

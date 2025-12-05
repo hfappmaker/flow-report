@@ -1130,7 +1130,6 @@ export default function ClientWorkReportPage({
         workReportTemplates={workReportTemplates}
         invoiceTemplates={invoiceTemplates}
         targetDate={targetDate}
-        userName={userName}
         // freee関連props
         isFreeeConnected={isFreeeConnected}
         isCheckingFreeeConnection={isCheckingFreeeConnection}

@@ -22,9 +22,6 @@ export interface ExportDialogState {
   isInvoiceEnabled: boolean;
   workReportTemplateId: string | null;
   invoiceTemplateId: string | null;
-  isZipEnabled: boolean;
-  isPasswordEnabled: boolean;
-  password: string;
 }
 
 /**

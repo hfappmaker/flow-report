@@ -70,9 +70,10 @@ export default defineConfig(
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        project: true,
+        // projectService: 型情報の取得を高速化（typescript-eslint v8+）
+        // TypeScriptのプロジェクトサービスを使用して型チェックをキャッシュ
+        projectService: true,
         tsconfigRootDir: __dirname,
-        // パフォーマンス最適化のための設定
         ecmaVersion: "latest",
         sourceType: "module",
       },

@@ -1,13 +1,7 @@
 "use client";
 
 import ExcelJS from "exceljs";
-import {
-  Download,
-  FileSpreadsheet,
-  FileText,
-  Lock,
-  Archive,
-} from "lucide-react";
+import { Download, FileSpreadsheet, FileText } from "lucide-react";
 import { useState, useEffect, useCallback, useMemo } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -42,10 +35,6 @@ import {
   isDefaultTemplate,
 } from "@/features/work-report/constants/default-template";
 import { useExportSettings } from "@/features/work-report/hooks/use-export-settings";
-import {
-  formatZipFileName,
-  generateZipFile,
-} from "@/features/work-report/libs/zip-generator";
 import type {
   ExportFile,
   ExportTabType,
@@ -82,10 +71,6 @@ export interface ExportResult {
     fieldMappings: ExcelTemplateWithFields["fieldMappings"];
     sheetName: string | null;
   } | null;
-  zipOptions: {
-    enabled: boolean;
-    password: string | null;
-  };
 }
 
 interface ExportDialogProps {
@@ -95,7 +80,6 @@ interface ExportDialogProps {
   workReportTemplates: ExcelTemplateWithFields[];
   invoiceTemplates: ExcelTemplateWithFields[];
   targetDate: Date;
-  userName: string;
   // freee関連props
   isFreeeConnected: boolean;
   isCheckingFreeeConnection: boolean;
@@ -131,7 +115,6 @@ export function ExportDialog({
   workReportTemplates,
   invoiceTemplates,
   targetDate,
-  userName,
   // freee関連props
   isFreeeConnected,
   isCheckingFreeeConnection,
@@ -163,9 +146,6 @@ export function ExportDialog({
   const [invoiceTemplateId, setInvoiceTemplateIdState] = useState<
     string | null
   >(null);
-  const [isZipEnabled, setIsZipEnabled] = useState(false);
-  const [isPasswordEnabled, setIsPasswordEnabled] = useState(false);
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   // タブ状態
@@ -314,21 +294,16 @@ export function ExportDialog({
         return;
       }
 
-      if (isZipEnabled && isPasswordEnabled && !password) {
-        setError("パスワードを入力してください。");
-        return;
-      }
-
       // テンプレートの読み込み
       const workReportTemplate = isWorkReportEnabled
         ? await (async () => {
             // デフォルトテンプレートの場合はpublicフォルダから読み込み
             if (isDefaultTemplate(workReportTemplateId ?? "")) {
-              const response = await fetch(
-                `/${DEFAULT_TEMPLATE_FILE_NAME}`,
-              );
+              const response = await fetch(`/${DEFAULT_TEMPLATE_FILE_NAME}`);
               if (!response.ok) {
-                throw new Error("デフォルトテンプレートの読み込みに失敗しました");
+                throw new Error(
+                  "デフォルトテンプレートの読み込みに失敗しました",
+                );
               }
               const arrayBuffer = await response.arrayBuffer();
               const workbook = new ExcelJS.Workbook();
@@ -377,10 +352,6 @@ export function ExportDialog({
       const result: ExportResult = {
         workReportTemplate,
         invoiceTemplate,
-        zipOptions: {
-          enabled: isZipEnabled,
-          password: isPasswordEnabled ? password : null,
-        },
       };
 
       // ファイル生成
@@ -392,18 +363,8 @@ export function ExportDialog({
       }
 
       // ダウンロード
-      if (isZipEnabled) {
-        const zipBlob = await generateZipFile(
-          files,
-          isPasswordEnabled ? password : undefined,
-        );
-        const zipFileName = formatZipFileName(targetDate, userName);
-        downloadFile(zipBlob, zipFileName);
-      } else {
-        // 個別ダウンロード
-        for (const file of files) {
-          downloadFile(file.blob, file.fileName);
-        }
+      for (const file of files) {
+        downloadFile(file.blob, file.fileName);
       }
 
       onOpenChange(false);
@@ -574,72 +535,6 @@ export function ExportDialog({
                   ) : (
                     <div className="rounded-md border border-dashed border-gray-300 p-3 text-center text-sm text-muted-foreground">
                       テンプレートが登録されていません
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* 区切り線 */}
-            <div className="border-t" />
-
-            {/* ZIP圧縮オプション */}
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="zip"
-                  checked={isZipEnabled}
-                  onCheckedChange={(checked) => {
-                    setIsZipEnabled(checked === true);
-                    if (!checked) {
-                      setIsPasswordEnabled(false);
-                      setPassword("");
-                    }
-                  }}
-                />
-                <Label
-                  htmlFor="zip"
-                  className="flex cursor-pointer items-center gap-2"
-                >
-                  <Archive className="size-4" />
-                  ZIPに圧縮する
-                </Label>
-              </div>
-
-              {isZipEnabled && (
-                <div className="space-y-3 pl-6">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="password"
-                      checked={isPasswordEnabled}
-                      onCheckedChange={(checked) => {
-                        setIsPasswordEnabled(checked === true);
-                        if (!checked) {
-                          setPassword("");
-                        }
-                      }}
-                    />
-                    <Label
-                      htmlFor="password"
-                      className="flex cursor-pointer items-center gap-2"
-                    >
-                      <Lock className="size-4" />
-                      パスワードを設定する
-                    </Label>
-                  </div>
-
-                  {isPasswordEnabled && (
-                    <div className="space-y-2">
-                      <Label htmlFor="passwordInput">パスワード</Label>
-                      <Input
-                        id="passwordInput"
-                        type="password"
-                        value={password}
-                        onChange={(e) => {
-                          setPassword(e.target.value);
-                        }}
-                        placeholder="パスワードを入力"
-                      />
                     </div>
                   )}
                 </div>
