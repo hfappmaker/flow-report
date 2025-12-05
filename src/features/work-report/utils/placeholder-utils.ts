@@ -109,6 +109,49 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
     description: "当月の稼働日数（例: 21）",
     example: "21",
   },
+  // 日次勤怠プレースホルダー
+  {
+    key: "日付列",
+    label: "日付列",
+    description: "日付列（最大31行）",
+    example: "1",
+  },
+  {
+    key: "曜日列",
+    label: "曜日列",
+    description: "曜日列（最大31行）",
+    example: "月",
+  },
+  {
+    key: "開始時刻列",
+    label: "開始時刻列",
+    description: "開始時刻列（最大31行）",
+    example: "9:00",
+  },
+  {
+    key: "終了時刻列",
+    label: "終了時刻列",
+    description: "終了時刻列（最大31行）",
+    example: "18:00",
+  },
+  {
+    key: "休憩時間列",
+    label: "休憩時間列",
+    description: "休憩時間列（最大31行）",
+    example: "1:00",
+  },
+  {
+    key: "稼働時間列",
+    label: "稼働時間列",
+    description: "稼働時間列（最大31行）",
+    example: "8:00",
+  },
+  {
+    key: "作業内容列",
+    label: "作業内容列",
+    description: "作業内容列（最大31行）",
+    example: "機能開発",
+  },
   // 請求書用プレースホルダー（契約情報）
   {
     key: "月単価",
