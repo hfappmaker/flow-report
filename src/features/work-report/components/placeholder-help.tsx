@@ -42,7 +42,7 @@ export function PlaceholderHelp() {
       </PopoverTrigger>
       <PopoverContent
         className="w-[calc(100vw-2rem)] max-w-[480px] p-0"
-        side="bottom"
+        side="top"
         avoidCollisions={false}
       >
         <div className="p-4 pb-2">
