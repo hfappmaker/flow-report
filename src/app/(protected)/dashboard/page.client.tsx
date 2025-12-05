@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, LayoutDashboard } from "lucide-react";
+import { Clock, FileText, LayoutDashboard } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -481,6 +481,14 @@ export default function DashboardClientPage({
               </CardContent>
             </Card>
           ))}
+          {Object.entries(draftWorkReports).length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <FileText className="mb-4 size-12 text-muted-foreground" />
+              <p className="text-muted-foreground">
+                作成中の作業報告書はありません
+              </p>
+            </div>
+          )}
 
           <h2 className="mt-8 text-xl font-bold">
             作成済みの作業報告書一覧 (直近3ヶ月)
@@ -549,6 +557,14 @@ export default function DashboardClientPage({
                 </CardContent>
               </Card>
             ),
+          )}
+          {Object.entries(submittedWorkReportsLast3Months).length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <FileText className="mb-4 size-12 text-muted-foreground" />
+              <p className="text-muted-foreground">
+                作成済みの作業報告書はありません
+              </p>
+            </div>
           )}
         </CardContent>
       </Card>
