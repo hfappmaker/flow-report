@@ -153,7 +153,7 @@ export function EmailTemplateSelectDialog({
 
           <p className="text-sm text-muted-foreground">
             ※
-            作業報告書は自動で添付されません。「エクスポート」でダウンロードしたファイルを手動で添付してください。
+            作業報告書、請求書は自動で添付されません。「エクスポート」でダウンロードしたファイルを手動で添付してください。
           </p>
         </div>
 
