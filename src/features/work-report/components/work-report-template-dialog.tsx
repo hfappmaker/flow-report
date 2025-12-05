@@ -20,6 +20,19 @@ import {
   type ExcelTemplateFormValues,
 } from "./work-report-template-form";
 
+const highlightPlaceholders = (text: string): React.ReactNode => {
+  const parts = text.split(/(\$\{[^}]+\})/g);
+  return parts.map((part, index) =>
+    part.startsWith("${") ? (
+      <span key={index} className="text-primary">
+        {part}
+      </span>
+    ) : (
+      part
+    ),
+  );
+};
+
 export type DialogType = "create" | "edit" | "delete" | "details" | null;
 
 function base64ToUint8Array(base64: string): Uint8Array {
@@ -200,7 +213,9 @@ export function ExcelTemplateDialog({
                         {mapping.namedRange}
                       </span>
                       <span className="text-muted-foreground">→</span>
-                      <span className="font-mono">{mapping.valueTemplate}</span>
+                      <span className="font-mono">
+                        {highlightPlaceholders(mapping.valueTemplate)}
+                      </span>
                     </div>
                   ))}
                 </div>

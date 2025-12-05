@@ -569,7 +569,12 @@ export default function TemplatesClientPage({
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Mail className="size-4" />
-                    {template.subject}
+                    <span className="truncate">
+                      To:{" "}
+                      {template.toAddresses && template.toAddresses.length > 0
+                        ? template.toAddresses.join(", ")
+                        : "（未設定）"}
+                    </span>
                   </div>
                 </button>
                 <div className="flex gap-2">

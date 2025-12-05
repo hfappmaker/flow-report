@@ -10,6 +10,19 @@ import { type EmailTemplateFormValues } from "@/features/email/schemas/email-tem
 import { type DialogType } from "@/features/email/types/dialog";
 import { EmailTemplate } from "@/features/email/types/email-template";
 
+const highlightPlaceholders = (text: string): React.ReactNode => {
+  const parts = text.split(/(\$\{[^}]+\})/g);
+  return parts.map((part, index) =>
+    part.startsWith("${") ? (
+      <span key={index} className="text-primary">
+        {part}
+      </span>
+    ) : (
+      part
+    ),
+  );
+};
+
 interface EmailTemplateDialogProps {
   type: DialogType;
   isOpen: boolean;
@@ -103,7 +116,7 @@ export const EmailTemplateDialog = ({
               <div className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
                 <div className="font-semibold">テンプレート名</div>
                 <div>{template?.name}</div>
-                <div className="font-semibold">宛先</div>
+                <div className="font-semibold">宛先（To）</div>
                 <div>
                   {template?.toAddresses && template.toAddresses.length > 0
                     ? template.toAddresses.join(", ")
@@ -116,9 +129,13 @@ export const EmailTemplateDialog = ({
                     : "（未設定）"}
                 </div>
                 <div className="font-semibold">件名</div>
-                <div>{template?.subject}</div>
+                <div>
+                  {template?.subject && highlightPlaceholders(template.subject)}
+                </div>
                 <div className="font-semibold">本文</div>
-                <div className="whitespace-pre-wrap">{template?.body}</div>
+                <div className="whitespace-pre-wrap">
+                  {template?.body && highlightPlaceholders(template.body)}
+                </div>
               </div>
             </div>
             <div className="mt-4 flex justify-end gap-2">
