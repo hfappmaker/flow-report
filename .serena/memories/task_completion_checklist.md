@@ -5,7 +5,7 @@
 2. **テスト**: `pnpm run test:run` (適用可能な場合)
 3. **フォーマット**: `pnpm exec prettier --write .`
 
-**注意**: ESLint (`pnpm run lint`) は直接実行しない
+**注意**: ESLint (`pnpm run lint`, `pnpm exec eslint`) は直接実行しない
 
 ## コード品質チェック
 - TypeScript厳格モードに準拠
@@ -34,4 +34,3 @@
 - 既存のコードスタイルとパターンを維持
 - フォルダ構造に従って新しいファイルを作成
 - 新しいファイル作成より既存ファイル編集を優先
-- ESLint warningも0件にする（エラーだけでなく）

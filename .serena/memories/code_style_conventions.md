@@ -71,6 +71,12 @@ src/
 - `<br />`を使わない
 - 再利用可能なスタイルはtailwind.configで定義
 
+## リポジトリ層のエラーハンドリング
+- すべてのリポジトリ関数は例外をスローせず `Result<T>` 型を返す
+- `@/types/result` から `Result`, `ok`, `err` をインポート
+- データベース操作はtry-catchでラップし、エラーメッセージを返す
+- 例: `return ok(entity)` または `return err("エラーメッセージ")`
+
 ## その他
 - barrel filesを避ける（tree-shakingの問題）
 - 直接インポートを使用

@@ -30,6 +30,16 @@
 - `pnpm exec prisma generate`: Prismaクライアント生成
 - `pnpm exec prisma migrate deploy`: マイグレーション実行
 - `pnpm run seed:test-users`: テストユーザーデータ挿入
+- `pnpm run reset:dev`: 開発DBリセット＆シード
+- `pnpm run reset:preview`: プレビューDBリセット＆シード
+
+## Git Worktree
+- `pnpm run worktree:init`: Git worktree初期化
+- `pnpm run worktree:list`: Git worktree一覧
+- `pnpm run worktree:remove`: Git worktree削除
+
+## 分析
+- `pnpm run analyze`: バンドル分析
 
 ## Claude Codeカスタムコマンド
 - `/commit-push`: Prettier自動フォーマット→コミット→プッシュの一括実行
