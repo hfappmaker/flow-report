@@ -41,7 +41,6 @@ import {
   type DashboardClientPageProps,
   type WorkReportDashboard,
 } from "@/features/dashboard/types/dashboard";
-import { SubscriptionStatus } from "@/features/subscription/components/subscription-status";
 import {
   getAttendanceByWorkReportIdAndDateAction,
   updateWorkReportAttendanceAction,
@@ -117,7 +116,6 @@ function getAttendanceEntryInfo(
 export default function DashboardClientPage({
   draftWorkReports,
   submittedWorkReportsLast3Months,
-  subscriptionInfo,
   hasContracts,
   holidays,
 }: DashboardClientPageProps) {
@@ -307,158 +305,158 @@ export default function DashboardClientPage({
   };
 
   return (
-    <div className="space-y-6 p-6">
-      <FormError message={error.message} resetSignal={error.date.getTime()} />
-      <FormSuccess
-        message={success.message}
-        resetSignal={success.date.getTime()}
-      />
-      {/* サブスクリプション情報を上部に表示 */}
-      {subscriptionInfo && (
-        <Card className="mb-6">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>サブスクリプション情報</CardTitle>
-              <SubscriptionStatus subscriptionInfo={subscriptionInfo} />
-            </div>
-          </CardHeader>
-        </Card>
-      )}
+    <>
+      <Card className="w-full shadow-sm">
+        <CardHeader className="flex-row items-center justify-between gap-x-3">
+          <h1 className="text-2xl font-semibold">ダッシュボード</h1>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <FormError
+            message={error.message}
+            resetSignal={error.date.getTime()}
+          />
+          <FormSuccess
+            message={success.message}
+            resetSignal={success.date.getTime()}
+          />
 
-      <h1 className="mb-6 text-2xl font-bold">作成中の作業報告書一覧</h1>
+          <h2 className="text-xl font-bold">作成中の作業報告書一覧</h2>
 
-      {Object.entries(draftWorkReports).map(([contractId, contract]) => (
-        <Card key={contractId} className="mb-6">
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <CardTitle
-                  className="cursor-pointer transition-colors hover:text-blue-600"
-                  onClick={() => {
-                    startTransition(() => {
-                      void openContractDetailsDialog(contractId);
-                    });
-                  }}
-                >
-                  {contract.contractName}
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  {contract.clientName}
-                </p>
-              </div>
-              {contract.workReports.length > 0 &&
-                (() => {
-                  const { canEnter, targetWorkReport } = getAttendanceEntryInfo(
-                    contract,
-                    contractId,
-                    submittedWorkReportsLast3Months,
-                  );
-                  return (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={!canEnter}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (!canEnter || !targetWorkReport) return;
+          {Object.entries(draftWorkReports).map(([contractId, contract]) => (
+            <Card key={contractId} className="mb-6">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <CardTitle
+                      className="cursor-pointer transition-colors hover:text-blue-600"
+                      onClick={() => {
                         startTransition(() => {
-                          void openAttendanceDialog(
-                            contractId,
-                            targetWorkReport.id,
-                          );
+                          void openContractDetailsDialog(contractId);
                         });
                       }}
                     >
-                      <Clock className="mr-2 size-4" />
-                      勤怠入力
-                    </Button>
-                  );
-                })()}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {contract.workReports.map((workReport) => (
-                <button
-                  key={workReport.id}
-                  type="button"
-                  className="block w-full cursor-pointer rounded-lg border bg-background p-4 text-left transition-colors hover:bg-muted/50"
-                  onClick={() => {
-                    handleNavigation(workReport.id);
-                  }}
-                >
-                  <div className="mb-2 flex items-start justify-between space-x-2">
-                    <div className="text-lg font-medium">
-                      {workReport.targetDate.getFullYear()}年
-                      {workReport.targetDate.getMonth() + 1}月
-                    </div>
-                    <Badge
-                      className={`${getWorkReportStatusColor(
-                        workReport.status,
-                      )} pointer-events-none`}
-                    >
-                      {getWorkReportStatusDisplayText(workReport.status)}
-                    </Badge>
+                      {contract.contractName}
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      {contract.clientName}
+                    </p>
                   </div>
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+                  {contract.workReports.length > 0 &&
+                    (() => {
+                      const { canEnter, targetWorkReport } =
+                        getAttendanceEntryInfo(
+                          contract,
+                          contractId,
+                          submittedWorkReportsLast3Months,
+                        );
+                      return (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={!canEnter}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!canEnter || !targetWorkReport) return;
+                            startTransition(() => {
+                              void openAttendanceDialog(
+                                contractId,
+                                targetWorkReport.id,
+                              );
+                            });
+                          }}
+                        >
+                          <Clock className="mr-2 size-4" />
+                          勤怠入力
+                        </Button>
+                      );
+                    })()}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {contract.workReports.map((workReport) => (
+                    <button
+                      key={workReport.id}
+                      type="button"
+                      className="block w-full cursor-pointer rounded-lg border bg-background p-4 text-left transition-colors hover:bg-muted/50"
+                      onClick={() => {
+                        handleNavigation(workReport.id);
+                      }}
+                    >
+                      <div className="mb-2 flex items-start justify-between space-x-2">
+                        <div className="text-lg font-medium">
+                          {workReport.targetDate.getFullYear()}年
+                          {workReport.targetDate.getMonth() + 1}月
+                        </div>
+                        <Badge
+                          className={`${getWorkReportStatusColor(
+                            workReport.status,
+                          )} pointer-events-none`}
+                        >
+                          {getWorkReportStatusDisplayText(workReport.status)}
+                        </Badge>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
 
-      <h2 className="mb-6 mt-12 text-2xl font-bold">
-        作成済みの作業報告書一覧 (直近3ヶ月)
-      </h2>
-      {Object.entries(submittedWorkReportsLast3Months).map(
-        ([contractId, contract]) => (
-          <Card key={contractId} className="mb-6">
-            <CardHeader>
-              <CardTitle
-                className="cursor-pointer transition-colors hover:text-blue-600"
-                onClick={() => {
-                  startTransition(() => {
-                    void openContractDetailsDialog(contractId);
-                  });
-                }}
-              >
-                {contract.contractName}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {contract.clientName}
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {contract.workReports.map((workReport) => (
-                  <button
-                    key={workReport.id}
-                    type="button"
-                    className="block w-full cursor-pointer rounded-lg border bg-background p-4 text-left transition-colors hover:bg-muted/50"
+          <h2 className="mt-8 text-xl font-bold">
+            作成済みの作業報告書一覧 (直近3ヶ月)
+          </h2>
+          {Object.entries(submittedWorkReportsLast3Months).map(
+            ([contractId, contract]) => (
+              <Card key={contractId} className="mb-6">
+                <CardHeader>
+                  <CardTitle
+                    className="cursor-pointer transition-colors hover:text-blue-600"
                     onClick={() => {
-                      handleNavigation(workReport.id);
+                      startTransition(() => {
+                        void openContractDetailsDialog(contractId);
+                      });
                     }}
                   >
-                    <div className="mb-2 flex items-start justify-between space-x-2">
-                      <div className="text-lg font-medium">
-                        {workReport.targetDate.getFullYear()}年
-                        {workReport.targetDate.getMonth() + 1}月
-                      </div>
-                      <Badge
-                        className={`${getWorkReportStatusColor(
-                          workReport.status,
-                        )} pointer-events-none`}
+                    {contract.contractName}
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    {contract.clientName}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {contract.workReports.map((workReport) => (
+                      <button
+                        key={workReport.id}
+                        type="button"
+                        className="block w-full cursor-pointer rounded-lg border bg-background p-4 text-left transition-colors hover:bg-muted/50"
+                        onClick={() => {
+                          handleNavigation(workReport.id);
+                        }}
                       >
-                        {getWorkReportStatusDisplayText(workReport.status)}
-                      </Badge>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ),
-      )}
+                        <div className="mb-2 flex items-start justify-between space-x-2">
+                          <div className="text-lg font-medium">
+                            {workReport.targetDate.getFullYear()}年
+                            {workReport.targetDate.getMonth() + 1}月
+                          </div>
+                          <Badge
+                            className={`${getWorkReportStatusColor(
+                              workReport.status,
+                            )} pointer-events-none`}
+                          >
+                            {getWorkReportStatusDisplayText(workReport.status)}
+                          </Badge>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ),
+          )}
+        </CardContent>
+      </Card>
 
       <ContractDialog
         type="details"
@@ -561,6 +559,6 @@ export default function DashboardClientPage({
           holidays={holidays}
         />
       )}
-    </div>
+    </>
   );
 }
