@@ -754,11 +754,11 @@ export const ContractForm = ({
                           field.onChange(Number(e.target.value));
                         }}
                         disabled={isEditing}
-                        className="flex h-10 w-24 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-10 w-24 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <option value={0}>当月</option>
-                        <option value={1}>翌月</option>
-                        <option value={2}>翌々月</option>
+                        <option value={0} className="bg-background text-foreground">当月</option>
+                        <option value={1} className="bg-background text-foreground">翌月</option>
+                        <option value={2} className="bg-background text-foreground">翌々月</option>
                       </select>
                     </FormControl>
                     <FormMessage />

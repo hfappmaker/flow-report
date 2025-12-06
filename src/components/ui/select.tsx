@@ -225,7 +225,7 @@ const NativeSelect = memo(
     <FormControl>
       <select
         className={cn(
-          "flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
           !value && "text-muted-foreground",
           triggerClassName,
         )}
@@ -233,11 +233,15 @@ const NativeSelect = memo(
         onChange={(e) => onValueChange(e.target.value)}
         disabled={disabled}
       >
-        <option value="" disabled>
+        <option value="" disabled className="bg-background text-muted-foreground">
           {placeholder}
         </option>
         {options.map((option) => (
-          <option key={option.value} value={option.value.toString()}>
+          <option
+            key={option.value}
+            value={option.value.toString()}
+            className="bg-background text-foreground"
+          >
             {option.label}
           </option>
         ))}
