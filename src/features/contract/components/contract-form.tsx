@@ -693,7 +693,8 @@ export const ContractForm = ({
 
           {/* Closing Day */}
           <div className="space-y-2">
-            <div className="w-fit">
+            <FormLabel>締め日</FormLabel>
+            <div className="flex items-end gap-2">
               <ComboBoxField
                 control={form.control}
                 name="closingDay"
@@ -704,11 +705,11 @@ export const ContractForm = ({
                   })),
                   { value: 31, label: "31（末）" },
                 ]}
-                label="締め日"
                 disabled={isEditing}
                 showClearButton={false}
                 variant="native"
               />
+              <span className="mb-2 text-sm text-muted-foreground">日</span>
             </div>
             <p className="text-sm text-muted-foreground">
               月末日がない場合（例：2月31日）は末日になります。
@@ -718,7 +719,7 @@ export const ContractForm = ({
           {/* Payment Site */}
           <div className="space-y-2">
             <FormLabel>支払いサイト</FormLabel>
-            <div className="flex items-center gap-2">
+            <div className="flex items-end gap-2">
               <ComboBoxField
                 control={form.control}
                 name="paymentMonthOffset"
@@ -745,7 +746,7 @@ export const ContractForm = ({
                 showClearButton={false}
                 variant="native"
               />
-              <span className="text-sm text-muted-foreground">日</span>
+              <span className="mb-2 text-sm text-muted-foreground">日</span>
             </div>
             <p className="text-sm text-muted-foreground">
               月末日がない場合（例：2月31日）は末日になります。
