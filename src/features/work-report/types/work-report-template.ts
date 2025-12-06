@@ -2,11 +2,10 @@ import type {
   ExcelTemplate as PrismaExcelTemplate,
   ExcelTemplateField as PrismaExcelTemplateField,
   TemplateType,
-  ValueType,
 } from "@prisma/client";
 import type { StrictOmit } from "ts-essentials";
 
-export type { TemplateType, ValueType };
+export type { TemplateType };
 
 /**
  * Excelテンプレートの型定義
@@ -50,8 +49,6 @@ export interface CreateExcelTemplateInput {
 export interface CreateFieldMappingInput {
   namedRange: string;
   valueTemplate: string;
-  valueType: ValueType;
-  numFmt?: string | null;
 }
 
 /**

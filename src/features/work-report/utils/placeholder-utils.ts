@@ -737,31 +737,35 @@ export function extractSinglePlaceholder(template: string): string | null {
 
 /**
  * プレースホルダーを解決し、適切な型の値を返す
+ * 値が数値に変換可能な場合は自動的に数値として返す
  * @param template 値テンプレート
- * @param valueType 値の型(NUMBER or STRING)
  * @param placeholderValues プレースホルダー値のマップ
  * @returns 解決された値(数値または文字列)
  */
 export function resolvePlaceholderValue(
   template: string,
-  valueType: "NUMBER" | "STRING",
   placeholderValues: Record<string, string | number>,
 ): string | number {
-  if (valueType === "NUMBER") {
-    // 数値型の場合、置換後の結果を数値変換を試みる
-    const replaced = replacePlaceholders(template, placeholderValues);
-    if (typeof replaced === "number") {
-      return replaced;
-    }
-    if (typeof replaced === "string" && replaced !== "") {
-      const num = Number(replaced);
-      return isNaN(num) ? replaced : num;
-    }
+  const replaced = replacePlaceholders(template, placeholderValues);
+
+  // 既に数値なら数値として返す
+  if (typeof replaced === "number") {
+    return replaced;
+  }
+
+  // 空文字列はそのまま返す
+  if (replaced === "") {
     return "";
   }
 
-  // 文字列型の場合
-  return replacePlaceholders(template, placeholderValues);
+  // 文字列の場合、数値に変換可能なら数値として返す
+  const trimmed = replaced.trim();
+  const num = Number(trimmed);
+  if (!isNaN(num) && isFinite(num)) {
+    return num;
+  }
+
+  return replaced;
 }
 
 /**

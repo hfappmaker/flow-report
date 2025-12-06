@@ -130,8 +130,6 @@ export function ExcelTemplateDialog({
                     fieldMappings: template.fieldMappings.map((m) => ({
                       namedRange: m.namedRange,
                       valueTemplate: m.valueTemplate,
-                      valueType: m.valueType,
-                      numFmt: m.numFmt,
                     })),
                   }
                 : undefined

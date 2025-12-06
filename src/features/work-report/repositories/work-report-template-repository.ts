@@ -93,8 +93,6 @@ export class ExcelTemplateRepository {
             create: fieldMappings.map((fm) => ({
               namedRange: fm.namedRange,
               valueTemplate: fm.valueTemplate,
-              valueType: fm.valueType,
-              numFmt: fm.numFmt,
             })),
           },
         },
@@ -133,8 +131,6 @@ export class ExcelTemplateRepository {
               create: fieldMappings.map((fm) => ({
                 namedRange: fm.namedRange,
                 valueTemplate: fm.valueTemplate,
-                valueType: fm.valueType,
-                numFmt: fm.numFmt,
               })),
             },
           },

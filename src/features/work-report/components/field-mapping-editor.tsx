@@ -1,16 +1,12 @@
 "use client";
 
 import { Plus, Trash2 } from "lucide-react";
-import { ValueType } from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PlaceholderHelp } from "@/features/work-report/components/placeholder-help";
-import {
-  EXCEL_FORMAT_PRESETS,
-  type FieldMappingFormValues,
-} from "@/features/work-report/schemas/work-report-template-form-schema";
+import { type FieldMappingFormValues } from "@/features/work-report/schemas/work-report-template-form-schema";
 
 interface FieldMappingEditorProps {
   fieldMappings: FieldMappingFormValues[];
@@ -29,8 +25,6 @@ export function FieldMappingEditor({
       {
         namedRange: "",
         valueTemplate: "",
-        valueType: ValueType.STRING,
-        numFmt: null,
       },
     ]);
   };
@@ -42,24 +36,12 @@ export function FieldMappingEditor({
   const handleChange = (
     index: number,
     field: keyof FieldMappingFormValues,
-    value: string | ValueType,
+    value: string,
   ) => {
     onChange(
       fieldMappings.map((mapping, i) => {
         if (i !== index) return mapping;
-
-        const updated = { ...mapping, [field]: value };
-
-        // valueType が変更された場合、適切なデフォルト書式を設定
-        if (field === "valueType") {
-          if (value === ValueType.NUMBER) {
-            updated.numFmt = "#,##0"; // 金額(カンマ区切り)がデフォルト
-          } else {
-            updated.numFmt = null;
-          }
-        }
-
-        return updated;
+        return { ...mapping, [field]: value };
       }),
     );
   };
@@ -126,81 +108,6 @@ export function FieldMappingEditor({
                   </p>
                 )}
               </div>
-
-              {/* 新規: 値の型選択 */}
-              <div>
-                <Label className="text-xs">値の型</Label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name={`valueType-${index}`}
-                      checked={mapping.valueType === ValueType.NUMBER}
-                      onChange={() => {
-                        handleChange(index, "valueType", ValueType.NUMBER);
-                      }}
-                    />
-                    <span className="text-sm">数値</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name={`valueType-${index}`}
-                      checked={mapping.valueType === ValueType.STRING}
-                      onChange={() => {
-                        handleChange(index, "valueType", ValueType.STRING);
-                      }}
-                    />
-                    <span className="text-sm">文字列</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* 新規: Excel書式プリセット選択 */}
-              <div>
-                <Label htmlFor={`numFmt-${String(index)}`} className="text-xs">
-                  Excel書式
-                </Label>
-                <select
-                  id={`numFmt-${String(index)}`}
-                  value={mapping.numFmt ?? ""}
-                  onChange={(e) => {
-                    handleChange(index, "numFmt", e.target.value);
-                  }}
-                  className="w-full rounded-md border p-2"
-                >
-                  {EXCEL_FORMAT_PRESETS.filter(
-                    (p) => p.valueType === mapping.valueType || p.value === "",
-                  ).map((preset) => (
-                    <option key={preset.value} value={preset.value}>
-                      {preset.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* 新規: カスタム書式入力 */}
-              {mapping.numFmt === "" && (
-                <div>
-                  <Label
-                    htmlFor={`customNumFmt-${String(index)}`}
-                    className="text-xs"
-                  >
-                    カスタム書式
-                  </Label>
-                  <Input
-                    id={`customNumFmt-${String(index)}`}
-                    placeholder="例: #,##0.00"
-                    value={mapping.numFmt ?? ""}
-                    onChange={(e) => {
-                      handleChange(index, "numFmt", e.target.value);
-                    }}
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Excel書式コードを入力してください
-                  </p>
-                </div>
-              )}
             </div>
             <Button
               type="button"

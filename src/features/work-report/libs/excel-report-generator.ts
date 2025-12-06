@@ -24,7 +24,6 @@ import {
  */
 interface NamedRangeCellValue {
   value: string | number;
-  numFmt?: string;
 }
 
 /**
@@ -57,8 +56,6 @@ export interface WorkReportExcelData {
 export interface CustomFieldMapping {
   namedRange: string;
   valueTemplate: string;
-  valueType: "NUMBER" | "STRING";
-  numFmt?: string | null;
 }
 
 /**
@@ -229,10 +226,6 @@ export async function generateWorkReportExcel(
 
     const cell = sheet.getCell(rangeAddress);
     cell.value = cellValue.value;
-    // テンプレートにnumFmtが設定されていない場合のみ、placeholderのnumFmtを適用
-    if (!cell.numFmt && cellValue.numFmt) {
-      cell.numFmt = cellValue.numFmt;
-    }
   };
 
   // カスタムフィールドマッピングの処理
@@ -243,15 +236,13 @@ export async function generateWorkReportExcel(
     // 各カスタムフィールドマッピングを処理
     for (const mapping of customFieldMappings) {
       setNamedRangeValue(mapping.namedRange, () => {
-        // 新しい置換ロジックを使用
+        // プレースホルダーを解決（数値変換可能なら自動的に数値に変換）
         const resolvedValue = resolvePlaceholderValue(
           mapping.valueTemplate,
-          mapping.valueType,
           placeholderValues,
         );
         return {
           value: resolvedValue,
-          numFmt: mapping.numFmt ?? undefined,
         };
       });
     }

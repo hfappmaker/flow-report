@@ -326,8 +326,6 @@ export default function TemplatesClientPage({
       fieldMappings: data.fieldMappings.map((m) => ({
         namedRange: m.namedRange,
         valueTemplate: m.valueTemplate,
-        valueType: m.valueType,
-        numFmt: m.numFmt ?? null,
       })),
     });
     if (result.success) {
@@ -351,8 +349,6 @@ export default function TemplatesClientPage({
       fieldMappings: data.fieldMappings.map((m) => ({
         namedRange: m.namedRange,
         valueTemplate: m.valueTemplate,
-        valueType: m.valueType,
-        numFmt: m.numFmt ?? null,
       })),
     };
 

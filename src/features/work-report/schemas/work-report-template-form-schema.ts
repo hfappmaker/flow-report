@@ -1,5 +1,4 @@
 import * as z from "zod";
-import { ValueType } from "@prisma/client";
 
 /**
  * フィールドマッピングのスキーマ
@@ -7,25 +6,9 @@ import { ValueType } from "@prisma/client";
 export const fieldMappingSchema = z.object({
   namedRange: z.string().min(1, "名前付き範囲名は必須です"),
   valueTemplate: z.string().min(1, "値は必須です"),
-  valueType: z.nativeEnum(ValueType).default(ValueType.STRING),
-  numFmt: z.string().nullable().optional(),
 });
 
 export type FieldMappingFormValues = z.infer<typeof fieldMappingSchema>;
-
-/**
- * Excel書式プリセット定義
- */
-export const EXCEL_FORMAT_PRESETS = [
-  { label: "金額(カンマ区切り)", value: "#,##0", valueType: ValueType.NUMBER },
-  { label: "金額(小数点2桁)", value: "#,##0.00", valueType: ValueType.NUMBER },
-  { label: "整数", value: "0", valueType: ValueType.NUMBER },
-  { label: "小数", value: "0.00", valueType: ValueType.NUMBER },
-  { label: "パーセント", value: "0%", valueType: ValueType.NUMBER },
-  { label: "文字列", value: "@", valueType: ValueType.STRING },
-  { label: "日付", value: "yyyy/mm/dd", valueType: ValueType.STRING },
-  { label: "カスタム", value: "", valueType: ValueType.STRING },
-] as const;
 
 /**
  * Excelテンプレートフォームのスキーマ（新規作成時）
