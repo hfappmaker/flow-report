@@ -90,7 +90,12 @@ export class ExcelTemplateRepository {
         data: {
           ...templateData,
           fieldMappings: {
-            create: fieldMappings,
+            create: fieldMappings.map((fm) => ({
+              namedRange: fm.namedRange,
+              valueTemplate: fm.valueTemplate,
+              valueType: fm.valueType,
+              numFmt: fm.numFmt,
+            })),
           },
         },
         include: {
@@ -125,7 +130,12 @@ export class ExcelTemplateRepository {
           data: {
             ...templateData,
             fieldMappings: {
-              create: fieldMappings,
+              create: fieldMappings.map((fm) => ({
+                namedRange: fm.namedRange,
+                valueTemplate: fm.valueTemplate,
+                valueType: fm.valueType,
+                numFmt: fm.numFmt,
+              })),
             },
           },
           include: {

@@ -326,6 +326,7 @@ export default function TemplatesClientPage({
       fieldMappings: data.fieldMappings.map((m) => ({
         namedRange: m.namedRange,
         valueTemplate: m.valueTemplate,
+        valueType: m.valueType,
         numFmt: m.numFmt ?? null,
       })),
     });
@@ -350,6 +351,7 @@ export default function TemplatesClientPage({
       fieldMappings: data.fieldMappings.map((m) => ({
         namedRange: m.namedRange,
         valueTemplate: m.valueTemplate,
+        valueType: m.valueType,
         numFmt: m.numFmt ?? null,
       })),
     };

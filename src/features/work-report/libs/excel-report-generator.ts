@@ -15,6 +15,7 @@ import { msToSerial } from "@/features/work-report/utils/excel-utils";
 import {
   generatePlaceholderValues,
   replacePlaceholders,
+  resolvePlaceholderValue,
   type InvoiceContractData,
 } from "@/features/work-report/utils/placeholder-utils";
 
@@ -56,6 +57,7 @@ export interface WorkReportExcelData {
 export interface CustomFieldMapping {
   namedRange: string;
   valueTemplate: string;
+  valueType: "NUMBER" | "STRING";
   numFmt?: string | null;
 }
 
@@ -227,7 +229,8 @@ export async function generateWorkReportExcel(
 
     const cell = sheet.getCell(rangeAddress);
     cell.value = cellValue.value;
-    if (cellValue.numFmt) {
+    // テンプレートにnumFmtが設定されていない場合のみ、placeholderのnumFmtを適用
+    if (!cell.numFmt && cellValue.numFmt) {
       cell.numFmt = cellValue.numFmt;
     }
   };
@@ -240,9 +243,10 @@ export async function generateWorkReportExcel(
     // 各カスタムフィールドマッピングを処理
     for (const mapping of customFieldMappings) {
       setNamedRangeValue(mapping.namedRange, () => {
-        // プレースホルダーを置換
-        const resolvedValue = replacePlaceholders(
+        // 新しい置換ロジックを使用
+        const resolvedValue = resolvePlaceholderValue(
           mapping.valueTemplate,
+          mapping.valueType,
           placeholderValues,
         );
         return {

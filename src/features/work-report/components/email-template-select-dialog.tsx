@@ -48,7 +48,7 @@ interface EmailTemplateSelectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   emailTemplates: EmailTemplate[];
-  placeholderValues: Record<string, string>;
+  placeholderValues: Record<string, string | number>;
   onSend: (
     subject: string,
     body: string,

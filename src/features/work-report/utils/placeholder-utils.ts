@@ -546,7 +546,7 @@ function formatMinutesToTimeString(minutes: number | null): string {
 export function generatePlaceholderValues(
   data: WorkReportExcelData,
   contractData?: InvoiceContractData,
-): Record<string, string> {
+): Record<string, string | number> {
   const totalWorkMinutes = calculateTotalWorkMinutes(
     data.attendances,
     data.monthlyWorkMinutes,
@@ -561,9 +561,9 @@ export function generatePlaceholderValues(
   const workingDays = calculateWorkingDays(data.attendances);
 
   // 基本プレースホルダー
-  const basePlaceholders: Record<string, string> = {
-    対象年: String(data.targetDate.getFullYear()),
-    対象月: String(data.targetDate.getMonth() + 1),
+  const basePlaceholders: Record<string, string | number> = {
+    対象年: data.targetDate.getFullYear(),
+    対象月: data.targetDate.getMonth() + 1,
     名前: data.userName,
     メールアドレス: data.email ?? "",
     基本開始時刻: formatTimeString(data.basicStartTime),
@@ -571,19 +571,15 @@ export function generatePlaceholderValues(
     基本休憩時間: data.basicBreakDuration
       ? formatMinutesToTimeString(data.basicBreakDuration)
       : "",
-    "1日あたりの作業単位": data.dailyWorkMinutes
-      ? String(data.dailyWorkMinutes)
-      : "",
-    "1ヶ月あたりの作業単位": data.monthlyWorkMinutes
-      ? String(data.monthlyWorkMinutes)
-      : "",
+    "1日あたりの作業単位": data.dailyWorkMinutes ?? "",
+    "1ヶ月あたりの作業単位": data.monthlyWorkMinutes ?? "",
     備考: data.remarks ?? "",
     総稼働時間: formatMinutesToTimeString(totalWorkMinutes),
     基本稼働時間:
       basicWorkMinutes !== null
         ? formatMinutesToTimeString(basicWorkMinutes)
         : "",
-    稼働日数: String(workingDays),
+    稼働日数: workingDays,
     // ユーザー情報
     郵便番号: data.postalCode ?? "",
     住所: data.address ?? "",
@@ -600,27 +596,16 @@ export function generatePlaceholderValues(
   }
 
   // 請求書用プレースホルダーを追加
-  const invoicePlaceholders: Record<string, string> = {
+  const invoicePlaceholders: Record<string, string | number> = {
     契約名: contractData.contractName,
     クライアント名: contractData.clientName,
-    月単価:
-      contractData.unitPrice !== null ? String(contractData.unitPrice) : "",
-    時間単価:
-      contractData.hourlyRate !== null ? String(contractData.hourlyRate) : "",
-    精算下限:
-      contractData.settlementMin !== null
-        ? String(contractData.settlementMin)
-        : "",
-    精算上限:
-      contractData.settlementMax !== null
-        ? String(contractData.settlementMax)
-        : "",
-    超過時間単価:
-      contractData.upperRate !== null ? String(contractData.upperRate) : "",
-    控除時間単価:
-      contractData.lowerRate !== null ? String(contractData.lowerRate) : "",
-    中間割時間単価:
-      contractData.middleRate !== null ? String(contractData.middleRate) : "",
+    月単価: contractData.unitPrice ?? "",
+    時間単価: contractData.hourlyRate ?? "",
+    精算下限: contractData.settlementMin ?? "",
+    精算上限: contractData.settlementMax ?? "",
+    超過時間単価: contractData.upperRate ?? "",
+    控除時間単価: contractData.lowerRate ?? "",
+    中間割時間単価: contractData.middleRate ?? "",
     精算方式: formatRateType(contractData.rateType),
     税込税抜: contractData.taxInclusiveType === "INCLUSIVE" ? "税込" : "税抜",
   };
@@ -670,14 +655,14 @@ export function generatePlaceholderValues(
         : subtotal + taxAmount;
 
     Object.assign(invoicePlaceholders, {
-      基本金額: String(Math.round(amountDetails.baseAmount)),
-      超過時間: String(amountDetails.excessInfo.hours),
-      超過金額: String(Math.round(amountDetails.excessInfo.amount)),
-      控除時間: String(amountDetails.deductionInfo.hours),
-      控除金額: String(Math.round(amountDetails.deductionInfo.amount)),
-      "請求金額（税抜）": String(Math.round(subtotal)),
-      消費税額: String(taxAmount),
-      "請求金額（税込）": String(Math.round(totalAmount)),
+      基本金額: Math.round(amountDetails.baseAmount),
+      超過時間: amountDetails.excessInfo.hours,
+      超過金額: Math.round(amountDetails.excessInfo.amount),
+      控除時間: amountDetails.deductionInfo.hours,
+      控除金額: Math.round(amountDetails.deductionInfo.amount),
+      "請求金額（税抜）": Math.round(subtotal),
+      消費税額: taxAmount,
+      "請求金額（税込）": Math.round(totalAmount),
     });
   } else {
     // 計算できない場合は空文字
@@ -703,10 +688,7 @@ export function generatePlaceholderValues(
     contractData.paymentMonthOffset,
     contractData.paymentDay,
   );
-  const closingDayValue =
-    contractData.closingDay !== null
-      ? String(contractData.closingDay)
-      : String(invoiceDate.getDate());
+  const closingDayValue = contractData.closingDay ?? invoiceDate.getDate();
 
   Object.assign(invoicePlaceholders, {
     締め日: closingDayValue,
@@ -726,7 +708,7 @@ export function generatePlaceholderValues(
  */
 export function replacePlaceholders(
   template: string,
-  values: Record<string, string>,
+  values: Record<string, string | number>,
   excludeKeys?: string[],
 ): string {
   // 日本語キーも含むプレースホルダーパターン
@@ -736,10 +718,53 @@ export function replacePlaceholders(
       return match;
     }
     if (key in values) {
-      return values[key];
+      return String(values[key]);
     }
     return match;
   });
+}
+
+/**
+ * テンプレートが単一プレースホルダーかどうかを判定
+ * @param template テンプレート文字列
+ * @returns 単一プレースホルダーの場合はそのキー、複合の場合はnull
+ */
+export function extractSinglePlaceholder(template: string): string | null {
+  const trimmed = template.trim();
+  const match = /^\$\{([^}]+)\}$/.exec(trimmed);
+  return match ? match[1] : null;
+}
+
+/**
+ * プレースホルダーを解決し、適切な型の値を返す
+ * @param template 値テンプレート
+ * @param valueType 値の型(NUMBER or STRING)
+ * @param placeholderValues プレースホルダー値のマップ
+ * @returns 解決された値(数値または文字列)
+ */
+export function resolvePlaceholderValue(
+  template: string,
+  valueType: "NUMBER" | "STRING",
+  placeholderValues: Record<string, string | number>,
+): string | number {
+  const singleKey = extractSinglePlaceholder(template);
+
+  if (singleKey && valueType === "NUMBER") {
+    // 単一プレースホルダー && 数値型の場合
+    const value = placeholderValues[singleKey];
+    if (typeof value === "number") {
+      return value;
+    }
+    // 文字列の場合は数値変換を試みる
+    if (typeof value === "string" && value !== "") {
+      const num = Number(value);
+      return isNaN(num) ? value : num;
+    }
+    return "";
+  }
+
+  // 複合テンプレートまたは文字列型の場合
+  return replacePlaceholders(template, placeholderValues);
 }
 
 /**

@@ -1,4 +1,5 @@
 import type { ExcelTemplateWithFields } from "@/features/work-report/types/work-report-template";
+import { ValueType } from "@prisma/client";
 
 /**
  * システムデフォルトテンプレートの定数定義
@@ -35,6 +36,7 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "タイトル",
       valueTemplate: "${対象年}年${対象月}月度作業報告書",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -42,6 +44,7 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "名前",
       valueTemplate: "${名前}",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -49,6 +52,7 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "基本開始時刻",
       valueTemplate: "${基本開始時刻}",
+      valueType: ValueType.STRING,
       numFmt: "[h]:mm",
     },
     {
@@ -56,6 +60,7 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "基本終了時刻",
       valueTemplate: "${基本終了時刻}",
+      valueType: ValueType.STRING,
       numFmt: "[h]:mm",
     },
     {
@@ -63,6 +68,7 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "基本休憩時間",
       valueTemplate: "${基本休憩時間}",
+      valueType: ValueType.STRING,
       numFmt: "[h]:mm",
     },
     {
@@ -70,6 +76,7 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "基本稼働時間",
       valueTemplate: "${基本稼働時間}",
+      valueType: ValueType.STRING,
       numFmt: "[h]:mm",
     },
     {
@@ -77,6 +84,7 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "_1日あたりの作業単位",
       valueTemplate: "${1日あたりの作業単位}分",
+      valueType: ValueType.STRING,
       numFmt: "null",
     },
     {
@@ -84,6 +92,7 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "_1ヶ月あたりの作業単位",
       valueTemplate: "${1ヶ月あたりの作業単位}分",
+      valueType: ValueType.STRING,
       numFmt: "null",
     },
     {
@@ -91,6 +100,7 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "稼働日数",
       valueTemplate: "${稼働日数}日",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -98,6 +108,7 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "総稼働時間",
       valueTemplate: "${総稼働時間}",
+      valueType: ValueType.STRING,
       numFmt: "[h]:mm",
     },
     {
@@ -105,6 +116,7 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "日付列",
       valueTemplate: "${日付列}",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -112,6 +124,7 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "曜日列",
       valueTemplate: "${曜日列}",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -119,6 +132,7 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "開始時刻列",
       valueTemplate: "${開始時刻列}",
+      valueType: ValueType.STRING,
       numFmt: "[h]:mm",
     },
     {
@@ -126,6 +140,7 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "終了時刻列",
       valueTemplate: "${終了時刻列}",
+      valueType: ValueType.STRING,
       numFmt: "[h]:mm",
     },
     {
@@ -133,6 +148,7 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "休憩時間列",
       valueTemplate: "${休憩時間列}",
+      valueType: ValueType.STRING,
       numFmt: "[h]:mm",
     },
     {
@@ -140,6 +156,7 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "稼働時間列",
       valueTemplate: "${稼働時間列}",
+      valueType: ValueType.STRING,
       numFmt: "[h]:mm",
     },
     {
@@ -147,6 +164,7 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "作業内容列",
       valueTemplate: "${作業内容列}",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -154,6 +172,7 @@ export const DEFAULT_TEMPLATE_FIELD_MAPPINGS: ExcelTemplateWithFields["fieldMapp
       templateId: DEFAULT_TEMPLATE_ID,
       namedRange: "備考",
       valueTemplate: "${備考}",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
   ];
@@ -208,6 +227,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "請求日",
       valueTemplate: "${請求日}",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -215,6 +235,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "名前",
       valueTemplate: "${名前}",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -222,6 +243,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "郵便番号",
       valueTemplate: "${郵便番号}",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -229,6 +251,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "住所",
       valueTemplate: "${住所}",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -236,6 +259,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "クライアント名",
       valueTemplate: "${クライアント名}　御中",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -243,6 +267,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "基本単価項目",
       valueTemplate: "基本月単価",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -250,6 +275,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "基本単価数量",
       valueTemplate: "1",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -257,6 +283,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "基本単価単位",
       valueTemplate: "人月",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -264,6 +291,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "基本単価",
       valueTemplate: "${月単価}",
+      valueType: ValueType.STRING,
       numFmt: "#,##0",
     },
     {
@@ -271,6 +299,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "基本金額",
       valueTemplate: "${基本金額}",
+      valueType: ValueType.STRING,
       numFmt: "#,##0",
     },
     {
@@ -278,6 +307,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "超過単価項目",
       valueTemplate: "超過単価",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -285,6 +315,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "超過単価数量",
       valueTemplate: "${超過時間}",
+      valueType: ValueType.STRING,
       numFmt: "0.0",
     },
     {
@@ -292,6 +323,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "超過単価単位",
       valueTemplate: "時間",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -299,6 +331,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "超過単価",
       valueTemplate: "${超過時間単価}",
+      valueType: ValueType.STRING,
       numFmt: "#,##0",
     },
     {
@@ -306,6 +339,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "超過金額",
       valueTemplate: "${超過金額}",
+      valueType: ValueType.STRING,
       numFmt: "#,##0",
     },
     {
@@ -313,6 +347,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "控除単価項目",
       valueTemplate: "控除単価",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -320,6 +355,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "控除単価数量",
       valueTemplate: "${控除時間}",
+      valueType: ValueType.STRING,
       numFmt: "0.0",
     },
     {
@@ -327,6 +363,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "控除単価単位",
       valueTemplate: "時間",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -334,6 +371,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "控除単価",
       valueTemplate: "${控除時間単価}",
+      valueType: ValueType.STRING,
       numFmt: "#,##0",
     },
     {
@@ -341,6 +379,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "控除金額",
       valueTemplate: "${控除金額}",
+      valueType: ValueType.STRING,
       numFmt: "#,##0",
     },
     {
@@ -348,6 +387,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "振込期日",
       valueTemplate: "${支払期限}",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -355,6 +395,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "振込口座",
       valueTemplate: "${銀行名} ${支店名}\n${口座種別} ${口座番号} ${口座名義}",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -362,6 +403,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "対象額",
       valueTemplate: "${請求金額（税込）}",
+      valueType: ValueType.STRING,
       numFmt: "#,##0",
     },
     {
@@ -369,6 +411,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "内税",
       valueTemplate: "${消費税額}",
+      valueType: ValueType.STRING,
       numFmt: "#,##0",
     },
     {
@@ -376,6 +419,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "税込合計",
       valueTemplate: "${請求金額（税込）}",
+      valueType: ValueType.STRING,
       numFmt: "#,##0",
     },
   ];
@@ -390,6 +434,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "請求日",
       valueTemplate: "${請求日}",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -397,6 +442,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "名前",
       valueTemplate: "${名前}",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -404,6 +450,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "郵便番号",
       valueTemplate: "${郵便番号}",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -411,6 +458,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "住所",
       valueTemplate: "${住所}",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -418,6 +466,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "クライアント名",
       valueTemplate: "${クライアント名}　御中",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -425,6 +474,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "基本単価項目",
       valueTemplate: "基本月単価",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -432,6 +482,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "基本単価数量",
       valueTemplate: "1",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -439,6 +490,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "基本単価単位",
       valueTemplate: "人月",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -446,6 +498,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "基本単価",
       valueTemplate: "${月単価}",
+      valueType: ValueType.STRING,
       numFmt: "#,##0",
     },
     {
@@ -453,6 +506,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "基本金額",
       valueTemplate: "${基本金額}",
+      valueType: ValueType.STRING,
       numFmt: "#,##0",
     },
     {
@@ -460,6 +514,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "超過単価項目",
       valueTemplate: "超過単価",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -467,6 +522,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "超過単価数量",
       valueTemplate: "${超過時間}",
+      valueType: ValueType.STRING,
       numFmt: "0.0",
     },
     {
@@ -474,6 +530,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "超過単価単位",
       valueTemplate: "時間",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -481,6 +538,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "超過単価",
       valueTemplate: "${超過時間単価}",
+      valueType: ValueType.STRING,
       numFmt: "#,##0",
     },
     {
@@ -488,6 +546,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "超過金額",
       valueTemplate: "${超過金額}",
+      valueType: ValueType.STRING,
       numFmt: "#,##0",
     },
     {
@@ -495,6 +554,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "控除単価項目",
       valueTemplate: "控除単価",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -502,6 +562,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "控除単価数量",
       valueTemplate: "${控除時間}",
+      valueType: ValueType.STRING,
       numFmt: "0.0",
     },
     {
@@ -509,6 +570,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "控除単価単位",
       valueTemplate: "時間",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -516,6 +578,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "控除単価",
       valueTemplate: "${控除時間単価}",
+      valueType: ValueType.STRING,
       numFmt: "#,##0",
     },
     {
@@ -523,6 +586,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "控除金額",
       valueTemplate: "${控除金額}",
+      valueType: ValueType.STRING,
       numFmt: "#,##0",
     },
     {
@@ -530,6 +594,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "振込期日",
       valueTemplate: "${支払期限}",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -537,6 +602,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "振込口座",
       valueTemplate: "${銀行名} ${支店名}\n${口座種別} ${口座番号} ${口座名義}",
+      valueType: ValueType.STRING,
       numFmt: null,
     },
     {
@@ -544,6 +610,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "対象額",
       valueTemplate: "${請求金額（税抜）}",
+      valueType: ValueType.STRING,
       numFmt: "#,##0",
     },
     {
@@ -551,6 +618,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "外税",
       valueTemplate: "${消費税額}",
+      valueType: ValueType.STRING,
       numFmt: "#,##0",
     },
     {
@@ -558,6 +626,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
       namedRange: "税込合計",
       valueTemplate: "${請求金額（税込）}",
+      valueType: ValueType.STRING,
       numFmt: "#,##0",
     },
   ];
