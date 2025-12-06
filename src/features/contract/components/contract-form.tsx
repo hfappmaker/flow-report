@@ -712,7 +712,7 @@ export const ContractForm = ({
               <span className="mb-2 text-sm text-muted-foreground">日</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              月末日がない場合（例：2月31日）は末日になります。
+              月末日がない場合（例：2月30日）はその月の末日になります。
             </p>
           </div>
 
@@ -749,7 +749,7 @@ export const ContractForm = ({
               <span className="mb-2 text-sm text-muted-foreground">日</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              月末日がない場合（例：2月31日）は末日になります。
+              月末日がない場合（例：2月30日）はその月の末日になります。
             </p>
           </div>
         </div>
