@@ -163,6 +163,7 @@ export interface ComboBoxFieldProps<T extends FieldValues, V> {
   label?: string;
   showClearButton?: boolean;
   disabled?: boolean;
+  variant?: "default" | "native";
 }
 
 const ComboBoxSelect = memo(
@@ -205,6 +206,48 @@ const ComboBoxSelect = memo(
 
 ComboBoxSelect.displayName = "ComboBoxSelect";
 
+const NativeSelect = memo(
+  ({
+    options,
+    value,
+    onValueChange,
+    placeholder,
+    triggerClassName,
+    disabled,
+  }: {
+    options: { label: string; value: string | number | bigint }[];
+    value: string;
+    onValueChange: (value: string) => void;
+    placeholder?: string;
+    triggerClassName?: string;
+    disabled?: boolean;
+  }) => (
+    <FormControl>
+      <select
+        className={cn(
+          "flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+          !value && "text-muted-foreground",
+          triggerClassName,
+        )}
+        value={value}
+        onChange={(e) => onValueChange(e.target.value)}
+        disabled={disabled}
+      >
+        <option value="" disabled>
+          {placeholder}
+        </option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value.toString()}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </FormControl>
+  ),
+);
+
+NativeSelect.displayName = "NativeSelect";
+
 const ComboBoxFieldContent = ({
   field,
   options,
@@ -213,6 +256,7 @@ const ComboBoxFieldContent = ({
   label,
   showClearButton,
   disabled,
+  variant = "default",
 }: {
   field: any;
   options: { label: string; value: any }[];
@@ -221,6 +265,7 @@ const ComboBoxFieldContent = ({
   label?: string;
   showClearButton: boolean;
   disabled?: boolean;
+  variant?: "default" | "native";
 }) => {
   const [localValue, setLocalValue] = useState<string>(
     field.value?.toString() ?? "",
@@ -243,10 +288,12 @@ const ComboBoxFieldContent = ({
     field.onChange(null);
   }, [field]);
 
+  const SelectComponent = variant === "native" ? NativeSelect : ComboBoxSelect;
+
   return (
     <FormItem>
       <FormLabel>{label}</FormLabel>
-      <ComboBoxSelect
+      <SelectComponent
         options={options}
         value={localValue}
         onValueChange={handleValueChange}
@@ -287,6 +334,7 @@ export const ComboBoxField = <
     label,
     showClearButton = true,
     disabled,
+    variant = "default",
   } = props;
 
   return (
@@ -302,6 +350,7 @@ export const ComboBoxField = <
           label={label}
           showClearButton={showClearButton}
           disabled={disabled}
+          variant={variant}
         />
       )}
     />
