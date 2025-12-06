@@ -653,8 +653,8 @@ export const ContractForm = ({
               </div>
             </div>
             {/* バリデーションエラーをまとめて表示 */}
-            {((form.formState.errors.basicStartTime ??
-              form.formState.errors.basicEndTime) ??
+            {(form.formState.errors.basicStartTime ??
+              form.formState.errors.basicEndTime ??
               form.formState.errors.basicBreakDuration) && (
               <p className="text-sm font-medium text-destructive">
                 {[
@@ -693,21 +693,23 @@ export const ContractForm = ({
 
           {/* Closing Day */}
           <div className="space-y-2">
-            <ComboBoxField
-              control={form.control}
-              name="closingDay"
-              options={[
-                ...Array.from({ length: 30 }, (_, i) => ({
-                  value: i + 1,
-                  label: `${i + 1}`,
-                })),
-                { value: 31, label: "31（末）" },
-              ]}
-              label="締め日"
-              disabled={isEditing}
-              showClearButton={false}
-              variant="native"
-            />
+            <div className="w-fit">
+              <ComboBoxField
+                control={form.control}
+                name="closingDay"
+                options={[
+                  ...Array.from({ length: 30 }, (_, i) => ({
+                    value: i + 1,
+                    label: `${i + 1}`,
+                  })),
+                  { value: 31, label: "31（末）" },
+                ]}
+                label="締め日"
+                disabled={isEditing}
+                showClearButton={false}
+                variant="native"
+              />
+            </div>
             <p className="text-sm text-muted-foreground">
               月末日がない場合（例：2月31日）は末日になります。
             </p>
