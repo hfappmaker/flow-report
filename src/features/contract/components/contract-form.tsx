@@ -321,6 +321,10 @@ export const ContractForm = ({
                     {...field}
                     value={field.value}
                     placeholder="契約名を入力"
+                    onBlur={() => {
+                      field.onBlur();
+                      void form.trigger("name");
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -339,6 +343,10 @@ export const ContractForm = ({
                     {...field}
                     value={field.value}
                     placeholder="クライアント名を入力"
+                    onBlur={() => {
+                      field.onBlur();
+                      void form.trigger("clientName");
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -514,6 +522,7 @@ export const ContractForm = ({
               label={`月単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
               placeholder="（例）500000"
               disabled={isEditing}
+              onBlur={() => void form.trigger("unitPrice")}
             />
           )}
 
@@ -527,6 +536,7 @@ export const ContractForm = ({
                   label={`超過単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
                   placeholder="（例）5000"
                   disabled={isEditing}
+                  onBlur={() => void form.trigger("upperRate")}
                 />
 
                 <NumberInputField
@@ -535,6 +545,7 @@ export const ContractForm = ({
                   label={`控除単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
                   placeholder="（例）5000"
                   disabled={isEditing}
+                  onBlur={() => void form.trigger("lowerRate")}
                 />
               </>
             )}
@@ -546,6 +557,7 @@ export const ContractForm = ({
                 label={`中間単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
                 placeholder="（例）5000"
                 disabled={isEditing}
+                onBlur={() => void form.trigger("middleRate")}
               />
             )}
 
@@ -556,6 +568,7 @@ export const ContractForm = ({
                 label={`時間単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
                 placeholder="（例）5000"
                 disabled={isEditing}
+                onBlur={() => void form.trigger("hourlyRate")}
               />
             )}
           </div>
@@ -569,6 +582,7 @@ export const ContractForm = ({
                 label="精算下限（時間）"
                 placeholder="（例）140"
                 disabled={isEditing}
+                onBlur={() => void form.trigger("settlementMin")}
               />
 
               <NumberInputField
@@ -577,6 +591,7 @@ export const ContractForm = ({
                 label="精算上限（時間）"
                 placeholder="（例）180"
                 disabled={isEditing}
+                onBlur={() => void form.trigger("settlementMax")}
               />
             </div>
           )}
@@ -684,6 +699,10 @@ export const ContractForm = ({
                       field.onChange(value === "" ? null : value);
                     }}
                     placeholder="基本時間入力時に自動で入力される作業内容"
+                    onBlur={() => {
+                      field.onBlur();
+                      void form.trigger("basicMemo");
+                    }}
                   />
                 </FormControl>
                 <FormMessage />

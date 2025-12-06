@@ -42,6 +42,7 @@ interface NumberInputFieldProps<T extends FieldValues> {
   disabled?: boolean;
   min?: number;
   max?: number;
+  onBlur?: () => void;
 }
 
 const NumberInput = memo(
@@ -49,6 +50,7 @@ const NumberInput = memo(
     value,
     onChange,
     onKeyDown,
+    onBlur,
     placeholder,
     disabled,
     min = 0,
@@ -57,6 +59,7 @@ const NumberInput = memo(
     value: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+    onBlur?: () => void;
     placeholder?: string;
     disabled?: boolean;
     min?: number;
@@ -71,6 +74,7 @@ const NumberInput = memo(
       step="1"
       onChange={onChange}
       onKeyDown={onKeyDown}
+      onBlur={onBlur}
       disabled={disabled}
     />
   ),
@@ -85,6 +89,7 @@ const NumberInputFieldContent = ({
   disabled,
   min,
   max,
+  onBlur,
 }: {
   field: any;
   label: string;
@@ -92,6 +97,7 @@ const NumberInputFieldContent = ({
   disabled?: boolean;
   min?: number;
   max?: number;
+  onBlur?: () => void;
 }) => {
   const [localValue, setLocalValue] = useState<string>(
     field.value?.toString() ?? "",
@@ -122,6 +128,11 @@ const NumberInputFieldContent = ({
     [],
   );
 
+  const handleBlur = useCallback(() => {
+    field.onBlur();
+    onBlur?.();
+  }, [field, onBlur]);
+
   return (
     <FormItem className="flex-1">
       <FormLabel>{label}</FormLabel>
@@ -130,6 +141,7 @@ const NumberInputFieldContent = ({
           value={localValue}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
           placeholder={placeholder}
           disabled={disabled}
           min={min}
@@ -146,7 +158,8 @@ NumberInputFieldContent.displayName = "NumberInputFieldContent";
 export const NumberInputField = <T extends FieldValues>(
   props: NumberInputFieldProps<T>,
 ) => {
-  const { control, name, label, placeholder, disabled, min, max } = props;
+  const { control, name, label, placeholder, disabled, min, max, onBlur } =
+    props;
   return (
     <FormField
       control={control}
@@ -159,6 +172,7 @@ export const NumberInputField = <T extends FieldValues>(
           disabled={disabled}
           min={min}
           max={max}
+          onBlur={onBlur}
         />
       )}
     />
