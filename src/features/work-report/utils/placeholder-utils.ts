@@ -747,23 +747,20 @@ export function resolvePlaceholderValue(
   valueType: "NUMBER" | "STRING",
   placeholderValues: Record<string, string | number>,
 ): string | number {
-  const singleKey = extractSinglePlaceholder(template);
-
-  if (singleKey && valueType === "NUMBER") {
-    // 単一プレースホルダー && 数値型の場合
-    const value = placeholderValues[singleKey];
-    if (typeof value === "number") {
-      return value;
+  if (valueType === "NUMBER") {
+    // 数値型の場合、置換後の結果を数値変換を試みる
+    const replaced = replacePlaceholders(template, placeholderValues);
+    if (typeof replaced === "number") {
+      return replaced;
     }
-    // 文字列の場合は数値変換を試みる
-    if (typeof value === "string" && value !== "") {
-      const num = Number(value);
-      return isNaN(num) ? value : num;
+    if (typeof replaced === "string" && replaced !== "") {
+      const num = Number(replaced);
+      return isNaN(num) ? replaced : num;
     }
     return "";
   }
 
-  // 複合テンプレートまたは文字列型の場合
+  // 文字列型の場合
   return replacePlaceholders(template, placeholderValues);
 }
 
