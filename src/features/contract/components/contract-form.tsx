@@ -224,7 +224,7 @@ const createContractFormSchema = (dailyWorkMinutes: number | null) =>
       {
         message:
           dailyWorkMinutes !== null
-            ? `基本休憩時間は1日あたりの作業単位（${dailyWorkMinutes}分）の倍数である必要があります`
+            ? `基本休憩時間は1日あたりの作業単位（${dailyWorkMinutes}分）で入力してください`
             : "基本休憩時間は1日あたりの作業単位で入力してください",
         path: ["basicBreakDuration"],
       },
