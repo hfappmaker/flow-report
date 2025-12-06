@@ -50,19 +50,9 @@ const createContractFormSchema = (dailyWorkMinutes: number | null) =>
       basicEndTime: z.date().nullable(),
       basicBreakDuration: z.number().nullable(),
       basicMemo: z.string().nullable(),
-      closingDay: z
-        .number()
-        .int("整数で入力してください")
-        .min(1, "締め日は1日以上である必要があります")
-        .max(31, "締め日は31日以下である必要があります")
-        .nullable(),
-      paymentMonthOffset: z.number().int().min(0).max(2).default(1), // 0=当月, 1=翌月, 2=翌々月
-      paymentDay: z
-        .number()
-        .int("整数で入力してください")
-        .min(1, "支払日は1日以上である必要があります")
-        .max(31, "支払日は31日以下である必要があります")
-        .nullable(),
+      closingDay: z.number().int().min(1).max(31),
+      paymentMonthOffset: z.number().int().min(0).max(2), // 0=当月, 1=翌月, 2=翌々月
+      paymentDay: z.number().int().min(1).max(31),
       taxInclusiveType: z.enum(["INCLUSIVE", "EXCLUSIVE"]).default("EXCLUSIVE"),
       taxRoundingType: z
         .enum(["ROUND_DOWN", "ROUND_UP", "ROUND"])
@@ -280,9 +270,9 @@ export const ContractForm = ({
       basicEndTime: null,
       basicBreakDuration: null,
       basicMemo: null,
-      closingDay: null,
+      closingDay: 31,
       paymentMonthOffset: 1,
-      paymentDay: null,
+      paymentDay: 31,
       taxInclusiveType: "EXCLUSIVE" as const,
       taxRoundingType: "ROUND_DOWN" as const,
     },
@@ -607,7 +597,6 @@ export const ContractForm = ({
                   label: num.toString(),
                 }),
               )}
-              placeholder="（例）15"
               label="1日あたりの作業単位(分)"
               disabled={isEditing}
               showClearButton={false}
@@ -623,7 +612,6 @@ export const ContractForm = ({
                   label: num.toString(),
                 }),
               )}
-              placeholder="（例）15"
               label="1ヶ月あたりの作業単位(分)"
               disabled={isEditing}
               showClearButton={false}
@@ -704,100 +692,61 @@ export const ContractForm = ({
           />
 
           {/* Closing Day */}
-          <FormField
-            control={form.control}
-            name="closingDay"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>締め日</FormLabel>
-                <FormControl>
-                  <div className="flex items-center gap-1">
-                    <Input
-                      {...field}
-                      type="number"
-                      value={field.value ?? ""}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        field.onChange(value === "" ? null : Number(value));
-                      }}
-                      placeholder="末"
-                      disabled={isEditing}
-                      min={1}
-                      max={31}
-                      className="w-16"
-                    />
-                    <span className="text-sm text-muted-foreground">日</span>
-                  </div>
-                </FormControl>
-                <p className="text-sm text-muted-foreground">
-                  締め日が未入力の場合と月末日がない場合（例：2月31日）は末日になります。
-                </p>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="space-y-2">
+            <ComboBoxField
+              control={form.control}
+              name="closingDay"
+              options={[
+                ...Array.from({ length: 30 }, (_, i) => ({
+                  value: i + 1,
+                  label: `${i + 1}`,
+                })),
+                { value: 31, label: "31（末）" },
+              ]}
+              label="締め日"
+              disabled={isEditing}
+              showClearButton={false}
+              variant="native"
+            />
+            <p className="text-sm text-muted-foreground">
+              月末日がない場合（例：2月31日）は末日になります。
+            </p>
+          </div>
 
           {/* Payment Site */}
           <div className="space-y-2">
             <FormLabel>支払いサイト</FormLabel>
             <div className="flex items-center gap-2">
-              <FormField
+              <ComboBoxField
                 control={form.control}
                 name="paymentMonthOffset"
-                render={({ field }) => (
-                  <FormItem className="shrink-0">
-                    <FormControl>
-                      <select
-                        {...field}
-                        value={field.value}
-                        onChange={(e) => {
-                          field.onChange(Number(e.target.value));
-                        }}
-                        disabled={isEditing}
-                        className="flex h-10 w-24 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <option value={0} className="bg-background text-foreground">当月</option>
-                        <option value={1} className="bg-background text-foreground">翌月</option>
-                        <option value={2} className="bg-background text-foreground">翌々月</option>
-                      </select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                options={[
+                  { value: 0, label: "当月" },
+                  { value: 1, label: "翌月" },
+                  { value: 2, label: "翌々月" },
+                ]}
+                disabled={isEditing}
+                showClearButton={false}
+                variant="native"
               />
-              <FormField
+              <ComboBoxField
                 control={form.control}
                 name="paymentDay"
-                render={({ field }) => (
-                  <FormItem className="shrink-0">
-                    <FormControl>
-                      <div className="flex items-center gap-1">
-                        <Input
-                          {...field}
-                          type="number"
-                          value={field.value ?? ""}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            field.onChange(value === "" ? null : Number(value));
-                          }}
-                          placeholder="末"
-                          disabled={isEditing}
-                          min={1}
-                          max={31}
-                          className="w-16"
-                        />
-                        <span className="text-sm text-muted-foreground">
-                          日
-                        </span>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                options={[
+                  ...Array.from({ length: 30 }, (_, i) => ({
+                    value: i + 1,
+                    label: `${i + 1}`,
+                  })),
+                  { value: 31, label: "31（末）" },
+                ]}
+                disabled={isEditing}
+                showClearButton={false}
+                variant="native"
               />
+              <span className="text-sm text-muted-foreground">日</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              支払日が未入力の場合と月末日がない場合（例：2月31日）は末日になります。
+              月末日がない場合（例：2月31日）は末日になります。
             </p>
           </div>
         </div>
