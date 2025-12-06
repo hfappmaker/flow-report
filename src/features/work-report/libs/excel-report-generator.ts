@@ -181,6 +181,76 @@ export async function generateWorkReportExcel(
         );
       }
     }
+
+    // ページ設定をコピー
+    if (worksheet.pageSetup) {
+      newSheet.pageSetup = { ...worksheet.pageSetup };
+    }
+
+    // ヘッダー・フッターをコピー
+    if (worksheet.headerFooter) {
+      newSheet.headerFooter = { ...worksheet.headerFooter };
+    }
+
+    // 行の改ページをコピー
+    if (worksheet.model.rowBreaks && worksheet.model.rowBreaks.length > 0) {
+      for (const rowBreak of worksheet.model.rowBreaks) {
+        newSheet.getRow(rowBreak.id).addPageBreak();
+      }
+    }
+
+    // 表示設定をコピー（ウィンドウ枠固定、ズーム等）
+    if (worksheet.views && worksheet.views.length > 0) {
+      newSheet.views = worksheet.views.map((view) => ({ ...view }));
+    }
+
+    // シート状態をコピー（表示/非表示）
+    newSheet.state = worksheet.state;
+
+    // オートフィルターをコピー
+    if (worksheet.autoFilter) {
+      newSheet.autoFilter = worksheet.autoFilter;
+    }
+
+    // 条件付き書式をコピー
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const worksheetAny = worksheet as any;
+    const conditionalFormattings = worksheetAny.conditionalFormattings as
+      | ExcelJS.ConditionalFormattingOptions[]
+      | undefined;
+    if (conditionalFormattings && conditionalFormattings.length > 0) {
+      for (const cf of conditionalFormattings) {
+        newSheet.addConditionalFormatting(cf);
+      }
+    }
+
+    // データ入力規則をコピー
+    const sourceDataValidations = worksheetAny.dataValidations?.model as
+      | Record<string, ExcelJS.DataValidation>
+      | undefined;
+    if (sourceDataValidations) {
+      for (const [address, validation] of Object.entries(
+        sourceDataValidations,
+      )) {
+        if (validation) {
+          newSheet.getCell(address).dataValidation = validation;
+        }
+      }
+    }
+
+    // テーブルをコピー
+    const tables = worksheet.getTables();
+    for (const [table] of tables) {
+      if (table) {
+        newSheet.addTable(table);
+      }
+    }
+
+    // シート保護をコピー
+    if (worksheetAny.sheetProtection) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (newSheet as any).sheetProtection = { ...worksheetAny.sheetProtection };
+    }
   }
 
   // コピー元のテンプレートに定義された名前付き範囲を新しいワークブックに追加する
