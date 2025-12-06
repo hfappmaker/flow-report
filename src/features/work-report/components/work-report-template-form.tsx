@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldMappingEditor } from "@/features/work-report/components/field-mapping-editor";
-import type { FieldMappingFormValues } from "@/features/work-report/schemas/work-report-template-form-schema";
 import {
+  type FieldMappingFormValues,
   validateExcelFile,
   validateNamedRange,
 } from "@/features/work-report/schemas/work-report-template-form-schema";
@@ -114,6 +114,63 @@ export function ExcelTemplateForm({
     return Object.keys(newErrors).length === 0;
   };
 
+  const validateFieldMapping = (
+    index: number,
+    field: keyof FieldMappingFormValues,
+  ) => {
+    const mapping = fieldMappings[index];
+    if (!mapping) return;
+
+    const fieldErrors: { namedRange?: string; valueTemplate?: string } = {};
+
+    if (field === "namedRange") {
+      const namedRangeError = validateNamedRange(mapping.namedRange);
+      if (namedRangeError) {
+        fieldErrors.namedRange = namedRangeError;
+      }
+    } else if (field === "valueTemplate") {
+      if (!mapping.valueTemplate.trim()) {
+        fieldErrors.valueTemplate = "値は必須です";
+      }
+    }
+
+    setErrors((prev) => {
+      const currentFieldMappingErrors = prev.fieldMappings ?? {};
+      const currentFieldErrors = currentFieldMappingErrors[index] ?? {};
+
+      const updatedFieldErrors = {
+        ...currentFieldErrors,
+        [field]: fieldErrors[field],
+      };
+
+      // エラーがない場合はそのフィールドのエラーを削除
+      if (!updatedFieldErrors.namedRange) {
+        delete updatedFieldErrors.namedRange;
+      }
+      if (!updatedFieldErrors.valueTemplate) {
+        delete updatedFieldErrors.valueTemplate;
+      }
+
+      const updatedFieldMappingErrors = {
+        ...currentFieldMappingErrors,
+        [index]: updatedFieldErrors,
+      };
+
+      // このインデックスにエラーがなければ削除
+      if (Object.keys(updatedFieldErrors).length === 0) {
+        delete updatedFieldMappingErrors[index];
+      }
+
+      return {
+        ...prev,
+        fieldMappings:
+          Object.keys(updatedFieldMappingErrors).length > 0
+            ? updatedFieldMappingErrors
+            : undefined,
+      };
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -198,6 +255,7 @@ export function ExcelTemplateForm({
         <FieldMappingEditor
           fieldMappings={fieldMappings}
           onChange={setFieldMappings}
+          onBlur={validateFieldMapping}
           errors={errors.fieldMappings}
         />
       </div>

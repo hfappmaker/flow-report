@@ -11,12 +11,14 @@ import { type FieldMappingFormValues } from "@/features/work-report/schemas/work
 interface FieldMappingEditorProps {
   fieldMappings: FieldMappingFormValues[];
   onChange: (fieldMappings: FieldMappingFormValues[]) => void;
+  onBlur?: (index: number, field: keyof FieldMappingFormValues) => void;
   errors?: Record<number, { namedRange?: string; valueTemplate?: string }>;
 }
 
 export function FieldMappingEditor({
   fieldMappings,
   onChange,
+  onBlur,
   errors,
 }: FieldMappingEditorProps) {
   const handleAdd = () => {
@@ -73,6 +75,9 @@ export function FieldMappingEditor({
                   onChange={(e) => {
                     handleChange(index, "namedRange", e.target.value);
                   }}
+                  onBlur={() => {
+                    onBlur?.(index, "namedRange");
+                  }}
                   placeholder="例: 会社名"
                   className={
                     errors?.[index]?.namedRange ? "border-red-500" : ""
@@ -96,6 +101,9 @@ export function FieldMappingEditor({
                   value={mapping.valueTemplate}
                   onChange={(e) => {
                     handleChange(index, "valueTemplate", e.target.value);
+                  }}
+                  onBlur={() => {
+                    onBlur?.(index, "valueTemplate");
                   }}
                   placeholder="例: ${クライアント名}様"
                   className={
