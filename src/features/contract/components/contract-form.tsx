@@ -611,6 +611,7 @@ export const ContractForm = ({
               label="1日あたりの作業単位(分)"
               disabled={isEditing}
               showClearButton={false}
+              variant="native"
             />
 
             <ComboBoxField
@@ -626,6 +627,7 @@ export const ContractForm = ({
               label="1ヶ月あたりの作業単位(分)"
               disabled={isEditing}
               showClearButton={false}
+              variant="native"
             />
           </div>
 
@@ -657,7 +659,7 @@ export const ContractForm = ({
                   control={form.control}
                   name="basicBreakDuration"
                   minuteStep={form.getValues("dailyWorkMinutes") ?? 1}
-                  label="基本休憩時間(分)"
+                  label="基本休憩時間"
                   showFormMessage={false}
                 />
               </div>

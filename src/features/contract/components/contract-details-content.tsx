@@ -4,6 +4,12 @@ import { Label } from "@/components/ui/label";
 import { type ContractOutput } from "@/features/contract/types/contract";
 import { formatDateAsUTC } from "@/utils/date-utils";
 
+const formatMinutesAsTime = (minutes: number): string => {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
+};
+
 interface ContractDetailsContentProps {
   contract: ContractOutput;
   onNavigateToWorkReports?: (contractId: string) => void;
@@ -254,7 +260,7 @@ export const ContractDetailsContent = ({
             </Label>
             <p className="mt-1">
               {contract.basicBreakDuration
-                ? `${contract.basicBreakDuration.toString()}分`
+                ? formatMinutesAsTime(contract.basicBreakDuration)
                 : "なし"}
             </p>
           </div>
