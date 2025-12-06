@@ -12,6 +12,7 @@ export function generateBasicEmailPlaceholderValues(params: {
   return {
     クライアント名: params.clientName,
     作業者名: params.userName,
+    名前: params.userName,
     対象年: params.targetDate.getFullYear(),
     対象月: params.targetDate.getMonth() + 1,
   };
