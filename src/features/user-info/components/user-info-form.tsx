@@ -141,57 +141,71 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
           </div>
 
           {/* 住所セクション */}
-          {isEditing && (
-            <div className="space-y-4 border-t pt-4">
-              <h3 className="font-medium">住所情報</h3>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="postalCode">郵便番号</Label>
+          <div className="space-y-4 border-t pt-4">
+            <h3 className="font-medium">住所情報</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="postalCode">郵便番号</Label>
+                {isEditing ? (
                   <Input
                     id="postalCode"
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
                     placeholder="例: 123-4567"
                   />
-                </div>
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="address">住所</Label>
+                ) : (
+                  <p className="py-2 text-sm">{postalCode || "未設定"}</p>
+                )}
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="address">住所</Label>
+                {isEditing ? (
                   <Input
                     id="address"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     placeholder="例: 東京都渋谷区〇〇1-2-3"
                   />
-                </div>
+                ) : (
+                  <p className="py-2 text-sm">{address || "未設定"}</p>
+                )}
               </div>
             </div>
-          )}
+          </div>
 
           {/* 銀行口座セクション */}
-          {isEditing && (
-            <div className="space-y-4 border-t pt-4">
-              <h3 className="font-medium">銀行口座情報</h3>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="bankName">銀行名</Label>
+          <div className="space-y-4 border-t pt-4">
+            <h3 className="font-medium">銀行口座情報</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="bankName">銀行名</Label>
+                {isEditing ? (
                   <Input
                     id="bankName"
                     value={bankName}
                     onChange={(e) => setBankName(e.target.value)}
                     placeholder="例: 〇〇銀行"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="bankBranchName">支店名</Label>
+                ) : (
+                  <p className="py-2 text-sm">{bankName || "未設定"}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bankBranchName">支店名</Label>
+                {isEditing ? (
                   <Input
                     id="bankBranchName"
                     value={bankBranchName}
                     onChange={(e) => setBankBranchName(e.target.value)}
                     placeholder="例: 〇〇支店"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="bankAccountType">口座種別</Label>
+                ) : (
+                  <p className="py-2 text-sm">{bankBranchName || "未設定"}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bankAccountType">口座種別</Label>
+                {isEditing ? (
                   <Select
                     value={bankAccountType}
                     onValueChange={setBankAccountType}
@@ -207,28 +221,38 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="bankAccountNumber">口座番号</Label>
+                ) : (
+                  <p className="py-2 text-sm">{bankAccountType || "未設定"}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bankAccountNumber">口座番号</Label>
+                {isEditing ? (
                   <Input
                     id="bankAccountNumber"
                     value={bankAccountNumber}
                     onChange={(e) => setBankAccountNumber(e.target.value)}
                     placeholder="例: 1234567"
                   />
-                </div>
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="bankAccountHolder">口座名義</Label>
+                ) : (
+                  <p className="py-2 text-sm">{bankAccountNumber || "未設定"}</p>
+                )}
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="bankAccountHolder">口座名義</Label>
+                {isEditing ? (
                   <Input
                     id="bankAccountHolder"
                     value={bankAccountHolder}
                     onChange={(e) => setBankAccountHolder(e.target.value)}
                     placeholder="例: ヤマダ タロウ"
                   />
-                </div>
+                ) : (
+                  <p className="py-2 text-sm">{bankAccountHolder || "未設定"}</p>
+                )}
               </div>
             </div>
-          )}
+          </div>
 
           <div className="flex justify-end gap-2">
             {isEditing ? (
