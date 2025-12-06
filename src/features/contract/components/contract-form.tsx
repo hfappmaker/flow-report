@@ -653,8 +653,8 @@ export const ContractForm = ({
               </div>
             </div>
             {/* バリデーションエラーをまとめて表示 */}
-            {(form.formState.errors.basicStartTime ||
-              form.formState.errors.basicEndTime ||
+            {((form.formState.errors.basicStartTime ??
+              form.formState.errors.basicEndTime) ??
               form.formState.errors.basicBreakDuration) && (
               <p className="text-sm font-medium text-destructive">
                 {[
@@ -721,9 +721,9 @@ export const ContractForm = ({
                 control={form.control}
                 name="paymentMonthOffset"
                 options={[
-                  { value: 0, label: "当月" },
-                  { value: 1, label: "翌月" },
-                  { value: 2, label: "翌々月" },
+                  { value: Number(0), label: "当月" },
+                  { value: Number(1), label: "翌月" },
+                  { value: Number(2), label: "翌々月" },
                 ]}
                 disabled={isEditing}
                 showClearButton={false}
