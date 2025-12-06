@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import ClientWorkReportPage from "./page.client";
 import { currentUser } from "@/features/auth/libs/auth";
+import { getUserById } from "@/features/auth/repositories/user-repository";
 import { fetchHolidays } from "@/features/holidays/libs/google-calendar";
 import { getAttendancesByWorkReportIdAction } from "@/features/work-report/actions/attendance";
 import { getWorkReportWithContractById } from "@/features/work-report/repositories/work-report-repository";
@@ -18,10 +19,17 @@ export default async function WorkReportPage({
   params: Promise<{ workReportId: string }>;
 }) {
   const { workReportId } = await params;
-  const user = await currentUser();
-  if (!user?.id) {
+  const sessionUser = await currentUser();
+  if (!sessionUser?.id) {
     return notFound();
   }
+
+  // ユーザーの詳細情報を取得（銀行口座情報を含む）
+  const userResult = await getUserById(sessionUser.id);
+  if (!userResult.success || !userResult.data) {
+    return notFound();
+  }
+  const user = userResult.data;
 
   // 作業報告書と契約情報を一緒に取得（N+1クエリを回避）
   const workReportWithContractResult =
@@ -58,6 +66,13 @@ export default async function WorkReportPage({
       targetDate={workReport.targetDate}
       userName={user.name ?? ""}
       userEmail={user.email ?? ""}
+      postalCode={user.postalCode}
+      address={user.address}
+      bankName={user.bankName}
+      bankBranchName={user.bankBranchName}
+      bankAccountType={user.bankAccountType}
+      bankAccountNumber={user.bankAccountNumber}
+      bankAccountHolder={user.bankAccountHolder}
       attendances={attendances}
       contractName={contract.name}
       clientName={contract.clientName}

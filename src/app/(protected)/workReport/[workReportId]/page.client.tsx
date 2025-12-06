@@ -121,6 +121,13 @@ export default function ClientWorkReportPage({
   rateType,
   paymentMonthOffset,
   paymentDay,
+  postalCode,
+  address,
+  bankName,
+  bankBranchName,
+  bankAccountType,
+  bankAccountNumber,
+  bankAccountHolder,
 }: WorkReportClientProps) {
   const router = useRouter();
   const { error, success, showError, showSuccess, clearError, clearSuccess } =
@@ -448,6 +455,14 @@ export default function ClientWorkReportPage({
         dailyWorkMinutes,
         monthlyWorkMinutes,
         remarks: remarks || null,
+        // ユーザー情報（請求書用）
+        postalCode,
+        address,
+        bankName,
+        bankBranchName,
+        bankAccountType,
+        bankAccountNumber,
+        bankAccountHolder,
       };
 
       // 請求書用の契約データ
@@ -518,6 +533,13 @@ export default function ClientWorkReportPage({
       dailyWorkMinutes,
       monthlyWorkMinutes,
       remarks,
+      postalCode,
+      address,
+      bankName,
+      bankBranchName,
+      bankAccountType,
+      bankAccountNumber,
+      bankAccountHolder,
       unitPrice,
       hourlyRate,
       settlementMin,

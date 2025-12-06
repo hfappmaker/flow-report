@@ -28,6 +28,14 @@ export interface WorkReportClientProps {
   userName: string;
   userEmail: string;
   targetDate: Date;
+  // ユーザー情報（請求書用）
+  postalCode: string | null;
+  address: string | null;
+  bankName: string | null;
+  bankBranchName: string | null;
+  bankAccountType: string | null;
+  bankAccountNumber: string | null;
+  bankAccountHolder: string | null;
   dailyWorkMinutes: number;
   monthlyWorkMinutes: number;
   basicStartTime: Date | null;
