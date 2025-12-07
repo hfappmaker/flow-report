@@ -182,75 +182,101 @@ export async function generateWorkReportExcel(
       }
     }
 
-    // // ページ設定をコピー
-    // if (worksheet.pageSetup) {
-    //   newSheet.pageSetup = { ...worksheet.pageSetup };
-    // }
+    // ページ設定をコピー
+    if (worksheet.pageSetup) {
+      newSheet.pageSetup.blackAndWhite = worksheet.pageSetup.blackAndWhite;
+      newSheet.pageSetup.cellComments = worksheet.pageSetup.cellComments;
+      newSheet.pageSetup.draft = worksheet.pageSetup.draft;
+      newSheet.pageSetup.errors = worksheet.pageSetup.errors;
+      newSheet.pageSetup.firstPageNumber = worksheet.pageSetup.firstPageNumber;
+      newSheet.pageSetup.fitToHeight = worksheet.pageSetup.fitToHeight;
+      // fitToPageをセットするとExcelが破損したのでセットしない
+      // newSheet.pageSetup.fitToPage = worksheet.pageSetup.fitToPage;
+      newSheet.pageSetup.fitToWidth = worksheet.pageSetup.fitToWidth;
+      newSheet.pageSetup.horizontalCentered =
+        worksheet.pageSetup.horizontalCentered;
+      newSheet.pageSetup.horizontalDpi = worksheet.pageSetup.horizontalDpi;
+      newSheet.pageSetup.margins = worksheet.pageSetup.margins;
+      newSheet.pageSetup.orientation = worksheet.pageSetup.orientation;
+      newSheet.pageSetup.pageOrder = worksheet.pageSetup.pageOrder;
+      newSheet.pageSetup.paperSize = worksheet.pageSetup.paperSize;
+      newSheet.pageSetup.printArea = worksheet.pageSetup.printArea;
+      newSheet.pageSetup.printTitlesColumn =
+        worksheet.pageSetup.printTitlesColumn;
+      newSheet.pageSetup.printTitlesRow = worksheet.pageSetup.printTitlesRow;
+      newSheet.pageSetup.scale = worksheet.pageSetup.scale;
+      newSheet.pageSetup.showGridLines = worksheet.pageSetup.showGridLines;
+      newSheet.pageSetup.showRowColHeaders =
+        worksheet.pageSetup.showRowColHeaders;
+      newSheet.pageSetup.verticalCentered =
+        worksheet.pageSetup.verticalCentered;
+      newSheet.pageSetup.verticalDpi = worksheet.pageSetup.verticalDpi;
+    }
 
-    // // ヘッダー・フッターをコピー
-    // if (worksheet.headerFooter) {
-    //   newSheet.headerFooter = { ...worksheet.headerFooter };
-    // }
+    // ヘッダー・フッターをコピー
+    if (worksheet.headerFooter) {
+      newSheet.headerFooter = { ...worksheet.headerFooter };
+    }
 
-    // // 行の改ページをコピー
-    // if (worksheet.model.rowBreaks && worksheet.model.rowBreaks.length > 0) {
-    //   for (const rowBreak of worksheet.model.rowBreaks) {
-    //     newSheet.getRow(rowBreak.id).addPageBreak();
-    //   }
-    // }
+    // 行の改ページをコピー
+    if (worksheet.model.rowBreaks.length > 0) {
+      for (const rowBreak of worksheet.model.rowBreaks) {
+        newSheet.getRow(rowBreak.id).addPageBreak();
+      }
+    }
 
-    // // 表示設定をコピー（ウィンドウ枠固定、ズーム等）
-    // if (worksheet.views && worksheet.views.length > 0) {
-    //   newSheet.views = worksheet.views.map((view) => ({ ...view }));
-    // }
+    // 表示設定をコピー（ウィンドウ枠固定、ズーム等）
+    if (worksheet.views && worksheet.views.length > 0) {
+      newSheet.views = worksheet.views.map((view) => ({ ...view }));
+    }
 
-    // // シート状態をコピー（表示/非表示）
-    // newSheet.state = worksheet.state;
+    // シート状態をコピー（表示/非表示）
+    newSheet.state = worksheet.state;
 
-    // // オートフィルターをコピー
-    // if (worksheet.autoFilter) {
-    //   newSheet.autoFilter = worksheet.autoFilter;
-    // }
+    // オートフィルターをコピー
+    if (worksheet.autoFilter) {
+      newSheet.autoFilter = worksheet.autoFilter;
+    }
 
-    // // 条件付き書式をコピー
-    // // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // const worksheetAny = worksheet as any;
-    // const conditionalFormattings = worksheetAny.conditionalFormattings as
-    //   | ExcelJS.ConditionalFormattingOptions[]
-    //   | undefined;
-    // if (conditionalFormattings && conditionalFormattings.length > 0) {
-    //   for (const cf of conditionalFormattings) {
-    //     newSheet.addConditionalFormatting(cf);
-    //   }
-    // }
+    // 条件付き書式をコピー
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const worksheetAny = worksheet as any;
+    const conditionalFormattings = worksheetAny.conditionalFormattings as
+      | ExcelJS.ConditionalFormattingOptions[]
+      | undefined;
+    if (conditionalFormattings && conditionalFormattings.length > 0) {
+      for (const cf of conditionalFormattings) {
+        newSheet.addConditionalFormatting(cf);
+      }
+    }
 
-    // // データ入力規則をコピー
-    // const sourceDataValidations = worksheetAny.dataValidations?.model as
-    //   | Record<string, ExcelJS.DataValidation>
-    //   | undefined;
-    // if (sourceDataValidations) {
-    //   for (const [address, validation] of Object.entries(
-    //     sourceDataValidations,
-    //   )) {
-    //     if (validation) {
-    //       newSheet.getCell(address).dataValidation = validation;
-    //     }
-    //   }
-    // }
+    // データ入力規則をコピー
+    const sourceDataValidations = worksheetAny.dataValidations?.model as
+      | Record<string, ExcelJS.DataValidation>
+      | undefined;
+    if (sourceDataValidations) {
+      for (const [address, validation] of Object.entries(
+        sourceDataValidations,
+      )) {
+        if (validation) {
+          newSheet.getCell(address).dataValidation = validation;
+        }
+      }
+    }
 
-    // // テーブルをコピー
-    // const tables = worksheet.getTables();
-    // for (const [table] of tables) {
-    //   if (table) {
-    //     newSheet.addTable(table);
-    //   }
-    // }
+    // テーブルをコピー
+    const tables = worksheet.getTables();
+    for (const [table] of tables) {
+      if (table) {
+        newSheet.addTable(table);
+      }
+    }
 
-    // // シート保護をコピー
-    // if (worksheetAny.sheetProtection) {
-    //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    //   (newSheet as any).sheetProtection = { ...worksheetAny.sheetProtection };
-    // }
+    // シート保護をコピー
+    if (worksheetAny.sheetProtection) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (newSheet as any).sheetProtection = { ...worksheetAny.sheetProtection };
+    }
   }
 
   // コピー元のテンプレートに定義された名前付き範囲を新しいワークブックに追加する
