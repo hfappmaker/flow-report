@@ -8,7 +8,7 @@ Please perform the following steps:
 
 1. **Get current branch**: Run `git branch --show-current` to get the current branch name
 
-2. **Execute shared steps**: Follow all steps in `.claude/commands/_shared/lint-format-commit-push.md`
+2. **Execute commit-push**: Follow all steps in `.claude/commands/commit-push.md`
    - Note: For the push step, use `git push -u origin <current-branch>` instead of `git push`
 
 3. **Generate PR description**: Analyze all commits in the current branch (compared to develop) and generate a PR description:

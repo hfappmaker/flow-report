@@ -43,6 +43,6 @@
 
 ## Claude Codeカスタムコマンド
 - `/commit-push`: Prettier自動フォーマット→コミット→プッシュの一括実行
-- `/create-pr`: PRを作成
+- `/create-pr`: `/commit-push`を実行後、PRを作成
 - `/refactor`: リファクタリング支援
 - `/sync-serena-memories`: Serenaメモリーをコードベースと同期

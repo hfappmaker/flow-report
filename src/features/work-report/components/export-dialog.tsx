@@ -2,7 +2,7 @@
 
 import ExcelJS from "exceljs";
 import { Download, FileSpreadsheet, FileText } from "lucide-react";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -184,6 +184,8 @@ export function ExportDialog({
   const [isProcessing, setIsProcessing] = useState(false);
   // タブ状態
   const [activeTab, setActiveTabState] = useState<ExportTabType>("excel");
+  // 初期化済みフラグ（localStorageからの復元を1回だけ実行するため）
+  const isInitializedRef = useRef(false);
   // freee請求書作成状態
   const [isCreatingFreeeInvoice, setIsCreatingFreeeInvoice] = useState(false);
 
@@ -203,9 +205,16 @@ export function ExportDialog({
     [invoiceTemplates],
   );
 
-  // localStorageから設定を復元
+  // localStorageから設定を復元（1回だけ実行）
   useEffect(() => {
+    // すでに初期化済みの場合は何もしない
+    if (isInitializedRef.current) {
+      return;
+    }
+
     if (isLoaded) {
+      isInitializedRef.current = true;
+
       if (settings.workReportTemplateId) {
         // 保存されたテンプレートが存在するか確認（デフォルトテンプレートも含む）
         const exists =
@@ -481,7 +490,7 @@ export function ExportDialog({
             <Download className="size-5" />
             エクスポート
           </DialogTitle>
-          <DialogDescription>出力方法を選択してください。</DialogDescription>
+          {/* <DialogDescription>出力方法を選択してください。</DialogDescription> */}
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={handleTabChange}>
