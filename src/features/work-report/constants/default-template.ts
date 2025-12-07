@@ -17,7 +17,8 @@ export const DEFAULT_TEMPLATE_NAME = "デフォルトテンプレート";
 /**
  * デフォルトテンプレートのファイル名
  */
-export const DEFAULT_TEMPLATE_FILE_NAME = "work-report-default-template.xlsx";
+export const DEFAULT_TEMPLATE_FILE_NAME =
+  "作業報告書デフォルトテンプレート.xlsx";
 
 /**
  * デフォルトテンプレートのシート名
@@ -166,7 +167,7 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_ID =
  * 請求書デフォルトテンプレートのファイル名
  */
 export const DEFAULT_INVOICE_TEMPLATE_FILE_NAME =
-  "invoice-default-template.xlsx";
+  "請求書デフォルトテンプレート.xlsx";
 
 /**
  * 請求書デフォルトテンプレート（上下割・税込）のシート名
