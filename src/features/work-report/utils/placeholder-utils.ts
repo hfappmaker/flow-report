@@ -760,6 +760,10 @@ export function resolvePlaceholderValue(
 
   // 文字列の場合、数値に変換可能なら数値として返す
   const trimmed = replaced.trim();
+  // trim後が空文字列の場合は空文字列を返す（Number("")が0になる問題を回避）
+  if (trimmed === "") {
+    return "";
+  }
   const num = Number(trimmed);
   if (!isNaN(num) && isFinite(num)) {
     return num;
