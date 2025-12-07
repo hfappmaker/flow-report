@@ -118,7 +118,7 @@ export function PlaceholderHelp({
                               )}
                             </button>
                           </td>
-                          <td className="py-2 text-muted-foreground">
+                          <td className="whitespace-pre-line py-2 text-muted-foreground">
                             {placeholder.description}
                           </td>
                         </tr>
