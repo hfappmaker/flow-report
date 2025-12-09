@@ -214,7 +214,7 @@ export const DEFAULT_INVOICE_TAX_INCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
       id: "default-invoice-inclusive-4-1",
       templateId: DEFAULT_INVOICE_TAX_INCLUSIVE_ID,
       namedRange: "適格請求書発行事業者登録番号",
-      valueTemplate: "${登録番号}",
+      valueTemplate: "登録番号:${登録番号}",
     },
     {
       id: "default-invoice-inclusive-5",
@@ -376,8 +376,8 @@ export const DEFAULT_INVOICE_TAX_EXCLUSIVE_FIELD_MAPPINGS: ExcelTemplateWithFiel
     {
       id: "default-invoice-exclusive-4-1",
       templateId: DEFAULT_INVOICE_TAX_EXCLUSIVE_ID,
-      namedRange: "登録番号",
-      valueTemplate: "${登録番号}",
+      namedRange: "適格請求書発行事業者登録番号",
+      valueTemplate: "登録番号:${登録番号}",
     },
     {
       id: "default-invoice-exclusive-5",
