@@ -23,6 +23,7 @@ import { BANK_ACCOUNT_TYPES } from "@/features/user-info/schemas/user-info-form-
 type UserInfo = {
   name: string;
   email: string;
+  invoiceRegistrationNumber: string;
   postalCode: string;
   address: string;
   bankName: string;
@@ -44,6 +45,9 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
 
   // フォームの状態
   const [name, setName] = useState(initialInfo?.name ?? "");
+  const [invoiceRegistrationNumber, setInvoiceRegistrationNumber] = useState(
+    initialInfo?.invoiceRegistrationNumber ?? "",
+  );
   const [postalCode, setPostalCode] = useState(initialInfo?.postalCode ?? "");
   const [address, setAddress] = useState(initialInfo?.address ?? "");
   const [bankName, setBankName] = useState(initialInfo?.bankName ?? "");
@@ -62,6 +66,7 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
 
   const handleCancel = () => {
     setName(initialInfo?.name ?? "");
+    setInvoiceRegistrationNumber(initialInfo?.invoiceRegistrationNumber ?? "");
     setPostalCode(initialInfo?.postalCode ?? "");
     setAddress(initialInfo?.address ?? "");
     setBankName(initialInfo?.bankName ?? "");
@@ -82,6 +87,7 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
     startTransition(async () => {
       const result = await updateUserInfo({
         name: name || undefined,
+        invoiceRegistrationNumber: invoiceRegistrationNumber || undefined,
         postalCode: postalCode || undefined,
         address: address || undefined,
         bankName: bankName || undefined,
@@ -136,6 +142,32 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
               <div className="space-y-2">
                 <Label>メールアドレス</Label>
                 <p className="py-2 text-sm">{initialInfo?.email || "未設定"}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 事業者情報セクション */}
+          <div className="space-y-4 border-t pt-4">
+            <h3 className="font-medium">事業者情報</h3>
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="invoiceRegistrationNumber">
+                  適格請求書発行事業者登録番号
+                </Label>
+                {isEditing ? (
+                  <Input
+                    id="invoiceRegistrationNumber"
+                    value={invoiceRegistrationNumber}
+                    onChange={(e) =>
+                      setInvoiceRegistrationNumber(e.target.value)
+                    }
+                    placeholder="例: T1234567890123"
+                  />
+                ) : (
+                  <p className="py-2 text-sm">
+                    {invoiceRegistrationNumber || "未設定"}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -235,7 +267,9 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
                     placeholder="例: 1234567"
                   />
                 ) : (
-                  <p className="py-2 text-sm">{bankAccountNumber || "未設定"}</p>
+                  <p className="py-2 text-sm">
+                    {bankAccountNumber || "未設定"}
+                  </p>
                 )}
               </div>
               <div className="space-y-2 sm:col-span-2">
@@ -248,7 +282,9 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
                     placeholder="例: ヤマダ タロウ"
                   />
                 ) : (
-                  <p className="py-2 text-sm">{bankAccountHolder || "未設定"}</p>
+                  <p className="py-2 text-sm">
+                    {bankAccountHolder || "未設定"}
+                  </p>
                 )}
               </div>
             </div>

@@ -121,6 +121,7 @@ export default function ClientWorkReportPage({
   rateType,
   paymentMonthOffset,
   paymentDay,
+  invoiceRegistrationNumber,
   postalCode,
   address,
   bankName,
@@ -456,6 +457,7 @@ export default function ClientWorkReportPage({
         monthlyWorkMinutes,
         remarks: remarks || null,
         // ユーザー情報（請求書用）
+        invoiceRegistrationNumber,
         postalCode,
         address,
         bankName,
@@ -533,6 +535,7 @@ export default function ClientWorkReportPage({
       dailyWorkMinutes,
       monthlyWorkMinutes,
       remarks,
+      invoiceRegistrationNumber,
       postalCode,
       address,
       bankName,

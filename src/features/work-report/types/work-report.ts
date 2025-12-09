@@ -29,6 +29,7 @@ export interface WorkReportClientProps {
   userEmail: string;
   targetDate: Date;
   // ユーザー情報（請求書用）
+  invoiceRegistrationNumber: string | null;
   postalCode: string | null;
   address: string | null;
   bankName: string | null;

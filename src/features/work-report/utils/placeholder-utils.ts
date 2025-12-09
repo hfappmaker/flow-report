@@ -314,6 +314,13 @@ export const AVAILABLE_PLACEHOLDERS: PlaceholderDefinition[] = [
     example: "ヤマダ タロウ",
     category: "user",
   },
+  {
+    key: "登録番号",
+    label: "登録番号",
+    description: "適格請求書発行事業者登録番号（例: T1234567890123）",
+    example: "T1234567890123",
+    category: "user",
+  },
   // 請求情報
   {
     key: "基本金額",
@@ -588,6 +595,7 @@ export function generatePlaceholderValues(
     口座種別: data.bankAccountType ?? "",
     口座番号: data.bankAccountNumber ?? "",
     口座名義: data.bankAccountHolder ?? "",
+    登録番号: data.invoiceRegistrationNumber ?? "",
   };
 
   // 契約データがない場合は基本プレースホルダーのみ返す

@@ -53,6 +53,7 @@ export const getUserInfo = async () => {
   return {
     name: dbUser.name ?? "",
     email: dbUser.email ?? "",
+    invoiceRegistrationNumber: dbUser.invoiceRegistrationNumber ?? "",
     postalCode: dbUser.postalCode ?? "",
     address: dbUser.address ?? "",
     bankName: dbUser.bankName ?? "",

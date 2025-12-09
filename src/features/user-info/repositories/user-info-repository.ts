@@ -11,6 +11,7 @@ export async function updateUserInfo(
       where: { id: userId },
       data: {
         name: values.name ?? null,
+        invoiceRegistrationNumber: values.invoiceRegistrationNumber ?? null,
         postalCode: values.postalCode ?? null,
         address: values.address ?? null,
         bankName: values.bankName ?? null,
