@@ -85,6 +85,14 @@ src/
 - カスタムのローディングスピナーやオーバーレイを実装しない
 - ユーザーからの明示的な指示がある場合のみ例外を許可
 
+## フォーム作成ルール
+- フォームには必ず `react-hook-form` + `zodResolver` パターンを使用
+- 各フィールドに個別の `useState` を使用しない
+- Zodスキーマなしで手動バリデーションを行わない
+- バリデーションスキーマは `features/[feature]/schemas/` に定義
+- `@/components/ui/form` コンポーネント（Form, FormField, FormControl, FormMessage）を使用
+- 参考実装: `src/features/contract/components/contract-form.tsx`
+
 ## その他
 - barrel filesを避ける（tree-shakingの問題）
 - 直接インポートを使用
