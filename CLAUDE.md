@@ -134,7 +134,80 @@ export const createAction = async (data: Input) => {
 };
 ```
 
-### 2.6 Loading Processing Rules
+### 2.6 Form Creation Rules
+
+**Always use `react-hook-form` + `zodResolver` pattern for forms:**
+
+- Do NOT use individual `useState` for each form field
+- Do NOT manually validate form data without Zod schema
+- Always define validation schema in `features/[feature]/schemas/` directory
+- Always use `@/components/ui/form` components (`Form`, `FormField`, `FormControl`, `FormMessage`)
+
+**Required imports:**
+
+```typescript
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { myFormSchema, MyFormValues } from "@/features/[feature]/schemas/my-form-schema";
+```
+
+**Required pattern:**
+
+```typescript
+// 1. Initialize form with zodResolver
+const form = useForm<MyFormValues>({
+  resolver: zodResolver(myFormSchema),
+  defaultValues: {
+    fieldName: initialValue ?? "",
+  },
+});
+
+// 2. Handle submit with safeParse validation
+const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  const values = form.getValues();
+  const result = myFormSchema.safeParse(values);
+  if (!result.success) {
+    result.error.issues.forEach((issue) => {
+      const path = issue.path[0] as keyof MyFormValues;
+      form.setError(path, { message: issue.message });
+    });
+    return;
+  }
+  // Proceed with validated data: result.data
+};
+
+// 3. Use FormField for each input
+<Form {...form}>
+  <form onSubmit={handleFormSubmit}>
+    <FormField
+      control={form.control}
+      name="fieldName"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Label</FormLabel>
+          <FormControl>
+            <Input {...field} value={field.value ?? ""} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  </form>
+</Form>
+```
+
+**Reference implementation:** `src/features/contract/components/contract-form.tsx`
+
+### 2.7 Loading Processing Rules
 
 **Always use `useTransitionContext` for loading handling:**
 

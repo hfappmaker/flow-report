@@ -1,12 +1,22 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { UserCog } from "lucide-react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import ErrorAlert from "@/components/ui/feedback/error-alert";
 import SuccessAlert from "@/components/ui/feedback/success-alert";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -18,7 +28,11 @@ import {
 } from "@/components/ui/select";
 import { useTransitionContext } from "@/contexts/transition-context";
 import { updateUserInfo } from "@/features/user-info/actions/update-user-info";
-import { BANK_ACCOUNT_TYPES } from "@/features/user-info/schemas/user-info-form-schema";
+import {
+  BANK_ACCOUNT_TYPES,
+  userInfoFormSchema,
+  UserInfoFormValues,
+} from "@/features/user-info/schemas/user-info-form-schema";
 
 type UserInfo = {
   name: string;
@@ -43,67 +57,61 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
   const [success, setSuccess] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
-  // フォームの状態
-  const [name, setName] = useState(initialInfo?.name ?? "");
-  const [invoiceRegistrationNumber, setInvoiceRegistrationNumber] = useState(
-    initialInfo?.invoiceRegistrationNumber ?? "",
-  );
-  const [postalCode, setPostalCode] = useState(initialInfo?.postalCode ?? "");
-  const [address, setAddress] = useState(initialInfo?.address ?? "");
-  const [bankName, setBankName] = useState(initialInfo?.bankName ?? "");
-  const [bankBranchName, setBankBranchName] = useState(
-    initialInfo?.bankBranchName ?? "",
-  );
-  const [bankAccountType, setBankAccountType] = useState<string>(
-    initialInfo?.bankAccountType ?? "",
-  );
-  const [bankAccountNumber, setBankAccountNumber] = useState(
-    initialInfo?.bankAccountNumber ?? "",
-  );
-  const [bankAccountHolder, setBankAccountHolder] = useState(
-    initialInfo?.bankAccountHolder ?? "",
-  );
+  const form = useForm<UserInfoFormValues>({
+    resolver: zodResolver(userInfoFormSchema),
+    defaultValues: {
+      name: initialInfo?.name ?? "",
+      invoiceRegistrationNumber: initialInfo?.invoiceRegistrationNumber ?? "",
+      postalCode: initialInfo?.postalCode ?? "",
+      address: initialInfo?.address ?? "",
+      bankName: initialInfo?.bankName ?? "",
+      bankBranchName: initialInfo?.bankBranchName ?? "",
+      bankAccountType: initialInfo?.bankAccountType ?? undefined,
+      bankAccountNumber: initialInfo?.bankAccountNumber ?? "",
+      bankAccountHolder: initialInfo?.bankAccountHolder ?? "",
+    },
+  });
 
   const handleCancel = () => {
-    setName(initialInfo?.name ?? "");
-    setInvoiceRegistrationNumber(initialInfo?.invoiceRegistrationNumber ?? "");
-    setPostalCode(initialInfo?.postalCode ?? "");
-    setAddress(initialInfo?.address ?? "");
-    setBankName(initialInfo?.bankName ?? "");
-    setBankBranchName(initialInfo?.bankBranchName ?? "");
-    setBankAccountType(initialInfo?.bankAccountType ?? "");
-    setBankAccountNumber(initialInfo?.bankAccountNumber ?? "");
-    setBankAccountHolder(initialInfo?.bankAccountHolder ?? "");
+    form.reset();
     setIsEditing(false);
     setError("");
     setSuccess("");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setSuccess("");
 
+    const values = form.getValues();
+    const result = userInfoFormSchema.safeParse(values);
+    if (!result.success) {
+      result.error.issues.forEach((issue) => {
+        const path = issue.path[0] as keyof UserInfoFormValues;
+        form.setError(path, { message: issue.message });
+      });
+      return;
+    }
+
     startTransition(async () => {
-      const result = await updateUserInfo({
-        name: name || undefined,
-        invoiceRegistrationNumber: invoiceRegistrationNumber || undefined,
-        postalCode: postalCode || undefined,
-        address: address || undefined,
-        bankName: bankName || undefined,
-        bankBranchName: bankBranchName || undefined,
-        bankAccountType:
-          bankAccountType === "普通" || bankAccountType === "当座"
-            ? bankAccountType
-            : undefined,
-        bankAccountNumber: bankAccountNumber || undefined,
-        bankAccountHolder: bankAccountHolder || undefined,
+      const apiResult = await updateUserInfo({
+        name: result.data.name || undefined,
+        invoiceRegistrationNumber:
+          result.data.invoiceRegistrationNumber || undefined,
+        postalCode: result.data.postalCode || undefined,
+        address: result.data.address || undefined,
+        bankName: result.data.bankName || undefined,
+        bankBranchName: result.data.bankBranchName || undefined,
+        bankAccountType: result.data.bankAccountType ?? undefined,
+        bankAccountNumber: result.data.bankAccountNumber || undefined,
+        bankAccountHolder: result.data.bankAccountHolder || undefined,
       });
 
-      if (result.error) {
-        setError(result.error);
-      } else if (result.success) {
-        setSuccess(result.success);
+      if (apiResult.error) {
+        setError(apiResult.error);
+      } else if (apiResult.success) {
+        setSuccess(apiResult.success);
         setIsEditing(false);
       }
     });
@@ -118,200 +126,304 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <ErrorAlert message={error} onClose={() => setError("")} />
-          <SuccessAlert message={success} onClose={() => setSuccess("")} />
+        <Form {...form}>
+          <form onSubmit={handleFormSubmit} className="space-y-6">
+            <ErrorAlert message={error} onClose={() => setError("")} />
+            <SuccessAlert message={success} onClose={() => setSuccess("")} />
 
-          {/* 基本情報セクション */}
-          <div className="space-y-4">
-            <h3 className="font-medium">基本情報</h3>
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label>名前</Label>
-                {isEditing ? (
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="例: 山田 太郎"
-                  />
-                ) : (
-                  <p className="py-2 text-sm">{name || "未設定"}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label>メールアドレス</Label>
-                <p className="py-2 text-sm">{initialInfo?.email || "未設定"}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* 事業者情報セクション */}
-          <div className="space-y-4 border-t pt-4">
-            <h3 className="font-medium">事業者情報</h3>
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="invoiceRegistrationNumber">
-                  適格請求書発行事業者登録番号
-                </Label>
-                {isEditing ? (
-                  <Input
-                    id="invoiceRegistrationNumber"
-                    value={invoiceRegistrationNumber}
-                    onChange={(e) =>
-                      setInvoiceRegistrationNumber(e.target.value)
-                    }
-                    placeholder="例: T1234567890123"
-                  />
-                ) : (
+            {/* 基本情報セクション */}
+            <div className="space-y-4">
+              <h3 className="font-medium">基本情報</h3>
+              <div className="grid gap-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>名前</FormLabel>
+                      {isEditing ? (
+                        <>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              value={field.value ?? ""}
+                              placeholder="例: 山田 太郎"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </>
+                      ) : (
+                        <p className="py-2 text-sm">
+                          {form.getValues("name") || "未設定"}
+                        </p>
+                      )}
+                    </FormItem>
+                  )}
+                />
+                <div className="space-y-2">
+                  <Label>メールアドレス</Label>
                   <p className="py-2 text-sm">
-                    {invoiceRegistrationNumber || "未設定"}
+                    {initialInfo?.email || "未設定"}
                   </p>
-                )}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* 住所セクション */}
-          <div className="space-y-4 border-t pt-4">
-            <h3 className="font-medium">住所情報</h3>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="postalCode">郵便番号</Label>
-                {isEditing ? (
-                  <Input
-                    id="postalCode"
-                    value={postalCode}
-                    onChange={(e) => setPostalCode(e.target.value)}
-                    placeholder="例: 123-4567"
-                  />
-                ) : (
-                  <p className="py-2 text-sm">{postalCode || "未設定"}</p>
-                )}
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="address">住所</Label>
-                {isEditing ? (
-                  <Input
-                    id="address"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="例: 東京都渋谷区〇〇1-2-3"
-                  />
-                ) : (
-                  <p className="py-2 text-sm">{address || "未設定"}</p>
-                )}
+            {/* 事業者情報セクション */}
+            <div className="space-y-4 border-t pt-4">
+              <h3 className="font-medium">事業者情報</h3>
+              <div className="grid gap-4">
+                <FormField
+                  control={form.control}
+                  name="invoiceRegistrationNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>適格請求書発行事業者登録番号</FormLabel>
+                      {isEditing ? (
+                        <>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              value={field.value ?? ""}
+                              placeholder="例: T1234567890123"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </>
+                      ) : (
+                        <p className="py-2 text-sm">
+                          {form.getValues("invoiceRegistrationNumber") ||
+                            "未設定"}
+                        </p>
+                      )}
+                    </FormItem>
+                  )}
+                />
               </div>
             </div>
-          </div>
 
-          {/* 銀行口座セクション */}
-          <div className="space-y-4 border-t pt-4">
-            <h3 className="font-medium">銀行口座情報</h3>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="bankName">銀行名</Label>
-                {isEditing ? (
-                  <Input
-                    id="bankName"
-                    value={bankName}
-                    onChange={(e) => setBankName(e.target.value)}
-                    placeholder="例: 〇〇銀行"
-                  />
-                ) : (
-                  <p className="py-2 text-sm">{bankName || "未設定"}</p>
-                )}
+            {/* 住所セクション */}
+            <div className="space-y-4 border-t pt-4">
+              <h3 className="font-medium">住所情報</h3>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="postalCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>郵便番号</FormLabel>
+                      {isEditing ? (
+                        <>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              value={field.value ?? ""}
+                              placeholder="例: 123-4567"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </>
+                      ) : (
+                        <p className="py-2 text-sm">
+                          {form.getValues("postalCode") || "未設定"}
+                        </p>
+                      )}
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem className="sm:col-span-2">
+                      <FormLabel>住所</FormLabel>
+                      {isEditing ? (
+                        <>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              value={field.value ?? ""}
+                              placeholder="例: 東京都渋谷区〇〇1-2-3"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </>
+                      ) : (
+                        <p className="py-2 text-sm">
+                          {form.getValues("address") || "未設定"}
+                        </p>
+                      )}
+                    </FormItem>
+                  )}
+                />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="bankBranchName">支店名</Label>
-                {isEditing ? (
-                  <Input
-                    id="bankBranchName"
-                    value={bankBranchName}
-                    onChange={(e) => setBankBranchName(e.target.value)}
-                    placeholder="例: 〇〇支店"
-                  />
-                ) : (
-                  <p className="py-2 text-sm">{bankBranchName || "未設定"}</p>
-                )}
+            </div>
+
+            {/* 銀行口座セクション */}
+            <div className="space-y-4 border-t pt-4">
+              <h3 className="font-medium">銀行口座情報</h3>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="bankName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>銀行名</FormLabel>
+                      {isEditing ? (
+                        <>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              value={field.value ?? ""}
+                              placeholder="例: 〇〇銀行"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </>
+                      ) : (
+                        <p className="py-2 text-sm">
+                          {form.getValues("bankName") || "未設定"}
+                        </p>
+                      )}
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="bankBranchName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>支店名</FormLabel>
+                      {isEditing ? (
+                        <>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              value={field.value ?? ""}
+                              placeholder="例: 〇〇支店"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </>
+                      ) : (
+                        <p className="py-2 text-sm">
+                          {form.getValues("bankBranchName") || "未設定"}
+                        </p>
+                      )}
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="bankAccountType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>口座種別</FormLabel>
+                      {isEditing ? (
+                        <>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value ?? ""}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="選択してください" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {BANK_ACCOUNT_TYPES.map((type) => (
+                                <SelectItem key={type} value={type}>
+                                  {type}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </>
+                      ) : (
+                        <p className="py-2 text-sm">
+                          {form.getValues("bankAccountType") || "未設定"}
+                        </p>
+                      )}
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="bankAccountNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>口座番号</FormLabel>
+                      {isEditing ? (
+                        <>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              value={field.value ?? ""}
+                              placeholder="例: 1234567"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </>
+                      ) : (
+                        <p className="py-2 text-sm">
+                          {form.getValues("bankAccountNumber") || "未設定"}
+                        </p>
+                      )}
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="bankAccountHolder"
+                  render={({ field }) => (
+                    <FormItem className="sm:col-span-2">
+                      <FormLabel>口座名義</FormLabel>
+                      {isEditing ? (
+                        <>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              value={field.value ?? ""}
+                              placeholder="例: ヤマダ タロウ"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </>
+                      ) : (
+                        <p className="py-2 text-sm">
+                          {form.getValues("bankAccountHolder") || "未設定"}
+                        </p>
+                      )}
+                    </FormItem>
+                  )}
+                />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="bankAccountType">口座種別</Label>
-                {isEditing ? (
-                  <Select
-                    value={bankAccountType}
-                    onValueChange={setBankAccountType}
+            </div>
+
+            <div className="flex justify-end gap-2">
+              {isEditing ? (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCancel}
+                    disabled={isPending}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="選択してください" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {BANK_ACCOUNT_TYPES.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <p className="py-2 text-sm">{bankAccountType || "未設定"}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bankAccountNumber">口座番号</Label>
-                {isEditing ? (
-                  <Input
-                    id="bankAccountNumber"
-                    value={bankAccountNumber}
-                    onChange={(e) => setBankAccountNumber(e.target.value)}
-                    placeholder="例: 1234567"
-                  />
-                ) : (
-                  <p className="py-2 text-sm">
-                    {bankAccountNumber || "未設定"}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="bankAccountHolder">口座名義</Label>
-                {isEditing ? (
-                  <Input
-                    id="bankAccountHolder"
-                    value={bankAccountHolder}
-                    onChange={(e) => setBankAccountHolder(e.target.value)}
-                    placeholder="例: ヤマダ タロウ"
-                  />
-                ) : (
-                  <p className="py-2 text-sm">
-                    {bankAccountHolder || "未設定"}
-                  </p>
-                )}
-              </div>
+                    キャンセル
+                  </Button>
+                  <Button type="submit" disabled={isPending}>
+                    {isPending ? "保存中..." : "保存"}
+                  </Button>
+                </>
+              ) : (
+                <Button type="button" onClick={() => setIsEditing(true)}>
+                  編集
+                </Button>
+              )}
             </div>
-          </div>
-
-          <div className="flex justify-end gap-2">
-            {isEditing ? (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleCancel}
-                  disabled={isPending}
-                >
-                  キャンセル
-                </Button>
-                <Button type="submit" disabled={isPending}>
-                  {isPending ? "保存中..." : "保存"}
-                </Button>
-              </>
-            ) : (
-              <Button type="button" onClick={() => setIsEditing(true)}>
-                編集
-              </Button>
-            )}
-          </div>
-        </form>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );
