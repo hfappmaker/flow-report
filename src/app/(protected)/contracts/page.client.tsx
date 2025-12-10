@@ -371,16 +371,14 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
               return (
                 <Card
                   key={contract.id}
-                  className="w-full transition-all duration-200 hover:bg-muted/50 hover:shadow-lg"
+                  className="w-full cursor-pointer transition-all duration-200 hover:bg-muted/50 hover:shadow-lg"
+                  onClick={() => {
+                    openDetailsDialog(contract);
+                  }}
                 >
                   <div className="p-4">
                     <div className="flex w-full items-center justify-between">
-                      <div
-                        className="flex min-w-0 flex-1 cursor-pointer items-center gap-6"
-                        onClick={() => {
-                          handleNavigateToWorkReports(contract.id);
-                        }}
-                      >
+                      <div className="flex min-w-0 flex-1 items-center gap-6">
                         <div className="min-w-48">
                           <h3 className="truncate text-lg font-semibold text-foreground">
                             {contract.name}
@@ -400,16 +398,6 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
                         >
                           {statusInfo.status}
                         </span>
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openDetailsDialog(contract);
-                          }}
-                          size="sm"
-                          variant="outline"
-                        >
-                          詳細
-                        </Button>
                       </div>
                     </div>
                   </div>
