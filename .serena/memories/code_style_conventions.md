@@ -93,6 +93,12 @@ src/
 - `@/components/ui/form` コンポーネント（Form, FormField, FormControl, FormMessage）を使用
 - 参考実装: `src/features/contract/components/contract-form.tsx`
 
+## UIコンポーネント使用ルール
+- 基本UIコンポーネントは必ず `src/components/ui/` から使用
+- ネイティブHTML要素（button, input, label等）の直接使用を避ける
+- カスタムUIコンポーネントの新規作成を避ける
+- 利用可能: Button, Input, Label, Checkbox, Select, Textarea, Dialog, Card, Badge, Avatar, Tabs, Switch, RadioGroup, DatePicker, TimePicker, DropdownMenu, Sheet, Popover, Form, Loading, Feedback
+
 ## その他
 - barrel filesを避ける（tree-shakingの問題）
 - 直接インポートを使用
