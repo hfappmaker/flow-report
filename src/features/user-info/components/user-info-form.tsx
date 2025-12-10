@@ -19,13 +19,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ComboBoxField } from "@/components/ui/select";
 import { useTransitionContext } from "@/contexts/transition-context";
 import { updateUserInfo } from "@/features/user-info/actions/update-user-info";
 import {
@@ -67,7 +61,7 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
       address: initialInfo?.address ?? "",
       bankName: initialInfo?.bankName ?? "",
       bankBranchName: initialInfo?.bankBranchName ?? "",
-      bankAccountType: initialInfo?.bankAccountType ?? undefined,
+      bankAccountType: initialInfo?.bankAccountType ?? null,
       bankAccountNumber: initialInfo?.bankAccountNumber ?? "",
       bankAccountHolder: initialInfo?.bankAccountHolder ?? "",
     },
@@ -104,7 +98,7 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
         address: result.data.address || undefined,
         bankName: result.data.bankName || undefined,
         bankBranchName: result.data.bankBranchName || undefined,
-        bankAccountType: result.data.bankAccountType ?? undefined,
+        bankAccountType: result.data.bankAccountType ?? null,
         bankAccountNumber: result.data.bankAccountNumber || undefined,
         bankAccountHolder: result.data.bankAccountHolder || undefined,
       });
@@ -283,7 +277,7 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
                         </>
                       ) : (
                         <p className="py-2 text-sm">
-                          {form.getValues("bankName") || "未設定"}
+                          {form.getValues("bankName") ?? "未設定"}
                         </p>
                       )}
                     </FormItem>
@@ -314,41 +308,27 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="bankAccountType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>口座種別</FormLabel>
-                      {isEditing ? (
-                        <>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value ?? ""}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="選択してください" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {BANK_ACCOUNT_TYPES.map((type) => (
-                                <SelectItem key={type} value={type}>
-                                  {type}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </>
-                      ) : (
-                        <p className="py-2 text-sm">
-                          {form.getValues("bankAccountType") || "未設定"}
-                        </p>
-                      )}
-                    </FormItem>
-                  )}
-                />
+                {isEditing ? (
+                  <ComboBoxField
+                    control={form.control}
+                    name="bankAccountType"
+                    label="口座種別"
+                    options={BANK_ACCOUNT_TYPES.map((type) => ({
+                      value: type,
+                      label: type,
+                    }))}
+                    placeholder="選択してください"
+                    variant="native"
+                    showClearButton={false}
+                  />
+                ) : (
+                  <FormItem>
+                    <FormLabel>口座種別</FormLabel>
+                    <p className="py-2 text-sm">
+                      {form.getValues("bankAccountType") || "未設定"}
+                    </p>
+                  </FormItem>
+                )}
                 <FormField
                   control={form.control}
                   name="bankAccountNumber"

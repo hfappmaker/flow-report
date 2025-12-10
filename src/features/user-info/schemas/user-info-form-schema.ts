@@ -40,7 +40,7 @@ export const userInfoFormSchema = z.object({
   // 銀行口座情報
   bankName: z.string().optional(),
   bankBranchName: z.string().optional(),
-  bankAccountType: z.enum(BANK_ACCOUNT_TYPES).optional().nullable(),
+  bankAccountType: z.enum(BANK_ACCOUNT_TYPES).nullable(),
   bankAccountNumber: z.string().optional(),
   bankAccountHolder: z.string().optional(),
 });
