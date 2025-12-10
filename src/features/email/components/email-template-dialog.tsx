@@ -31,6 +31,9 @@ interface EmailTemplateDialogProps {
   onSubmit: (values: EmailTemplateFormValues) => void;
   onDelete?: () => void;
   onCancel: () => void;
+  onEdit?: () => void;
+  onRequestDelete?: () => void;
+  isSystem?: boolean;
 }
 
 export const EmailTemplateDialog = ({
@@ -41,6 +44,9 @@ export const EmailTemplateDialog = ({
   onSubmit,
   onDelete,
   onCancel,
+  onEdit,
+  onRequestDelete,
+  isSystem = false,
 }: EmailTemplateDialogProps) => {
   const getDialogTitle = () => {
     switch (type) {
@@ -139,6 +145,20 @@ export const EmailTemplateDialog = ({
               </div>
             </div>
             <div className="mt-4 flex justify-end gap-2">
+              {!isSystem && onEdit && (
+                <Button variant="outline" onClick={onEdit}>
+                  編集
+                </Button>
+              )}
+              {!isSystem && onRequestDelete && (
+                <Button
+                  variant="outline"
+                  onClick={onRequestDelete}
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950"
+                >
+                  削除
+                </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={() => {

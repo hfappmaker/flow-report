@@ -1,15 +1,7 @@
 "use client";
 
 import type { TemplateType } from "@prisma/client";
-import {
-  FileSpreadsheet,
-  FileText,
-  Plus,
-  Edit,
-  Trash2,
-  Eye,
-  Mail,
-} from "lucide-react";
+import { FileSpreadsheet, FileText, Plus, Mail } from "lucide-react";
 import { useState, useEffect, useCallback, useMemo } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -460,7 +452,14 @@ export default function TemplatesClientPage({
 
   const renderExcelTemplateList = () => {
     if (isPending) {
-      return null;
+      return (
+        <div className="flex items-center justify-center py-12">
+          <div className="flex flex-col items-center gap-2">
+            <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-sky-400" />
+            <p className="text-sm text-muted-foreground">読み込み中...</p>
+          </div>
+        </div>
+      );
     }
 
     if (displayExcelTemplates.length > 0) {
@@ -471,18 +470,16 @@ export default function TemplatesClientPage({
               isDefaultTemplate(template.id) ||
               isDefaultInvoiceTemplate(template.id);
             return (
-              <div
+              <button
                 key={template.id}
-                className="flex items-center justify-between rounded-lg border p-4 hover:bg-muted/50"
+                type="button"
+                className="flex w-full cursor-pointer items-center justify-between rounded-lg border p-4 text-left transition-all duration-200 hover:bg-muted/50 hover:shadow-md"
+                onClick={() => {
+                  setActiveTemplate(template);
+                  setActiveDialog("details");
+                }}
               >
-                <button
-                  type="button"
-                  className="flex-1 cursor-pointer text-left"
-                  onClick={() => {
-                    setActiveTemplate(template);
-                    setActiveDialog("details");
-                  }}
-                >
+                <div>
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{template.name}</span>
                     {isSystem && (
@@ -500,45 +497,8 @@ export default function TemplatesClientPage({
                       </span>
                     )}
                   </div>
-                </button>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setActiveTemplate(template);
-                      setActiveDialog("details");
-                    }}
-                  >
-                    <Eye className="size-4" />
-                  </Button>
-                  {!isSystem && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setActiveTemplate(template);
-                          setActiveDialog("edit");
-                        }}
-                      >
-                        <Edit className="size-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setActiveTemplate(template);
-                          setActiveDialog("delete");
-                        }}
-                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </>
-                  )}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -558,7 +518,14 @@ export default function TemplatesClientPage({
 
   const renderEmailTemplateList = () => {
     if (isPending) {
-      return null;
+      return (
+        <div className="flex items-center justify-center py-12">
+          <div className="flex flex-col items-center gap-2">
+            <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-sky-400" />
+            <p className="text-sm text-muted-foreground">読み込み中...</p>
+          </div>
+        </div>
+      );
     }
 
     if (displayEmailTemplates.length > 0) {
@@ -567,18 +534,16 @@ export default function TemplatesClientPage({
           {displayEmailTemplates.map((template) => {
             const isSystem = isDefaultEmailTemplate(template.id);
             return (
-              <div
+              <button
                 key={template.id}
-                className="flex items-center justify-between rounded-lg border p-4 hover:bg-muted/50"
+                type="button"
+                className="flex w-full cursor-pointer items-center justify-between rounded-lg border p-4 text-left transition-all duration-200 hover:bg-muted/50 hover:shadow-md"
+                onClick={() => {
+                  setActiveEmailTemplate(template);
+                  setActiveEmailDialog("details");
+                }}
               >
-                <button
-                  type="button"
-                  className="flex-1 cursor-pointer text-left"
-                  onClick={() => {
-                    setActiveEmailTemplate(template);
-                    setActiveEmailDialog("details");
-                  }}
-                >
+                <div>
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{template.name}</span>
                     {isSystem && (
@@ -596,45 +561,8 @@ export default function TemplatesClientPage({
                         : "（未設定）"}
                     </span>
                   </div>
-                </button>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setActiveEmailTemplate(template);
-                      setActiveEmailDialog("details");
-                    }}
-                  >
-                    <Eye className="size-4" />
-                  </Button>
-                  {!isSystem && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setActiveEmailTemplate(template);
-                          setActiveEmailDialog("edit");
-                        }}
-                      >
-                        <Edit className="size-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setActiveEmailTemplate(template);
-                          setActiveEmailDialog("delete");
-                        }}
-                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </>
-                  )}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -738,6 +666,12 @@ export default function TemplatesClientPage({
           onDelete={onDeleteTemplate}
           onCancel={closeDialog}
           isSubmitting={isPending}
+          onEdit={() => {
+            setActiveDialog("edit");
+          }}
+          onRequestDelete={() => {
+            setActiveDialog("delete");
+          }}
         />
 
         <EmailTemplateDialog
@@ -754,6 +688,17 @@ export default function TemplatesClientPage({
           }
           onDelete={onDeleteEmailTemplate}
           onCancel={closeEmailDialog}
+          onEdit={() => {
+            setActiveEmailDialog("edit");
+          }}
+          onRequestDelete={() => {
+            setActiveEmailDialog("delete");
+          }}
+          isSystem={
+            activeEmailTemplate
+              ? isDefaultEmailTemplate(activeEmailTemplate.id)
+              : false
+          }
         />
       </CardContent>
     </Card>

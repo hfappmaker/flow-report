@@ -62,6 +62,8 @@ interface ExcelTemplateDialogProps {
   onDelete?: () => void;
   onCancel: () => void;
   isSubmitting?: boolean;
+  onEdit?: () => void;
+  onRequestDelete?: () => void;
 }
 
 export function ExcelTemplateDialog({
@@ -73,6 +75,8 @@ export function ExcelTemplateDialog({
   onDelete,
   onCancel,
   isSubmitting = false,
+  onEdit,
+  onRequestDelete,
 }: ExcelTemplateDialogProps) {
   const handleDownloadTemplate = async () => {
     if (!template) return;
@@ -231,6 +235,20 @@ export function ExcelTemplateDialog({
                 <Download className="mr-2 size-4" />
                 ダウンロード
               </Button>
+              {!isSystem && onEdit && (
+                <Button variant="outline" onClick={onEdit}>
+                  編集
+                </Button>
+              )}
+              {!isSystem && onRequestDelete && (
+                <Button
+                  variant="outline"
+                  onClick={onRequestDelete}
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950"
+                >
+                  削除
+                </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={() => {
