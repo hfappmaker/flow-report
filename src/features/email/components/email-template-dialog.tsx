@@ -4,6 +4,8 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
+  DialogOverlay,
+  DialogPortal,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { EmailTemplateForm } from "@/features/email/components/email-template-form";
@@ -159,34 +161,39 @@ export const EmailTemplateDialog = ({
         if (!open) onCancel();
       }}
     >
-      <DialogContent className="flex max-h-[90vh] flex-col p-0 sm:max-w-lg">
-        <DialogHeader className="p-6 pb-4">
-          <DialogTitle>{getDialogTitle()}</DialogTitle>
-        </DialogHeader>
-        <div className="flex-1 overflow-y-auto px-6">{renderContent()}</div>
-        {type === "details" && (
-          <DialogFooter className="shrink-0 border-t p-6">
-            {!isSystem && onEdit && (
-              <Button variant="outline" onClick={onEdit}>
-                編集
+      <DialogPortal>
+        <DialogOverlay />
+        <DialogContent className="flex max-h-[90vh] flex-col p-0 sm:max-w-lg">
+          <DialogHeader sticky>
+            <DialogTitle>{getDialogTitle()}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto p-6 pb-0 pt-4">
+            {renderContent()}
+          </div>
+          {type === "details" && (
+            <DialogFooter sticky className="p-6">
+              {!isSystem && onEdit && (
+                <Button variant="outline" onClick={onEdit}>
+                  編集
+                </Button>
+              )}
+              {!isSystem && onRequestDelete && (
+                <Button variant="destructive" onClick={onRequestDelete}>
+                  削除
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                onClick={() => {
+                  onOpenChange(false);
+                }}
+              >
+                閉じる
               </Button>
-            )}
-            {!isSystem && onRequestDelete && (
-              <Button variant="destructive" onClick={onRequestDelete}>
-                削除
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              onClick={() => {
-                onOpenChange(false);
-              }}
-            >
-              閉じる
-            </Button>
-          </DialogFooter>
-        )}
-      </DialogContent>
+            </DialogFooter>
+          )}
+        </DialogContent>
+      </DialogPortal>
     </Dialog>
   );
 };
