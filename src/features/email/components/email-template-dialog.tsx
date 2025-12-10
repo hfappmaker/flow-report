@@ -159,11 +159,11 @@ export const EmailTemplateDialog = ({
         if (!open) onCancel();
       }}
     >
-      <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-lg">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[90vh] flex-col p-0 sm:max-w-lg">
+        <DialogHeader className="p-6 pb-4">
           <DialogTitle>{getDialogTitle()}</DialogTitle>
         </DialogHeader>
-        <div className="flex-1 overflow-y-auto">{renderContent()}</div>
+        <div className="flex-1 overflow-y-auto px-6">{renderContent()}</div>
         {type === "details" && (
           <DialogFooter sticky className="p-6">
             {!isSystem && onEdit && (
