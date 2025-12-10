@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -144,26 +145,6 @@ export const EmailTemplateDialog = ({
                 </div>
               </div>
             </div>
-            <div className="mt-4 flex justify-end gap-2">
-              {!isSystem && onEdit && (
-                <Button variant="outline" onClick={onEdit}>
-                  編集
-                </Button>
-              )}
-              {!isSystem && onRequestDelete && (
-                <Button variant="destructive" onClick={onRequestDelete}>
-                  削除
-                </Button>
-              )}
-              <Button
-                variant="outline"
-                onClick={() => {
-                  onOpenChange(false);
-                }}
-              >
-                閉じる
-              </Button>
-            </div>
           </div>
         );
       default:
@@ -178,11 +159,33 @@ export const EmailTemplateDialog = ({
         if (!open) onCancel();
       }}
     >
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{getDialogTitle()}</DialogTitle>
         </DialogHeader>
-        {renderContent()}
+        <div className="flex-1 overflow-y-auto">{renderContent()}</div>
+        {type === "details" && (
+          <DialogFooter sticky>
+            {!isSystem && onEdit && (
+              <Button variant="outline" onClick={onEdit}>
+                編集
+              </Button>
+            )}
+            {!isSystem && onRequestDelete && (
+              <Button variant="destructive" onClick={onRequestDelete}>
+                削除
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              onClick={() => {
+                onOpenChange(false);
+              }}
+            >
+              閉じる
+            </Button>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );

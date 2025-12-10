@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
   DEFAULT_TEMPLATE_FILE_NAME,
   isDefaultTemplate,
+  isDefaultInvoiceTemplate,
 } from "@/features/work-report/constants/default-template";
 import type { ExcelTemplateWithFields } from "@/features/work-report/types/work-report-template";
 import {
@@ -78,12 +80,14 @@ export function ExcelTemplateDialog({
   onEdit,
   onRequestDelete,
 }: ExcelTemplateDialogProps) {
+  const isSystem = template
+    ? isDefaultTemplate(template.id) || isDefaultInvoiceTemplate(template.id)
+    : false;
+
   const handleDownloadTemplate = async () => {
     if (!template) return;
 
-    const isSystem = isDefaultTemplate(template.id);
-
-    if (isSystem) {
+    if (isDefaultTemplate(template.id)) {
       const response = await fetch(`/${DEFAULT_TEMPLATE_FILE_NAME}`);
       const blob = await response.blob();
       downloadBlob(blob, DEFAULT_TEMPLATE_FILE_NAME);
@@ -173,8 +177,7 @@ export function ExcelTemplateDialog({
             </div>
           </>
         );
-      case "details": {
-        const isSystem = template ? isDefaultTemplate(template.id) : false;
+      case "details":
         return (
           <div className="space-y-4">
             <div>
@@ -224,39 +227,8 @@ export function ExcelTemplateDialog({
                 </div>
               </div>
             )}
-
-            <div className="mt-4 flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  void handleDownloadTemplate();
-                }}
-              >
-                <Download className="mr-2 size-4" />
-                ダウンロード
-              </Button>
-              {!isSystem && onEdit && (
-                <Button variant="outline" onClick={onEdit}>
-                  編集
-                </Button>
-              )}
-              {!isSystem && onRequestDelete && (
-                <Button variant="destructive" onClick={onRequestDelete}>
-                  削除
-                </Button>
-              )}
-              <Button
-                variant="outline"
-                onClick={() => {
-                  onOpenChange(false);
-                }}
-              >
-                閉じる
-              </Button>
-            </div>
           </div>
         );
-      }
       default:
         return null;
     }
@@ -273,7 +245,38 @@ export function ExcelTemplateDialog({
         <DialogHeader>
           <DialogTitle>{getDialogTitle()}</DialogTitle>
         </DialogHeader>
-        <div className="overflow-y-auto">{renderContent()}</div>
+        <div className="flex-1 overflow-y-auto">{renderContent()}</div>
+        {type === "details" && (
+          <DialogFooter sticky>
+            <Button
+              variant="outline"
+              onClick={() => {
+                void handleDownloadTemplate();
+              }}
+            >
+              <Download className="mr-2 size-4" />
+              ダウンロード
+            </Button>
+            {!isSystem && onEdit && (
+              <Button variant="outline" onClick={onEdit}>
+                編集
+              </Button>
+            )}
+            {!isSystem && onRequestDelete && (
+              <Button variant="destructive" onClick={onRequestDelete}>
+                削除
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              onClick={() => {
+                onOpenChange(false);
+              }}
+            >
+              閉じる
+            </Button>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );
