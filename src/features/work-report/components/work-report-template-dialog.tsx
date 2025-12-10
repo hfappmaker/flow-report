@@ -241,11 +241,7 @@ export function ExcelTemplateDialog({
                 </Button>
               )}
               {!isSystem && onRequestDelete && (
-                <Button
-                  variant="outline"
-                  onClick={onRequestDelete}
-                  className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950"
-                >
+                <Button variant="destructive" onClick={onRequestDelete}>
                   削除
                 </Button>
               )}

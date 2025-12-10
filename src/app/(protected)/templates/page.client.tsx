@@ -451,17 +451,6 @@ export default function TemplatesClientPage({
   const tabConfig = TAB_CONFIG[activeTab];
 
   const renderExcelTemplateList = () => {
-    if (isPending) {
-      return (
-        <div className="flex items-center justify-center py-12">
-          <div className="flex flex-col items-center gap-2">
-            <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-sky-400" />
-            <p className="text-sm text-muted-foreground">読み込み中...</p>
-          </div>
-        </div>
-      );
-    }
-
     if (displayExcelTemplates.length > 0) {
       return (
         <div className="space-y-3">
@@ -517,17 +506,6 @@ export default function TemplatesClientPage({
   };
 
   const renderEmailTemplateList = () => {
-    if (isPending) {
-      return (
-        <div className="flex items-center justify-center py-12">
-          <div className="flex flex-col items-center gap-2">
-            <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-sky-400" />
-            <p className="text-sm text-muted-foreground">読み込み中...</p>
-          </div>
-        </div>
-      );
-    }
-
     if (displayEmailTemplates.length > 0) {
       return (
         <div className="space-y-3">
