@@ -59,6 +59,7 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
 
   const form = useForm<UserInfoFormValues>({
     resolver: zodResolver(userInfoFormSchema),
+    mode: "onBlur",
     defaultValues: {
       name: initialInfo?.name ?? "",
       invoiceRegistrationNumber: initialInfo?.invoiceRegistrationNumber ?? "",
