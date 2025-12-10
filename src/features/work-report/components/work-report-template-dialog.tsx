@@ -251,38 +251,38 @@ export function ExcelTemplateDialog({
           </DialogHeader>
           <div className="flex-1 overflow-y-auto p-6 pb-0 pt-4">
             {renderContent()}
+            {type === "details" && (
+              <DialogFooter sticky className="p-6">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    void handleDownloadTemplate();
+                  }}
+                >
+                  <Download className="mr-2 size-4" />
+                  ダウンロード
+                </Button>
+                {!isSystem && onEdit && (
+                  <Button variant="outline" onClick={onEdit}>
+                    編集
+                  </Button>
+                )}
+                {!isSystem && onRequestDelete && (
+                  <Button variant="destructive" onClick={onRequestDelete}>
+                    削除
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    onOpenChange(false);
+                  }}
+                >
+                  閉じる
+                </Button>
+              </DialogFooter>
+            )}
           </div>
-          {type === "details" && (
-            <DialogFooter sticky className="p-6">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  void handleDownloadTemplate();
-                }}
-              >
-                <Download className="mr-2 size-4" />
-                ダウンロード
-              </Button>
-              {!isSystem && onEdit && (
-                <Button variant="outline" onClick={onEdit}>
-                  編集
-                </Button>
-              )}
-              {!isSystem && onRequestDelete && (
-                <Button variant="destructive" onClick={onRequestDelete}>
-                  削除
-                </Button>
-              )}
-              <Button
-                variant="outline"
-                onClick={() => {
-                  onOpenChange(false);
-                }}
-              >
-                閉じる
-              </Button>
-            </DialogFooter>
-          )}
         </DialogContent>
       </DialogPortal>
     </Dialog>
