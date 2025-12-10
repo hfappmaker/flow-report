@@ -321,7 +321,6 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
                     }))}
                     placeholder="選択してください"
                     variant="native"
-                    showClearButton={false}
                   />
                 ) : (
                   <FormItem>
