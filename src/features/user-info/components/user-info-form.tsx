@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ComboBoxField } from "@/components/ui/select";
+import { ComboBoxField } from "@/components/ui/combobox";
 import { useTransitionContext } from "@/contexts/transition-context";
 import { updateUserInfo } from "@/features/user-info/actions/update-user-info";
 import {

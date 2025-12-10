@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input, NumberInputField } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ComboBoxField } from "@/components/ui/select";
+import { ComboBoxField } from "@/components/ui/combobox";
 import {
   TimePickerFieldForDate,
   TimePickerFieldForNumber,
