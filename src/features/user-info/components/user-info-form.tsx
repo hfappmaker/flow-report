@@ -107,6 +107,8 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
         setError(apiResult.error);
       } else if (apiResult.success) {
         setSuccess(apiResult.success);
+        // 保存成功後、現在の値を新しいdefaultValuesとして設定
+        form.reset(form.getValues());
         setIsEditing(false);
       }
     });
