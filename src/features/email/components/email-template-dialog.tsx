@@ -165,7 +165,7 @@ export const EmailTemplateDialog = ({
         </DialogHeader>
         <div className="flex-1 overflow-y-auto">{renderContent()}</div>
         {type === "details" && (
-          <DialogFooter sticky>
+          <DialogFooter sticky className="p-6">
             {!isSystem && onEdit && (
               <Button variant="outline" onClick={onEdit}>
                 編集

@@ -247,7 +247,7 @@ export function ExcelTemplateDialog({
         </DialogHeader>
         <div className="flex-1 overflow-y-auto">{renderContent()}</div>
         {type === "details" && (
-          <DialogFooter sticky>
+          <DialogFooter sticky className="p-6">
             <Button
               variant="outline"
               onClick={() => {
