@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { FieldMappingEditor } from "@/features/work-report/components/field-mapping-editor";
 import {
   type FieldMappingFormValues,
+  findDuplicateNamedRanges,
   validateExcelFile,
   validateNamedRange,
 } from "@/features/work-report/schemas/work-report-template-form-schema";
@@ -92,11 +93,17 @@ export function ExcelTemplateForm({
       number,
       { namedRange?: string; valueTemplate?: string }
     > = {};
+
+    // 重複チェック
+    const duplicateIndices = findDuplicateNamedRanges(fieldMappings);
+
     fieldMappings.forEach((mapping, index) => {
       const fieldErrors: { namedRange?: string; valueTemplate?: string } = {};
       const namedRangeError = validateNamedRange(mapping.namedRange);
       if (namedRangeError) {
         fieldErrors.namedRange = namedRangeError;
+      } else if (duplicateIndices.has(index)) {
+        fieldErrors.namedRange = "同じ名前付き範囲が重複しています";
       }
       if (!mapping.valueTemplate.trim()) {
         fieldErrors.valueTemplate = "値は必須です";
@@ -121,23 +128,53 @@ export function ExcelTemplateForm({
     const mapping = fieldMappings[index];
     if (!mapping) return;
 
-    const fieldErrors: { namedRange?: string; valueTemplate?: string } = {};
-
-    if (field === "namedRange") {
-      const namedRangeError = validateNamedRange(mapping.namedRange);
-      if (namedRangeError) {
-        fieldErrors.namedRange = namedRangeError;
-      }
-    } else if (field === "valueTemplate") {
-      if (!mapping.valueTemplate.trim()) {
-        fieldErrors.valueTemplate = "値は必須です";
-      }
-    }
+    // 重複チェック
+    const duplicateIndices = findDuplicateNamedRanges(fieldMappings);
 
     setErrors((prev) => {
       const currentFieldMappingErrors = prev.fieldMappings ?? {};
-      const currentFieldErrors = currentFieldMappingErrors[index] ?? {};
 
+      // 現在のインデックスのエラーを計算
+      const fieldErrors: { namedRange?: string; valueTemplate?: string } = {};
+
+      if (field === "namedRange") {
+        const namedRangeError = validateNamedRange(mapping.namedRange);
+        if (namedRangeError) {
+          fieldErrors.namedRange = namedRangeError;
+        } else if (duplicateIndices.has(index)) {
+          fieldErrors.namedRange = "同じ名前付き範囲が重複しています";
+        }
+      } else if (field === "valueTemplate") {
+        if (!mapping.valueTemplate.trim()) {
+          fieldErrors.valueTemplate = "値は必須です";
+        }
+      }
+
+      // 他のフィールドマッピングの重複エラーも更新
+      const updatedFieldMappingErrors = { ...currentFieldMappingErrors };
+
+      // すべてのフィールドマッピングの重複エラーをリセットし再計算
+      fieldMappings.forEach((_, i) => {
+        const currentErrors = updatedFieldMappingErrors[i] ?? {};
+
+        if (duplicateIndices.has(i)) {
+          updatedFieldMappingErrors[i] = {
+            ...currentErrors,
+            namedRange: "同じ名前付き範囲が重複しています",
+          };
+        } else if (currentErrors.namedRange === "同じ名前付き範囲が重複しています") {
+          // 重複エラーのみを削除し、他のエラーは保持
+          const { namedRange: _, ...restErrors } = currentErrors;
+          if (Object.keys(restErrors).length > 0) {
+            updatedFieldMappingErrors[i] = restErrors;
+          } else {
+            delete updatedFieldMappingErrors[i];
+          }
+        }
+      });
+
+      // 現在のインデックスのエラーを更新
+      const currentFieldErrors = updatedFieldMappingErrors[index] ?? {};
       const updatedFieldErrors = {
         ...currentFieldErrors,
         [field]: fieldErrors[field],
@@ -151,13 +188,9 @@ export function ExcelTemplateForm({
         delete updatedFieldErrors.valueTemplate;
       }
 
-      const updatedFieldMappingErrors = {
-        ...currentFieldMappingErrors,
-        [index]: updatedFieldErrors,
-      };
-
-      // このインデックスにエラーがなければ削除
-      if (Object.keys(updatedFieldErrors).length === 0) {
+      if (Object.keys(updatedFieldErrors).length > 0) {
+        updatedFieldMappingErrors[index] = updatedFieldErrors;
+      } else {
         delete updatedFieldMappingErrors[index];
       }
 

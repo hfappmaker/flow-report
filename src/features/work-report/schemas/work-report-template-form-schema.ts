@@ -103,3 +103,29 @@ export function validateNamedRange(name: string): string | null {
 
   return null;
 }
+
+/**
+ * フィールドマッピング配列内の名前付き範囲の重複をチェック
+ * 重複しているインデックスのセットを返す
+ */
+export function findDuplicateNamedRanges(
+  fieldMappings: FieldMappingFormValues[],
+): Set<number> {
+  const duplicateIndices = new Set<number>();
+  const seenNames = new Map<string, number>();
+
+  fieldMappings.forEach((mapping, index) => {
+    const normalizedName = mapping.namedRange.trim().toLowerCase();
+    if (normalizedName === "") return;
+
+    const previousIndex = seenNames.get(normalizedName);
+    if (previousIndex !== undefined) {
+      duplicateIndices.add(previousIndex);
+      duplicateIndices.add(index);
+    } else {
+      seenNames.set(normalizedName, index);
+    }
+  });
+
+  return duplicateIndices;
+}
