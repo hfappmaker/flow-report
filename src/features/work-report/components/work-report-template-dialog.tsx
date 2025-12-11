@@ -161,7 +161,7 @@ export function ExcelTemplateDialog({
                 この操作は元に戻すことができません。
               </p>
             </div>
-            <div className="mt-4 flex justify-end gap-2">
+            <DialogFooter sticky className="p-6">
               <Button
                 variant="outline"
                 onClick={onCancel}
@@ -176,7 +176,7 @@ export function ExcelTemplateDialog({
               >
                 {isSubmitting ? "削除中..." : "削除"}
               </Button>
-            </div>
+            </DialogFooter>
           </>
         );
       case "details":

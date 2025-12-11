@@ -107,14 +107,14 @@ export const EmailTemplateDialog = ({
                 この操作は元に戻すことができません。
               </p>
             </div>
-            <div className="mt-4 flex justify-end gap-2">
+            <DialogFooter sticky className="p-6">
               <Button variant="outline" onClick={onCancel}>
                 キャンセル
               </Button>
               <Button variant="destructive" onClick={onDelete}>
                 削除
               </Button>
-            </div>
+            </DialogFooter>
           </>
         );
       case "details":
