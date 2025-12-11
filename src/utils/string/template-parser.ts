@@ -40,9 +40,9 @@ export function isValidTemplateString(template: string): boolean {
     return true;
   }
 
-  // 変数の構文が正しいかチェック（${name}の形式）
+  // 変数の構文が正しいかチェック（${name}や${日本語キー}の形式）
   const variables = template.match(/\${[^}]*}/g) ?? [];
-  const validVariablePattern = /^\${[\w.]+}$/;
+  const validVariablePattern = /^\${.+}$/;
 
   return variables.every((v) => validVariablePattern.test(v));
 }
