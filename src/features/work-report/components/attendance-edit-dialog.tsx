@@ -184,6 +184,7 @@ export function AttendanceEditDialog({
                       label="出勤時間"
                       minuteStep={dailyWorkMinutes}
                       showFormMessage={false}
+                      showClearButton={false}
                     />
                   </div>
                   <div className="w-[140px]">
@@ -193,6 +194,7 @@ export function AttendanceEditDialog({
                       label="退勤時間"
                       minuteStep={dailyWorkMinutes}
                       showFormMessage={false}
+                      showClearButton={false}
                     />
                   </div>
                   <div className="w-[140px]">
@@ -202,6 +204,7 @@ export function AttendanceEditDialog({
                       label="休憩時間"
                       minuteStep={dailyWorkMinutes}
                       showFormMessage={false}
+                      showClearButton={false}
                     />
                   </div>
                 </div>

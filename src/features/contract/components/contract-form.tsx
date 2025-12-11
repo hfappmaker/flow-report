@@ -644,6 +644,7 @@ export const ContractForm = ({
                   minuteStep={form.getValues("dailyWorkMinutes") ?? 1}
                   label="基本開始時刻"
                   showFormMessage={false}
+                  showClearButton={false}
                 />
               </div>
 
@@ -654,6 +655,7 @@ export const ContractForm = ({
                   minuteStep={form.getValues("dailyWorkMinutes") ?? 1}
                   label="基本終了時刻"
                   showFormMessage={false}
+                  showClearButton={false}
                 />
               </div>
 
@@ -664,6 +666,7 @@ export const ContractForm = ({
                   minuteStep={form.getValues("dailyWorkMinutes") ?? 1}
                   label="基本休憩時間"
                   showFormMessage={false}
+                  showClearButton={false}
                 />
               </div>
             </div>
