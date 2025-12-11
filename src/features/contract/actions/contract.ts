@@ -6,7 +6,6 @@ import {
   createContract,
   updateContract,
   deleteContract,
-  searchContracts,
   getContractsByUserId,
   getContractById,
   getContractCountByUserId,
@@ -73,26 +72,6 @@ export const deleteContractAction = async (
   }
   revalidatePath("/dashboard");
   return { success: true };
-};
-
-export const searchContractsAction = async (
-  userId: string,
-  searchQuery?: string,
-  periodFrom?: string,
-  periodTo?: string,
-): Promise<
-  { success: true; data: ContractOutput[] } | { success: false; error: string }
-> => {
-  const result = await searchContracts(
-    userId,
-    searchQuery,
-    periodFrom,
-    periodTo,
-  );
-  if (!result.success) {
-    return { success: false, error: result.error };
-  }
-  return { success: true, data: result.data };
 };
 
 export const getContractsByUserIdAction = async (

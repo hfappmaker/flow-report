@@ -6,15 +6,12 @@ import { useState, useEffect, useCallback } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { DatePicker } from "@/components/ui/date-picker";
 import { DialogFooter } from "@/components/ui/dialog";
 import FormError from "@/components/ui/feedback/error-alert";
 import FormSuccess from "@/components/ui/feedback/success-alert";
-import { Input } from "@/components/ui/input";
 import { useTransitionContext } from "@/contexts/transition-context";
 import {
   getContractsByUserIdAction,
-  searchContractsAction,
   deleteContractAction,
   createContractAction,
   updateContractAction,
@@ -40,10 +37,6 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
   const { error, success, showError, showSuccess, clearError, clearSuccess } =
     useMessageState();
   const [contracts, setContracts] = useState<ContractOutput[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [periodFrom, setPeriodFrom] = useState("");
-  const [periodTo, setPeriodTo] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
   const [activeContract, setActiveContract] = useState<ContractOutput | null>(
     null,
   );
@@ -61,48 +54,6 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
     }
     setContracts(result.data);
   }, [userId, showError]);
-
-  // 検索処理
-  const handleSearch = () => {
-    const hasSearchQuery = searchQuery.trim();
-    const hasPeriodFilters = periodFrom || periodTo;
-
-    if (!hasSearchQuery && !hasPeriodFilters) {
-      setIsSearching(false);
-      startTransition(() => {
-        void fetchContracts();
-      });
-      return;
-    }
-
-    setIsSearching(true);
-    startTransition(() => {
-      void (async () => {
-        const result = await searchContractsAction(
-          userId,
-          searchQuery || undefined,
-          periodFrom || undefined,
-          periodTo || undefined,
-        );
-        if (!result.success) {
-          showError(result.error);
-          return;
-        }
-        setContracts(result.data);
-      })();
-    });
-  };
-
-  // 検索クリア
-  const handleClearSearch = () => {
-    setSearchQuery("");
-    setPeriodFrom("");
-    setPeriodTo("");
-    setIsSearching(false);
-    startTransition(() => {
-      void fetchContracts();
-    });
-  };
 
   // ダイアログを閉じる
   const closeDialog = () => {
@@ -291,78 +242,13 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
         <FormError message={error} onClose={clearError} />
         <FormSuccess message={success} onClose={clearSuccess} />
 
-        {/* 検索フォーム */}
-        <div className="mb-6 space-y-4">
-          <div className="flex gap-2">
-            <Input
-              type="text"
-              placeholder="契約名またはクライアント名で検索..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSearch();
-                }
-              }}
-              className="flex-1"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-muted-foreground">
-              期間検索（契約期間と重複する期間を検索）
-            </label>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <DatePicker
-                placeholder="期間開始"
-                value={periodFrom}
-                onChange={(date) => {
-                  setPeriodFrom(date);
-                }}
-                className="flex-1"
-              />
-              <span className="flex items-center text-muted-foreground">
-                〜
-              </span>
-              <DatePicker
-                placeholder="期間終了"
-                value={periodTo}
-                onChange={(date) => {
-                  setPeriodTo(date);
-                }}
-                className="flex-1"
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              onClick={handleSearch}
-              disabled={!searchQuery.trim() && !periodFrom && !periodTo}
-            >
-              検索
-            </Button>
-            {isSearching && (
-              <Button variant="outline" onClick={handleClearSearch}>
-                クリア
-              </Button>
-            )}
-          </div>
-        </div>
-
         {/* 契約一覧 */}
         {contracts.length === 0 ? (
           <div className="py-12 text-center">
-            <p className="text-lg text-muted-foreground">
-              {isSearching ? "検索結果がありません" : "契約がありません"}
+            <p className="text-lg text-muted-foreground">契約がありません</p>
+            <p className="mt-2 text-muted-foreground">
+              新しい契約を作成してください
             </p>
-            {!isSearching && (
-              <p className="mt-2 text-muted-foreground">
-                新しい契約を作成してください
-              </p>
-            )}
           </div>
         ) : (
           <div className="space-y-3">
