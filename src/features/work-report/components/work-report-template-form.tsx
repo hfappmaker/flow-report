@@ -1,16 +1,29 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { FileSpreadsheet, Upload } from "lucide-react";
-import { useState, useRef } from "react";
+import { useMemo, useRef } from "react";
+import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { DialogFooter } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { FieldMappingEditor } from "@/features/work-report/components/field-mapping-editor";
 import {
+  type ExcelTemplateCreateFormValues,
+  type ExcelTemplateEditFormValues,
   type FieldMappingFormValues,
+  excelTemplateCreateFormSchema,
+  excelTemplateEditFormSchema,
   findDuplicateNamedRanges,
-  validateExcelFile,
   validateNamedRange,
 } from "@/features/work-report/schemas/work-report-template-form-schema";
 
@@ -34,6 +47,8 @@ interface ExcelTemplateFormProps {
   isSubmitting?: boolean;
 }
 
+type FormValues = ExcelTemplateCreateFormValues | ExcelTemplateEditFormValues;
+
 export function ExcelTemplateForm({
   defaultValues,
   onSubmit,
@@ -41,84 +56,39 @@ export function ExcelTemplateForm({
   onCancel,
   isSubmitting = false,
 }: ExcelTemplateFormProps) {
-  const [name, setName] = useState(defaultValues?.name ?? "");
-  const [file, setFile] = useState<File | null>(null);
-  const [sheetName, setSheetName] = useState(defaultValues?.sheetName ?? "");
-  const [fieldMappings, setFieldMappings] = useState<FieldMappingFormValues[]>(
-    defaultValues?.fieldMappings ?? [],
-  );
-  const [errors, setErrors] = useState<{
-    name?: string;
-    file?: string;
-    fieldMappings?: Record<
-      number,
-      { namedRange?: string; valueTemplate?: string }
-    >;
-  }>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const isEditMode = !!defaultValues;
+
+  const schema = useMemo(
+    () =>
+      isEditMode ? excelTemplateEditFormSchema : excelTemplateCreateFormSchema,
+    [isEditMode],
+  );
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      name: defaultValues?.name ?? "",
+      file: null,
+      sheetName: defaultValues?.sheetName ?? "",
+      fieldMappings: defaultValues?.fieldMappings ?? [],
+    },
+  });
+
+  const file = form.watch("file");
+  const fieldMappings = form.watch("fieldMappings");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    setErrors((prev) => ({ ...prev, file: undefined }));
+    form.clearErrors("file");
 
     if (!selectedFile) {
-      setFile(null);
+      form.setValue("file", null);
       return;
     }
 
-    const validationError = validateExcelFile(selectedFile);
-    if (validationError) {
-      setErrors((prev) => ({ ...prev, file: validationError }));
-      setFile(null);
-      return;
-    }
-
-    setFile(selectedFile);
-  };
-
-  const validate = (): boolean => {
-    const newErrors: typeof errors = {};
-
-    if (!name.trim()) {
-      newErrors.name = "テンプレート名は必須です";
-    }
-
-    if (!isEditMode && !file) {
-      newErrors.file = "Excelファイルは必須です";
-    }
-
-    const fieldMappingErrors: Record<
-      number,
-      { namedRange?: string; valueTemplate?: string }
-    > = {};
-
-    // 重複チェック
-    const duplicateIndices = findDuplicateNamedRanges(fieldMappings);
-
-    fieldMappings.forEach((mapping, index) => {
-      const fieldErrors: { namedRange?: string; valueTemplate?: string } = {};
-      const namedRangeError = validateNamedRange(mapping.namedRange);
-      if (namedRangeError) {
-        fieldErrors.namedRange = namedRangeError;
-      } else if (duplicateIndices.has(index)) {
-        fieldErrors.namedRange = "同じ名前付き範囲が重複しています";
-      }
-      if (!mapping.valueTemplate.trim()) {
-        fieldErrors.valueTemplate = "値は必須です";
-      }
-      if (Object.keys(fieldErrors).length > 0) {
-        fieldMappingErrors[index] = fieldErrors;
-      }
-    });
-
-    if (Object.keys(fieldMappingErrors).length > 0) {
-      newErrors.fieldMappings = fieldMappingErrors;
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    form.setValue("file", selectedFile);
+    void form.trigger("file");
   };
 
   const validateFieldMapping = (
@@ -131,181 +101,248 @@ export function ExcelTemplateForm({
     // 重複チェック
     const duplicateIndices = findDuplicateNamedRanges(fieldMappings);
 
-    setErrors((prev) => {
-      const currentFieldMappingErrors = prev.fieldMappings ?? {};
-
-      // 現在のインデックスのエラーを計算
-      const fieldErrors: { namedRange?: string; valueTemplate?: string } = {};
-
-      if (field === "namedRange") {
-        const namedRangeError = validateNamedRange(mapping.namedRange);
-        if (namedRangeError) {
-          fieldErrors.namedRange = namedRangeError;
-        } else if (duplicateIndices.has(index)) {
-          fieldErrors.namedRange = "同じ名前付き範囲が重複しています";
-        }
-      } else if (field === "valueTemplate") {
-        if (!mapping.valueTemplate.trim()) {
-          fieldErrors.valueTemplate = "値は必須です";
-        }
+    if (field === "namedRange") {
+      const namedRangeError = validateNamedRange(mapping.namedRange);
+      if (namedRangeError) {
+        form.setError(`fieldMappings.${index}.namedRange`, {
+          message: namedRangeError,
+        });
+      } else if (duplicateIndices.has(index)) {
+        form.setError(`fieldMappings.${index}.namedRange`, {
+          message: "同じ名前付き範囲が重複しています",
+        });
+      } else {
+        form.clearErrors(`fieldMappings.${index}.namedRange`);
       }
 
       // 他のフィールドマッピングの重複エラーも更新
-      const updatedFieldMappingErrors = { ...currentFieldMappingErrors };
-
-      // すべてのフィールドマッピングの重複エラーをリセットし再計算
       fieldMappings.forEach((_, i) => {
-        const currentErrors = updatedFieldMappingErrors[i] ?? {};
-
+        if (i === index) return;
         if (duplicateIndices.has(i)) {
-          updatedFieldMappingErrors[i] = {
-            ...currentErrors,
-            namedRange: "同じ名前付き範囲が重複しています",
-          };
-        } else if (currentErrors.namedRange === "同じ名前付き範囲が重複しています") {
-          // 重複エラーのみを削除し、他のエラーは保持
-          const { namedRange: _, ...restErrors } = currentErrors;
-          if (Object.keys(restErrors).length > 0) {
-            updatedFieldMappingErrors[i] = restErrors;
-          } else {
-            delete updatedFieldMappingErrors[i];
+          form.setError(`fieldMappings.${i}.namedRange`, {
+            message: "同じ名前付き範囲が重複しています",
+          });
+        } else {
+          // 重複エラーのみをクリア（他のバリデーションエラーは保持）
+          const currentError =
+            form.formState.errors.fieldMappings?.[i]?.namedRange?.message;
+          if (currentError === "同じ名前付き範囲が重複しています") {
+            form.clearErrors(`fieldMappings.${i}.namedRange`);
           }
         }
       });
-
-      // 現在のインデックスのエラーを更新
-      const currentFieldErrors = updatedFieldMappingErrors[index] ?? {};
-      const updatedFieldErrors = {
-        ...currentFieldErrors,
-        [field]: fieldErrors[field],
-      };
-
-      // エラーがない場合はそのフィールドのエラーを削除
-      if (!updatedFieldErrors.namedRange) {
-        delete updatedFieldErrors.namedRange;
-      }
-      if (!updatedFieldErrors.valueTemplate) {
-        delete updatedFieldErrors.valueTemplate;
-      }
-
-      if (Object.keys(updatedFieldErrors).length > 0) {
-        updatedFieldMappingErrors[index] = updatedFieldErrors;
+    } else if (field === "valueTemplate") {
+      if (!mapping.valueTemplate.trim()) {
+        form.setError(`fieldMappings.${index}.valueTemplate`, {
+          message: "値は必須です",
+        });
       } else {
-        delete updatedFieldMappingErrors[index];
+        form.clearErrors(`fieldMappings.${index}.valueTemplate`);
       }
-
-      return {
-        ...prev,
-        fieldMappings:
-          Object.keys(updatedFieldMappingErrors).length > 0
-            ? updatedFieldMappingErrors
-            : undefined,
-      };
-    });
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const values = form.getValues();
 
-    if (!validate()) {
+    // フィールドマッピングの詳細バリデーション
+    const fieldMappingErrors: Record<
+      number,
+      { namedRange?: string; valueTemplate?: string }
+    > = {};
+
+    // 重複チェック
+    const duplicateIndices = findDuplicateNamedRanges(values.fieldMappings);
+
+    values.fieldMappings.forEach((mapping, index) => {
+      const fieldErrors: { namedRange?: string; valueTemplate?: string } = {};
+      const namedRangeError = validateNamedRange(mapping.namedRange);
+      if (namedRangeError) {
+        fieldErrors.namedRange = namedRangeError;
+        form.setError(`fieldMappings.${index}.namedRange`, {
+          message: namedRangeError,
+        });
+      } else if (duplicateIndices.has(index)) {
+        fieldErrors.namedRange = "同じ名前付き範囲が重複しています";
+        form.setError(`fieldMappings.${index}.namedRange`, {
+          message: "同じ名前付き範囲が重複しています",
+        });
+      }
+      if (!mapping.valueTemplate.trim()) {
+        fieldErrors.valueTemplate = "値は必須です";
+        form.setError(`fieldMappings.${index}.valueTemplate`, {
+          message: "値は必須です",
+        });
+      }
+      if (Object.keys(fieldErrors).length > 0) {
+        fieldMappingErrors[index] = fieldErrors;
+      }
+    });
+
+    const result = schema.safeParse(values);
+    if (!result.success) {
+      result.error.issues.forEach((issue) => {
+        const path = issue.path.join(".") as keyof FormValues;
+        form.setError(path, { message: issue.message });
+      });
+      return;
+    }
+
+    if (Object.keys(fieldMappingErrors).length > 0) {
       return;
     }
 
     onSubmit({
-      name: name.trim(),
-      file,
-      sheetName: sheetName.trim() || null,
-      fieldMappings,
+      name: values.name.trim(),
+      file: values.file ?? null,
+      sheetName:
+        typeof values.sheetName === "string" && values.sheetName.trim()
+          ? values.sheetName.trim()
+          : null,
+      fieldMappings: values.fieldMappings,
     });
   };
 
+  // FieldMappingEditor用のエラー形式に変換
+  const fieldMappingErrors = useMemo(() => {
+    const errors = form.formState.errors.fieldMappings;
+    if (!errors || !Array.isArray(errors)) return undefined;
+
+    const result: Record<
+      number,
+      { namedRange?: string; valueTemplate?: string }
+    > = {};
+    errors.forEach((error, index) => {
+      if (error) {
+        const fieldError: { namedRange?: string; valueTemplate?: string } = {};
+        if (error.namedRange?.message) {
+          fieldError.namedRange = error.namedRange.message;
+        }
+        if (error.valueTemplate?.message) {
+          fieldError.valueTemplate = error.valueTemplate.message;
+        }
+        if (Object.keys(fieldError).length > 0) {
+          result[index] = fieldError;
+        }
+      }
+    });
+    return Object.keys(result).length > 0 ? result : undefined;
+  }, [form.formState.errors.fieldMappings]);
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 px-1">
-      <div className="space-y-2">
-        <Label htmlFor="name">テンプレート名</Label>
-        <Input
-          id="name"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            setErrors((prev) => ({ ...prev, name: undefined }));
-          }}
-          placeholder="例: 株式会社〇〇向けテンプレート"
-          className={errors.name ? "border-red-500" : ""}
-        />
-        {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="file">
-          Excelテンプレートファイル (.xlsx, .xltx)
-          {isEditMode && " - 変更する場合のみ選択"}
-        </Label>
-        {isEditMode && defaultValues?.fileName && !file && (
-          <div className="flex items-center gap-2 rounded-md border border-gray-200 bg-gray-50 p-3">
-            <FileSpreadsheet className="size-4 text-gray-500" />
-            <span className="text-sm text-gray-700">
-              {defaultValues.fileName}
-            </span>
-          </div>
-        )}
-        <div className="flex items-center gap-2">
-          <Input
-            id="file"
-            type="file"
-            accept=".xlsx,.xltx"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            className={`cursor-pointer ${errors.file ? "border-red-500" : ""}`}
+    <Form {...form}>
+      <form onSubmit={handleFormSubmit} noValidate className="space-y-6">
+        <div className="space-y-6 px-1">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>テンプレート名</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="例: 株式会社〇〇向けテンプレート"
+                    onBlur={() => {
+                      field.onBlur();
+                      void form.trigger("name");
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-        {file && (
-          <div className="flex items-center gap-2 text-sm text-green-600">
-            <Upload className="size-4" />
-            選択: {file.name}
+
+          <FormField
+            control={form.control}
+            name="file"
+            render={() => (
+              <FormItem>
+                <FormLabel>
+                  Excelテンプレートファイル (.xlsx, .xltx)
+                  {isEditMode && " - 変更する場合のみ選択"}
+                </FormLabel>
+                {isEditMode && defaultValues?.fileName && !file && (
+                  <div className="flex items-center gap-2 rounded-md border border-gray-200 bg-gray-50 p-3">
+                    <FileSpreadsheet className="size-4 text-gray-500" />
+                    <span className="text-sm text-gray-700">
+                      {defaultValues.fileName}
+                    </span>
+                  </div>
+                )}
+                <FormControl>
+                  <Input
+                    id="file"
+                    type="file"
+                    accept=".xlsx,.xltx"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    className="cursor-pointer"
+                  />
+                </FormControl>
+                {file && (
+                  <div className="flex items-center gap-2 text-sm text-green-600">
+                    <Upload className="size-4" />
+                    選択: {file.name}
+                  </div>
+                )}
+                <FormMessage />
+                <p className="text-xs text-muted-foreground">
+                  最大ファイルサイズ: 5MB
+                </p>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="sheetName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>出力シート名（オプション）</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    value={field.value ?? ""}
+                    placeholder="空欄の場合は最初のシートを使用"
+                  />
+                </FormControl>
+                <p className="text-xs text-muted-foreground">
+                  Excelファイル内のシート名を指定します。空欄の場合は最初のシートが使用されます。
+                </p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="border-t pt-4">
+            <FieldMappingEditor
+              fieldMappings={fieldMappings}
+              onChange={(newMappings) =>
+                form.setValue("fieldMappings", newMappings)
+              }
+              onBlur={validateFieldMapping}
+              errors={fieldMappingErrors}
+            />
           </div>
-        )}
-        {errors.file && <p className="text-sm text-red-500">{errors.file}</p>}
-        <p className="text-xs text-muted-foreground">最大ファイルサイズ: 5MB</p>
-      </div>
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="sheetName">出力シート名（オプション）</Label>
-        <Input
-          id="sheetName"
-          value={sheetName}
-          onChange={(e) => {
-            setSheetName(e.target.value);
-          }}
-          placeholder="空欄の場合は最初のシートを使用"
-        />
-        <p className="text-xs text-muted-foreground">
-          Excelファイル内のシート名を指定します。空欄の場合は最初のシートが使用されます。
-        </p>
-      </div>
-
-      <div className="border-t pt-4">
-        <FieldMappingEditor
-          fieldMappings={fieldMappings}
-          onChange={setFieldMappings}
-          onBlur={validateFieldMapping}
-          errors={errors.fieldMappings}
-        />
-      </div>
-
-      <div className="flex justify-end gap-2 border-t pt-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={isSubmitting}
-        >
-          キャンセル
-        </Button>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "処理中..." : submitButtonText}
-        </Button>
-      </div>
-    </form>
+        <DialogFooter sticky className="p-6">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            キャンセル
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "処理中..." : submitButtonText}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
   );
 }

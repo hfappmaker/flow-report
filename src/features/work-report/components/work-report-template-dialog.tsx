@@ -181,55 +181,86 @@ export function ExcelTemplateDialog({
         );
       case "details":
         return (
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-medium">基本情報</h3>
-              <div className="mt-2 space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">テンプレート名:</span>
-                  <span>{template?.name}</span>
-                  {isSystem && (
-                    <Badge variant="secondary" className="text-xs">
-                      システム
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">ファイル名:</span>
-                  <div className="flex items-center gap-1">
-                    <FileSpreadsheet className="size-4 text-gray-500" />
-                    <span>{template?.fileName}</span>
+          <>
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-medium">基本情報</h3>
+                <div className="mt-2 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">テンプレート名:</span>
+                    <span>{template?.name}</span>
+                    {isSystem && (
+                      <Badge variant="secondary" className="text-xs">
+                        システム
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">ファイル名:</span>
+                    <div className="flex items-center gap-1">
+                      <FileSpreadsheet className="size-4 text-gray-500" />
+                      <span>{template?.fileName}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">シート名:</span>
+                    <span>{template?.sheetName ?? "（最初のシート）"}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">シート名:</span>
-                  <span>{template?.sheetName ?? "（最初のシート）"}</span>
-                </div>
               </div>
-            </div>
 
-            {template && template.fieldMappings.length > 0 && (
-              <div>
-                <h3 className="text-lg font-medium">フィールドマッピング</h3>
-                <div className="mt-2 space-y-2">
-                  {template.fieldMappings.map((mapping) => (
-                    <div
-                      key={mapping.id}
-                      className="flex items-center gap-2 rounded border p-2 text-sm"
-                    >
-                      <span className="font-mono text-muted-foreground">
-                        {mapping.namedRange}
-                      </span>
-                      <span className="text-muted-foreground">→</span>
-                      <span className="font-mono">
-                        {highlightPlaceholders(mapping.valueTemplate)}
-                      </span>
-                    </div>
-                  ))}
+              {template && template.fieldMappings.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-medium">フィールドマッピング</h3>
+                  <div className="mt-2 space-y-2">
+                    {template.fieldMappings.map((mapping) => (
+                      <div
+                        key={mapping.id}
+                        className="flex items-center gap-2 rounded border p-2 text-sm"
+                      >
+                        <span className="font-mono text-muted-foreground">
+                          {mapping.namedRange}
+                        </span>
+                        <span className="text-muted-foreground">→</span>
+                        <span className="font-mono">
+                          {highlightPlaceholders(mapping.valueTemplate)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+            <DialogFooter sticky className="p-6">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  void handleDownloadTemplate();
+                }}
+              >
+                <Download className="mr-2 size-4" />
+                ダウンロード
+              </Button>
+              {!isSystem && onEdit && (
+                <Button variant="outline" onClick={onEdit}>
+                  編集
+                </Button>
+              )}
+              {!isSystem && onRequestDelete && (
+                <Button variant="destructive" onClick={onRequestDelete}>
+                  削除
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                onClick={() => {
+                  onOpenChange(false);
+                }}
+              >
+                閉じる
+              </Button>
+            </DialogFooter>
+          </>
         );
       default:
         return null;
@@ -251,37 +282,6 @@ export function ExcelTemplateDialog({
           </DialogHeader>
           <div className="flex-1 overflow-y-auto p-6 pb-0 pt-4">
             {renderContent()}
-            {type === "details" && (
-              <DialogFooter sticky className="p-6">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    void handleDownloadTemplate();
-                  }}
-                >
-                  <Download className="mr-2 size-4" />
-                  ダウンロード
-                </Button>
-                {!isSystem && onEdit && (
-                  <Button variant="outline" onClick={onEdit}>
-                    編集
-                  </Button>
-                )}
-                {!isSystem && onRequestDelete && (
-                  <Button variant="destructive" onClick={onRequestDelete}>
-                    削除
-                  </Button>
-                )}
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    onOpenChange(false);
-                  }}
-                >
-                  閉じる
-                </Button>
-              </DialogFooter>
-            )}
           </div>
         </DialogContent>
       </DialogPortal>

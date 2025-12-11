@@ -1,6 +1,45 @@
 import * as z from "zod";
 
 /**
+ * ファイルアップロードのバリデーション定数
+ */
+export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+export const ACCEPTED_FILE_TYPES = [
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.template", // .xltx
+];
+
+/**
+ * Excelファイルのバリデーションスキーマ（新規作成用：必須）
+ */
+const excelFileSchema = z
+  .instanceof(File, { message: "Excelファイルは必須です" })
+  .refine(
+    (file) => file.size <= MAX_FILE_SIZE,
+    "ファイルサイズが大きすぎます。5MB以下のファイルを選択してください。",
+  )
+  .refine(
+    (file) => ACCEPTED_FILE_TYPES.includes(file.type),
+    "ファイル形式が正しくありません。.xlsxまたは.xltxファイルを選択してください。",
+  );
+
+/**
+ * Excelファイルのバリデーションスキーマ（編集用：オプショナル）
+ */
+const excelFileOptionalSchema = z
+  .instanceof(File)
+  .refine(
+    (file) => file.size <= MAX_FILE_SIZE,
+    "ファイルサイズが大きすぎます。5MB以下のファイルを選択してください。",
+  )
+  .refine(
+    (file) => ACCEPTED_FILE_TYPES.includes(file.type),
+    "ファイル形式が正しくありません。.xlsxまたは.xltxファイルを選択してください。",
+  )
+  .nullable()
+  .optional();
+
+/**
  * フィールドマッピングのスキーマ
  */
 export const fieldMappingSchema = z.object({
@@ -15,7 +54,7 @@ export type FieldMappingFormValues = z.infer<typeof fieldMappingSchema>;
  */
 export const excelTemplateCreateFormSchema = z.object({
   name: z.string().min(1, "テンプレート名は必須です"),
-  file: z.instanceof(File, { message: "Excelファイルは必須です" }),
+  file: excelFileSchema,
   sheetName: z.string().nullable().optional(),
   fieldMappings: z.array(fieldMappingSchema),
 });
@@ -29,7 +68,7 @@ export type ExcelTemplateCreateFormValues = z.infer<
  */
 export const excelTemplateEditFormSchema = z.object({
   name: z.string().min(1, "テンプレート名は必須です"),
-  file: z.instanceof(File).nullable().optional(),
+  file: excelFileOptionalSchema,
   sheetName: z.string().nullable().optional(),
   fieldMappings: z.array(fieldMappingSchema),
 });
@@ -37,25 +76,6 @@ export const excelTemplateEditFormSchema = z.object({
 export type ExcelTemplateEditFormValues = z.infer<
   typeof excelTemplateEditFormSchema
 >;
-
-/**
- * ファイルアップロードのバリデーション
- */
-export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-export const ACCEPTED_FILE_TYPES = [
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.template", // .xltx
-];
-
-export function validateExcelFile(file: File): string | null {
-  if (!ACCEPTED_FILE_TYPES.includes(file.type)) {
-    return "ファイル形式が正しくありません。.xlsxまたは.xltxファイルを選択してください。";
-  }
-  if (file.size > MAX_FILE_SIZE) {
-    return "ファイルサイズが大きすぎます。5MB以下のファイルを選択してください。";
-  }
-  return null;
-}
 
 /**
  * Excelの名前付き範囲の命名規則に基づくバリデーション
