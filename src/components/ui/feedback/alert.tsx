@@ -1,4 +1,5 @@
 import { Cross2Icon } from "@radix-ui/react-icons";
+import { useEffect } from "react";
 
 export type AlertVariant = "success" | "error";
 
@@ -7,9 +8,35 @@ export interface AlertProps {
   onClose?: () => void;
   variant: AlertVariant;
   icon: React.ReactNode;
+  /** 自動で閉じるまでの時間（ミリ秒）。デフォルトは5000ms（5秒）。nullを指定すると自動で閉じない */
+  autoCloseDelay?: number | null;
 }
 
-export const Alert = ({ message, onClose, variant, icon }: AlertProps) => {
+const DEFAULT_AUTO_CLOSE_DELAY = 5000;
+
+export const Alert = ({
+  message,
+  onClose,
+  variant,
+  icon,
+  autoCloseDelay,
+}: AlertProps) => {
+  const resolvedDelay =
+    autoCloseDelay === undefined ? DEFAULT_AUTO_CLOSE_DELAY : autoCloseDelay;
+
+  useEffect(() => {
+    if (!message || resolvedDelay === null || !onClose) return;
+
+    const delay = resolvedDelay;
+    const timer = setTimeout(() => {
+      onClose();
+    }, delay);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [message, resolvedDelay, onClose]);
+
   if (!message) return null;
 
   const variantStyles = {
