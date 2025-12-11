@@ -3,7 +3,6 @@ import type {
   ExcelTemplateField,
   TemplateType,
 } from "@prisma/client";
-import { Prisma } from "@prisma/client";
 
 import type {
   CreateExcelTemplateInput,
@@ -11,31 +10,6 @@ import type {
 } from "@/features/work-report/types/work-report-template";
 import { db } from "@/repositories/db";
 import { type Result, err, ok } from "@/types/result";
-
-/**
- * Prismaのユニーク制約違反エラーかどうかをチェック
- */
-function isUniqueConstraintError(
-  error: unknown,
-): error is Prisma.PrismaClientKnownRequestError {
-  return (
-    error instanceof Prisma.PrismaClientKnownRequestError &&
-    error.code === "P2002"
-  );
-}
-
-/**
- * ユニーク制約違反エラーから対象フィールドを取得
- */
-function getUniqueConstraintField(
-  error: Prisma.PrismaClientKnownRequestError,
-): string | null {
-  const target = error.meta?.target;
-  if (Array.isArray(target) && target.includes("namedRange")) {
-    return "namedRange";
-  }
-  return null;
-}
 
 type ExcelTemplateWithFields = ExcelTemplate & {
   fieldMappings: ExcelTemplateField[];
@@ -129,12 +103,6 @@ export class ExcelTemplateRepository {
       return ok(template);
     } catch (error) {
       console.error("Error creating excel template:", error);
-      if (isUniqueConstraintError(error)) {
-        const field = getUniqueConstraintField(error);
-        if (field === "namedRange") {
-          return err("同じ名前付き範囲が重複しています。名前付き範囲名は一意にしてください。");
-        }
-      }
       return err("Excelテンプレートの作成に失敗しました");
     }
   }
@@ -183,12 +151,6 @@ export class ExcelTemplateRepository {
       return ok(template);
     } catch (error) {
       console.error("Error updating excel template:", error);
-      if (isUniqueConstraintError(error)) {
-        const field = getUniqueConstraintField(error);
-        if (field === "namedRange") {
-          return err("同じ名前付き範囲が重複しています。名前付き範囲名は一意にしてください。");
-        }
-      }
       return err("Excelテンプレートの更新に失敗しました");
     }
   }
