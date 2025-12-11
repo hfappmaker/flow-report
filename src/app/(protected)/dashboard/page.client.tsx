@@ -490,18 +490,17 @@ export default function DashboardClientPage({
           </h2>
           {Object.entries(submittedWorkReportsLast3Months).map(
             ([contractId, contract]) => (
-              <Card key={contractId} className="mb-6">
+              <Card
+                key={contractId}
+                className="group/card mb-6 cursor-pointer transition-colors hover:bg-muted/30 has-[button:hover]:bg-transparent has-[.work-report-card:hover]:bg-transparent"
+                onClick={() => {
+                  startTransition(() => {
+                    void openContractDetailsDialog(contractId);
+                  });
+                }}
+              >
                 <CardHeader>
-                  <CardTitle
-                    className="cursor-pointer transition-colors hover:text-blue-600"
-                    onClick={() => {
-                      startTransition(() => {
-                        void openContractDetailsDialog(contractId);
-                      });
-                    }}
-                  >
-                    {contract.contractName}
-                  </CardTitle>
+                  <CardTitle>{contract.contractName}</CardTitle>
                   <p className="text-sm text-muted-foreground">
                     {contract.clientName}
                   </p>
@@ -518,8 +517,9 @@ export default function DashboardClientPage({
                         <button
                           key={workReport.id}
                           type="button"
-                          className="block w-full cursor-pointer rounded-lg border bg-background p-4 text-left transition-colors hover:bg-muted/50"
-                          onClick={() => {
+                          className="work-report-card block w-full cursor-pointer rounded-lg border bg-background p-4 text-left transition-colors hover:bg-muted/50"
+                          onClick={(e) => {
+                            e.stopPropagation();
                             handleNavigation(workReport.id);
                           }}
                         >
