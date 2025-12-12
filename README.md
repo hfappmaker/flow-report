@@ -5,6 +5,7 @@
 ## 技術スタック
 
 ### フロントエンド
+
 - **Next.js** v16.0.1 (App Router)
 - **React** v19.2.0
 - **TypeScript** v5.9.3
@@ -14,6 +15,7 @@
 - **Jotai** - 状態管理
 
 ### バックエンド
+
 - **Prisma** v6.18.0 (ORM)
 - **PostgreSQL** - データベース
 - **NextAuth.js** v5 - 認証
@@ -22,6 +24,7 @@
 - **Resend** - メール送信
 
 ### テスト・開発ツール
+
 - **Vitest** - ユニットテスト
 - **Playwright** - E2Eテスト
 - **ESLint** + **Prettier** - コード品質管理
@@ -29,6 +32,7 @@
 - **DevContainer** - 開発環境
 
 ### 外部サービス連携
+
 - **Google OAuth 2.0** - 認証
 - **Stripe API** - サブスクリプション管理
 - **freee API** - 会計連携
@@ -37,12 +41,14 @@
 ## 主な機能
 
 ### 認証・ユーザー管理
+
 - OAuth2.0を用いたGoogle認証によるログイン
 - 2要素認証対応
 - パスワードリセット機能
 - ユーザーロール管理（管理者/一般ユーザー）
 
 ### 契約・勤怠管理
+
 - クライアント・契約の作成、編集、削除
 - 月次勤怠表の作成、編集、削除
 - 勤怠の一括入力機能
@@ -50,16 +56,19 @@
 - 税込・税抜設定と端数処理
 
 ### レポート・メール機能
+
 - ExcelJSを使用した作業報告書の自動生成
 - メールテンプレート管理
 - mailtoスキームでのメーラー起動
 
 ### サブスクリプション機能
+
 - Stripe統合によるサブスクリプション管理
 - トライアル期間管理
 - サブスクリプション状態管理
 
 ### その他
+
 - DBへのCRUD操作を記録する監査ログ機能
 - freee API連携
 - 祝日管理
@@ -68,6 +77,7 @@
 ## セットアップ
 
 ### 前提条件
+
 - Node.js 18以上
 - pnpm
 - Docker & Docker Compose（DevContainer使用時）
@@ -75,15 +85,17 @@
 ### DevContainerでの起動（推奨）
 
 1. リポジトリをクローン
+
 ```bash
 git clone <repository-url>
-cd WorkTimeManagementV2
+cd flow-report
 ```
 
 2. VS Codeで開き、DevContainerで再度開く
    - コマンドパレット（Ctrl+Shift+P / Cmd+Shift+P）から `Dev Containers: Reopen in Container` を選択
 
 3. 環境変数を設定
+
 ```bash
 # Vercelから自動取得（推奨）
 vercel env pull .env.local
@@ -94,11 +106,13 @@ cp .env.example .env.local
 ```
 
 4. 依存関係のインストール
+
 ```bash
 pnpm install
 ```
 
 5. データベースのセットアップ
+
 ```bash
 # マイグレーション実行
 pnpm prisma migrate dev
@@ -108,6 +122,7 @@ pnpm prisma db seed
 ```
 
 6. 開発サーバー起動
+
 ```bash
 pnpm dev
 ```
@@ -154,6 +169,7 @@ src/
 ```
 
 各featureモジュールは以下のサブフォルダで構成されます：
+
 - `actions/` - Server Actions
 - `components/` - UIコンポーネント
 - `hooks/` - カスタムフック
@@ -231,9 +247,9 @@ vercel --prod
 環境変数は Vercel のダッシュボードで設定するか、`vercel env pull` で取得できます。
 
 ## アピールポイント
+
 - 最新の技術スタック（TypeScript、React v19、Next.js v16 App Router、Prisma、PostgreSQL）を採用
 - DevContainerを活用した一貫した開発環境により、チーム全体での生産性が向上
 - 関数型プログラミング原則に基づいた保守性の高いコードベース
 - VitestとPlaywrightによる包括的なテスト体制
 - Vercelによる高速なCI/CDパイプライン
-

@@ -1,83 +1,77 @@
 {
-    "containerDefinitions": [
+  "containerDefinitions": [
+    {
+      "name": "flow-report-container",
+      "image": "<image uri>",
+      "cpu": 0,
+      "portMappings": [
         {
-            "name": "work-time-management-container",
-            "image": "<image uri>",
-            "cpu": 0,
-            "portMappings": [
-                {
-                    "name": "work-time-management-container-80-tcp",
-                    "containerPort": 80,
-                    "hostPort": 80,
-                    "protocol": "tcp",
-                    "appProtocol": "http"
-                }
-            ],
-            "secrets": [
-                {
-                    "name": "DATABASE_USERNAME",
-                    "valueFrom": "arn:aws:secretsmanager:us-west-2:637423174558:secret:work-time-management-db-secret-y3aKwH:username::"
-                },
-                {
-                    "name": "DATABASE_PASSWORD",
-                    "valueFrom": "arn:aws:secretsmanager:us-west-2:637423174558:secret:work-time-management-db-secret-y3aKwH:password::"
-                },
-                {
-                    "name": "DATABASE_ENGINE",
-                    "valueFrom": "arn:aws:secretsmanager:us-west-2:637423174558:secret:work-time-management-db-secret-y3aKwH:engine::"
-                },
-                {
-                    "name": "DATABASE_HOST",
-                    "valueFrom": "arn:aws:secretsmanager:us-west-2:637423174558:secret:work-time-management-db-secret-y3aKwH:host::"
-                },
-                {
-                    "name": "DATABASE_PORT",
-                    "valueFrom": "arn:aws:secretsmanager:us-west-2:637423174558:secret:work-time-management-db-secret-y3aKwH:port::"
-                },
-                {
-                    "name": "DATABASE_IDENTIFIER",
-                    "valueFrom": "arn:aws:secretsmanager:us-west-2:637423174558:secret:work-time-management-db-secret-y3aKwH:dbInstanceIdentifier::"
-                }
-            ],
-            "essential": true,
-            "entryPoint": [
-                "sh",
-                "-c"
-            ],
-            "environment": [
-            ],
-            "command": [
-                "export DATABASE_URL=\"$DATABASE_ENGINE://$DATABASE_USERNAME:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT/$DATABASE_IDENTIFIER?schema=public&connection_limit=1\" && exec pnpm run start"
-            ],
-            "environmentFiles": [],
-            "mountPoints": [],
-            "volumesFrom": [],
-            "ulimits": [],
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-group": "/ecs/work-time-management-task-definition",
-                    "awslogs-create-group": "true",
-                    "awslogs-region": "us-west-2",
-                    "awslogs-stream-prefix": "ecs"
-                },
-                "secretOptions": []
-            },
-            "systemControls": []
+          "name": "flow-report-container-80-tcp",
+          "containerPort": 80,
+          "hostPort": 80,
+          "protocol": "tcp",
+          "appProtocol": "http"
         }
-    ],
-    "family": "work-time-management-task-definition",
-    "executionRoleArn": "ecsTaskExecutionRole",
-    "networkMode": "awsvpc",
-    "volumes": [],
-    "placementConstraints": [],
-    "requiresCompatibilities": [
-        "FARGATE"
-    ],
-    "cpu": "256",
-    "memory": "512",
-    "runtimePlatform": {
-        "cpuArchitecture": "X86_64",
-        "operatingSystemFamily": "LINUX"
+      ],
+      "secrets": [
+        {
+          "name": "DATABASE_USERNAME",
+          "valueFrom": "arn:aws:secretsmanager:us-west-2:637423174558:secret:flow-report-db-secret-y3aKwH:username::"
+        },
+        {
+          "name": "DATABASE_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:us-west-2:637423174558:secret:flow-report-db-secret-y3aKwH:password::"
+        },
+        {
+          "name": "DATABASE_ENGINE",
+          "valueFrom": "arn:aws:secretsmanager:us-west-2:637423174558:secret:flow-report-db-secret-y3aKwH:engine::"
+        },
+        {
+          "name": "DATABASE_HOST",
+          "valueFrom": "arn:aws:secretsmanager:us-west-2:637423174558:secret:flow-report-db-secret-y3aKwH:host::"
+        },
+        {
+          "name": "DATABASE_PORT",
+          "valueFrom": "arn:aws:secretsmanager:us-west-2:637423174558:secret:flow-report-db-secret-y3aKwH:port::"
+        },
+        {
+          "name": "DATABASE_IDENTIFIER",
+          "valueFrom": "arn:aws:secretsmanager:us-west-2:637423174558:secret:flow-report-db-secret-y3aKwH:dbInstanceIdentifier::"
+        }
+      ],
+      "essential": true,
+      "entryPoint": ["sh", "-c"],
+      "environment": [],
+      "command": [
+        "export DATABASE_URL=\"$DATABASE_ENGINE://$DATABASE_USERNAME:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT/$DATABASE_IDENTIFIER?schema=public&connection_limit=1\" && exec pnpm run start"
+      ],
+      "environmentFiles": [],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "ulimits": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/flow-report-task-definition",
+          "awslogs-create-group": "true",
+          "awslogs-region": "us-west-2",
+          "awslogs-stream-prefix": "ecs"
+        },
+        "secretOptions": []
+      },
+      "systemControls": []
     }
+  ],
+  "family": "flow-report-task-definition",
+  "executionRoleArn": "ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "volumes": [],
+  "placementConstraints": [],
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  }
 }

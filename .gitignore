@@ -45,7 +45,7 @@ pnpm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 public_key_filename.txt
-work-time-management-user-deploy_accessKeys.csv
+flow-report-user-deploy_accessKeys.csv
 
 # eslint
 .eslintcache
@@ -61,3 +61,4 @@ work-time-management-user-deploy_accessKeys.csv
 
 # Claude Code
 .claude/settings.local.json
+.env*.local

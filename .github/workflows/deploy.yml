@@ -2,7 +2,7 @@ name: Deploy
 on:
   push:
     paths-ignore:
-      - '**.md'
+      - "**.md"
     branches:
       - main
 
@@ -88,7 +88,7 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION_API }}
-          container-name: work-time-management-container
+          container-name: flow-report-container
           image: ${{ env.API_IMAGE_URI }}
 
       - name: Deploy ECS Task
@@ -107,7 +107,7 @@ jobs:
       #     subnets: ${{ secrets.SUBNET_NAME }}
       #     security-groups: ${{ secrets.SECURITY_GROUP_NAME }}
       #     assign-public-ip: ENABLED
-      #     override-container: work-time-management-container
+      #     override-container: flow-report-container
       #     override-container-command: |
       #       sh
       #       -c

@@ -1,4 +1,4 @@
-# WorkTimeManagementV2 Project Rules for Claude Code
+# flow-report Project Rules for Claude Code
 
 ## 1. Development Environment
 
@@ -156,7 +156,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { myFormSchema, MyFormValues } from "@/features/[feature]/schemas/my-form-schema";
+import {
+  myFormSchema,
+  MyFormValues,
+} from "@/features/[feature]/schemas/my-form-schema";
 ```
 
 **Required pattern:**
@@ -249,29 +252,29 @@ const handleAction = () => {
 - Do NOT use native HTML elements directly when a UI component exists
 - Always import from `@/components/ui/` for the following components:
 
-| Component | Import Path |
-|-----------|-------------|
-| Button | `@/components/ui/button` |
-| Input | `@/components/ui/input` |
-| Label | `@/components/ui/label` |
-| Checkbox | `@/components/ui/checkbox` |
-| Select | `@/components/ui/select` |
-| Textarea | `@/components/ui/textarea` |
-| Dialog | `@/components/ui/dialog` |
-| Card | `@/components/ui/card` |
-| Badge | `@/components/ui/badge` |
-| Avatar | `@/components/ui/avatar` |
-| Tabs | `@/components/ui/tabs` |
-| Switch | `@/components/ui/switch` |
-| RadioGroup | `@/components/ui/radio-group` |
-| DatePicker | `@/components/ui/date-picker` |
-| TimePicker | `@/components/ui/time-picker` |
-| DropdownMenu | `@/components/ui/dropdown-menu` |
-| Sheet | `@/components/ui/sheet` |
-| Popover | `@/components/ui/popover` |
-| Form components | `@/components/ui/form` |
-| Loading components | `@/components/ui/loading` |
-| Feedback components | `@/components/ui/feedback` |
+| Component           | Import Path                     |
+| ------------------- | ------------------------------- |
+| Button              | `@/components/ui/button`        |
+| Input               | `@/components/ui/input`         |
+| Label               | `@/components/ui/label`         |
+| Checkbox            | `@/components/ui/checkbox`      |
+| Select              | `@/components/ui/select`        |
+| Textarea            | `@/components/ui/textarea`      |
+| Dialog              | `@/components/ui/dialog`        |
+| Card                | `@/components/ui/card`          |
+| Badge               | `@/components/ui/badge`         |
+| Avatar              | `@/components/ui/avatar`        |
+| Tabs                | `@/components/ui/tabs`          |
+| Switch              | `@/components/ui/switch`        |
+| RadioGroup          | `@/components/ui/radio-group`   |
+| DatePicker          | `@/components/ui/date-picker`   |
+| TimePicker          | `@/components/ui/time-picker`   |
+| DropdownMenu        | `@/components/ui/dropdown-menu` |
+| Sheet               | `@/components/ui/sheet`         |
+| Popover             | `@/components/ui/popover`       |
+| Form components     | `@/components/ui/form`          |
+| Loading components  | `@/components/ui/loading`       |
+| Feedback components | `@/components/ui/feedback`      |
 
 **Examples:**
 
