@@ -749,7 +749,7 @@ export function ExportDialog({
           )}
         </div>
 
-        <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
+        <DialogFooter className="flex-col gap-2 sm:flex-row">
           <Button
             variant="outline"
             onClick={() => {
