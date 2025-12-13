@@ -4,26 +4,16 @@ import ExcelJS from "exceljs";
 import { Download, FileSpreadsheet, FileText } from "lucide-react";
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { formatAmount } from "@/features/contract/utils/contract-calculation-utils";
 import type { FreeePartner } from "@/features/freee/types/freee-accounting-types";
 import {
   DEFAULT_TEMPLATE_ID,
@@ -462,39 +452,25 @@ export function ExportDialog({
               >
                 テンプレート
               </Label>
-              <Select
+              <select
+                id="workReportTemplate"
                 value={workReportTemplateId ?? ""}
-                onValueChange={handleWorkReportTemplateChange}
+                onChange={(e) => handleWorkReportTemplateChange(e.target.value)}
                 disabled={!isWorkReportEnabled}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <SelectTrigger id="workReportTemplate">
-                  <SelectValue placeholder="テンプレートを選択" />
-                </SelectTrigger>
-                <SelectContent>
-                  {allWorkReportTemplates.map((template) => (
-                    <SelectItem
-                      key={template.id}
-                      value={template.id}
-                      textValue={template.name}
-                    >
-                      <div className="flex min-w-0 items-center gap-2">
-                        <FileSpreadsheet className="size-4 shrink-0" />
-                        <span className="truncate">{template.name}</span>
-                        {isDefaultTemplate(template.id) && (
-                          <Badge
-                            variant="secondary"
-                            className="shrink-0 text-xs"
-                          >
-                            システム
-                          </Badge>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <option value="" disabled>
+                  テンプレートを選択
+                </option>
+                {allWorkReportTemplates.map((template) => (
+                  <option key={template.id} value={template.id}>
+                    {template.name}
+                    {isDefaultTemplate(template.id) ? "（システム）" : ""}
+                  </option>
+                ))}
+              </select>
               {selectedWorkReportTemplate && (
-                <div className="text-xs text-muted-foreground">
+                <div className="break-words text-xs text-muted-foreground">
                   {selectedWorkReportTemplate.fileName}
                   {selectedWorkReportTemplate.sheetName &&
                     ` (${selectedWorkReportTemplate.sheetName})`}
@@ -530,39 +506,29 @@ export function ExportDialog({
               </Label>
               {allInvoiceTemplates.length > 0 ? (
                 <>
-                  <Select
+                  <select
+                    id="invoiceTemplate"
                     value={invoiceTemplateId ?? ""}
-                    onValueChange={handleInvoiceTemplateChange}
+                    onChange={(e) =>
+                      handleInvoiceTemplateChange(e.target.value)
+                    }
                     disabled={!isInvoiceEnabled}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <SelectTrigger id="invoiceTemplate">
-                      <SelectValue placeholder="テンプレートを選択" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {allInvoiceTemplates.map((template) => (
-                        <SelectItem
-                          key={template.id}
-                          value={template.id}
-                          textValue={template.name}
-                        >
-                          <div className="flex min-w-0 items-center gap-2">
-                            <FileText className="size-4 shrink-0" />
-                            <span className="truncate">{template.name}</span>
-                            {isDefaultInvoiceTemplate(template.id) && (
-                              <Badge
-                                variant="secondary"
-                                className="shrink-0 text-xs"
-                              >
-                                システム
-                              </Badge>
-                            )}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <option value="" disabled>
+                      テンプレートを選択
+                    </option>
+                    {allInvoiceTemplates.map((template) => (
+                      <option key={template.id} value={template.id}>
+                        {template.name}
+                        {isDefaultInvoiceTemplate(template.id)
+                          ? "（システム）"
+                          : ""}
+                      </option>
+                    ))}
+                  </select>
                   {selectedInvoiceTemplate && (
-                    <div className="text-xs text-muted-foreground">
+                    <div className="break-words text-xs text-muted-foreground">
                       {selectedInvoiceTemplate.fileName}
                       {selectedInvoiceTemplate.sheetName &&
                         ` (${selectedInvoiceTemplate.sheetName})`}
