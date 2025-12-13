@@ -58,7 +58,7 @@ export function TrialSubscriptionPrompt() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[425px]" showCloseButton>
+      <DialogContent className="max-w-[425px]" showCloseButton>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

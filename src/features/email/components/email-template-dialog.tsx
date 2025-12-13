@@ -163,7 +163,7 @@ export const EmailTemplateDialog = ({
     >
       <DialogPortal>
         <DialogOverlay />
-        <DialogContent className="flex max-h-[90vh] flex-col p-0 sm:max-w-lg">
+        <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden p-0 max-w-lg">
           <DialogHeader sticky>
             <DialogTitle>{getDialogTitle()}</DialogTitle>
           </DialogHeader>

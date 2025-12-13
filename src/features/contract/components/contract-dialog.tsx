@@ -38,7 +38,7 @@ export const ContractDialog = ({
   >
     <DialogPortal>
       <DialogOverlay />
-      <DialogContent className="flex max-h-[90vh] w-[95vw] max-w-[1400px] flex-col p-0">
+      <DialogContent className="flex max-h-[90vh] w-[95vw] max-w-[1400px] flex-col overflow-hidden p-0">
         <DialogHeader sticky>
           <DialogTitle>
             {type === "create" && "契約を作成"}

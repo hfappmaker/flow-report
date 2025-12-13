@@ -140,7 +140,7 @@ export function TemplateSelectionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="max-w-[500px]">
         <DialogHeader>
           <DialogTitle>作業報告書テンプレート選択</DialogTitle>
           <DialogDescription>

@@ -26,7 +26,7 @@ export default function SubscriptionExpiredPage() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[425px]" showCloseButton>
+      <DialogContent className="max-w-[425px]" showCloseButton>
         <DialogHeader>
           <DialogTitle className="text-center">
             有料プランが期限切れになりました

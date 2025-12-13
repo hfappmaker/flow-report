@@ -118,7 +118,7 @@ export function EmailTemplateSelectDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[560px]">
+      <DialogContent className="max-w-[560px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Mail className="size-5" />

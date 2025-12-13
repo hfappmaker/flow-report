@@ -276,7 +276,7 @@ export function ExcelTemplateDialog({
     >
       <DialogPortal>
         <DialogOverlay />
-        <DialogContent className="flex max-h-[90vh] flex-col p-0 sm:max-w-[600px]">
+        <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden p-0 max-w-[600px]">
           <DialogHeader sticky>
             <DialogTitle>{getDialogTitle()}</DialogTitle>
           </DialogHeader>
