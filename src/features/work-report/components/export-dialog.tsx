@@ -545,11 +545,14 @@ export function ExportDialog({
                   <SelectContent>
                     {allWorkReportTemplates.map((template) => (
                       <SelectItem key={template.id} value={template.id}>
-                        <div className="flex items-center gap-2">
-                          <FileSpreadsheet className="size-4" />
-                          <span>{template.name}</span>
+                        <div className="flex min-w-0 items-center gap-2">
+                          <FileSpreadsheet className="size-4 shrink-0" />
+                          <span className="truncate">{template.name}</span>
                           {isDefaultTemplate(template.id) && (
-                            <Badge variant="secondary" className="ml-1 text-xs">
+                            <Badge
+                              variant="secondary"
+                              className="shrink-0 text-xs"
+                            >
                               システム
                             </Badge>
                           )}
@@ -606,13 +609,13 @@ export function ExportDialog({
                       <SelectContent>
                         {allInvoiceTemplates.map((template) => (
                           <SelectItem key={template.id} value={template.id}>
-                            <div className="flex items-center gap-2">
-                              <FileText className="size-4" />
-                              <span>{template.name}</span>
+                            <div className="flex min-w-0 items-center gap-2">
+                              <FileText className="size-4 shrink-0" />
+                              <span className="truncate">{template.name}</span>
                               {isDefaultInvoiceTemplate(template.id) && (
                                 <Badge
                                   variant="secondary"
-                                  className="ml-1 text-xs"
+                                  className="shrink-0 text-xs"
                                 >
                                   システム
                                 </Badge>
@@ -640,7 +643,7 @@ export function ExportDialog({
           </TabsContent>
 
           {/* freee請求書タブ */}
-          <TabsContent value="freee" className="space-y-4 py-4">
+          {/* <TabsContent value="freee" className="space-y-4 py-4">
             {isCheckingFreeeConnection ? (
               <p className="text-center text-muted-foreground">
                 freee連携状態を確認中...
@@ -711,7 +714,7 @@ export function ExportDialog({
                   </p>
                 </div>
 
-                {/* freee再連携ボタン */}
+                {/* freee再連携ボタン *}
                 <div className="border-t pt-4">
                   <FreeeConnectionButton
                     disabled={false}
@@ -721,7 +724,7 @@ export function ExportDialog({
                 </div>
               </div>
             )}
-          </TabsContent>
+          </TabsContent> */}
         </Tabs>
 
         {/* エラー表示 */}
@@ -731,7 +734,7 @@ export function ExportDialog({
           </div>
         )}
 
-        <DialogFooter>
+        <DialogFooter className="gap-2">
           <Button
             variant="outline"
             onClick={() => {
