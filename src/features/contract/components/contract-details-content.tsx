@@ -80,7 +80,7 @@ export const ContractDetailsContent = ({
           </div>
           <div>
             <Label className="text-sm font-medium text-muted-foreground">
-              消費税端数処理
+              消費税端数処理（通常）
             </Label>
             <p className="mt-1">
               {contract.taxRoundingType === "ROUND_DOWN" && "切り捨て"}
@@ -88,6 +88,34 @@ export const ContractDetailsContent = ({
               {contract.taxRoundingType === "ROUND" && "四捨五入"}
             </p>
           </div>
+          {(contract.rateType === "upperLower" ||
+            contract.rateType === "middle") && (
+            <>
+              <div>
+                <Label className="text-sm font-medium text-muted-foreground">
+                  消費税端数処理（超過時）
+                </Label>
+                <p className="mt-1">
+                  {contract.excessTaxRoundingType === "ROUND_DOWN" &&
+                    "切り捨て"}
+                  {contract.excessTaxRoundingType === "ROUND_UP" && "切り上げ"}
+                  {contract.excessTaxRoundingType === "ROUND" && "四捨五入"}
+                </p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-muted-foreground">
+                  消費税端数処理（控除時）
+                </Label>
+                <p className="mt-1">
+                  {contract.deductionTaxRoundingType === "ROUND_DOWN" &&
+                    "切り捨て"}
+                  {contract.deductionTaxRoundingType === "ROUND_UP" &&
+                    "切り上げ"}
+                  {contract.deductionTaxRoundingType === "ROUND" && "四捨五入"}
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

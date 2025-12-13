@@ -105,12 +105,7 @@
     "deny": [
       "Bash(eslint:*)",
       "Bash(pnpm exec eslint:*)",
-      "Edit",
-      "Glob",
-      "Grep",
-      "Read",
       "Read(.env*)",
-      "Write",
       "Write(.env*)",
       "Write(.claude/settings.local.json)",
       "Edit(.claude/settings.local.json)"

@@ -57,6 +57,12 @@ const createContractFormSchema = (dailyWorkMinutes: number | null) =>
       taxRoundingType: z
         .enum(["ROUND_DOWN", "ROUND_UP", "ROUND"])
         .default("ROUND_DOWN"),
+      excessTaxRoundingType: z
+        .enum(["ROUND_DOWN", "ROUND_UP", "ROUND"])
+        .default("ROUND_DOWN"),
+      deductionTaxRoundingType: z
+        .enum(["ROUND_DOWN", "ROUND_UP", "ROUND"])
+        .default("ROUND_DOWN"),
     })
     .refine(
       (data) => {
@@ -275,6 +281,8 @@ export const ContractForm = ({
       paymentDay: 31,
       taxInclusiveType: "EXCLUSIVE" as const,
       taxRoundingType: "ROUND_DOWN" as const,
+      excessTaxRoundingType: "ROUND_DOWN" as const,
+      deductionTaxRoundingType: "ROUND_DOWN" as const,
     },
   });
 
@@ -414,7 +422,7 @@ export const ContractForm = ({
             name="taxRoundingType"
             render={() => (
               <FormItem className="space-y-3">
-                <FormLabel>消費税端数処理</FormLabel>
+                <FormLabel>消費税端数処理（通常）</FormLabel>
                 <FormControl>
                   <RadioGroup
                     onValueChange={(
@@ -444,6 +452,93 @@ export const ContractForm = ({
               </FormItem>
             )}
           />
+
+          {/* Excess Tax Rounding Type Selection - 上下割・中間割のみ */}
+          {(rateType === "upperLower" || rateType === "middle") && (
+            <FormField
+              control={form.control}
+              name="excessTaxRoundingType"
+              render={() => (
+                <FormItem className="space-y-3">
+                  <FormLabel>消費税端数処理（超過時）</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={(
+                        value: "ROUND_DOWN" | "ROUND_UP" | "ROUND",
+                      ) => {
+                        form.setValue("excessTaxRoundingType", value);
+                      }}
+                      defaultValue={form.getValues("excessTaxRoundingType")}
+                      className="flex flex-row space-x-4"
+                      disabled={isEditing}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem
+                          value="ROUND_DOWN"
+                          id="excessRoundDown"
+                        />
+                        <label htmlFor="excessRoundDown">切り捨て</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="ROUND_UP" id="excessRoundUp" />
+                        <label htmlFor="excessRoundUp">切り上げ</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="ROUND" id="excessRound" />
+                        <label htmlFor="excessRound">四捨五入</label>
+                      </div>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          {/* Deduction Tax Rounding Type Selection - 上下割・中間割のみ */}
+          {(rateType === "upperLower" || rateType === "middle") && (
+            <FormField
+              control={form.control}
+              name="deductionTaxRoundingType"
+              render={() => (
+                <FormItem className="space-y-3">
+                  <FormLabel>消費税端数処理（控除時）</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={(
+                        value: "ROUND_DOWN" | "ROUND_UP" | "ROUND",
+                      ) => {
+                        form.setValue("deductionTaxRoundingType", value);
+                      }}
+                      defaultValue={form.getValues("deductionTaxRoundingType")}
+                      className="flex flex-row space-x-4"
+                      disabled={isEditing}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem
+                          value="ROUND_DOWN"
+                          id="deductionRoundDown"
+                        />
+                        <label htmlFor="deductionRoundDown">切り捨て</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem
+                          value="ROUND_UP"
+                          id="deductionRoundUp"
+                        />
+                        <label htmlFor="deductionRoundUp">切り上げ</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="ROUND" id="deductionRound" />
+                        <label htmlFor="deductionRound">四捨五入</label>
+                      </div>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
         </div>
 
         {/* 精算情報 */}

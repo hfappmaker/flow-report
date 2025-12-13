@@ -46,6 +46,8 @@ type WorkReportWithContract = WorkReport & {
     hourlyRate: Decimal | null;
     taxInclusiveType: TaxInclusiveType;
     taxRoundingType: TaxRoundingType;
+    excessTaxRoundingType: TaxRoundingType;
+    deductionTaxRoundingType: TaxRoundingType;
     monthlyWorkMinutes: number | null;
     userId: string;
     startDate: Date;
@@ -203,6 +205,8 @@ export type GroupedWorkReports = Record<
     hourlyRate: Decimal | null;
     taxInclusiveType: TaxInclusiveType;
     taxRoundingType: TaxRoundingType;
+    excessTaxRoundingType: TaxRoundingType;
+    deductionTaxRoundingType: TaxRoundingType;
     monthlyWorkMinutes: number;
     workReports: {
       id: string;
@@ -285,6 +289,8 @@ export async function getDraftWorkReportsUpToCurrentMonth(
           hourlyRate: report.contract.hourlyRate,
           taxInclusiveType: report.contract.taxInclusiveType,
           taxRoundingType: report.contract.taxRoundingType,
+          excessTaxRoundingType: report.contract.excessTaxRoundingType,
+          deductionTaxRoundingType: report.contract.deductionTaxRoundingType,
           monthlyWorkMinutes: report.contract.monthlyWorkMinutes,
           workReports: [],
         };
@@ -430,6 +436,8 @@ export async function getSubmittedWorkReportsByRecentMonths(
           hourlyRate: report.contract.hourlyRate,
           taxInclusiveType: report.contract.taxInclusiveType,
           taxRoundingType: report.contract.taxRoundingType,
+          excessTaxRoundingType: report.contract.excessTaxRoundingType,
+          deductionTaxRoundingType: report.contract.deductionTaxRoundingType,
           monthlyWorkMinutes: report.contract.monthlyWorkMinutes,
           workReports: [],
         };

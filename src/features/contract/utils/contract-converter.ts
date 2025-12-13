@@ -31,6 +31,8 @@ export const convertContractFormValuesToContract = (
     paymentDay: data.paymentDay,
     taxInclusiveType: data.taxInclusiveType,
     taxRoundingType: data.taxRoundingType,
+    excessTaxRoundingType: data.excessTaxRoundingType,
+    deductionTaxRoundingType: data.deductionTaxRoundingType,
     userId,
     clientName: data.clientName,
   };
@@ -71,5 +73,7 @@ export const convertContractToFormValues = (
     paymentDay: contract.paymentDay ?? 31,
     taxInclusiveType: contract.taxInclusiveType,
     taxRoundingType: contract.taxRoundingType,
+    excessTaxRoundingType: contract.excessTaxRoundingType,
+    deductionTaxRoundingType: contract.deductionTaxRoundingType,
   };
 };

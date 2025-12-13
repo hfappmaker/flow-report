@@ -128,6 +128,8 @@ export default function ContractClientPage({
           hourlyRate: contract.hourlyRate ? Number(contract.hourlyRate) : null,
           taxInclusiveType: contract.taxInclusiveType,
           taxRoundingType: contract.taxRoundingType,
+          excessTaxRoundingType: contract.excessTaxRoundingType,
+          deductionTaxRoundingType: contract.deductionTaxRoundingType,
           rateType: contract.rateType,
           monthlyWorkMinutes: contract.monthlyWorkMinutes,
         })

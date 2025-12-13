@@ -127,7 +127,9 @@ model Contract {
   paymentDay         Int?             // 支払日: 1-31, null=末日
 
   taxInclusiveType TaxInclusiveType @default(EXCLUSIVE) // 税込・税抜
-  taxRoundingType TaxRoundingType @default(ROUND_DOWN) // 消費税端数処理
+  taxRoundingType          TaxRoundingType @default(ROUND_DOWN) // 消費税端数処理
+  excessTaxRoundingType    TaxRoundingType @default(ROUND_DOWN) // 超過時消費税端数処理
+  deductionTaxRoundingType TaxRoundingType @default(ROUND_DOWN) // 控除時消費税端数処理
 }
 
 model WorkReport {

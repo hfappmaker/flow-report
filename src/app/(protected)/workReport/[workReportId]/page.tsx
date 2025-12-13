@@ -100,6 +100,8 @@ export default async function WorkReportPage({
       hourlyRate={contract.hourlyRate ? Number(contract.hourlyRate) : null}
       taxInclusiveType={contract.taxInclusiveType}
       taxRoundingType={contract.taxRoundingType}
+      excessTaxRoundingType={contract.excessTaxRoundingType}
+      deductionTaxRoundingType={contract.deductionTaxRoundingType}
       rateType={contract.rateType}
       paymentMonthOffset={contract.paymentMonthOffset}
       paymentDay={contract.paymentDay}

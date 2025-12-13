@@ -22,6 +22,8 @@ export interface WorkReportInvoiceData {
   hourlyRate: number | null;
   taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
   taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
+  excessTaxRoundingType?: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
+  deductionTaxRoundingType?: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
   rateType: "upperLower" | "middle" | "fixed" | "hourlyRate";
   monthlyWorkMinutes?: number | null;
   closingDay?: number | null;
@@ -61,6 +63,8 @@ export function mapWorkReportToFreeeInvoice(
     hourlyRate: workReportData.hourlyRate,
     taxInclusiveType: workReportData.taxInclusiveType,
     taxRoundingType: workReportData.taxRoundingType,
+    excessTaxRoundingType: workReportData.excessTaxRoundingType,
+    deductionTaxRoundingType: workReportData.deductionTaxRoundingType,
     rateType: workReportData.rateType,
     monthlyWorkMinutes: workReportData.monthlyWorkMinutes,
   });
@@ -78,7 +82,8 @@ export function mapWorkReportToFreeeInvoice(
   );
   const billingDate =
     options?.billingDate ?? closingDate.toISOString().split("T")[0];
-  const issueDate = options?.issueDate ?? closingDate.toISOString().split("T")[0];
+  const issueDate =
+    options?.issueDate ?? closingDate.toISOString().split("T")[0];
 
   // 支払期限は翌月の締め日
   const nextMonthClosingDate = getClosingDate(
@@ -149,7 +154,8 @@ export function mapWorkReportToFreeeInvoice(
     issue_date: issueDate,
     payment_date: paymentDate,
     subject:
-      options?.subject ?? `${String(year)}年${String(month)}月度 ${contractName}`,
+      options?.subject ??
+      `${String(year)}年${String(month)}月度 ${contractName}`,
     tax_entry_method: taxEntryMethod,
     tax_fraction: taxFraction,
     line_amount_fraction: "round_up", // 明細金額は切り上げ

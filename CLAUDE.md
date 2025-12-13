@@ -327,3 +327,36 @@ Use conventional commit prefixes:
 
 - Manage MCP settings in `.claude/settings.json` (not `.claude/settings.local.json`)
 - Commit all MCP configurations to the repository
+
+### Serena MCP Tool Usage (Required)
+
+**CRITICAL: Always use Serena MCP tools for file operations instead of built-in tools:**
+
+| Operation | Use Serena MCP Tool | Do NOT Use |
+|-----------|---------------------|------------|
+| File search | `mcp__serena__find_file`, `mcp__serena__list_dir` | `Glob` |
+| Content search | `mcp__serena__search_for_pattern` | `Grep` |
+| Code reading | `mcp__serena__get_symbols_overview`, `mcp__serena__find_symbol` | `Read` (for code files) |
+| Code editing | `mcp__serena__replace_symbol_body`, `mcp__serena__insert_after_symbol`, `mcp__serena__insert_before_symbol` | `Edit` (for code files) |
+| Symbol renaming | `mcp__serena__rename_symbol` | Manual find-replace |
+
+**Serena MCP Tool Selection Guide:**
+
+1. **Understanding a file's structure**: Use `mcp__serena__get_symbols_overview` first
+2. **Finding specific symbols**: Use `mcp__serena__find_symbol` with `include_body=True` only when needed
+3. **Searching for patterns**: Use `mcp__serena__search_for_pattern` for flexible regex search
+4. **Finding references**: Use `mcp__serena__find_referencing_symbols` to understand symbol usage
+5. **Editing code**: Use symbolic editing tools (`replace_symbol_body`, `insert_after_symbol`, `insert_before_symbol`)
+6. **Renaming across codebase**: Use `mcp__serena__rename_symbol` for safe refactoring
+
+**Exceptions (when built-in tools are allowed):**
+
+- Non-code files (e.g., `.md`, `.json`, `.yaml`, `.env.example`) can use `Read`/`Edit`/`Write`
+- When Serena MCP tools fail or are unavailable
+- When explicitly requested by the user
+
+**Token Efficiency:**
+
+- Avoid reading entire files; use `get_symbols_overview` + targeted `find_symbol` instead
+- Use `include_body=False` first to understand structure, then `include_body=True` for specific symbols
+- Pass `relative_path` parameter to restrict searches to specific directories

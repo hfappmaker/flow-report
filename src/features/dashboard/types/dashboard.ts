@@ -1,4 +1,8 @@
-import { ContractRateType, TaxInclusiveType, TaxRoundingType } from "@prisma/client";
+import {
+  ContractRateType,
+  TaxInclusiveType,
+  TaxRoundingType,
+} from "@prisma/client";
 
 import { ContractOutput } from "@/features/contract/types/contract";
 import { Holiday } from "@/features/holidays/types/holiday";
@@ -31,6 +35,8 @@ export type ContractDashboard = RenameProperty<
   hourlyRate: number | null;
   taxInclusiveType: TaxInclusiveType;
   taxRoundingType: TaxRoundingType;
+  excessTaxRoundingType: TaxRoundingType;
+  deductionTaxRoundingType: TaxRoundingType;
   monthlyWorkMinutes: number;
 };
 

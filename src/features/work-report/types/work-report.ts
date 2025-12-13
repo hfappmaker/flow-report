@@ -56,6 +56,8 @@ export interface WorkReportClientProps {
   hourlyRate: number | null;
   taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
   taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
+  excessTaxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
+  deductionTaxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
   rateType: "upperLower" | "middle" | "fixed" | "hourlyRate";
   paymentMonthOffset: number;
   paymentDay: number | null;

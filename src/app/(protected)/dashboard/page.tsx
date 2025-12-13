@@ -41,6 +41,8 @@ const convertWorkReportsForClient = (
         hourlyRate: convertDecimalToNumber(contract.hourlyRate),
         taxInclusiveType: contract.taxInclusiveType,
         taxRoundingType: contract.taxRoundingType,
+        excessTaxRoundingType: contract.excessTaxRoundingType,
+        deductionTaxRoundingType: contract.deductionTaxRoundingType,
         monthlyWorkMinutes: contract.monthlyWorkMinutes,
         workReports: contract.workReports,
       },

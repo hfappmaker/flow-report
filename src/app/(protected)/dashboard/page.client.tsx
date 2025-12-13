@@ -103,6 +103,8 @@ function calculateWorkReportSummary(
     hourlyRate: contract.hourlyRate,
     taxInclusiveType: contract.taxInclusiveType,
     taxRoundingType: contract.taxRoundingType,
+    excessTaxRoundingType: contract.excessTaxRoundingType,
+    deductionTaxRoundingType: contract.deductionTaxRoundingType,
     rateType: contract.rateType,
     monthlyWorkMinutes: contract.monthlyWorkMinutes,
   });

@@ -13,6 +13,8 @@ export function calculateWorkAmountDetailed(
     hourlyRate?: number | null;
     taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
     taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
+    excessTaxRoundingType?: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
+    deductionTaxRoundingType?: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
     rateType?: "middle" | "upperLower" | "fixed" | "hourlyRate";
     monthlyWorkMinutes?: number | null;
   },
@@ -30,6 +32,8 @@ export function calculateWorkAmountDetailed(
   };
   taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
   taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
+  excessTaxRoundingType?: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
+  deductionTaxRoundingType?: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
 } | null {
   // monthlyWorkMinutes単位で切り捨て
   const roundedWorkMinutes =
@@ -49,6 +53,8 @@ export function calculateWorkAmountDetailed(
       deductionInfo: { hours: 0, rate: 0, amount: 0 },
       taxInclusiveType: params.taxInclusiveType,
       taxRoundingType: params.taxRoundingType,
+      excessTaxRoundingType: params.excessTaxRoundingType,
+      deductionTaxRoundingType: params.deductionTaxRoundingType,
     };
   }
 
@@ -65,6 +71,8 @@ export function calculateWorkAmountDetailed(
       deductionInfo: { hours: 0, rate: 0, amount: 0 },
       taxInclusiveType: params.taxInclusiveType,
       taxRoundingType: params.taxRoundingType,
+      excessTaxRoundingType: params.excessTaxRoundingType,
+      deductionTaxRoundingType: params.deductionTaxRoundingType,
     };
   }
 
@@ -144,6 +152,8 @@ export function calculateWorkAmountDetailed(
     deductionInfo,
     taxInclusiveType: params.taxInclusiveType,
     taxRoundingType: params.taxRoundingType,
+    excessTaxRoundingType: params.excessTaxRoundingType,
+    deductionTaxRoundingType: params.deductionTaxRoundingType,
   };
 }
 
@@ -162,6 +172,8 @@ export function calculateWorkAmount(
     hourlyRate?: number | null;
     taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
     taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
+    excessTaxRoundingType?: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
+    deductionTaxRoundingType?: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
     rateType?: "middle" | "upperLower" | "fixed" | "hourlyRate";
     monthlyWorkMinutes?: number | null;
   },
@@ -180,14 +192,14 @@ export function calculateWorkAmount(
 
   const workHours = roundedWorkMinutes / 60;
 
-  // 契約金額を計算
-  const contractAmount = (() => {
+  // 契約金額と精算状態を計算
+  const contractCalc = (() => {
     // 固定精算の場合
     if (params.rateType === "fixed") {
       if (!params.unitPrice) {
         return null;
       }
-      return params.unitPrice;
+      return { amount: params.unitPrice, settlementType: "normal" as const };
     }
 
     // 時間単価の場合
@@ -195,7 +207,10 @@ export function calculateWorkAmount(
       if (!params.hourlyRate) {
         return null;
       }
-      return workHours * params.hourlyRate;
+      return {
+        amount: workHours * params.hourlyRate,
+        settlementType: "normal" as const,
+      };
     }
 
     // 上下割・中間割の場合（従来の処理）
@@ -225,7 +240,10 @@ export function calculateWorkAmount(
           ? (params.middleRate ?? 0)
           : (params.lowerRate ?? 0);
 
-      return baseUnitPrice - shortfallHours * deductionRate;
+      return {
+        amount: baseUnitPrice - shortfallHours * deductionRate,
+        settlementType: "deduction" as const,
+      };
     }
 
     if (workHours > settlementMax) {
@@ -242,17 +260,33 @@ export function calculateWorkAmount(
           ? (params.middleRate ?? 0)
           : (params.upperRate ?? 0);
 
-      return baseUnitPrice + excessHours * excessRate;
+      return {
+        amount: baseUnitPrice + excessHours * excessRate,
+        settlementType: "excess" as const,
+      };
     }
 
     // 精算範囲内の場合はunitPriceのまま
-    return baseUnitPrice;
+    return { amount: baseUnitPrice, settlementType: "normal" as const };
   })();
 
-  // contractAmountがnullの場合は早期リターン
-  if (contractAmount === null) {
+  // contractCalcがnullの場合は早期リターン
+  if (contractCalc === null) {
     return null;
   }
+
+  const contractAmount = contractCalc.amount;
+
+  // 使用する端数処理を決定
+  const effectiveTaxRoundingType = (() => {
+    if (contractCalc.settlementType === "excess") {
+      return params.excessTaxRoundingType ?? params.taxRoundingType;
+    }
+    if (contractCalc.settlementType === "deduction") {
+      return params.deductionTaxRoundingType ?? params.taxRoundingType;
+    }
+    return params.taxRoundingType;
+  })();
 
   // マイナス金額を防ぐ
   const finalContractAmount = Math.max(0, Math.round(contractAmount));
@@ -271,7 +305,7 @@ export function calculateWorkAmount(
 
           // 税抜金額の端数処理（消費税端数処理設定に基づく）
           const calculatedBaseAmount = (() => {
-            switch (params.taxRoundingType) {
+            switch (effectiveTaxRoundingType) {
               case "ROUND_UP":
                 return Math.floor(rawBaseAmount); // 税抜を切り下げることで消費税を切り上げ
               case "ROUND_DOWN":
@@ -303,7 +337,7 @@ export function calculateWorkAmount(
 
           // 消費税端数処理
           const calculatedTaxAmount = (() => {
-            switch (params.taxRoundingType) {
+            switch (effectiveTaxRoundingType) {
               case "ROUND_UP":
                 return Math.ceil(rawTaxAmount);
               case "ROUND_DOWN":

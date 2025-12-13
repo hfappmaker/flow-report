@@ -459,6 +459,8 @@ export interface InvoiceContractData {
   rateType: ContractRateType;
   taxInclusiveType: "INCLUSIVE" | "EXCLUSIVE";
   taxRoundingType: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
+  excessTaxRoundingType?: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
+  deductionTaxRoundingType?: "ROUND_DOWN" | "ROUND_UP" | "ROUND";
   closingDay: number | null;
   paymentMonthOffset: number;
   paymentDay: number | null;
@@ -629,6 +631,8 @@ export function generatePlaceholderValues(
     hourlyRate: contractData.hourlyRate,
     taxInclusiveType: contractData.taxInclusiveType,
     taxRoundingType: contractData.taxRoundingType,
+    excessTaxRoundingType: contractData.excessTaxRoundingType,
+    deductionTaxRoundingType: contractData.deductionTaxRoundingType,
     rateType: contractData.rateType,
     monthlyWorkMinutes: data.monthlyWorkMinutes,
   });
