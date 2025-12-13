@@ -494,11 +494,14 @@ export function ExportDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <Tabs value={activeTab} onValueChange={handleTabChange}>
+          <Tabs value={activeTab} onValueChange={handleTabChange} min-w-0>
             <TabsList className="grid w-full grid-cols-1">
-              <TabsTrigger value="excel" className="flex items-center gap-2">
-                <FileSpreadsheet className="size-4" />
-                Excelエクスポート
+              <TabsTrigger
+                value="excel"
+                className="flex min-w-0 items-center gap-2 whitespace-normal"
+              >
+                <FileSpreadsheet className="size-4 shrink-0" />
+                <span className="truncate">Excelエクスポート</span>
               </TabsTrigger>
               {/* freee請求書タブは将来の変更に備えて一時的に非表示 */}
               {/* <TabsTrigger value="freee" className="flex items-center gap-2">
@@ -507,7 +510,7 @@ export function ExportDialog({
             </TabsList>
 
             {/* Excelエクスポートタブ */}
-            <TabsContent value="excel" className="space-y-5 py-4">
+            <TabsContent value="excel" className="space-y-5 py-4 min-w-0">
               {/* 作業報告書 */}
               <div className="space-y-3">
                 <div className="flex items-center space-x-2">
