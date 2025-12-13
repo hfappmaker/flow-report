@@ -381,9 +381,73 @@ export const ContractForm = ({
           </div>
         </div>
 
-        {/* 税務設定 */}
+        {/* 精算・税務情報 */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">税務設定</h3>
+          <h3 className="text-lg font-medium">精算・税務情報</h3>
+
+          {/* Rate Type Selection */}
+          <FormField
+            control={form.control}
+            name="rateType"
+            render={() => (
+              <FormItem className="space-y-3">
+                <FormLabel>精算方式</FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    onValueChange={(
+                      value: "upperLower" | "middle" | "fixed" | "hourlyRate",
+                    ) => {
+                      form.setValue("rateType", value);
+                      // 非表示になる項目の値をクリア
+                      if (value === "upperLower") {
+                        form.setValue("middleRate", null);
+                        form.setValue("hourlyRate", null);
+                      } else if (value === "middle") {
+                        form.setValue("upperRate", null);
+                        form.setValue("lowerRate", null);
+                        form.setValue("hourlyRate", null);
+                      } else if (value === "fixed") {
+                        form.setValue("upperRate", null);
+                        form.setValue("lowerRate", null);
+                        form.setValue("middleRate", null);
+                        form.setValue("hourlyRate", null);
+                        form.setValue("settlementMin", null);
+                        form.setValue("settlementMax", null);
+                      } else if (value === "hourlyRate") {
+                        form.setValue("upperRate", null);
+                        form.setValue("lowerRate", null);
+                        form.setValue("middleRate", null);
+                        form.setValue("unitPrice", null);
+                        form.setValue("settlementMin", null);
+                        form.setValue("settlementMax", null);
+                      }
+                    }}
+                    defaultValue={form.getValues("rateType")}
+                    className="flex flex-row space-x-4"
+                    disabled={isEditing}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="upperLower" id="upperLower" />
+                      <label htmlFor="upperLower">上下割</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="middle" id="middle" />
+                      <label htmlFor="middle">中間割</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="fixed" id="fixed" />
+                      <label htmlFor="fixed">固定精算</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="hourlyRate" id="hourlyRate" />
+                      <label htmlFor="hourlyRate">時間単価</label>
+                    </div>
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           {/* Tax Inclusive Type Selection */}
           <FormField
@@ -415,6 +479,88 @@ export const ContractForm = ({
               </FormItem>
             )}
           />
+
+          {/* Unit Price - 時間単価方式では非表示 */}
+          {rateType !== "hourlyRate" && (
+            <NumberInputField
+              control={form.control}
+              name="unitPrice"
+              label={`月単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
+              placeholder="（例）500000"
+              disabled={isEditing}
+              onBlur={() => void form.trigger("unitPrice")}
+            />
+          )}
+
+          {/* Rate fields - conditionally rendered based on rate type */}
+          <div className="flex flex-col gap-4 md:flex-row">
+            {rateType === "upperLower" && (
+              <>
+                <NumberInputField
+                  control={form.control}
+                  name="upperRate"
+                  label={`超過単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
+                  placeholder="（例）5000"
+                  disabled={isEditing}
+                  onBlur={() => void form.trigger("upperRate")}
+                />
+
+                <NumberInputField
+                  control={form.control}
+                  name="lowerRate"
+                  label={`控除単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
+                  placeholder="（例）5000"
+                  disabled={isEditing}
+                  onBlur={() => void form.trigger("lowerRate")}
+                />
+              </>
+            )}
+
+            {rateType === "middle" && (
+              <NumberInputField
+                control={form.control}
+                name="middleRate"
+                label={`中間単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
+                placeholder="（例）5000"
+                disabled={isEditing}
+                onBlur={() => void form.trigger("middleRate")}
+              />
+            )}
+
+            {rateType === "hourlyRate" && (
+              <NumberInputField
+                control={form.control}
+                name="hourlyRate"
+                label={`時間単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
+                placeholder="（例）5000"
+                disabled={isEditing}
+                onBlur={() => void form.trigger("hourlyRate")}
+              />
+            )}
+          </div>
+
+          {/* Settlement Min and Settlement Max - 固定精算と時間単価方式では非表示 */}
+          {rateType !== "fixed" && rateType !== "hourlyRate" && (
+            <div className="flex flex-col gap-4 md:flex-row">
+              <NumberInputField
+                control={form.control}
+                name="settlementMin"
+                label="精算下限（時間）"
+                placeholder="（例）140"
+                disabled={isEditing}
+                onBlur={() => void form.trigger("settlementMin")}
+              />
+
+              <NumberInputField
+                control={form.control}
+                name="settlementMax"
+                label="精算上限（時間）"
+                placeholder="（例）180"
+                disabled={isEditing}
+                onBlur={() => void form.trigger("settlementMax")}
+              />
+            </div>
+          )}
 
           {/* Tax Rounding Type Selection */}
           <FormField
@@ -538,157 +684,6 @@ export const ContractForm = ({
                 </FormItem>
               )}
             />
-          )}
-        </div>
-
-        {/* 精算情報 */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">精算情報</h3>
-
-          {/* Rate Type Selection */}
-          <FormField
-            control={form.control}
-            name="rateType"
-            render={() => (
-              <FormItem className="space-y-3">
-                <FormLabel>精算方式</FormLabel>
-                <FormControl>
-                  <RadioGroup
-                    onValueChange={(
-                      value: "upperLower" | "middle" | "fixed" | "hourlyRate",
-                    ) => {
-                      form.setValue("rateType", value);
-                      // 非表示になる項目の値をクリア
-                      if (value === "upperLower") {
-                        form.setValue("middleRate", null);
-                        form.setValue("hourlyRate", null);
-                      } else if (value === "middle") {
-                        form.setValue("upperRate", null);
-                        form.setValue("lowerRate", null);
-                        form.setValue("hourlyRate", null);
-                      } else if (value === "fixed") {
-                        form.setValue("upperRate", null);
-                        form.setValue("lowerRate", null);
-                        form.setValue("middleRate", null);
-                        form.setValue("hourlyRate", null);
-                        form.setValue("settlementMin", null);
-                        form.setValue("settlementMax", null);
-                      } else if (value === "hourlyRate") {
-                        form.setValue("upperRate", null);
-                        form.setValue("lowerRate", null);
-                        form.setValue("middleRate", null);
-                        form.setValue("unitPrice", null);
-                        form.setValue("settlementMin", null);
-                        form.setValue("settlementMax", null);
-                      }
-                    }}
-                    defaultValue={form.getValues("rateType")}
-                    className="flex flex-row space-x-4"
-                    disabled={isEditing}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="upperLower" id="upperLower" />
-                      <label htmlFor="upperLower">上下割</label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="middle" id="middle" />
-                      <label htmlFor="middle">中間割</label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="fixed" id="fixed" />
-                      <label htmlFor="fixed">固定精算</label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="hourlyRate" id="hourlyRate" />
-                      <label htmlFor="hourlyRate">時間単価</label>
-                    </div>
-                  </RadioGroup>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Unit Price - 時間単価方式では非表示 */}
-          {rateType !== "hourlyRate" && (
-            <NumberInputField
-              control={form.control}
-              name="unitPrice"
-              label={`月単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
-              placeholder="（例）500000"
-              disabled={isEditing}
-              onBlur={() => void form.trigger("unitPrice")}
-            />
-          )}
-
-          {/* Rate fields - conditionally rendered based on rate type */}
-          <div className="flex flex-col gap-4 md:flex-row">
-            {rateType === "upperLower" && (
-              <>
-                <NumberInputField
-                  control={form.control}
-                  name="upperRate"
-                  label={`超過単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
-                  placeholder="（例）5000"
-                  disabled={isEditing}
-                  onBlur={() => void form.trigger("upperRate")}
-                />
-
-                <NumberInputField
-                  control={form.control}
-                  name="lowerRate"
-                  label={`控除単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
-                  placeholder="（例）5000"
-                  disabled={isEditing}
-                  onBlur={() => void form.trigger("lowerRate")}
-                />
-              </>
-            )}
-
-            {rateType === "middle" && (
-              <NumberInputField
-                control={form.control}
-                name="middleRate"
-                label={`中間単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
-                placeholder="（例）5000"
-                disabled={isEditing}
-                onBlur={() => void form.trigger("middleRate")}
-              />
-            )}
-
-            {rateType === "hourlyRate" && (
-              <NumberInputField
-                control={form.control}
-                name="hourlyRate"
-                label={`時間単価${taxInclusiveType === "INCLUSIVE" ? "（税込）" : "（税抜）"}`}
-                placeholder="（例）5000"
-                disabled={isEditing}
-                onBlur={() => void form.trigger("hourlyRate")}
-              />
-            )}
-          </div>
-
-          {/* Settlement Min and Settlement Max - 固定精算と時間単価方式では非表示 */}
-          {rateType !== "fixed" && rateType !== "hourlyRate" && (
-            <div className="flex flex-col gap-4 md:flex-row">
-              <NumberInputField
-                control={form.control}
-                name="settlementMin"
-                label="精算下限（時間）"
-                placeholder="（例）140"
-                disabled={isEditing}
-                onBlur={() => void form.trigger("settlementMin")}
-              />
-
-              <NumberInputField
-                control={form.control}
-                name="settlementMax"
-                label="精算上限（時間）"
-                placeholder="（例）180"
-                disabled={isEditing}
-                onBlur={() => void form.trigger("settlementMax")}
-              />
-            </div>
           )}
         </div>
 

@@ -68,59 +68,7 @@ export const ContractDetailsContent = ({
       </div>
 
       <div>
-        <h3 className="mb-3 text-lg font-medium">税務設定</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label className="text-sm font-medium text-muted-foreground">
-              税込・税抜設定
-            </Label>
-            <p className="mt-1">
-              {contract.taxInclusiveType === "INCLUSIVE" ? "税込" : "税抜"}
-            </p>
-          </div>
-          <div>
-            <Label className="text-sm font-medium text-muted-foreground">
-              消費税端数処理（通常）
-            </Label>
-            <p className="mt-1">
-              {contract.taxRoundingType === "ROUND_DOWN" && "切り捨て"}
-              {contract.taxRoundingType === "ROUND_UP" && "切り上げ"}
-              {contract.taxRoundingType === "ROUND" && "四捨五入"}
-            </p>
-          </div>
-          {(contract.rateType === "upperLower" ||
-            contract.rateType === "middle") && (
-            <>
-              <div>
-                <Label className="text-sm font-medium text-muted-foreground">
-                  消費税端数処理（超過時）
-                </Label>
-                <p className="mt-1">
-                  {contract.excessTaxRoundingType === "ROUND_DOWN" &&
-                    "切り捨て"}
-                  {contract.excessTaxRoundingType === "ROUND_UP" && "切り上げ"}
-                  {contract.excessTaxRoundingType === "ROUND" && "四捨五入"}
-                </p>
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-muted-foreground">
-                  消費税端数処理（控除時）
-                </Label>
-                <p className="mt-1">
-                  {contract.deductionTaxRoundingType === "ROUND_DOWN" &&
-                    "切り捨て"}
-                  {contract.deductionTaxRoundingType === "ROUND_UP" &&
-                    "切り上げ"}
-                  {contract.deductionTaxRoundingType === "ROUND" && "四捨五入"}
-                </p>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      <div>
-        <h3 className="mb-3 text-lg font-medium">精算情報</h3>
+        <h3 className="mb-3 text-lg font-medium">精算・税務情報</h3>
         <div className="grid grid-cols-3 gap-3">
           <div className="col-span-3">
             <Label className="text-sm font-medium text-muted-foreground">
@@ -131,6 +79,14 @@ export const ContractDetailsContent = ({
               {contract.rateType === "middle" && "中間割"}
               {contract.rateType === "fixed" && "固定精算"}
               {contract.rateType === "hourlyRate" && "時間単価"}
+            </p>
+          </div>
+          <div className="col-span-3">
+            <Label className="text-sm font-medium text-muted-foreground">
+              税込・税抜設定
+            </Label>
+            <p className="mt-1">
+              {contract.taxInclusiveType === "INCLUSIVE" ? "税込" : "税抜"}
             </p>
           </div>
           {contract.rateType !== "hourlyRate" && (
@@ -223,6 +179,44 @@ export const ContractDetailsContent = ({
                 </div>
               </>
             )}
+          <div className="col-span-3">
+            <Label className="text-sm font-medium text-muted-foreground">
+              消費税端数処理（通常）
+            </Label>
+            <p className="mt-1">
+              {contract.taxRoundingType === "ROUND_DOWN" && "切り捨て"}
+              {contract.taxRoundingType === "ROUND_UP" && "切り上げ"}
+              {contract.taxRoundingType === "ROUND" && "四捨五入"}
+            </p>
+          </div>
+          {(contract.rateType === "upperLower" ||
+            contract.rateType === "middle") && (
+            <>
+              <div>
+                <Label className="text-sm font-medium text-muted-foreground">
+                  消費税端数処理（超過時）
+                </Label>
+                <p className="mt-1">
+                  {contract.excessTaxRoundingType === "ROUND_DOWN" &&
+                    "切り捨て"}
+                  {contract.excessTaxRoundingType === "ROUND_UP" && "切り上げ"}
+                  {contract.excessTaxRoundingType === "ROUND" && "四捨五入"}
+                </p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-muted-foreground">
+                  消費税端数処理（控除時）
+                </Label>
+                <p className="mt-1">
+                  {contract.deductionTaxRoundingType === "ROUND_DOWN" &&
+                    "切り捨て"}
+                  {contract.deductionTaxRoundingType === "ROUND_UP" &&
+                    "切り上げ"}
+                  {contract.deductionTaxRoundingType === "ROUND" && "四捨五入"}
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
