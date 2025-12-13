@@ -1,7 +1,7 @@
 import ErrorCard from "@/features/auth/components/error-card";
 
 export const metadata = {
-  title: "Error",
+  title: "エラー",
 };
 
 export default function AuthErrorPage() {

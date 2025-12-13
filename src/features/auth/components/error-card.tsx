@@ -5,13 +5,13 @@ import CardWrapper from "@/features/auth/components/card-wrapper";
 const ErrorCard = () => {
   return (
     <CardWrapper
-      headerLabel="Oops! Something went wrong!"
+      headerLabel="エラー"
       backButtonHref="/auth/login"
-      backButtonLabel="Back to login"
+      backButtonLabel="ログインページに戻る"
     >
       <div className="flex items-center gap-x-2 rounded-md bg-destructive/15 p-3 text-sm text-destructive">
         <ExclamationTriangleIcon className="size-4 flex-none" />
-        <p className="">Authentication with your auth provider failed!</p>
+        <p className="">認証プロバイダーとの認証に失敗しました</p>
       </div>
     </CardWrapper>
   );
