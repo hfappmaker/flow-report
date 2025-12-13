@@ -548,8 +548,12 @@ export function ExportDialog({
                     </SelectTrigger>
                     <SelectContent>
                       {allWorkReportTemplates.map((template) => (
-                        <SelectItem key={template.id} value={template.id}>
-                          <div className="flex min-w-0 items-center gap-2 overflow-hidden">
+                        <SelectItem
+                          key={template.id}
+                          value={template.id}
+                          textValue={template.name}
+                        >
+                          <div className="flex min-w-0 items-center gap-2">
                             <FileSpreadsheet className="size-4 shrink-0" />
                             <span className="truncate">{template.name}</span>
                             {isDefaultTemplate(template.id) && (
@@ -612,8 +616,12 @@ export function ExportDialog({
                         </SelectTrigger>
                         <SelectContent>
                           {allInvoiceTemplates.map((template) => (
-                            <SelectItem key={template.id} value={template.id}>
-                              <div className="flex min-w-0 items-center gap-2 overflow-hidden">
+                            <SelectItem
+                              key={template.id}
+                              value={template.id}
+                              textValue={template.name}
+                            >
+                              <div className="flex min-w-0 items-center gap-2">
                                 <FileText className="size-4 shrink-0" />
                                 <span className="truncate">
                                   {template.name}
