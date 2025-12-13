@@ -373,6 +373,17 @@ export async function generateWorkReportExcel(
     }
   });
 
+  for (const worksheet of workbook.worksheets) {
+    // セルのスタイルを再度コピー
+    worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+      const newRow = worksheet.getRow(rowNumber);
+      row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        const newCell = newRow.getCell(colNumber);
+        newCell.style = { ...cell.style };
+      });
+    });
+  }
+
   // Excelファイルをバッファとして書き出し
   const buffer = await workbook.xlsx.writeBuffer();
 
