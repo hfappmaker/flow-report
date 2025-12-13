@@ -496,7 +496,7 @@ export function ExportDialog({
         <Tabs
           value={activeTab}
           onValueChange={handleTabChange}
-          className="space-y-4 py-4"
+          className="space-x-4 space-y-4 px-4 py-4"
         >
           <TabsList className="grid w-full grid-cols-1">
             <TabsTrigger value="excel" className="flex items-center gap-2">
