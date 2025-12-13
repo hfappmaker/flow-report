@@ -493,161 +493,160 @@ export function ExportDialog({
           {/* <DialogDescription>出力方法を選択してください。</DialogDescription> */}
         </DialogHeader>
 
-        <Tabs
-          value={activeTab}
-          onValueChange={handleTabChange}
-          className="space-x-4 space-y-4 px-4 py-4"
-        >
-          <TabsList className="grid w-full grid-cols-1">
-            <TabsTrigger value="excel" className="flex items-center gap-2">
-              <FileSpreadsheet className="size-4" />
-              Excelエクスポート
-            </TabsTrigger>
-            {/* freee請求書タブは将来の変更に備えて一時的に非表示 */}
-            {/* <TabsTrigger value="freee" className="flex items-center gap-2">
+        <div className="space-y-4 py-4">
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
+            <TabsList className="grid w-full grid-cols-1">
+              <TabsTrigger value="excel" className="flex items-center gap-2">
+                <FileSpreadsheet className="size-4" />
+                Excelエクスポート
+              </TabsTrigger>
+              {/* freee請求書タブは将来の変更に備えて一時的に非表示 */}
+              {/* <TabsTrigger value="freee" className="flex items-center gap-2">
               freee請求書
             </TabsTrigger> */}
-          </TabsList>
+            </TabsList>
 
-          {/* Excelエクスポートタブ */}
-          <TabsContent value="excel" className="space-y-5 py-4">
-            {/* 作業報告書 */}
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="workReport"
-                  checked={isWorkReportEnabled}
-                  onCheckedChange={(checked) => {
-                    setIsWorkReportEnabled(checked === true);
-                  }}
-                />
-                <Label
-                  htmlFor="workReport"
-                  className="flex cursor-pointer items-center gap-2"
-                >
-                  <FileSpreadsheet className="size-4" />
-                  作業報告書
-                </Label>
+            {/* Excelエクスポートタブ */}
+            <TabsContent value="excel" className="space-y-5 py-4">
+              {/* 作業報告書 */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="workReport"
+                    checked={isWorkReportEnabled}
+                    onCheckedChange={(checked) => {
+                      setIsWorkReportEnabled(checked === true);
+                    }}
+                  />
+                  <Label
+                    htmlFor="workReport"
+                    className="flex cursor-pointer items-center gap-2"
+                  >
+                    <FileSpreadsheet className="size-4" />
+                    作業報告書
+                  </Label>
+                </div>
+                <div className="space-y-2 pl-6">
+                  <Label
+                    htmlFor="workReportTemplate"
+                    className={
+                      !isWorkReportEnabled ? "text-muted-foreground" : ""
+                    }
+                  >
+                    テンプレート
+                  </Label>
+                  <Select
+                    value={workReportTemplateId ?? ""}
+                    onValueChange={handleWorkReportTemplateChange}
+                    disabled={!isWorkReportEnabled}
+                  >
+                    <SelectTrigger id="workReportTemplate">
+                      <SelectValue placeholder="テンプレートを選択" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allWorkReportTemplates.map((template) => (
+                        <SelectItem key={template.id} value={template.id}>
+                          <div className="flex min-w-0 items-center gap-2">
+                            <FileSpreadsheet className="size-4 shrink-0" />
+                            <span className="truncate">{template.name}</span>
+                            {isDefaultTemplate(template.id) && (
+                              <Badge
+                                variant="secondary"
+                                className="shrink-0 text-xs"
+                              >
+                                システム
+                              </Badge>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedWorkReportTemplate && (
+                    <div className="text-xs text-muted-foreground">
+                      {selectedWorkReportTemplate.fileName}
+                      {selectedWorkReportTemplate.sheetName &&
+                        ` (${selectedWorkReportTemplate.sheetName})`}
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="space-y-2 pl-6">
-                <Label
-                  htmlFor="workReportTemplate"
-                  className={
-                    !isWorkReportEnabled ? "text-muted-foreground" : ""
-                  }
-                >
-                  テンプレート
-                </Label>
-                <Select
-                  value={workReportTemplateId ?? ""}
-                  onValueChange={handleWorkReportTemplateChange}
-                  disabled={!isWorkReportEnabled}
-                >
-                  <SelectTrigger id="workReportTemplate">
-                    <SelectValue placeholder="テンプレートを選択" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allWorkReportTemplates.map((template) => (
-                      <SelectItem key={template.id} value={template.id}>
-                        <div className="flex min-w-0 items-center gap-2">
-                          <FileSpreadsheet className="size-4 shrink-0" />
-                          <span className="truncate">{template.name}</span>
-                          {isDefaultTemplate(template.id) && (
-                            <Badge
-                              variant="secondary"
-                              className="shrink-0 text-xs"
-                            >
-                              システム
-                            </Badge>
-                          )}
+
+              {/* 請求書 */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="invoice"
+                    checked={isInvoiceEnabled}
+                    onCheckedChange={(checked) => {
+                      setIsInvoiceEnabled(checked === true);
+                    }}
+                  />
+                  <Label
+                    htmlFor="invoice"
+                    className="flex cursor-pointer items-center gap-2"
+                  >
+                    <FileText className="size-4" />
+                    請求書
+                  </Label>
+                </div>
+                <div className="space-y-2 pl-6">
+                  <Label
+                    htmlFor="invoiceTemplate"
+                    className={!isInvoiceEnabled ? "text-muted-foreground" : ""}
+                  >
+                    テンプレート
+                  </Label>
+                  {allInvoiceTemplates.length > 0 ? (
+                    <>
+                      <Select
+                        value={invoiceTemplateId ?? ""}
+                        onValueChange={handleInvoiceTemplateChange}
+                        disabled={!isInvoiceEnabled}
+                      >
+                        <SelectTrigger id="invoiceTemplate">
+                          <SelectValue placeholder="テンプレートを選択" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {allInvoiceTemplates.map((template) => (
+                            <SelectItem key={template.id} value={template.id}>
+                              <div className="flex min-w-0 items-center gap-2">
+                                <FileText className="size-4 shrink-0" />
+                                <span className="truncate">
+                                  {template.name}
+                                </span>
+                                {isDefaultInvoiceTemplate(template.id) && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="shrink-0 text-xs"
+                                  >
+                                    システム
+                                  </Badge>
+                                )}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {selectedInvoiceTemplate && (
+                        <div className="text-xs text-muted-foreground">
+                          {selectedInvoiceTemplate.fileName}
+                          {selectedInvoiceTemplate.sheetName &&
+                            ` (${selectedInvoiceTemplate.sheetName})`}
                         </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {selectedWorkReportTemplate && (
-                  <div className="text-xs text-muted-foreground">
-                    {selectedWorkReportTemplate.fileName}
-                    {selectedWorkReportTemplate.sheetName &&
-                      ` (${selectedWorkReportTemplate.sheetName})`}
-                  </div>
-                )}
+                      )}
+                    </>
+                  ) : (
+                    <div className="rounded-md border border-dashed border-gray-300 p-3 text-center text-sm text-muted-foreground">
+                      テンプレートが登録されていません
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            </TabsContent>
 
-            {/* 請求書 */}
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="invoice"
-                  checked={isInvoiceEnabled}
-                  onCheckedChange={(checked) => {
-                    setIsInvoiceEnabled(checked === true);
-                  }}
-                />
-                <Label
-                  htmlFor="invoice"
-                  className="flex cursor-pointer items-center gap-2"
-                >
-                  <FileText className="size-4" />
-                  請求書
-                </Label>
-              </div>
-              <div className="space-y-2 pl-6">
-                <Label
-                  htmlFor="invoiceTemplate"
-                  className={!isInvoiceEnabled ? "text-muted-foreground" : ""}
-                >
-                  テンプレート
-                </Label>
-                {allInvoiceTemplates.length > 0 ? (
-                  <>
-                    <Select
-                      value={invoiceTemplateId ?? ""}
-                      onValueChange={handleInvoiceTemplateChange}
-                      disabled={!isInvoiceEnabled}
-                    >
-                      <SelectTrigger id="invoiceTemplate">
-                        <SelectValue placeholder="テンプレートを選択" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {allInvoiceTemplates.map((template) => (
-                          <SelectItem key={template.id} value={template.id}>
-                            <div className="flex min-w-0 items-center gap-2">
-                              <FileText className="size-4 shrink-0" />
-                              <span className="truncate">{template.name}</span>
-                              {isDefaultInvoiceTemplate(template.id) && (
-                                <Badge
-                                  variant="secondary"
-                                  className="shrink-0 text-xs"
-                                >
-                                  システム
-                                </Badge>
-                              )}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {selectedInvoiceTemplate && (
-                      <div className="text-xs text-muted-foreground">
-                        {selectedInvoiceTemplate.fileName}
-                        {selectedInvoiceTemplate.sheetName &&
-                          ` (${selectedInvoiceTemplate.sheetName})`}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="rounded-md border border-dashed border-gray-300 p-3 text-center text-sm text-muted-foreground">
-                    テンプレートが登録されていません
-                  </div>
-                )}
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* freee請求書タブ */}
-          {/* <TabsContent value="freee" className="space-y-4 py-4">
+            {/* freee請求書タブ */}
+            {/* <TabsContent value="freee" className="space-y-4 py-4">
             {isCheckingFreeeConnection ? (
               <p className="text-center text-muted-foreground">
                 freee連携状態を確認中...
@@ -729,14 +728,15 @@ export function ExportDialog({
               </div>
             )}
           </TabsContent> */}
-        </Tabs>
+          </Tabs>
 
-        {/* エラー表示 */}
-        {error && (
-          <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-            {error}
-          </div>
-        )}
+          {/* エラー表示 */}
+          {error && (
+            <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+              {error}
+            </div>
+          )}
+        </div>
 
         <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
           <Button
