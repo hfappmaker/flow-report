@@ -484,7 +484,7 @@ export function ExportDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[560px]">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Download className="size-5" />
