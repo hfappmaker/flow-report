@@ -546,7 +546,7 @@ export function ExportDialog({
                     <SelectContent>
                       {allWorkReportTemplates.map((template) => (
                         <SelectItem key={template.id} value={template.id}>
-                          <div className="flex min-w-0 items-center gap-2">
+                          <div className="flex min-w-0 items-center gap-2 overflow-hidden">
                             <FileSpreadsheet className="size-4 shrink-0" />
                             <span className="truncate">{template.name}</span>
                             {isDefaultTemplate(template.id) && (
@@ -610,7 +610,7 @@ export function ExportDialog({
                         <SelectContent>
                           {allInvoiceTemplates.map((template) => (
                             <SelectItem key={template.id} value={template.id}>
-                              <div className="flex min-w-0 items-center gap-2">
+                              <div className="flex min-w-0 items-center gap-2 overflow-hidden">
                                 <FileText className="size-4 shrink-0" />
                                 <span className="truncate">
                                   {template.name}
