@@ -493,7 +493,11 @@ export function ExportDialog({
           {/* <DialogDescription>出力方法を選択してください。</DialogDescription> */}
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={handleTabChange}>
+        <Tabs
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="space-y-4 py-4"
+        >
           <TabsList className="grid w-full grid-cols-1">
             <TabsTrigger value="excel" className="flex items-center gap-2">
               <FileSpreadsheet className="size-4" />
@@ -734,7 +738,7 @@ export function ExportDialog({
           </div>
         )}
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
           <Button
             variant="outline"
             onClick={() => {
