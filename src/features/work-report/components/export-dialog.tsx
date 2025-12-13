@@ -11,6 +11,8 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
+  DialogOverlay,
+  DialogPortal,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -417,155 +419,164 @@ export function ExportDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Download className="size-5" />
-            エクスポート
-          </DialogTitle>
-          {/* <DialogDescription>出力方法を選択してください。</DialogDescription> */}
-        </DialogHeader>
+      <DialogPortal>
+        <DialogOverlay />
+        <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden p-0">
+          <DialogHeader sticky>
+            <DialogTitle className="flex items-center gap-2">
+              <Download className="size-5" />
+              エクスポート
+            </DialogTitle>
+            {/* <DialogDescription>出力方法を選択してください。</DialogDescription> */}
+          </DialogHeader>
 
-        <div className="space-y-5">
-          {/* 作業報告書 */}
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="workReport"
-                checked={isWorkReportEnabled}
-                onCheckedChange={(checked) => {
-                  setIsWorkReportEnabled(checked === true);
-                }}
-              />
-              <Label
-                htmlFor="workReport"
-                className="flex cursor-pointer items-center gap-2"
-              >
-                <FileSpreadsheet className="size-4" />
-                作業報告書
-              </Label>
-            </div>
-            <div className="space-y-2 pl-6">
-              <Label
-                htmlFor="workReportTemplate"
-                className={!isWorkReportEnabled ? "text-muted-foreground" : ""}
-              >
-                テンプレート
-              </Label>
-              <select
-                id="workReportTemplate"
-                value={workReportTemplateId ?? ""}
-                onChange={(e) => handleWorkReportTemplateChange(e.target.value)}
-                disabled={!isWorkReportEnabled}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="" disabled>
-                  テンプレートを選択
-                </option>
-                {allWorkReportTemplates.map((template) => (
-                  <option key={template.id} value={template.id}>
-                    {template.name}
-                    {isDefaultTemplate(template.id) ? "（システム）" : ""}
-                  </option>
-                ))}
-              </select>
-              {selectedWorkReportTemplate && (
-                <div className="break-words text-xs text-muted-foreground">
-                  {selectedWorkReportTemplate.fileName}
-                  {selectedWorkReportTemplate.sheetName &&
-                    ` (${selectedWorkReportTemplate.sheetName})`}
+          <div className="flex-1 overflow-y-auto p-6 pb-0 pt-4">
+            <div className="space-y-5">
+              {/* 作業報告書 */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="workReport"
+                    checked={isWorkReportEnabled}
+                    onCheckedChange={(checked) => {
+                      setIsWorkReportEnabled(checked === true);
+                    }}
+                  />
+                  <Label
+                    htmlFor="workReport"
+                    className="flex cursor-pointer items-center gap-2"
+                  >
+                    <FileSpreadsheet className="size-4" />
+                    作業報告書
+                  </Label>
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* 請求書 */}
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="invoice"
-                checked={isInvoiceEnabled}
-                onCheckedChange={(checked) => {
-                  setIsInvoiceEnabled(checked === true);
-                }}
-              />
-              <Label
-                htmlFor="invoice"
-                className="flex cursor-pointer items-center gap-2"
-              >
-                <FileText className="size-4" />
-                請求書
-              </Label>
-            </div>
-            <div className="space-y-2 pl-6">
-              <Label
-                htmlFor="invoiceTemplate"
-                className={!isInvoiceEnabled ? "text-muted-foreground" : ""}
-              >
-                テンプレート
-              </Label>
-              {allInvoiceTemplates.length > 0 ? (
-                <>
-                  <select
-                    id="invoiceTemplate"
-                    value={invoiceTemplateId ?? ""}
-                    onChange={(e) =>
-                      handleInvoiceTemplateChange(e.target.value)
+                <div className="space-y-2 pl-6">
+                  <Label
+                    htmlFor="workReportTemplate"
+                    className={
+                      !isWorkReportEnabled ? "text-muted-foreground" : ""
                     }
-                    disabled={!isInvoiceEnabled}
+                  >
+                    テンプレート
+                  </Label>
+                  <select
+                    id="workReportTemplate"
+                    value={workReportTemplateId ?? ""}
+                    onChange={(e) =>
+                      handleWorkReportTemplateChange(e.target.value)
+                    }
+                    disabled={!isWorkReportEnabled}
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="" disabled>
                       テンプレートを選択
                     </option>
-                    {allInvoiceTemplates.map((template) => (
+                    {allWorkReportTemplates.map((template) => (
                       <option key={template.id} value={template.id}>
                         {template.name}
-                        {isDefaultInvoiceTemplate(template.id)
-                          ? "（システム）"
-                          : ""}
+                        {isDefaultTemplate(template.id) ? "（システム）" : ""}
                       </option>
                     ))}
                   </select>
-                  {selectedInvoiceTemplate && (
+                  {selectedWorkReportTemplate && (
                     <div className="break-words text-xs text-muted-foreground">
-                      {selectedInvoiceTemplate.fileName}
-                      {selectedInvoiceTemplate.sheetName &&
-                        ` (${selectedInvoiceTemplate.sheetName})`}
+                      {selectedWorkReportTemplate.fileName}
+                      {selectedWorkReportTemplate.sheetName &&
+                        ` (${selectedWorkReportTemplate.sheetName})`}
                     </div>
                   )}
-                </>
-              ) : (
-                <div className="rounded-md border border-dashed border-gray-300 p-3 text-center text-sm text-muted-foreground">
-                  テンプレートが登録されていません
+                </div>
+              </div>
+
+              {/* 請求書 */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="invoice"
+                    checked={isInvoiceEnabled}
+                    onCheckedChange={(checked) => {
+                      setIsInvoiceEnabled(checked === true);
+                    }}
+                  />
+                  <Label
+                    htmlFor="invoice"
+                    className="flex cursor-pointer items-center gap-2"
+                  >
+                    <FileText className="size-4" />
+                    請求書
+                  </Label>
+                </div>
+                <div className="space-y-2 pl-6">
+                  <Label
+                    htmlFor="invoiceTemplate"
+                    className={!isInvoiceEnabled ? "text-muted-foreground" : ""}
+                  >
+                    テンプレート
+                  </Label>
+                  {allInvoiceTemplates.length > 0 ? (
+                    <>
+                      <select
+                        id="invoiceTemplate"
+                        value={invoiceTemplateId ?? ""}
+                        onChange={(e) =>
+                          handleInvoiceTemplateChange(e.target.value)
+                        }
+                        disabled={!isInvoiceEnabled}
+                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <option value="" disabled>
+                          テンプレートを選択
+                        </option>
+                        {allInvoiceTemplates.map((template) => (
+                          <option key={template.id} value={template.id}>
+                            {template.name}
+                            {isDefaultInvoiceTemplate(template.id)
+                              ? "（システム）"
+                              : ""}
+                          </option>
+                        ))}
+                      </select>
+                      {selectedInvoiceTemplate && (
+                        <div className="break-words text-xs text-muted-foreground">
+                          {selectedInvoiceTemplate.fileName}
+                          {selectedInvoiceTemplate.sheetName &&
+                            ` (${selectedInvoiceTemplate.sheetName})`}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="rounded-md border border-dashed border-gray-300 p-3 text-center text-sm text-muted-foreground">
+                      テンプレートが登録されていません
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* エラー表示 */}
+              {error && (
+                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+                  {error}
                 </div>
               )}
             </div>
           </div>
 
-          {/* エラー表示 */}
-          {error && (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-              {error}
-            </div>
-          )}
-        </div>
-
-        <DialogFooter className="flex-col gap-2 sm:flex-row">
-          <Button
-            variant="outline"
-            onClick={() => {
-              onOpenChange(false);
-            }}
-            disabled={isProcessing}
-          >
-            キャンセル
-          </Button>
-          <Button onClick={handleExport} disabled={isExcelExportDisabled}>
-            {isProcessing ? "処理中..." : "エクスポート"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+          <DialogFooter sticky className="flex-col gap-2 p-6 sm:flex-row">
+            <Button
+              variant="outline"
+              onClick={() => {
+                onOpenChange(false);
+              }}
+              disabled={isProcessing}
+            >
+              キャンセル
+            </Button>
+            <Button onClick={handleExport} disabled={isExcelExportDisabled}>
+              {isProcessing ? "処理中..." : "エクスポート"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </DialogPortal>
     </Dialog>
   );
 }
