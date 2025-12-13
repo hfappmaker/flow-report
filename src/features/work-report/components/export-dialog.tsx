@@ -562,6 +562,9 @@ export function ExportDialog({
           </div>
 
           <DialogFooter sticky className="flex-col gap-2 p-6 sm:flex-row">
+            <Button onClick={handleExport} disabled={isExcelExportDisabled}>
+              {isProcessing ? "処理中..." : "エクスポート"}
+            </Button>
             <Button
               variant="outline"
               onClick={() => {
@@ -570,9 +573,6 @@ export function ExportDialog({
               disabled={isProcessing}
             >
               キャンセル
-            </Button>
-            <Button onClick={handleExport} disabled={isExcelExportDisabled}>
-              {isProcessing ? "処理中..." : "エクスポート"}
             </Button>
           </DialogFooter>
         </DialogContent>

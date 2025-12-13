@@ -3,7 +3,6 @@
 import { Mail, Send } from "lucide-react";
 import { useState, useMemo } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,13 +15,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   DEFAULT_EMAIL_TEMPLATE_ID,
   DEFAULT_EMAIL_TEMPLATE_NAME,
@@ -137,29 +129,19 @@ export function EmailTemplateSelectDialog({
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="emailTemplate">テンプレート</Label>
-                <Select
+                <select
+                  id="emailTemplate"
                   value={selectedTemplateId}
-                  onValueChange={setSelectedTemplateId}
+                  onChange={(e) => setSelectedTemplateId(e.target.value)}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring"
                 >
-                  <SelectTrigger id="emailTemplate">
-                    <SelectValue placeholder="テンプレートを選択" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allTemplates.map((template) => (
-                      <SelectItem key={template.id} value={template.id}>
-                        <div className="flex items-center gap-2">
-                          <Mail className="size-4" />
-                          <span>{template.name}</span>
-                          {isDefaultEmailTemplate(template.id) && (
-                            <Badge variant="secondary" className="ml-1 text-xs">
-                              システム
-                            </Badge>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  {allTemplates.map((template) => (
+                    <option key={template.id} value={template.id}>
+                      {template.name}
+                      {isDefaultEmailTemplate(template.id) ? "（システム）" : ""}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {selectedTemplate && (
