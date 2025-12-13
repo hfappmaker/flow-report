@@ -23,7 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatAmount } from "@/features/contract/utils/contract-calculation-utils";
 import type { FreeePartner } from "@/features/freee/types/freee-accounting-types";
 import {
@@ -43,10 +42,7 @@ import {
   isDefaultInvoiceTemplate,
 } from "@/features/work-report/constants/default-template";
 import { useExportSettings } from "@/features/work-report/hooks/use-export-settings";
-import type {
-  ExportFile,
-  ExportTabType,
-} from "@/features/work-report/types/export-types";
+import type { ExportFile } from "@/features/work-report/types/export-types";
 import type { ExcelTemplateWithFields } from "@/features/work-report/types/work-report-template";
 
 import { FreeeConnectionButton } from "./freee-connection-button";
@@ -163,13 +159,8 @@ export function ExportDialog({
   onFreeeInvoiceCreate,
   onConnectionStart,
 }: ExportDialogProps) {
-  const {
-    settings,
-    isLoaded,
-    setWorkReportTemplateId,
-    setInvoiceTemplateId,
-    setActiveTab,
-  } = useExportSettings();
+  const { settings, isLoaded, setWorkReportTemplateId, setInvoiceTemplateId } =
+    useExportSettings();
 
   // ダイアログ状態
   const [isWorkReportEnabled, setIsWorkReportEnabled] = useState(true);
@@ -182,12 +173,8 @@ export function ExportDialog({
   >(null);
   const [error, setError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  // タブ状態
-  const [activeTab, setActiveTabState] = useState<ExportTabType>("excel");
   // 初期化済みフラグ（localStorageからの復元を1回だけ実行するため）
   const isInitializedRef = useRef(false);
-  // freee請求書作成状態
-  const [isCreatingFreeeInvoice, setIsCreatingFreeeInvoice] = useState(false);
 
   // 作業報告書テンプレート一覧にデフォルトテンプレートを追加
   const allWorkReportTemplates = useMemo(
@@ -235,8 +222,6 @@ export function ExportDialog({
           setIsInvoiceEnabled(true);
         }
       }
-      // タブ状態を復元（freeeタブは一時的に非表示のため、excelに強制）
-      setActiveTabState("excel");
     }
   }, [isLoaded, settings, workReportTemplates, invoiceTemplates]);
 
@@ -278,42 +263,6 @@ export function ExportDialog({
     },
     [setInvoiceTemplateId],
   );
-
-  // タブ変更時にlocalStorageに保存
-  const handleTabChange = useCallback(
-    (value: string) => {
-      const tab = value as ExportTabType;
-      setActiveTabState(tab);
-      setActiveTab(tab);
-      setError("");
-    },
-    [setActiveTab],
-  );
-
-  // freee請求書作成処理
-  const handleCreateFreeeInvoice = useCallback(async () => {
-    if (!selectedPartnerId) {
-      setError("取引先を選択してください。");
-      return;
-    }
-
-    setIsCreatingFreeeInvoice(true);
-    setError("");
-
-    try {
-      await onFreeeInvoiceCreate();
-      onOpenChange(false);
-    } catch (err) {
-      console.error("Failed to create freee invoice:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "請求書の作成中にエラーが発生しました。",
-      );
-    } finally {
-      setIsCreatingFreeeInvoice(false);
-    }
-  }, [selectedPartnerId, onFreeeInvoiceCreate, onOpenChange]);
 
   // ファイルダウンロード処理
   const downloadFile = useCallback((blob: Blob, fileName: string) => {
@@ -476,12 +425,6 @@ export function ExportDialog({
       !workReportTemplateId) ||
     (isInvoiceEnabled && allInvoiceTemplates.length > 0 && !invoiceTemplateId);
 
-  const isFreeeCreateDisabled =
-    isCreatingFreeeInvoice ||
-    !isFreeeConnected ||
-    isCheckingFreeeConnection ||
-    !selectedPartnerId;
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -493,70 +436,119 @@ export function ExportDialog({
           {/* <DialogDescription>出力方法を選択してください。</DialogDescription> */}
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <Tabs value={activeTab} onValueChange={handleTabChange} min-w-0>
-            <TabsList className="grid w-full grid-cols-1">
-              <TabsTrigger
-                value="excel"
-                className="flex min-w-0 items-center gap-2 whitespace-normal"
+        <div className="space-y-5">
+          {/* 作業報告書 */}
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="workReport"
+                checked={isWorkReportEnabled}
+                onCheckedChange={(checked) => {
+                  setIsWorkReportEnabled(checked === true);
+                }}
+              />
+              <Label
+                htmlFor="workReport"
+                className="flex cursor-pointer items-center gap-2"
               >
-                <FileSpreadsheet className="size-4 shrink-0" />
-                <span className="truncate">Excelエクスポート</span>
-              </TabsTrigger>
-              {/* freee請求書タブは将来の変更に備えて一時的に非表示 */}
-              {/* <TabsTrigger value="freee" className="flex items-center gap-2">
-              freee請求書
-            </TabsTrigger> */}
-            </TabsList>
-
-            {/* Excelエクスポートタブ */}
-            <TabsContent value="excel" className="space-y-5 py-4 min-w-0">
-              {/* 作業報告書 */}
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="workReport"
-                    checked={isWorkReportEnabled}
-                    onCheckedChange={(checked) => {
-                      setIsWorkReportEnabled(checked === true);
-                    }}
-                  />
-                  <Label
-                    htmlFor="workReport"
-                    className="flex cursor-pointer items-center gap-2"
-                  >
-                    <FileSpreadsheet className="size-4" />
-                    作業報告書
-                  </Label>
+                <FileSpreadsheet className="size-4" />
+                作業報告書
+              </Label>
+            </div>
+            <div className="space-y-2 pl-6">
+              <Label
+                htmlFor="workReportTemplate"
+                className={!isWorkReportEnabled ? "text-muted-foreground" : ""}
+              >
+                テンプレート
+              </Label>
+              <Select
+                value={workReportTemplateId ?? ""}
+                onValueChange={handleWorkReportTemplateChange}
+                disabled={!isWorkReportEnabled}
+              >
+                <SelectTrigger id="workReportTemplate">
+                  <SelectValue placeholder="テンプレートを選択" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allWorkReportTemplates.map((template) => (
+                    <SelectItem
+                      key={template.id}
+                      value={template.id}
+                      textValue={template.name}
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <FileSpreadsheet className="size-4 shrink-0" />
+                        <span className="truncate">{template.name}</span>
+                        {isDefaultTemplate(template.id) && (
+                          <Badge
+                            variant="secondary"
+                            className="shrink-0 text-xs"
+                          >
+                            システム
+                          </Badge>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedWorkReportTemplate && (
+                <div className="text-xs text-muted-foreground">
+                  {selectedWorkReportTemplate.fileName}
+                  {selectedWorkReportTemplate.sheetName &&
+                    ` (${selectedWorkReportTemplate.sheetName})`}
                 </div>
-                <div className="space-y-2 pl-6">
-                  <Label
-                    htmlFor="workReportTemplate"
-                    className={
-                      !isWorkReportEnabled ? "text-muted-foreground" : ""
-                    }
-                  >
-                    テンプレート
-                  </Label>
+              )}
+            </div>
+          </div>
+
+          {/* 請求書 */}
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="invoice"
+                checked={isInvoiceEnabled}
+                onCheckedChange={(checked) => {
+                  setIsInvoiceEnabled(checked === true);
+                }}
+              />
+              <Label
+                htmlFor="invoice"
+                className="flex cursor-pointer items-center gap-2"
+              >
+                <FileText className="size-4" />
+                請求書
+              </Label>
+            </div>
+            <div className="space-y-2 pl-6">
+              <Label
+                htmlFor="invoiceTemplate"
+                className={!isInvoiceEnabled ? "text-muted-foreground" : ""}
+              >
+                テンプレート
+              </Label>
+              {allInvoiceTemplates.length > 0 ? (
+                <>
                   <Select
-                    value={workReportTemplateId ?? ""}
-                    onValueChange={handleWorkReportTemplateChange}
-                    disabled={!isWorkReportEnabled}
+                    value={invoiceTemplateId ?? ""}
+                    onValueChange={handleInvoiceTemplateChange}
+                    disabled={!isInvoiceEnabled}
                   >
-                    <SelectTrigger id="workReportTemplate">
+                    <SelectTrigger id="invoiceTemplate">
                       <SelectValue placeholder="テンプレートを選択" />
                     </SelectTrigger>
                     <SelectContent>
-                      {allWorkReportTemplates.map((template) => (
+                      {allInvoiceTemplates.map((template) => (
                         <SelectItem
                           key={template.id}
                           value={template.id}
                           textValue={template.name}
                         >
                           <div className="flex min-w-0 items-center gap-2">
-                            <FileSpreadsheet className="size-4 shrink-0" />
+                            <FileText className="size-4 shrink-0" />
                             <span className="truncate">{template.name}</span>
-                            {isDefaultTemplate(template.id) && (
+                            {isDefaultInvoiceTemplate(template.id) && (
                               <Badge
                                 variant="secondary"
                                 className="shrink-0 text-xs"
@@ -569,177 +561,21 @@ export function ExportDialog({
                       ))}
                     </SelectContent>
                   </Select>
-                  {selectedWorkReportTemplate && (
+                  {selectedInvoiceTemplate && (
                     <div className="text-xs text-muted-foreground">
-                      {selectedWorkReportTemplate.fileName}
-                      {selectedWorkReportTemplate.sheetName &&
-                        ` (${selectedWorkReportTemplate.sheetName})`}
+                      {selectedInvoiceTemplate.fileName}
+                      {selectedInvoiceTemplate.sheetName &&
+                        ` (${selectedInvoiceTemplate.sheetName})`}
                     </div>
                   )}
+                </>
+              ) : (
+                <div className="rounded-md border border-dashed border-gray-300 p-3 text-center text-sm text-muted-foreground">
+                  テンプレートが登録されていません
                 </div>
-              </div>
-
-              {/* 請求書 */}
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="invoice"
-                    checked={isInvoiceEnabled}
-                    onCheckedChange={(checked) => {
-                      setIsInvoiceEnabled(checked === true);
-                    }}
-                  />
-                  <Label
-                    htmlFor="invoice"
-                    className="flex cursor-pointer items-center gap-2"
-                  >
-                    <FileText className="size-4" />
-                    請求書
-                  </Label>
-                </div>
-                <div className="space-y-2 pl-6">
-                  <Label
-                    htmlFor="invoiceTemplate"
-                    className={!isInvoiceEnabled ? "text-muted-foreground" : ""}
-                  >
-                    テンプレート
-                  </Label>
-                  {allInvoiceTemplates.length > 0 ? (
-                    <>
-                      <Select
-                        value={invoiceTemplateId ?? ""}
-                        onValueChange={handleInvoiceTemplateChange}
-                        disabled={!isInvoiceEnabled}
-                      >
-                        <SelectTrigger id="invoiceTemplate">
-                          <SelectValue placeholder="テンプレートを選択" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {allInvoiceTemplates.map((template) => (
-                            <SelectItem
-                              key={template.id}
-                              value={template.id}
-                              textValue={template.name}
-                            >
-                              <div className="flex min-w-0 items-center gap-2">
-                                <FileText className="size-4 shrink-0" />
-                                <span className="truncate">
-                                  {template.name}
-                                </span>
-                                {isDefaultInvoiceTemplate(template.id) && (
-                                  <Badge
-                                    variant="secondary"
-                                    className="shrink-0 text-xs"
-                                  >
-                                    システム
-                                  </Badge>
-                                )}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {selectedInvoiceTemplate && (
-                        <div className="text-xs text-muted-foreground">
-                          {selectedInvoiceTemplate.fileName}
-                          {selectedInvoiceTemplate.sheetName &&
-                            ` (${selectedInvoiceTemplate.sheetName})`}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="rounded-md border border-dashed border-gray-300 p-3 text-center text-sm text-muted-foreground">
-                      テンプレートが登録されていません
-                    </div>
-                  )}
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* freee請求書タブ */}
-            {/* <TabsContent value="freee" className="space-y-4 py-4">
-            {isCheckingFreeeConnection ? (
-              <p className="text-center text-muted-foreground">
-                freee連携状態を確認中...
-              </p>
-            ) : !isFreeeConnected ? (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <p className="text-muted-foreground">
-                    freeeとの連携が必要です。
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    freeeアカウントと連携すると、作業報告書から請求書を作成できます。
-                  </p>
-                </div>
-                <FreeeConnectionButton
-                  disabled={false}
-                  onConnectionStart={onConnectionStart}
-                />
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="partner-select">取引先（必須）</Label>
-                  <Select
-                    value={selectedPartnerId?.toString()}
-                    onValueChange={(value) => {
-                      onPartnerIdChange(parseInt(value, 10));
-                    }}
-                  >
-                    <SelectTrigger id="partner-select">
-                      <SelectValue placeholder="取引先を選択してください" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {partners.map((partner) => (
-                        <SelectItem
-                          key={partner.id}
-                          value={partner.id.toString()}
-                        >
-                          {partner.name}
-                          {partner.code ? ` (${partner.code})` : ""}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-muted-foreground">
-                    以下の内容でfreee請求書を作成します：
-                  </p>
-                  <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-                    <li>
-                      対象月: {targetDate.getFullYear()}年
-                      {targetDate.getMonth() + 1}月度
-                    </li>
-                    <li>
-                      取引先:{" "}
-                      {selectedPartnerId
-                        ? (partners.find((p) => p.id === selectedPartnerId)
-                            ?.name ?? clientName)
-                        : "未選択"}
-                    </li>
-                    <li>総稼働時間: {workTimeText}</li>
-                    <li>金額: {formatAmount(baseAmount + taxAmount)}</li>
-                  </ul>
-                  <p className="text-xs text-muted-foreground">
-                    ※ freee上でドラフト（下書き）として作成されます
-                  </p>
-                </div>
-
-                {/* freee再連携ボタン *}
-                <div className="border-t pt-4">
-                  <FreeeConnectionButton
-                    disabled={false}
-                    onConnectionStart={onConnectionStart}
-                    label="freee再連携"
-                  />
-                </div>
-              </div>
-            )}
-          </TabsContent> */}
-          </Tabs>
+              )}
+            </div>
+          </div>
 
           {/* エラー表示 */}
           {error && (
@@ -755,22 +591,13 @@ export function ExportDialog({
             onClick={() => {
               onOpenChange(false);
             }}
-            disabled={isProcessing || isCreatingFreeeInvoice}
+            disabled={isProcessing}
           >
             キャンセル
           </Button>
-          {activeTab === "excel" ? (
-            <Button onClick={handleExport} disabled={isExcelExportDisabled}>
-              {isProcessing ? "処理中..." : "エクスポート"}
-            </Button>
-          ) : (
-            <Button
-              onClick={handleCreateFreeeInvoice}
-              disabled={isFreeeCreateDisabled}
-            >
-              {isCreatingFreeeInvoice ? "作成中..." : "作成"}
-            </Button>
-          )}
+          <Button onClick={handleExport} disabled={isExcelExportDisabled}>
+            {isProcessing ? "処理中..." : "エクスポート"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
