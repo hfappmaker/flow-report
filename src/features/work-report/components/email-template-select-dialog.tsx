@@ -11,6 +11,8 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogOverlay,
+  DialogPortal,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -118,103 +120,110 @@ export function EmailTemplateSelectDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[560px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Mail className="size-5" />
-            メールテンプレート選択
-          </DialogTitle>
-          <DialogDescription>
-            使用するメールテンプレートを選択してください。
-          </DialogDescription>
-        </DialogHeader>
+      <DialogPortal>
+        <DialogOverlay />
+        <DialogContent className="flex max-h-[90vh] max-w-[560px] flex-col overflow-hidden p-0">
+          <DialogHeader sticky>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="size-5" />
+              メールテンプレート選択
+            </DialogTitle>
+            <DialogDescription>
+              使用するメールテンプレートを選択してください。
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="emailTemplate">テンプレート</Label>
-            <Select
-              value={selectedTemplateId}
-              onValueChange={setSelectedTemplateId}
-            >
-              <SelectTrigger id="emailTemplate">
-                <SelectValue placeholder="テンプレートを選択" />
-              </SelectTrigger>
-              <SelectContent>
-                {allTemplates.map((template) => (
-                  <SelectItem key={template.id} value={template.id}>
-                    <div className="flex items-center gap-2">
-                      <Mail className="size-4" />
-                      <span>{template.name}</span>
-                      {isDefaultEmailTemplate(template.id) && (
-                        <Badge variant="secondary" className="ml-1 text-xs">
-                          システム
-                        </Badge>
-                      )}
+          <div className="flex-1 overflow-y-auto p-6 pb-0 pt-4">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="emailTemplate">テンプレート</Label>
+                <Select
+                  value={selectedTemplateId}
+                  onValueChange={setSelectedTemplateId}
+                >
+                  <SelectTrigger id="emailTemplate">
+                    <SelectValue placeholder="テンプレートを選択" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allTemplates.map((template) => (
+                      <SelectItem key={template.id} value={template.id}>
+                        <div className="flex items-center gap-2">
+                          <Mail className="size-4" />
+                          <span>{template.name}</span>
+                          {isDefaultEmailTemplate(template.id) && (
+                            <Badge variant="secondary" className="ml-1 text-xs">
+                              システム
+                            </Badge>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {selectedTemplate && (
+                <div className="space-y-3 rounded-lg border bg-muted/50 p-4">
+                  {(selectedTemplate.toAddresses?.length ?? 0) > 0 && (
+                    <div>
+                      <Label className="text-xs text-muted-foreground">
+                        宛先（To）
+                      </Label>
+                      <p className="mt-1 text-sm">
+                        {selectedTemplate.toAddresses?.join(", ")}
+                      </p>
                     </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                  )}
+                  {(selectedTemplate.ccAddresses?.length ?? 0) > 0 && (
+                    <div>
+                      <Label className="text-xs text-muted-foreground">
+                        CC
+                      </Label>
+                      <p className="mt-1 text-sm">
+                        {selectedTemplate.ccAddresses?.join(", ")}
+                      </p>
+                    </div>
+                  )}
+                  <div>
+                    <Label className="text-xs text-muted-foreground">
+                      件名プレビュー
+                    </Label>
+                    <p className="mt-1 font-medium">{previewSubject}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">
+                      本文プレビュー
+                    </Label>
+                    <pre className="mt-1 whitespace-pre-wrap text-sm">
+                      {previewBody}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              <p className="text-sm text-muted-foreground">
+                ※
+                作業報告書、請求書は自動で添付されません。「エクスポート」でダウンロードしたファイルを手動で添付してください。
+              </p>
+            </div>
           </div>
 
-          {selectedTemplate && (
-            <div className="space-y-3 rounded-lg border bg-muted/50 p-4">
-              {(selectedTemplate.toAddresses?.length ?? 0) > 0 && (
-                <div>
-                  <Label className="text-xs text-muted-foreground">
-                    宛先（To）
-                  </Label>
-                  <p className="mt-1 text-sm">
-                    {selectedTemplate.toAddresses?.join(", ")}
-                  </p>
-                </div>
-              )}
-              {(selectedTemplate.ccAddresses?.length ?? 0) > 0 && (
-                <div>
-                  <Label className="text-xs text-muted-foreground">CC</Label>
-                  <p className="mt-1 text-sm">
-                    {selectedTemplate.ccAddresses?.join(", ")}
-                  </p>
-                </div>
-              )}
-              <div>
-                <Label className="text-xs text-muted-foreground">
-                  件名プレビュー
-                </Label>
-                <p className="mt-1 font-medium">{previewSubject}</p>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">
-                  本文プレビュー
-                </Label>
-                <pre className="mt-1 whitespace-pre-wrap text-sm">
-                  {previewBody}
-                </pre>
-              </div>
-            </div>
-          )}
-
-          <p className="text-sm text-muted-foreground">
-            ※
-            作業報告書、請求書は自動で添付されません。「エクスポート」でダウンロードしたファイルを手動で添付してください。
-          </p>
-        </div>
-
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => {
-              onOpenChange(false);
-            }}
-          >
-            キャンセル
-          </Button>
-          <Button onClick={handleSend} disabled={!selectedTemplate}>
-            <Send className="mr-2 size-4" />
-            メール送信
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+          <DialogFooter sticky className="p-6">
+            <Button
+              variant="outline"
+              onClick={() => {
+                onOpenChange(false);
+              }}
+            >
+              キャンセル
+            </Button>
+            <Button onClick={handleSend} disabled={!selectedTemplate}>
+              <Send className="mr-2 size-4" />
+              メール送信
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </DialogPortal>
     </Dialog>
   );
 }
