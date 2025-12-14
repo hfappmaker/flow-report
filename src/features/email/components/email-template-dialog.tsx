@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogOverlay,
   DialogPortal,
@@ -12,7 +13,20 @@ import { type EmailTemplateFormValues } from "@/features/email/schemas/email-tem
 import { type DialogType } from "@/features/email/types/dialog";
 import { EmailTemplate } from "@/features/email/types/email-template";
 
-type EmailTemplateDialogProps = {
+const highlightPlaceholders = (text: string): React.ReactNode => {
+  const parts = text.split(/(\$\{[^}]+\})/g);
+  return parts.map((part, index) =>
+    part.startsWith("${") ? (
+      <span key={index} className="text-blue-600 dark:text-blue-400">
+        {part}
+      </span>
+    ) : (
+      part
+    ),
+  );
+};
+
+interface EmailTemplateDialogProps {
   type: DialogType;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -20,7 +34,10 @@ type EmailTemplateDialogProps = {
   onSubmit: (values: EmailTemplateFormValues) => void;
   onDelete?: () => void;
   onCancel: () => void;
-};
+  onEdit?: () => void;
+  onRequestDelete?: () => void;
+  isSystem?: boolean;
+}
 
 export const EmailTemplateDialog = ({
   type,
@@ -30,6 +47,9 @@ export const EmailTemplateDialog = ({
   onSubmit,
   onDelete,
   onCancel,
+  onEdit,
+  onRequestDelete,
+  isSystem = false,
 }: EmailTemplateDialogProps) => {
   const getDialogTitle = () => {
     switch (type) {
@@ -65,6 +85,8 @@ export const EmailTemplateDialog = ({
                     name: template.name,
                     subject: template.subject,
                     body: template.body,
+                    toAddresses: template.toAddresses ?? [],
+                    ccAddresses: template.ccAddresses ?? [],
                   }
                 : undefined
             }
@@ -85,14 +107,14 @@ export const EmailTemplateDialog = ({
                 この操作は元に戻すことができません。
               </p>
             </div>
-            <div className="mt-4 flex justify-end gap-2">
+            <DialogFooter sticky className="p-6">
               <Button variant="outline" onClick={onCancel}>
                 キャンセル
               </Button>
               <Button variant="destructive" onClick={onDelete}>
                 削除
               </Button>
-            </div>
+            </DialogFooter>
           </>
         );
       case "details":
@@ -100,24 +122,30 @@ export const EmailTemplateDialog = ({
           <div className="space-y-4">
             <div>
               <h3 className="text-lg font-medium">基本情報</h3>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <div className="font-semibold">Name</div>
+              <div className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
+                <div className="font-semibold">テンプレート名</div>
                 <div>{template?.name}</div>
-                <div className="font-semibold">Subject</div>
-                <div>{template?.subject}</div>
-                <div className="font-semibold">Body</div>
-                <div>{template?.body}</div>
+                <div className="font-semibold">宛先（To）</div>
+                <div>
+                  {template?.toAddresses && template.toAddresses.length > 0
+                    ? template.toAddresses.join(", ")
+                    : "（未設定）"}
+                </div>
+                <div className="font-semibold">CC</div>
+                <div>
+                  {template?.ccAddresses && template.ccAddresses.length > 0
+                    ? template.ccAddresses.join(", ")
+                    : "（未設定）"}
+                </div>
+                <div className="font-semibold">件名</div>
+                <div>
+                  {template?.subject && highlightPlaceholders(template.subject)}
+                </div>
+                <div className="font-semibold">本文</div>
+                <div className="whitespace-pre-wrap">
+                  {template?.body && highlightPlaceholders(template.body)}
+                </div>
               </div>
-            </div>
-            <div className="mt-4 flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  onOpenChange(false);
-                }}
-              >
-                閉じる
-              </Button>
             </div>
           </div>
         );
@@ -135,11 +163,35 @@ export const EmailTemplateDialog = ({
     >
       <DialogPortal>
         <DialogOverlay />
-        <DialogContent className="w-96 p-6">
-          <DialogHeader>
+        <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden p-0 max-w-lg">
+          <DialogHeader sticky>
             <DialogTitle>{getDialogTitle()}</DialogTitle>
           </DialogHeader>
-          {renderContent()}
+          <div className="flex-1 overflow-y-auto p-6 pb-0 pt-4">
+            {renderContent()}
+            {type === "details" && (
+              <DialogFooter sticky className="p-6">
+                {!isSystem && onEdit && (
+                  <Button variant="outline" onClick={onEdit}>
+                    編集
+                  </Button>
+                )}
+                {!isSystem && onRequestDelete && (
+                  <Button variant="destructive" onClick={onRequestDelete}>
+                    削除
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    onOpenChange(false);
+                  }}
+                >
+                  閉じる
+                </Button>
+              </DialogFooter>
+            )}
+          </div>
         </DialogContent>
       </DialogPortal>
     </Dialog>

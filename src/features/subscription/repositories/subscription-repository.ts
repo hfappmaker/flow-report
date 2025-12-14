@@ -1,42 +1,61 @@
-import { SubscriptionStatus } from "@prisma/client";
+import type {
+  StripeCustomer,
+  Subscription,
+  SubscriptionStatus,
+  User,
+} from "@prisma/client";
 
-import { getUserById } from "@/features/auth/repositories/user-repository";
 import { db } from "@/repositories/db";
+import { type Result, err, ok } from "@/types/result";
 
 // StripeCustomer関連の操作
 export async function upsertStripeCustomer(
   userId: string,
   stripeCustomerId: string,
-  created: Date
-) {
-  const user = await getUserById(userId);
-  if (!user) {
-    throw new Error(`User with ID ${userId} does not exist`);
-  }
+  created: Date,
+): Promise<Result<StripeCustomer>> {
+  try {
+    // 既存のStripeCustomerをstripeCustomerIdで検索
+    const existingCustomer = await db.stripeCustomer.findUnique({
+      where: { stripeCustomerId },
+    });
 
-  const stripeCustomer = await getStripeCustomerByUserId(userId);
-  if(stripeCustomer && created < stripeCustomer.created) {
-    return stripeCustomer; // 既存のレコードが新しい場合は何もしない
-  }
+    if (existingCustomer && created < existingCustomer.created) {
+      return ok(existingCustomer); // 既存のレコードが新しい場合は何もしない
+    }
 
-  return await db.stripeCustomer.upsert({
-    where: { userId },
-    create: {
-      userId,
-      stripeCustomerId,
-      created
-    },
-    update: {
-      stripeCustomerId,
-      created
-    },
-  });
+    const customer = await db.stripeCustomer.upsert({
+      where: { stripeCustomerId },
+      create: {
+        userId,
+        stripeCustomerId,
+        created,
+      },
+      update: {
+        userId,
+        stripeCustomerId,
+        created,
+      },
+    });
+    return ok(customer);
+  } catch (error) {
+    console.error("Error upserting stripe customer:", error);
+    return err("Stripe顧客情報の更新に失敗しました");
+  }
 }
 
-export async function getStripeCustomerByUserId(userId: string) {
-  return await db.stripeCustomer.findUnique({
-    where: { userId },
-  });
+export async function getStripeCustomerByUserId(
+  userId: string,
+): Promise<Result<StripeCustomer | null>> {
+  try {
+    const customer = await db.stripeCustomer.findUnique({
+      where: { userId },
+    });
+    return ok(customer);
+  } catch (error) {
+    console.error("Error fetching stripe customer by user id:", error);
+    return err("Stripe顧客情報の取得に失敗しました");
+  }
 }
 
 export async function upsertUserSubscription(
@@ -44,53 +63,81 @@ export async function upsertUserSubscription(
   data: {
     stripeSubscriptionId: string;
     status: SubscriptionStatus;
-    currentPeriodEnd?: Date | null;
+    cancelAt?: Date | null;
   },
-  created: Date
-) {
-  const stripeSubscription = await db.subscription.findUnique({
-    where: { stripeSubscriptionId: data.stripeSubscriptionId },
-  });
+  created: Date,
+): Promise<Result<Subscription>> {
+  try {
+    const stripeSubscription = await db.subscription.findUnique({
+      where: { stripeSubscriptionId: data.stripeSubscriptionId },
+    });
 
-  if(stripeSubscription && created < stripeSubscription.created) {
-    return stripeSubscription; // 既存のレコードが新しい場合は何もしない
-  }
+    if (stripeSubscription && created < stripeSubscription.created) {
+      return ok(stripeSubscription); // 既存のレコードが新しい場合は何もしない
+    }
 
-  return await db.subscription.upsert({
-    where: { stripeSubscriptionId: data.stripeSubscriptionId },
-    create: {
-      stripeCustomerId,
-      created,
-      ...data,
-    },
-    update: {created, ...data},
-  });
-}
-
-export async function getSubscriptionInfoByUserId(userId: string) {
-  // Validate that the user exists before attempting to get subscription info
-  const user = await getUserById(userId);
-  if (!user) {
-    throw new Error(`User with ID ${userId} does not exist`);
-  }
-
-  const stripeCustomer = await db.stripeCustomer.findUnique({
-    where: { userId },
-    include: {
-      subscriptions: {
-        orderBy: { createdAt: "desc" },
-        take: 1, // 最新のサブスクリプションを取得
+    const result = await db.subscription.upsert({
+      where: { stripeSubscriptionId: data.stripeSubscriptionId },
+      create: {
+        stripeCustomerId,
+        created,
+        ...data,
       },
-    },
-  });
+      update: { created, ...data },
+    });
 
-  return stripeCustomer?.subscriptions[0] ?? null;
+    return ok(result);
+  } catch (error) {
+    console.error("Error upserting user subscription:", error);
+    return err("サブスクリプション情報の更新に失敗しました");
+  }
 }
 
-export async function getUserByStripeCustomerId(stripeCustomerId: string) {
-  const stripeCustomer = await db.stripeCustomer.findUnique({
-    where: { stripeCustomerId },
-    include: { user: true },
-  });
-  return stripeCustomer?.user;
+export async function getSubscriptionInfoByUserId(
+  userId: string,
+): Promise<Result<Subscription | null>> {
+  try {
+    const stripeCustomer = await db.stripeCustomer.findUnique({
+      where: { userId },
+    });
+
+    if (!stripeCustomer) {
+      return ok(null);
+    }
+
+    // 手動でSubscriptionを取得
+    const subscription = await db.subscription.findFirst({
+      where: { stripeCustomerId: stripeCustomer.stripeCustomerId },
+      orderBy: { created: "desc" },
+    });
+
+    return ok(subscription ?? null);
+  } catch (error) {
+    console.error("Error fetching subscription info by user id:", error);
+    return err("サブスクリプション情報の取得に失敗しました");
+  }
+}
+
+export async function getUserByStripeCustomerId(
+  stripeCustomerId: string,
+): Promise<Result<User | null>> {
+  try {
+    const stripeCustomer = await db.stripeCustomer.findUnique({
+      where: { stripeCustomerId },
+    });
+
+    if (!stripeCustomer?.userId) {
+      return ok(null);
+    }
+
+    // 手動でUserを取得
+    const user = await db.user.findUnique({
+      where: { id: stripeCustomer.userId },
+    });
+
+    return ok(user);
+  } catch (error) {
+    console.error("Error fetching user by stripe customer id:", error);
+    return err("ユーザー情報の取得に失敗しました");
+  }
 }

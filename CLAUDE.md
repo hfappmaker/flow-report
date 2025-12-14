@@ -1,13 +1,15 @@
-# WorkTimeManagementV2 Project Rules for Claude Code
+# flow-report Project Rules for Claude Code
 
 ## 1. Development Environment
+
 - Node.js 18+ required
-- Use npm as package manager (converted from Yarn)
-- Claude Code as the primary development assistant
+- Use pnpm as package manager
 - DevContainer for unified development environment
 
 ## 2. Code Standards
+
 ### 2.1 Folder Structure
+
 ```
 src/
   ├── app              // Routing components
@@ -16,11 +18,13 @@ src/
   ├── components       // Generic components (buttons, labels, text boxes, etc.)
   ├── config           // Global configuration and environment variables
   ├── features         // Feature modules with subfolders as needed:
+  │   ├── actions      // Feature-specific server actions
   │   ├── assets       // Feature-specific static files
   │   ├── components   // Feature-specific components
   │   ├── hooks        // Feature-specific custom hooks
   │   ├── libs         // Feature-specific libraries (initialization, config, non-data-fetching code)
   │   ├── repositories // Feature-specific repositories
+  │   ├── schemas      // Feature-specific validation schemas (Zod, etc.)
   │   ├── stores       // Feature-specific state management
   │   ├── testing      // Feature-specific test utilities and mocks
   │   ├── types        // Feature-specific type definitions
@@ -35,24 +39,19 @@ src/
 ```
 
 **Important Notes:**
+
 - Only include necessary folders in each feature module
 - Avoid barrel files to prevent tree-shaking issues; use direct imports
-- Use ESLint rules to restrict cross-feature imports and maintain unidirectional code structure
 
 ### 2.2 Naming Conventions
+
 - Directory/file names: kebab-case (e.g., `user-info/`, `user-profile.tsx`, `user-type.ts`)
 - Constants: UPPER_SNAKE_CASE
 - Variables/functions: camelCase
-  - Use short, intuitive, descriptive names (S-I-D principle)
-  - Avoid contractions
-  - Context order affects variable meaning
-  - Function verb pairs: get/set, remove/add, delete/create, handle (for event handlers)
-  - Use singular/plural appropriately
-  - Use prefixes only when they emphasize variable meaning
 
 ### 2.3 Coding Standards
+
 - Use TypeScript strict mode
-- Follow ESLint and Prettier configurations
 - Prefer function components
 - Explicitly define Props types
 - Avoid `any` type (except when using libraries where unavoidable - add comments explaining why)
@@ -60,17 +59,244 @@ src/
 - Use TailwindCSS classes instead of custom CSS
 - Define reusable styles in tailwind.config
 - Don't use `<br />` for line breaks
-- Manage environment variables in `.env` files
+- Manage environment variables in `.env` files (never commit sensitive information)
 - Don't import Prisma runtime libraries (e.g., `import { Decimal } from "@prisma/client/runtime/library"`)
+- Don't use Tailwind classes for element selection in tests
 
-## 3. Git Workflow
-### 3.1 Branch Strategy
-- `main`: Production branch
-- `develop`: Development branch
-- `feature/*`: Feature development branches
-- `hotfix/*`: Emergency bug fix branches
+### 2.4 Functional Programming Standards
 
-### 3.2 Commit Messages
+Immutability rules are enforced by ESLint:
+
+- Use `const` only (no `let`)
+- Use immutable array methods (`map`, `filter`, `reduce`, `toSorted`, `toReversed`)
+- Use spread operator for object updates (`{ ...obj, prop: value }`)
+
+### 2.5 Repository Layer Error Handling
+
+**Database Access Rules:**
+
+- Server Actions must NOT access the database directly; always go through repository layer
+- Create feature-specific repository files (e.g., `features/user-info/repositories/user-info-repository.ts`)
+- Place shared repositories in `src/repositories/`
+
+**Result Type Pattern:**
+
+- All repository functions must return `Result<T>` type instead of throwing exceptions
+- Import from `@/types/result`: `import { Result, ok, err } from "@/types/result"`
+- Wrap database operations in try-catch and return error messages
+- Do not throw exceptions from repositories; use `err("message")` instead
+
+**Result Type Definition:**
+
+```typescript
+type Result<T> = { success: true; data: T } | { success: false; error: string };
+```
+
+**Examples:**
+
+```typescript
+// Query operation
+async function getById(id: string): Promise<Result<Entity | null>> {
+  try {
+    const entity = await db.entity.findUnique({ where: { id } });
+    return ok(entity);
+  } catch (error) {
+    console.error("Error:", error);
+    return err("データの取得に失敗しました");
+  }
+}
+
+// Create operation with validation
+async function create(data: Input): Promise<Result<Entity>> {
+  if (!isValid(data)) {
+    return err("入力データが不正です");
+  }
+  try {
+    const entity = await db.entity.create({ data });
+    return ok(entity);
+  } catch (error) {
+    console.error("Error:", error);
+    return err("データの作成に失敗しました");
+  }
+}
+```
+
+**Consuming Result in Server Actions:**
+
+```typescript
+export const createAction = async (data: Input) => {
+  const result = await repository.create(data);
+  if (!result.success) {
+    return { success: false, error: result.error };
+  }
+  revalidatePath("/path");
+  return { success: true, data: result.data };
+};
+```
+
+### 2.6 Form Creation Rules
+
+**Always use `react-hook-form` + `zodResolver` pattern for forms:**
+
+- Do NOT use individual `useState` for each form field
+- Do NOT manually validate form data without Zod schema
+- Always define validation schema in `features/[feature]/schemas/` directory
+- Always use `@/components/ui/form` components (`Form`, `FormField`, `FormControl`, `FormMessage`)
+
+**Required imports:**
+
+```typescript
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  myFormSchema,
+  MyFormValues,
+} from "@/features/[feature]/schemas/my-form-schema";
+```
+
+**Required pattern:**
+
+```typescript
+// 1. Initialize form with zodResolver
+const form = useForm<MyFormValues>({
+  resolver: zodResolver(myFormSchema),
+  defaultValues: {
+    fieldName: initialValue ?? "",
+  },
+});
+
+// 2. Handle submit with safeParse validation
+const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  const values = form.getValues();
+  const result = myFormSchema.safeParse(values);
+  if (!result.success) {
+    result.error.issues.forEach((issue) => {
+      const path = issue.path[0] as keyof MyFormValues;
+      form.setError(path, { message: issue.message });
+    });
+    return;
+  }
+  // Proceed with validated data: result.data
+};
+
+// 3. Use FormField for each input
+<Form {...form}>
+  <form onSubmit={handleFormSubmit}>
+    <FormField
+      control={form.control}
+      name="fieldName"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Label</FormLabel>
+          <FormControl>
+            <Input {...field} value={field.value ?? ""} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  </form>
+</Form>
+```
+
+**Reference implementation:** `src/features/contract/components/contract-form.tsx`
+
+### 2.7 Loading Processing Rules
+
+**Always use `useTransitionContext` for loading handling:**
+
+- Import from `@/contexts/transition-context`: `import { useTransitionContext } from "@/contexts/transition-context"`
+- Do NOT use `useState` for individual loading states
+- Do NOT use `useTransition` directly from React
+- Do NOT implement custom loading spinners or overlays
+- Exception: Only deviate from this rule when the user explicitly requests a different approach
+
+**Required pattern for server actions and async operations:**
+
+```typescript
+const { isPending, startTransition } = useTransitionContext();
+
+const handleAction = () => {
+  startTransition(async () => {
+    const result = await serverAction(data);
+    // Handle result...
+  });
+};
+
+// Use isPending to disable buttons during loading
+<Button onClick={handleAction} disabled={isPending}>
+  Submit
+</Button>
+```
+
+**What `useTransitionContext` provides:**
+
+- `startTransition`: Wraps async operations and automatically manages loading state
+- `isPending`: Boolean indicating loading state (use for disabling UI elements)
+- `setManualPending`: For manual loading control in special cases
+
+### 2.8 UI Component Usage Rules
+
+**Always use components from `src/components/ui/`:**
+
+- Do NOT create custom implementations of basic UI components
+- Do NOT use native HTML elements directly when a UI component exists
+- Always import from `@/components/ui/` for the following components:
+
+| Component           | Import Path                     |
+| ------------------- | ------------------------------- |
+| Button              | `@/components/ui/button`        |
+| Input               | `@/components/ui/input`         |
+| Label               | `@/components/ui/label`         |
+| Checkbox            | `@/components/ui/checkbox`      |
+| Select              | `@/components/ui/select`        |
+| Textarea            | `@/components/ui/textarea`      |
+| Dialog              | `@/components/ui/dialog`        |
+| Card                | `@/components/ui/card`          |
+| Badge               | `@/components/ui/badge`         |
+| Avatar              | `@/components/ui/avatar`        |
+| Tabs                | `@/components/ui/tabs`          |
+| Switch              | `@/components/ui/switch`        |
+| RadioGroup          | `@/components/ui/radio-group`   |
+| DatePicker          | `@/components/ui/date-picker`   |
+| TimePicker          | `@/components/ui/time-picker`   |
+| DropdownMenu        | `@/components/ui/dropdown-menu` |
+| Sheet               | `@/components/ui/sheet`         |
+| Popover             | `@/components/ui/popover`       |
+| Form components     | `@/components/ui/form`          |
+| Loading components  | `@/components/ui/loading`       |
+| Feedback components | `@/components/ui/feedback`      |
+
+**Examples:**
+
+```typescript
+// ✅ Good
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+// ❌ Bad - using native HTML elements
+<button onClick={...}>Submit</button>
+<input type="text" />
+<label>Name</label>
+
+// ❌ Bad - creating custom component when UI component exists
+const CustomButton = styled.button`...`;
+```
+
+## 3. Commit Messages
+
+Use conventional commit prefixes:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation only changes
@@ -79,74 +305,58 @@ src/
 - `test`: Adding or modifying test code
 - `chore`: Build process or tool changes
 
-### 3.3 Pull Requests
-- Review required
-- Ensure tests pass
-- Resolve conflicts
-- Include appropriate descriptions and screenshots
+## 4. Claude Code Specific Instructions
 
-## 4. Security
-- Manage environment variables in `.env` files
-- Never commit sensitive information to Git
-- Properly encrypt and store authentication credentials
-- Prioritize security updates
+### Communication Language
 
-## 5. Performance
-- Optimize images
-- Use code splitting
-- Prevent unnecessary re-renders
-- Optimize bundle size
+**CRITICAL: All communication with users must be in Japanese:**
 
-## 6. Testing
-- Write at least one test case per function
-- Don't use Tailwind classes for element selection in tests
-- Implement component tests whenever possible
-- Implement E2E tests for critical user flows
+- All responses, explanations, and messages to the user must be written in Japanese
+- Code comments should be in Japanese when explaining implementation
+- Error messages and warnings should be in Japanese
+- Commit messages must use English prefixes (feat, fix, docs, etc.) but descriptions should be in Japanese (e.g., `feat: ユーザー認証機能を追加`)
+- Exception: Code itself (variable names, function names, etc.) should follow English naming conventions as specified in section 2.2
+- Exception: Technical terms that are commonly used in English (e.g., "repository", "component") can remain in English within Japanese sentences
 
-## 7. Deployment
-- Production deployments require approval process
-- Run tests before deployment
-- Prepare rollback procedures
+### Do Not Run ESLint
 
-## 8. Documentation
-- Keep README updated
-- Update API specifications
-- Record important changes in CHANGELOG
-- Add comments when necessary
-
-## Claude Code Specific Instructions
-- Always run linting and type checking after code changes
-- Use the project's existing testing framework (check package.json or codebase)
-- Maintain the existing code style and patterns
-- Follow the folder structure when creating new files
-- Use TypeScript strict mode and avoid `any` types
-- Prioritize editing existing files over creating new ones
+- Do not run `pnpm exec eslint` or `eslint` directly
+- Use `pnpm exec tsc` for type checking instead
 
 ### MCP Settings Management
-- **ALWAYS** manage MCP permissions and settings in `.claude/settings.json` for repository-wide sharing
-- **NEVER** create or modify `.claude/settings.local.json` files
-- All MCP server configurations and permissions must be committed to the repository
-- When adding new MCP permissions, update `.claude/settings.json` directly
-- This ensures consistent MCP settings across all team members and environments
 
-### Files to Ignore
-Claude Code should avoid processing these files and directories:
-- `node_modules/` - Package dependencies
-- `.next/` - Next.js build output
-- `dist/` - Distribution/build files
-- `build/` - Build output
-- `coverage/` - Test coverage reports
-- `.env*` - Environment variable files
-- `*.log` - Log files
-- `test-results/` - Playwright test results
-- `playwright-report/` - Playwright HTML reports
-- `prisma/migrations/` - Database migration files
-- `.git/` - Git repository data
-- `*.lock` - Lock files (package-lock.json, yarn.lock)
-- `.claude/settings.local.json` - Individual MCP settings (use .claude/settings.json instead)
+- Manage MCP settings in `.claude/settings.json` (not `.claude/settings.local.json`)
+- Commit all MCP configurations to the repository
 
-# important-instruction-reminders
-Do what has been asked; nothing more, nothing less.
-NEVER create files unless they're absolutely necessary for achieving your goal.
-ALWAYS prefer editing an existing file to creating a new one.
-NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+### Serena MCP Tool Usage (Required)
+
+**CRITICAL: Always use Serena MCP tools for file operations instead of built-in tools:**
+
+| Operation | Use Serena MCP Tool | Do NOT Use |
+|-----------|---------------------|------------|
+| File search | `mcp__serena__find_file`, `mcp__serena__list_dir` | `Glob` |
+| Content search | `mcp__serena__search_for_pattern` | `Grep` |
+| Code reading | `mcp__serena__get_symbols_overview`, `mcp__serena__find_symbol` | `Read` (for code files) |
+| Code editing | `mcp__serena__replace_symbol_body`, `mcp__serena__insert_after_symbol`, `mcp__serena__insert_before_symbol` | `Edit` (for code files) |
+| Symbol renaming | `mcp__serena__rename_symbol` | Manual find-replace |
+
+**Serena MCP Tool Selection Guide:**
+
+1. **Understanding a file's structure**: Use `mcp__serena__get_symbols_overview` first
+2. **Finding specific symbols**: Use `mcp__serena__find_symbol` with `include_body=True` only when needed
+3. **Searching for patterns**: Use `mcp__serena__search_for_pattern` for flexible regex search
+4. **Finding references**: Use `mcp__serena__find_referencing_symbols` to understand symbol usage
+5. **Editing code**: Use symbolic editing tools (`replace_symbol_body`, `insert_after_symbol`, `insert_before_symbol`)
+6. **Renaming across codebase**: Use `mcp__serena__rename_symbol` for safe refactoring
+
+**Exceptions (when built-in tools are allowed):**
+
+- Non-code files (e.g., `.md`, `.json`, `.yaml`, `.env.example`) can use `Read`/`Edit`/`Write`
+- When Serena MCP tools fail or are unavailable
+- When explicitly requested by the user
+
+**Token Efficiency:**
+
+- Avoid reading entire files; use `get_symbols_overview` + targeted `find_symbol` instead
+- Use `include_body=False` first to understand structure, then `include_body=True` for specific symbols
+- Pass `relative_path` parameter to restrict searches to specific directories

@@ -4,15 +4,15 @@ import { AuthError } from "next-auth";
 import * as z from "zod";
 
 import { DEFAULT_LOGIN_REDIRECT } from "@/app/routes";
-import { signIn } from "@/features/auth/lib/auth";
+import { signIn } from "@/features/auth/libs/auth";
 import {
   sendVerificationEmail,
   sendTwoFactorTokenEmail,
-} from "@/features/auth/lib/mail";
+} from "@/features/auth/libs/mail";
 import {
   generateVerificationToken,
   generateTwoFactorToken,
-} from "@/features/auth/lib/tokens";
+} from "@/features/auth/libs/tokens";
 import { getTwoFactorConfirmationByUserId } from "@/features/auth/repositories/two-factor-confirmation-repository";
 import { getTwoFactorTokenByEmail } from "@/features/auth/repositories/two-factor-token-repository";
 import { getUserByEmail } from "@/features/auth/repositories/user-repository";
@@ -31,7 +31,13 @@ export const login = async (
 
   const { email, password, code } = validatedFields.data;
 
-  const existingUser = await getUserByEmail(email);
+  const existingUserResult = await getUserByEmail(email);
+
+  if (!existingUserResult.success) {
+    return { error: existingUserResult.error };
+  }
+
+  const existingUser = existingUserResult.data;
 
   if (!existingUser?.email || !existingUser.password) {
     return { error: "User not registered!" };
@@ -52,7 +58,15 @@ export const login = async (
 
   if (existingUser.isTwoFactorEnabled && existingUser.email) {
     if (code) {
-      const twoFactorToken = await getTwoFactorTokenByEmail(existingUser.email);
+      const twoFactorTokenResult = await getTwoFactorTokenByEmail(
+        existingUser.email,
+      );
+
+      if (!twoFactorTokenResult.success) {
+        return { error: twoFactorTokenResult.error };
+      }
+
+      const twoFactorToken = twoFactorTokenResult.data;
 
       if (!twoFactorToken || twoFactorToken.token !== code) {
         return { error: "Invalid code!" };
@@ -68,9 +82,15 @@ export const login = async (
         where: { id: twoFactorToken.id },
       });
 
-      const existingConfirmation = await getTwoFactorConfirmationByUserId(
+      const existingConfirmationResult = await getTwoFactorConfirmationByUserId(
         existingUser.id,
       );
+
+      if (!existingConfirmationResult.success) {
+        return { error: existingConfirmationResult.error };
+      }
+
+      const existingConfirmation = existingConfirmationResult.data;
 
       if (existingConfirmation) {
         await db.twoFactorConfirmation.delete({

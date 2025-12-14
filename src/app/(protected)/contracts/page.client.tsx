@@ -1,23 +1,22 @@
 "use client";
 
+import { FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { DatePicker } from "@/components/ui/date-picker";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { DialogFooter } from "@/components/ui/dialog";
 import FormError from "@/components/ui/feedback/error-alert";
 import FormSuccess from "@/components/ui/feedback/success-alert";
-import { Input } from "@/components/ui/input";
 import { useTransitionContext } from "@/contexts/transition-context";
 import {
   getContractsByUserIdAction,
-  searchContractsAction,
   deleteContractAction,
   createContractAction,
   updateContractAction,
 } from "@/features/contract/actions/contract";
+import { ContractDetailsContent } from "@/features/contract/components/contract-details-content";
 import {
   ContractDialog,
   type DialogType,
@@ -32,15 +31,12 @@ import {
   convertContractToFormValues,
 } from "@/features/contract/utils/contract-converter";
 import { useMessageState } from "@/hooks/use-message-state";
-import { formatDateAsUTC, formatDateLongAsUTC } from "@/utils/date-utils";
+import { formatDateLongAsUTC } from "@/utils/date-utils";
 
 export default function ContractsClientPage({ userId }: { userId: string }) {
-  const { error, success, showError, showSuccess } = useMessageState();
+  const { error, success, showError, showSuccess, clearError, clearSuccess } =
+    useMessageState();
   const [contracts, setContracts] = useState<ContractOutput[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [periodFrom, setPeriodFrom] = useState("");
-  const [periodTo, setPeriodTo] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
   const [activeContract, setActiveContract] = useState<ContractOutput | null>(
     null,
   );
@@ -50,56 +46,14 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
   const router = useRouter();
 
   // 契約一覧を取得
-  const fetchContracts = async () => {
-    try {
-      const contractsData = await getContractsByUserIdAction(userId);
-      setContracts(contractsData);
-    } catch (error: unknown) {
-      console.error(error);
-      showError("契約の取得に失敗しました");
-    }
-  };
-
-  // 検索処理
-  const handleSearch = () => {
-    const hasSearchQuery = searchQuery.trim();
-    const hasPeriodFilters = periodFrom || periodTo;
-
-    if (!hasSearchQuery && !hasPeriodFilters) {
-      setIsSearching(false);
-      startTransition(async () => {
-        await fetchContracts();
-      });
+  const fetchContracts = useCallback(async () => {
+    const result = await getContractsByUserIdAction(userId);
+    if (!result.success) {
+      showError(result.error);
       return;
     }
-
-    setIsSearching(true);
-    startTransition(async () => {
-      try {
-        const searchResults = await searchContractsAction(
-          userId,
-          searchQuery || undefined,
-          periodFrom || undefined,
-          periodTo || undefined,
-        );
-        setContracts(searchResults);
-      } catch (error: unknown) {
-        console.error(error);
-        showError("検索に失敗しました");
-      }
-    });
-  };
-
-  // 検索クリア
-  const handleClearSearch = () => {
-    setSearchQuery("");
-    setPeriodFrom("");
-    setPeriodTo("");
-    setIsSearching(false);
-    startTransition(async () => {
-      await fetchContracts();
-    });
-  };
+    setContracts(result.data);
+  }, [userId, showError]);
 
   // ダイアログを閉じる
   const closeDialog = () => {
@@ -124,63 +78,131 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
   // 契約削除
   const onDeleteContract = () => {
     if (!activeContract) return;
-    startTransition(async () => {
-      try {
-        await deleteContractAction(activeContract.id);
-        showSuccess(`契約 '${activeContract.name}' を削除しました`);
-        await fetchContracts();
-      } catch (error: unknown) {
-        console.error(error);
-        showError(
-          "契約の削除に失敗しました。関連する作業報告書が存在する可能性があります。",
-        );
-      } finally {
+    startTransition(() => {
+      void (async () => {
+        const result = await deleteContractAction(activeContract.id);
+        if (result.success) {
+          showSuccess(`契約 '${activeContract.name}' を削除しました`);
+          await fetchContracts();
+        } else {
+          console.error(result.error);
+          showError(result.error || "契約の削除に失敗しました。");
+        }
         closeDialog();
-      }
+      })();
     });
   };
 
   // 契約作成
   const onCreateContract = (data: ContractFormValues) => {
-    startTransition(async () => {
-      try {
+    startTransition(() => {
+      void (async () => {
         const contractData = convertContractFormValuesToContract(data, userId);
-        await createContractAction(contractData);
-        showSuccess(`契約 '${data.name}' を作成しました`);
-        await fetchContracts();
-      } catch (error: unknown) {
-        console.error(error);
-        showError("契約の作成に失敗しました");
-      } finally {
+        const result = await createContractAction(contractData);
+
+        if (result.success) {
+          showSuccess(`契約 '${data.name}' を作成しました`);
+          await fetchContracts();
+        } else {
+          console.error(result.error);
+          showError(result.error || "契約の作成に失敗しました");
+        }
         closeDialog();
-      }
+      })();
     });
   };
 
   // 契約編集
   const onEditContract = (data: ContractFormValues) => {
     if (!activeContract) return;
-    startTransition(async () => {
-      try {
+    startTransition(() => {
+      void (async () => {
         const contractData = convertContractFormValuesToContract(data, userId);
-        await updateContractAction(activeContract.id, contractData);
-        showSuccess(`契約 '${data.name}' を編集しました`);
-        await fetchContracts();
-      } catch (error: unknown) {
-        console.error(error);
-        showError("契約の更新に失敗しました");
-      } finally {
+        const result = await updateContractAction(
+          activeContract.id,
+          contractData,
+        );
+        if (result.success) {
+          showSuccess(`契約 '${data.name}' を編集しました`);
+          await fetchContracts();
+        } else {
+          console.error(result.error);
+          showError(result.error || "契約の更新に失敗しました");
+        }
         closeDialog();
-      }
+      })();
+    });
+  };
+
+  // 契約コピー
+  const onCopyContract = (data: ContractFormValues) => {
+    startTransition(() => {
+      void (async () => {
+        const contractData = convertContractFormValuesToContract(data, userId);
+        const result = await createContractAction(contractData);
+
+        if (result.success) {
+          showSuccess(`契約 '${data.name}' をコピーして作成しました`);
+          await fetchContracts();
+        } else {
+          console.error(result.error);
+          showError(result.error || "契約のコピーに失敗しました");
+        }
+        closeDialog();
+      })();
     });
   };
 
   // 初期データ読み込み
   useEffect(() => {
-    startTransition(async () => {
-      await fetchContracts();
+    startTransition(() => {
+      void fetchContracts();
     });
-  }, [userId]);
+  }, [fetchContracts, startTransition]);
+
+  // 契約コピー用の変換関数
+  const convertContractToCopyFormValues = (
+    contract: ContractOutput,
+  ): ContractFormValues => {
+    const baseValues = convertContractToFormValues(contract);
+    // 開始日の設定（コピー元の終了日の翌日）
+    const newStartDate = new Date(
+      Date.UTC(
+        contract.endDate.getFullYear(),
+        contract.endDate.getMonth(),
+        contract.endDate.getDate() + 1,
+      ),
+    );
+
+    // コピー元の契約期間の月数を計算
+    const originalMonthDiff =
+      (contract.endDate.getFullYear() - contract.startDate.getFullYear()) * 12 +
+      (contract.endDate.getMonth() - contract.startDate.getMonth());
+
+    // 新しい終了日 = 新しい開始日 + コピー元の契約期間の月数
+    // 日にちはコピー元の締め日（closingDayがnullの場合は月末）
+    const closingDay = contract.closingDay ?? 31;
+    const newEndYear = newStartDate.getUTCFullYear();
+    const newEndMonth = newStartDate.getUTCMonth() + originalMonthDiff;
+
+    // 指定された月の最終日を取得
+    const lastDayOfMonth = new Date(
+      Date.UTC(newEndYear, newEndMonth + 1, 0),
+    ).getUTCDate();
+
+    // 締め日と月の最終日のうち小さい方を使用
+    const actualEndDay = Math.min(closingDay, lastDayOfMonth);
+
+    const newEndDate = new Date(
+      Date.UTC(newEndYear, newEndMonth, actualEndDay),
+    );
+
+    return {
+      ...baseValues,
+      startDate: newStartDate,
+      endDate: newEndDate,
+    };
+  };
 
   // 日付フォーマット関数
   const formatDate = (date: string | Date) => {
@@ -190,486 +212,184 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
   // 契約ステータスの取得
   const getContractStatus = (contract: ContractOutput) => {
     const now = new Date();
-    const endDate = contract.endDate ? new Date(contract.endDate) : null;
+    now.setHours(0, 0, 0, 0); // 時刻を00:00:00に設定して日付のみで比較
+    const endDate = new Date(contract.endDate);
+    endDate.setHours(0, 0, 0, 0); // 時刻を00:00:00に設定して日付のみで比較
 
-    if (endDate && endDate < now) {
+    if (endDate < now) {
       return { status: "終了", color: "text-red-600" };
-    } else if (endDate) {
-      return { status: "進行中", color: "text-green-600" };
     } else {
-      return { status: "無期限", color: "text-blue-600" };
+      return { status: "進行中", color: "text-green-600" };
     }
   };
 
   return (
-    <div className="mx-auto min-w-96 max-w-6xl p-6">
-      <div className="mb-6">
-        <div className="mb-2 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">契約一覧</h1>
-          <Button
-            onClick={() => {
-              setActiveDialog("create");
-            }}
-          >
-            新しい契約を作成
-          </Button>
+    <Card className="w-full shadow-sm">
+      <CardHeader className="flex-row items-center justify-between gap-x-3">
+        <div className="flex items-center gap-x-3 font-semibold">
+          <FileText className="text-3xl text-sky-400" />
+          <h1 className="text-2xl">契約一覧</h1>
         </div>
-        <p className="text-muted-foreground">あなたの契約を管理できます</p>
-      </div>
+        <Button
+          onClick={() => {
+            setActiveDialog("create");
+          }}
+        >
+          新しい契約を作成
+        </Button>
+      </CardHeader>
+      <CardContent>
+        <FormError message={error} onClose={clearError} />
+        <FormSuccess message={success} onClose={clearSuccess} />
 
-      <FormError message={error.message} resetSignal={error.date.getTime()} />
-      <FormSuccess
-        message={success.message}
-        resetSignal={success.date.getTime()}
-      />
-
-      {/* 検索フォーム */}
-      <div className="mb-6 space-y-4">
-        <div className="flex gap-2">
-          <Input
-            type="text"
-            placeholder="契約名またはクライアント名で検索..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleSearch();
-              }
-            }}
-            className="flex-1"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">
-            期間検索（契約期間と重複する期間を検索）
-          </label>
-          <div className="flex gap-2">
-            <DatePicker
-              placeholder="期間開始"
-              value={periodFrom}
-              onChange={(date) => {
-                setPeriodFrom(date);
-              }}
-              className="flex-1"
-            />
-            <span className="flex items-center text-muted-foreground">〜</span>
-            <DatePicker
-              placeholder="期間終了"
-              value={periodTo}
-              onChange={(date) => {
-                setPeriodTo(date);
-              }}
-              className="flex-1"
-            />
-          </div>
-        </div>
-
-        <div className="flex gap-2">
-          <Button
-            onClick={handleSearch}
-            disabled={!searchQuery.trim() && !periodFrom && !periodTo}
-          >
-            検索
-          </Button>
-          {isSearching && (
-            <Button variant="outline" onClick={handleClearSearch}>
-              クリア
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* 契約一覧 */}
-      {contracts.length === 0 ? (
-        <div className="py-12 text-center">
-          <p className="text-lg text-muted-foreground">
-            {isSearching ? "検索結果がありません" : "契約がありません"}
-          </p>
-          {!isSearching && (
+        {/* 契約一覧 */}
+        {contracts.length === 0 ? (
+          <div className="py-12 text-center">
+            <p className="text-lg text-muted-foreground">契約がありません</p>
             <p className="mt-2 text-muted-foreground">
               新しい契約を作成してください
             </p>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {contracts.map((contract) => {
-            const statusInfo = getContractStatus(contract);
-            return (
-              <Card
-                key={contract.id}
-                className="w-full transition-all duration-200 hover:bg-muted/50 hover:shadow-lg"
-              >
-                <div className="p-4">
-                  <div className="flex w-full items-center justify-between">
-                    <div
-                      className="flex min-w-0 flex-1 cursor-pointer items-center gap-6"
-                      onClick={() => {
-                        handleNavigateToWorkReports(contract.id);
-                      }}
-                    >
-                      <div className="min-w-48">
-                        <h3 className="truncate text-lg font-semibold text-foreground">
-                          {contract.name}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {contract.clientName}
-                        </p>
-                      </div>
-                      <div className="hidden items-center gap-4 text-sm text-muted-foreground sm:flex">
-                        <div>開始: {formatDate(contract.startDate)}</div>
-                        {contract.endDate && (
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {contracts.map((contract) => {
+              const statusInfo = getContractStatus(contract);
+              return (
+                <Card
+                  key={contract.id}
+                  className="w-full cursor-pointer transition-all duration-200 hover:bg-muted/50 hover:shadow-lg"
+                  onClick={() => {
+                    openDetailsDialog(contract);
+                  }}
+                >
+                  <div className="p-4">
+                    <div className="flex w-full items-center justify-between">
+                      <div className="flex min-w-0 flex-1 items-center gap-6">
+                        <div className="min-w-48">
+                          <h3 className="truncate text-lg font-semibold text-foreground">
+                            {contract.name}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {contract.clientName}
+                          </p>
+                        </div>
+                        <div className="hidden items-center gap-4 text-sm text-muted-foreground sm:flex">
+                          <div>開始: {formatDate(contract.startDate)}</div>
                           <div>終了: {formatDate(contract.endDate)}</div>
-                        )}
-                        <div>担当: {contract.clientContactName}</div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="ml-4 flex shrink-0 items-center gap-3">
-                      <span
-                        className={`text-sm font-medium ${statusInfo.color}`}
-                      >
-                        {statusInfo.status}
-                      </span>
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openDetailsDialog(contract);
-                        }}
-                        size="sm"
-                        variant="outline"
-                      >
-                        詳細
-                      </Button>
+                      <div className="ml-4 flex shrink-0 items-center gap-3">
+                        <span
+                          className={`text-sm font-medium ${statusInfo.color}`}
+                        >
+                          {statusInfo.status}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
-      <ContractDialog
-        type="details"
-        isOpen={activeDialog === "details"}
-        onClose={closeDialog}
-      >
-        {activeContract && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="mb-3 text-lg font-medium">基本情報</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2">
-                  <label className="text-sm font-medium text-muted-foreground">
-                    契約名
-                  </label>
-                  <p className="mt-1 whitespace-pre-line">
-                    {activeContract.name}
-                  </p>
-                </div>
-                <div className="col-span-2">
-                  <label className="text-sm font-medium text-muted-foreground">
-                    クライアント名
-                  </label>
-                  <p className="mt-1">{activeContract.clientName}</p>
-                </div>
-                <div className="col-span-2">
-                  <label className="text-sm font-medium text-muted-foreground">
-                    担当者
-                  </label>
-                  <p className="mt-1">{activeContract.clientContactName}</p>
-                </div>
-                <div className="col-span-2">
-                  <label className="text-sm font-medium text-muted-foreground">
-                    メールアドレス
-                  </label>
-                  <p className="mt-1">{activeContract.clientEmail}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    開始日
-                  </label>
-                  <p className="mt-1">
-                    {formatDateAsUTC(activeContract.startDate)}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    終了日
-                  </label>
-                  <p className="mt-1">
-                    {activeContract.endDate
-                      ? formatDateAsUTC(activeContract.endDate)
-                      : "なし"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="mb-3 text-lg font-medium">精算情報</h3>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="col-span-3">
-                  <label className="text-sm font-medium text-muted-foreground">
-                    月単価
-                    {activeContract.taxInclusiveType === "INCLUSIVE"
-                      ? "（税込）"
-                      : "（税抜）"}
-                  </label>
-                  <p className="mt-1">
-                    {activeContract.unitPrice
-                      ? `${activeContract.unitPrice}円`
-                      : "なし"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    精算下限
-                  </label>
-                  <p className="mt-1">
-                    {activeContract.settlementMin
-                      ? `${activeContract.settlementMin}時間`
-                      : "なし"}
-                  </p>
-                </div>
-                <div className="col-span-2">
-                  <label className="text-sm font-medium text-muted-foreground">
-                    精算上限
-                  </label>
-                  <p className="mt-1">
-                    {activeContract.settlementMax
-                      ? `${activeContract.settlementMax}時間`
-                      : "なし"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    超過単価
-                    {activeContract.taxInclusiveType === "INCLUSIVE"
-                      ? "（税込）"
-                      : "（税抜）"}
-                  </label>
-                  <p className="mt-1">
-                    {activeContract.upperRate
-                      ? `${activeContract.upperRate}円`
-                      : "なし"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    控除単価
-                    {activeContract.taxInclusiveType === "INCLUSIVE"
-                      ? "（税込）"
-                      : "（税抜）"}
-                  </label>
-                  <p className="mt-1">
-                    {activeContract.lowerRate
-                      ? `${activeContract.lowerRate}円`
-                      : "なし"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    中間単価
-                    {activeContract.taxInclusiveType === "INCLUSIVE"
-                      ? "（税込）"
-                      : "（税抜）"}
-                  </label>
-                  <p className="mt-1">
-                    {activeContract.middleRate
-                      ? `${activeContract.middleRate}円`
-                      : "なし"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="mb-3 text-lg font-medium">税務設定</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    税込・税抜設定
-                  </label>
-                  <p className="mt-1">
-                    {activeContract.taxInclusiveType === "INCLUSIVE"
-                      ? "税込"
-                      : "税抜"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    消費税端数処理
-                  </label>
-                  <p className="mt-1">
-                    {activeContract.taxRoundingType === "ROUND_DOWN" &&
-                      "切り捨て"}
-                    {activeContract.taxRoundingType === "ROUND_UP" &&
-                      "切り上げ"}
-                    {activeContract.taxRoundingType === "ROUND" && "四捨五入"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="mb-3 text-lg font-medium">勤務設定</h3>
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    1日あたりの作業単位
-                  </label>
-                  <p className="mt-1">
-                    {activeContract.dailyWorkMinutes
-                      ? `${activeContract.dailyWorkMinutes.toString()}分`
-                      : "なし"}
-                  </p>
-                </div>
-                <div className="col-span-2">
-                  <label className="text-sm font-medium text-muted-foreground">
-                    1ヶ月あたりの作業単位
-                  </label>
-                  <p className="mt-1">
-                    {activeContract.monthlyWorkMinutes
-                      ? `${activeContract.monthlyWorkMinutes.toString()}分`
-                      : "なし"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    基本開始時刻
-                  </label>
-                  <p className="mt-1">
-                    {activeContract.basicStartTime
-                      ? new Date(
-                          activeContract.basicStartTime,
-                        ).toLocaleTimeString("en-US", {
-                          timeZone: "UTC",
-                          hour12: false,
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : "なし"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    基本終了時刻
-                  </label>
-                  <p className="mt-1">
-                    {activeContract.basicEndTime
-                      ? new Date(
-                          activeContract.basicEndTime,
-                        ).toLocaleTimeString("en-US", {
-                          timeZone: "UTC",
-                          hour12: false,
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : "なし"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    基本休憩時間
-                  </label>
-                  <p className="mt-1">
-                    {activeContract.basicBreakDuration
-                      ? `${activeContract.basicBreakDuration.toString()}分`
-                      : "なし"}
-                  </p>
-                </div>
-                <div className="col-span-3">
-                  <label className="text-sm font-medium text-muted-foreground">
-                    締め日
-                  </label>
-                  <p className="mt-1">
-                    {activeContract.closingDay
-                      ? `${activeContract.closingDay.toString()}日`
-                      : "末日"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <DialogFooter sticky className="p-6">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setActiveDialog("edit");
-                }}
-              >
-                編集
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  setActiveDialog("delete");
-                }}
-              >
-                削除
-              </Button>
-              <Button variant="outline" onClick={closeDialog}>
-                閉じる
-              </Button>
-            </DialogFooter>
+                </Card>
+              );
+            })}
           </div>
         )}
-      </ContractDialog>
 
-      <ContractDialog
-        type="create"
-        isOpen={activeDialog === "create"}
-        onClose={closeDialog}
-      >
-        <ContractForm
-          defaultValues={undefined}
-          onSubmit={onCreateContract}
-          onCancel={closeDialog}
-          submitButtonText="作成"
-        />
-      </ContractDialog>
+        <ContractDialog
+          type="details"
+          isOpen={activeDialog === "details"}
+          onClose={closeDialog}
+        >
+          {activeContract && (
+            <ContractDetailsContent
+              contract={activeContract}
+              onNavigateToWorkReports={handleNavigateToWorkReports}
+              onEdit={() => {
+                setActiveDialog("edit");
+              }}
+              onCopy={() => {
+                setActiveDialog("copy");
+              }}
+              onDelete={() => {
+                setActiveDialog("delete");
+              }}
+              onClose={closeDialog}
+              showWorkReportsButton
+              showEditButton
+              showCopyButton
+              showDeleteButton
+            />
+          )}
+        </ContractDialog>
 
-      <ContractDialog
-        type="edit"
-        isOpen={activeDialog === "edit"}
-        onClose={closeDialog}
-      >
-        <ContractForm
-          defaultValues={
-            activeContract
-              ? convertContractToFormValues(activeContract)
-              : undefined
-          }
-          onSubmit={onEditContract}
-          onCancel={closeDialog}
-          submitButtonText="更新"
-        />
-      </ContractDialog>
+        <ContractDialog
+          type="create"
+          isOpen={activeDialog === "create"}
+          onClose={closeDialog}
+        >
+          <ContractForm
+            onSubmit={onCreateContract}
+            onCancel={closeDialog}
+            submitButtonText="作成"
+          />
+        </ContractDialog>
 
-      <ContractDialog
-        type="delete"
-        isOpen={activeDialog === "delete"}
-        onClose={closeDialog}
-      >
-        <div>
-          <p>本当に契約 &quot;{activeContract?.name}&quot; を削除しますか？</p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            この操作は元に戻すことができません。
-          </p>
-        </div>
-        <DialogFooter sticky className="p-6">
-          <Button variant="outline" onClick={closeDialog}>
-            キャンセル
-          </Button>
-          <Button variant="destructive" onClick={onDeleteContract}>
-            削除
-          </Button>
-        </DialogFooter>
-      </ContractDialog>
-    </div>
+        <ContractDialog
+          type="edit"
+          isOpen={activeDialog === "edit"}
+          onClose={closeDialog}
+        >
+          <ContractForm
+            defaultValues={
+              activeContract
+                ? convertContractToFormValues(activeContract)
+                : undefined
+            }
+            onSubmit={onEditContract}
+            onCancel={closeDialog}
+            submitButtonText="更新"
+            isEditing
+          />
+        </ContractDialog>
+
+        <ContractDialog
+          type="delete"
+          isOpen={activeDialog === "delete"}
+          onClose={closeDialog}
+        >
+          <div>
+            <p>
+              本当に契約 &quot;{activeContract?.name}&quot; を削除しますか？
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              関連する作業報告書も削除されます。この操作は元に戻すことができません。
+            </p>
+          </div>
+          <DialogFooter sticky className="p-6">
+            <Button variant="outline" onClick={closeDialog}>
+              キャンセル
+            </Button>
+            <Button variant="destructive" onClick={onDeleteContract}>
+              削除
+            </Button>
+          </DialogFooter>
+        </ContractDialog>
+
+        <ContractDialog
+          type="copy"
+          isOpen={activeDialog === "copy"}
+          onClose={closeDialog}
+        >
+          <ContractForm
+            defaultValues={
+              activeContract
+                ? convertContractToCopyFormValues(activeContract)
+                : undefined
+            }
+            onSubmit={onCopyContract}
+            onCancel={closeDialog}
+            submitButtonText="作成"
+          />
+        </ContractDialog>
+      </CardContent>
+    </Card>
   );
 }

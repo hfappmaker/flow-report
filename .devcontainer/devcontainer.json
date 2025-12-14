@@ -3,16 +3,16 @@
 {
   "name": "Node.js & TypeScript & PostgreSQL",
   // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-//   "image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bullseye",
-//   "features": {
-//     "ghcr.io/devcontainers-contrib/features/prisma:2": {}
-//   },
+  //   "image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bullseye",
+  //   "features": {
+  //     "ghcr.io/devcontainers-contrib/features/prisma:2": {}
+  //   },
 
-  "dockerComposeFile":"docker-compose.yml",
+  "dockerComposeFile": "docker-compose.yml",
   "service": "app",
-  "workspaceFolder": "/WorkTimeManagementV2",
+  "workspaceFolder": "/workspace",
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "sudo chown -R node:node . && npm install && npx playwright install && npx prisma db seed",
+  "postCreateCommand": "sudo chown -R node:node . && pnpm install && vercel link && vercel env pull .env.development.local",
   // Configure tool-specific properties.
 
   "customizations": {
@@ -25,15 +25,11 @@
         "Anthropic.claude-code",
         "ms-playwright.playwright",
         "Stripe.vscode-stripe",
-        "mhutchie.git-graph"
+        "eamodio.gitlens",
+        "Prisma.prisma"
       ]
     }
   },
-
-  "mounts": [
-    "source=try-node-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
-    "source=try-dist,target=${containerWorkspaceFolder}/dist,type=volume"
-  ],
 
   // Features to add to the dev container. More info: https://containers.dev/features.
   // "features": {},
@@ -42,7 +38,7 @@
   // "forwardPorts": ["5432"],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  // "postCreateCommand": "npm install",
+  // "postCreateCommand": "pnpm install",
 
   // Configure tool-specific properties.
   // "customizations": {},

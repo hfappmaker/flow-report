@@ -9,9 +9,7 @@ import { Holiday } from "../types/holiday";
  * @param year 年
  * @returns 祝日の配列
  */
-export async function fetchHolidays(
-  year: number,
-): Promise<Holiday[]> {
+export async function fetchHolidays(year: number): Promise<Holiday[]> {
   try {
     const apiKey = process.env.GOOGLE_CALENDAR_API_KEY;
     if (!apiKey) {
@@ -59,4 +57,3 @@ export async function fetchHolidays(
     return [];
   }
 }
-

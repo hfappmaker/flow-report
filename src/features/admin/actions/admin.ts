@@ -2,7 +2,7 @@
 
 import { UserRole } from "@prisma/client";
 
-import { currentRole } from "@/features/auth/lib/auth";
+import { currentRole } from "@/features/auth/libs/auth";
 
 export const admin = async () => {
   const role = await currentRole();

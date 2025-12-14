@@ -1,17 +1,20 @@
-import { MdOutlineSecurity } from "react-icons/md";
+import Image from "next/image";
 
-type HeaderProps = {
+interface HeaderProps {
   label: string;
-};
+}
 
 const Header = ({ label }: HeaderProps) => {
   return (
     <div className="flex w-full flex-col items-center justify-center gap-y-4">
       <div className="flex items-center justify-center">
-        <MdOutlineSecurity className="text-3xl text-sky-400" />
-        <h1 className="text-3xl font-semibold text-primary drop-shadow-md">
-          Auth
-        </h1>
+        <Image
+          src="/flow-report.png"
+          alt="Flow Report"
+          width={200}
+          height={60}
+          priority
+        />
       </div>
 
       <p className="text-sm text-muted-foreground">{label}</p>

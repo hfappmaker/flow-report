@@ -2,19 +2,21 @@
 
 import { useEffect, useState } from "react";
 
+import { useTransitionContext } from "@/contexts/transition-context";
 import { SubscriptionInfo } from "@/features/subscription/types/subscription";
 
 export const useSubscription = () => {
-  const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { setManualPending } = useTransitionContext();
+  const [subscriptionInfo, setSubscriptionInfo] =
+    useState<SubscriptionInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchSubscription = async () => {
       try {
-        setIsLoading(true);
+        setManualPending(true);
         const response = await fetch("/api/auth/get-subscription-info");
-        
+
         if (response.ok) {
           const data = await response.json();
           setSubscriptionInfo(data);
@@ -24,15 +26,16 @@ export const useSubscription = () => {
       } catch (err) {
         setError("サブスクリプション情報の取得に失敗しました");
       } finally {
-        setIsLoading(false);
+        setManualPending(false);
       }
     };
 
     fetchSubscription();
-  }, []);
+  }, [setManualPending]);
 
   const refreshSubscription = async () => {
     try {
+      setManualPending(true);
       const response = await fetch("/api/auth/get-subscription-info");
       if (response.ok) {
         const data = await response.json();
@@ -40,13 +43,14 @@ export const useSubscription = () => {
       }
     } catch (err) {
       console.error("Failed to refresh subscription:", err);
+    } finally {
+      setManualPending(false);
     }
   };
 
   return {
     subscriptionInfo,
-    isLoading,
     error,
     refreshSubscription,
   };
-}; 
+};

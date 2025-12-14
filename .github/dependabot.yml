@@ -17,6 +17,7 @@ updates:
       day: "sunday"
       time: "16:00"
     open-pull-requests-limit: 30
+    versioning-strategy: increase
     groups:
       all-dependencies:
         applies-to: version-updates

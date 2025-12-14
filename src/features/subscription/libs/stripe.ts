@@ -7,7 +7,7 @@ if (!stripeSecretKey) {
 }
 
 export const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: "2025-07-30.basil",
+  apiVersion: "2025-11-17.clover",
 });
 
 // 定数
@@ -15,12 +15,12 @@ export const TRIAL_PERIOD_DAYS = 30; // 1ヶ月のトライアル期間
 export const SUBSCRIPTION_PRICE = 500; // 月額500円
 
 // 環境変数の型定義
-type StripeEnvVars = {
+interface StripeEnvVars {
   STRIPE_SECRET_KEY: string;
   STRIPE_WEBHOOK_SECRET: string;
   STRIPE_PRICE_ID: string;
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: string;
-};
+}
 
 // 環境変数の検証
 export const getStripeEnv = (): StripeEnvVars => {

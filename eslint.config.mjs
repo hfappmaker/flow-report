@@ -1,10 +1,15 @@
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 
-import { FlatCompat } from "@eslint/eslintrc";
 import eslint from "@eslint/js";
+import nextPlugin from "@next/eslint-plugin-next";
+import { defineConfig } from "eslint/config";
 import eslintConfigPrettier from "eslint-config-prettier";
+import functional from "eslint-plugin-functional";
 import importPlugin from "eslint-plugin-import";
+import jsxA11y from "eslint-plugin-jsx-a11y";
+import react from "eslint-plugin-react";
+import reactHooks from "eslint-plugin-react-hooks";
 import tailwind from "eslint-plugin-tailwindcss";
 import unusedImports from "eslint-plugin-unused-imports";
 import tseslint from "typescript-eslint";
@@ -12,19 +17,12 @@ import tseslint from "typescript-eslint";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
 /** @type {{ configs: Record<string, unknown> }} */
 const tailwindPlugin = tailwind;
 const flatRecommended = tailwindPlugin.configs["flat/recommended"];
 
-export default tseslint.config(
+export default defineConfig(
   {
-    // キャッシュの設定
-    cache: true,
-    cacheLocation: ".eslintcache",
     // 並列実行の設定
     cwd: __dirname,
     // 必要なファイルのみを対象に
@@ -40,16 +38,42 @@ export default tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
-  ...compat.extends("next/core-web-vitals"),
   ...flatRecommended,
+  {
+    // Next.js, React, アクセシビリティに関する設定
+    plugins: {
+      "@next/next": nextPlugin,
+      react: react,
+      "react-hooks": reactHooks,
+      "jsx-a11y": jsxA11y,
+    },
+    rules: {
+      // Next.js recommended rules
+      ...nextPlugin.configs.recommended.rules,
+      ...nextPlugin.configs["core-web-vitals"].rules,
+      // React recommended rules
+      ...react.configs.recommended.rules,
+      ...react.configs["jsx-runtime"].rules,
+      // React Hooks rules
+      ...reactHooks.configs.recommended.rules,
+      // JSX a11y recommended rules
+      ...jsxA11y.configs.recommended.rules,
+    },
+    settings: {
+      react: {
+        version: "detect",
+      },
+    },
+  },
   {
     // @typescript-eslintに関する設定
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        project: true,
+        // projectService: 型情報の取得を高速化（typescript-eslint v8+）
+        // TypeScriptのプロジェクトサービスを使用して型チェックをキャッシュ
+        projectService: true,
         tsconfigRootDir: __dirname,
-        // パフォーマンス最適化のための設定
         ecmaVersion: "latest",
         sourceType: "module",
       },
@@ -70,7 +94,8 @@ export default tseslint.config(
       "@typescript-eslint/require-await": "warn",
       "@typescript-eslint/no-unnecessary-type-conversion": "warn",
       "@typescript-eslint/prefer-optional-chain": "warn",
-      "@typescript-eslint/no-unnecessary-condition": "warn"
+      "@typescript-eslint/no-unnecessary-condition": "warn",
+      "@typescript-eslint/no-confusing-void-expression": "warn",
     },
   },
   {
@@ -114,6 +139,30 @@ export default tseslint.config(
     },
     rules: {
       "unused-imports/no-unused-imports": "warn",
+    },
+  },
+  {
+    // eslint-plugin-functionalに関する設定 (関数型プログラミング)
+    plugins: {
+      functional: functional,
+    },
+    rules: {
+      // letを禁止し、constのみを使用
+      "functional/no-let": "warn",
+      // ミュータブルな配列・オブジェクト操作を禁止
+      "functional/immutable-data": [
+        "warn",
+        {
+          ignoreAccessorPattern: [
+            "**.current.**", // React refsを許可: ref.current = ...
+            "**.displayName", // React component displayNameを許可
+          ],
+        },
+      ],
+      // その他の関数型プログラミング規則は、段階的な導入のため無効化
+      "functional/prefer-immutable-types": "off",
+      "functional/no-expression-statements": "off",
+      "functional/functional-parameters": "off",
     },
   },
   {

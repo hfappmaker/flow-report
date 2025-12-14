@@ -1,12 +1,21 @@
+import {
+  ContractRateType,
+  TaxInclusiveType,
+  TaxRoundingType,
+} from "@prisma/client";
+
 import { ContractOutput } from "@/features/contract/types/contract";
-import { SubscriptionInfo } from "@/features/subscription/types/subscription";
+import { Holiday } from "@/features/holidays/types/holiday";
+import { AttendanceDto } from "@/features/work-report/types/attendance";
 import { WorkReport } from "@/features/work-report/types/work-report";
 import { RenameProperty } from "@/utils/types/type-utils";
 
 export type WorkReportDashboard = Pick<
   WorkReport,
   "id" | "targetDate" | "status"
->;
+> & {
+  attendances: AttendanceDto[];
+};
 
 export type ContractDashboard = RenameProperty<
   Pick<ContractOutput, "name" | "clientName">,
@@ -15,15 +24,30 @@ export type ContractDashboard = RenameProperty<
 > & {
   workReports: WorkReportDashboard[];
   clientName: string;
+  closingDay: number | null;
+  unitPrice: number | null;
+  settlementMin: number | null;
+  settlementMax: number | null;
+  rateType: ContractRateType;
+  upperRate: number | null;
+  lowerRate: number | null;
+  middleRate: number | null;
+  hourlyRate: number | null;
+  taxInclusiveType: TaxInclusiveType;
+  taxRoundingType: TaxRoundingType;
+  excessTaxRoundingType: TaxRoundingType;
+  deductionTaxRoundingType: TaxRoundingType;
+  monthlyWorkMinutes: number;
 };
 
-export type ClientDashboard = {
+export interface ClientDashboard {
   clientName: string;
   contracts: Record<string, ContractDashboard>;
-};
+}
 
-export type DashboardClientPageProps = {
+export interface DashboardClientPageProps {
   draftWorkReports: Record<string, ContractDashboard>;
   submittedWorkReportsLast3Months: Record<string, ContractDashboard>;
-  subscriptionInfo: SubscriptionInfo | null;
-};
+  hasContracts: boolean;
+  holidays: Holiday[];
+}

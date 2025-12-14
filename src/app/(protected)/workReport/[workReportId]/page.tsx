@@ -1,14 +1,12 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { currentUser } from "@/features/auth/lib/auth";
-import { getContractById } from "@/features/contract/repositories/contract-repository";
+import ClientWorkReportPage from "./page.client";
+import { currentUser } from "@/features/auth/libs/auth";
+import { getUserById } from "@/features/auth/repositories/user-repository";
 import { fetchHolidays } from "@/features/holidays/libs/google-calendar";
 import { getAttendancesByWorkReportIdAction } from "@/features/work-report/actions/attendance";
-import { getWorkReportById } from "@/features/work-report/repositories/work-report-repository";
-import { Serialize } from "@/utils/serialization/serialization-utils";
-
-import ClientWorkReportPage from "./page.client";
+import { getWorkReportWithContractById } from "@/features/work-report/repositories/work-report-repository";
 
 export const metadata: Metadata = {
   title: "作業報告書",
@@ -21,21 +19,41 @@ export default async function WorkReportPage({
   params: Promise<{ workReportId: string }>;
 }) {
   const { workReportId } = await params;
-  const user = await currentUser();
-  // Assume that getWorkReportById returns a work report with startDate and endDate as strings or Date objects.
-  const workReport = await getWorkReportById(workReportId);
-  if (!workReport) {
+  const sessionUser = await currentUser();
+  if (!sessionUser?.id) {
     return notFound();
   }
 
-  // 契約情報を取得
-  const contract = await getContractById(workReport.contractId);
-  // TODO: 契約の作成者がログインユーザーと一致するか確認
-  if (!contract || contract.userId !== user?.id) {
+  // ユーザーの詳細情報を取得（銀行口座情報を含む）
+  const userResult = await getUserById(sessionUser.id);
+  if (!userResult.success || !userResult.data) {
+    return notFound();
+  }
+  const user = userResult.data;
+
+  // 作業報告書と契約情報を一緒に取得（N+1クエリを回避）
+  const workReportWithContractResult =
+    await getWorkReportWithContractById(workReportId);
+  if (
+    !workReportWithContractResult.success ||
+    !workReportWithContractResult.data
+  ) {
     return notFound();
   }
 
-  const attendances = await getAttendancesByWorkReportIdAction(workReportId);
+  const workReportWithContract = workReportWithContractResult.data;
+
+  // 契約の作成者がログインユーザーと一致するか確認
+  if (workReportWithContract.contract.userId !== user.id) {
+    return notFound();
+  }
+
+  const workReport = workReportWithContract;
+  const contract = workReportWithContract.contract;
+
+  const attendancesResult =
+    await getAttendancesByWorkReportIdAction(workReportId);
+  const attendances = attendancesResult.success ? attendancesResult.data : [];
 
   const year = workReport.targetDate.getFullYear();
   const holidayData = await fetchHolidays(year);
@@ -44,34 +62,49 @@ export default async function WorkReportPage({
     <ClientWorkReportPage
       contractId={contract.id}
       workReportId={workReportId}
-      targetDate={Serialize(workReport.targetDate)}
+      userId={user.id}
+      targetDate={workReport.targetDate}
       userName={user.name ?? ""}
+      userEmail={user.email ?? ""}
+      invoiceRegistrationNumber={user.invoiceRegistrationNumber}
+      postalCode={user.postalCode}
+      address={user.address}
+      bankName={user.bankName}
+      bankBranchName={user.bankBranchName}
+      bankAccountType={user.bankAccountType}
+      bankAccountNumber={user.bankAccountNumber}
+      bankAccountHolder={user.bankAccountHolder}
       attendances={attendances}
       contractName={contract.name}
       clientName={contract.clientName}
-      contactName={contract.clientContactName}
-      clientEmail={contract.clientEmail}
       dailyWorkMinutes={contract.dailyWorkMinutes ?? 1}
       monthlyWorkMinutes={contract.monthlyWorkMinutes ?? 1}
-      basicStartTime={Serialize(contract.basicStartTime ?? undefined)}
-      basicEndTime={Serialize(contract.basicEndTime ?? undefined)}
-      basicBreakDuration={Serialize(contract.basicBreakDuration ?? undefined)}
-      closingDay={Serialize(contract.closingDay ?? undefined)}
+      basicStartTime={contract.basicStartTime}
+      basicEndTime={contract.basicEndTime}
+      basicBreakDuration={contract.basicBreakDuration}
+      basicMemo={contract.basicMemo}
+      remarks={workReport.remarks}
+      closingDay={contract.closingDay}
       status={workReport.status}
       holidays={holidayData}
-      unitPrice={contract.unitPrice ? Number(contract.unitPrice) : undefined}
+      unitPrice={contract.unitPrice ? Number(contract.unitPrice) : null}
       settlementMin={
-        contract.settlementMin ? Number(contract.settlementMin) : undefined
+        contract.settlementMin ? Number(contract.settlementMin) : null
       }
       settlementMax={
-        contract.settlementMax ? Number(contract.settlementMax) : undefined
+        contract.settlementMax ? Number(contract.settlementMax) : null
       }
-      upperRate={contract.upperRate ? Number(contract.upperRate) : undefined}
-      lowerRate={contract.lowerRate ? Number(contract.lowerRate) : undefined}
-      middleRate={contract.middleRate ? Number(contract.middleRate) : undefined}
+      upperRate={contract.upperRate ? Number(contract.upperRate) : null}
+      lowerRate={contract.lowerRate ? Number(contract.lowerRate) : null}
+      middleRate={contract.middleRate ? Number(contract.middleRate) : null}
+      hourlyRate={contract.hourlyRate ? Number(contract.hourlyRate) : null}
       taxInclusiveType={contract.taxInclusiveType}
       taxRoundingType={contract.taxRoundingType}
+      excessTaxRoundingType={contract.excessTaxRoundingType}
+      deductionTaxRoundingType={contract.deductionTaxRoundingType}
       rateType={contract.rateType}
+      paymentMonthOffset={contract.paymentMonthOffset}
+      paymentDay={contract.paymentDay}
     />
   );
 }

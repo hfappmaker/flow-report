@@ -1,11 +1,11 @@
 import { UserRole } from "@prisma/client";
 import * as z from "zod";
 
-type UserData = {
-  password?: string;
-  newPassword?: string;
-  newPasswordConfirmation?: string;
-};
+interface UserData {
+  password: string | null;
+  newPassword: string | null;
+  newPasswordConfirmation: string | null;
+}
 
 const passwordRequired = (
   data: UserData,
@@ -13,8 +13,8 @@ const passwordRequired = (
   newPasswordField: keyof UserData,
   newPasswordConfirmationField: keyof UserData = "newPasswordConfirmation",
 ) => {
-  const newPasswordEntered = data[newPasswordField] !== undefined;
-  const confirmationEntered = data[newPasswordConfirmationField] !== undefined;
+  const newPasswordEntered = data[newPasswordField] !== null;
+  const confirmationEntered = data[newPasswordConfirmationField] !== null;
 
   if (newPasswordEntered && !confirmationEntered) {
     return false;
@@ -28,18 +28,18 @@ const passwordRequired = (
 
 export const SettingsSchema = z
   .object({
-    name: z.optional(z.string()),
-    isTwoFactorEnabled: z.optional(z.boolean()),
+    name: z.nullable(z.string()),
+    isTwoFactorEnabled: z.nullable(z.boolean()),
     role: z.enum([UserRole.ADMIN, UserRole.USER]),
-    email: z.optional(z.string().email()),
-    password: z.optional(z.string().min(1)),
-    newPassword: z.optional(
+    email: z.nullable(z.string().email()),
+    password: z.nullable(z.string().min(1)),
+    newPassword: z.nullable(
       z.string().min(6, {
         message:
           "Please enter a new password with at least 6 characters, required",
       }),
     ),
-    newPasswordConfirmation: z.optional(
+    newPasswordConfirmation: z.nullable(
       z.string().min(6, {
         message:
           "Please confirm your password with at least 6 characters, required",
@@ -58,4 +58,4 @@ export const SettingsSchema = z
   .refine((data) => data.newPassword === data.newPasswordConfirmation, {
     message: "Passwords do not match.",
     path: ["newPasswordConfirmation"],
-  }); 
+  });

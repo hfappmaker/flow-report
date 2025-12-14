@@ -2,8 +2,8 @@
 
 import * as z from "zod";
 
-import { sendPasswordResetEmail } from "@/features/auth/lib/mail";
-import { generatePasswordResetToken } from "@/features/auth/lib/tokens";
+import { sendPasswordResetEmail } from "@/features/auth/libs/mail";
+import { generatePasswordResetToken } from "@/features/auth/libs/tokens";
 import { getUserByEmail } from "@/features/auth/repositories/user-repository";
 import { ResetSchema } from "@/features/auth/schemas/reset";
 

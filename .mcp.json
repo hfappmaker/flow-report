@@ -1,27 +1,5 @@
 {
   "mcpServers": {
-    "playwright": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@playwright/mcp@latest",
-        "--headless",
-        "--no-sandbox",
-        "--isolated"
-      ],
-      "env": {}
-    },
-    "postgresql": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-postgres@latest",
-        "postgresql://user:password@db:5432/worktime_management"
-      ],
-      "env": {}
-    },
     "serena": {
       "command": "uvx",
       "args": [
@@ -29,11 +7,27 @@
         "git+https://github.com/oraios/serena",
         "serena",
         "start-mcp-server",
+        "--enable-web-dashboard",
+        "false",
         "--context",
         "ide-assistant",
         "--project",
         "."
       ]
+    },
+    "github": {
+      "type": "stdio",
+      "command": "pnpm",
+      "args": ["dlx", "@modelcontextprotocol/server-github@latest"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    },
+    "next-devtools": {
+      "type": "stdio",
+      "command": "pnpm",
+      "args": ["dlx", "next-devtools-mcp@latest"],
+      "env": {}
     }
   }
 }

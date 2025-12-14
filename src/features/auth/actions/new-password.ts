@@ -3,11 +3,10 @@
 import bcrypt from "bcryptjs";
 import * as z from "zod";
 
-import { NewPasswordSchema } from "@/features/auth/schemas/new-password";
 import { getPasswordResetTokenByToken } from "@/features/auth/repositories/password-reset-token-repository";
 import { getUserByEmail } from "@/features/auth/repositories/user-repository";
+import { NewPasswordSchema } from "@/features/auth/schemas/new-password";
 import { db } from "@/repositories/db";
-
 
 export const newPassword = async (
   values: z.infer<typeof NewPasswordSchema>,
@@ -25,7 +24,13 @@ export const newPassword = async (
 
   const { password } = validatedFields.data;
 
-  const existingToken = await getPasswordResetTokenByToken(token);
+  const existingTokenResult = await getPasswordResetTokenByToken(token);
+
+  if (!existingTokenResult.success) {
+    return { error: existingTokenResult.error };
+  }
+
+  const existingToken = existingTokenResult.data;
 
   if (!existingToken) {
     return { error: "Invalid token!" };
@@ -37,7 +42,13 @@ export const newPassword = async (
     return { error: "Token has expired!" };
   }
 
-  const existingUser = await getUserByEmail(existingToken.email);
+  const existingUserResult = await getUserByEmail(existingToken.email);
+
+  if (!existingUserResult.success) {
+    return { error: existingUserResult.error };
+  }
+
+  const existingUser = existingUserResult.data;
 
   if (!existingUser) {
     return { error: "User email does not exist!" };

@@ -10,30 +10,30 @@ import { newVerification } from "@/features/auth/actions/new-verification";
 import CardWrapper from "@/features/auth/components/card-wrapper";
 
 const NewVerificationForm = () => {
-  const [error, setError] = useState<{ message: string, date: Date }>({ message: "", date: new Date() });
-  const [success, setSuccess] = useState<{ message: string, date: Date }>({ message: "", date: new Date() });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const searchParams = useSearchParams();
 
   const token = searchParams.get("token");
 
   const onSubmit = useCallback(() => {
-    if (success.message !== "" || error.message !== "") return;
+    if (success !== "" || error !== "") return;
 
     if (!token) {
-      setError({ message: "Missing token!", date: new Date() });
+      setError("Missing token!");
       return;
     }
 
     newVerification(token)
       .then((data) => {
-        setSuccess({ message: data.success ?? "", date: new Date() });
-        setError({ message: data.error ?? "", date: new Date() });
+        setSuccess(data.success ?? "");
+        setError(data.error ?? "");
       })
       .catch(() => {
-        setError({ message: "Something went wrong!", date: new Date() });
+        setError("Something went wrong!");
       });
-  }, [token, success.message, error.message]);
+  }, [token, success, error]);
 
   useEffect(() => {
     onSubmit();
@@ -46,9 +46,9 @@ const NewVerificationForm = () => {
       backButtonHref="/auth/login"
     >
       <div className="flex w-full items-center justify-center">
-        {success.message === "" && error.message === "" && <Spinner />}
-        <FormError message={error.message} resetSignal={error.date.getTime()} />
-        <FormSuccess message={success.message} resetSignal={success.date.getTime()} />
+        {success === "" && error === "" && <Spinner />}
+        <FormError message={error} onClose={() => setError("")} />
+        <FormSuccess message={success} onClose={() => setSuccess("")} />
       </div>
     </CardWrapper>
   );

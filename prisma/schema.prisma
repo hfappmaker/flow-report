@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("PRISMA_DATABASE_URL")
 }
 
 enum UserRole {
@@ -27,6 +27,8 @@ enum AuditAction {
 enum ContractRateType {
   upperLower // 上下割
   middle // 中間割
+  fixed // 固定精算
+  hourlyRate // 時間単価
 }
 
 enum TaxInclusiveType {
@@ -41,9 +43,19 @@ enum TaxRoundingType {
 }
 
 enum SubscriptionStatus {
-  TRIAL      // トライアル期間中
-  ACTIVE     // 有料プラン利用中
-  CANCELED   // キャンセル済み
+  active               // 有料プラン利用中
+  trialing             // トライアル期間中
+  canceled             // キャンセル済み
+  past_due             // 支払い期限超過
+  unpaid               // 未支払い
+  paused               // 一時停止
+  incomplete           // 設定未完了
+  incomplete_expired   // 設定期限切れ
+}
+
+enum TemplateType {
+  WORK_REPORT // 作業報告書
+  INVOICE     // 請求書
 }
 
 // ADMINは契約の作成、支払いの作成、Userの割り当てとUSERで出来ることが全て可能
@@ -62,7 +74,21 @@ model User {
   contracts             Contract[]
   auditLogs             AuditLog[]
   EmailTemplate         EmailTemplate[]
-  stripeCustomer        StripeCustomer?        // Stripe顧客情報への参照
+  excelTemplates        ExcelTemplate[]
+
+  // 住所情報
+  postalCode String? // 郵便番号
+  address    String? // 住所
+
+  // 銀行口座情報
+  bankName          String? // 銀行名
+  bankBranchName    String? // 支店名
+  bankAccountType   String? // 口座種別（普通/当座）
+  bankAccountNumber String? // 口座番号
+  bankAccountHolder String? // 口座名義
+
+  // 事業者情報
+  invoiceRegistrationNumber String? // 適格請求書発行事業者登録番号
 }
 
 
@@ -70,12 +96,10 @@ model Contract {
   id            String           @id @default(cuid())
   name          String
   startDate     DateTime
-  endDate       DateTime?
+  endDate       DateTime
   
   // クライアント情報（契約時点のスナップショット）
   clientName         String
-  clientContactName  String
-  clientEmail        String
   
   userId        String
   user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -87,25 +111,33 @@ model Contract {
   upperRate     Decimal? // 超過時間単価
   lowerRate     Decimal? // 控除時間単価
   middleRate    Decimal? // 中間割の時間単価
+  hourlyRate    Decimal? // 時間単価
 
   dailyWorkMinutes   Int? // 1日あたりの作業単位(分)
   monthlyWorkMinutes Int? // 1ヶ月あたりの作業単位(分)
   basicStartTime     DateTime? @db.Time // 基本開始時刻
   basicEndTime       DateTime? @db.Time // 基本終了時刻
   basicBreakDuration Int? // 基本休憩時間（分）
+  basicMemo          String? // 基本作業内容
 
   closingDay Int? // 締め日(1～31)
-  
+
+  // 支払いサイト
+  paymentMonthOffset Int  @default(1) // 支払月オフセット: 0=当月, 1=翌月, 2=翌々月
+  paymentDay         Int?             // 支払日: 1-31, null=末日
+
   taxInclusiveType TaxInclusiveType @default(EXCLUSIVE) // 税込・税抜
-  taxRoundingType TaxRoundingType @default(ROUND_DOWN) // 消費税端数処理
+  taxRoundingType          TaxRoundingType @default(ROUND_DOWN) // 消費税端数処理
+  excessTaxRoundingType    TaxRoundingType @default(ROUND_DOWN) // 超過時消費税端数処理
+  deductionTaxRoundingType TaxRoundingType @default(ROUND_DOWN) // 控除時消費税端数処理
 }
 
 model WorkReport {
   id          String           @id @default(cuid())
   targetDate  DateTime         // YYYY-MM-01 形式で保存
-  contract    Contract         @relation(fields: [contractId], references: [id])
+  contract    Contract         @relation(fields: [contractId], references: [id], onDelete: Cascade)
   contractId  String
-  memo        String?
+  remarks     String?
   attendances Attendance[]
   status      WorkReportStatus @default(DRAFT)
 
@@ -130,6 +162,8 @@ model EmailTemplate {
   name         String   @unique // テンプレート識別子（"work-report-submission" など）
   subject      String // メール件名
   body         String // メール本文（HTMLやプレーンテキスト）
+  toAddresses  String[] // 宛先メールアドレス（複数可）
+  ccAddresses  String[] // CCメールアドレス（複数可）
   createUserId String
   createUser   User     @relation(fields: [createUserId], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())
@@ -207,22 +241,47 @@ model AuditLog {
 model StripeCustomer {
   id               String         @id @default(cuid())
   userId           String         @unique
-  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   stripeCustomerId String         @unique
-  subscriptions    Subscription[]
   created          DateTime
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 }
 
 model Subscription {
-  id                   String            @id @default(cuid())
+  id                   String             @id @default(cuid())
   stripeCustomerId     String
-  stripeCustomer       StripeCustomer    @relation(fields: [stripeCustomerId], references: [stripeCustomerId], onDelete: Cascade)
-  stripeSubscriptionId String            @unique
+  stripeSubscriptionId String             @unique
   status               SubscriptionStatus
-  currentPeriodEnd     DateTime?         // 現在の請求期間の終了日時
+  cancelAt             DateTime?          // キャンセル予定日時
   created              DateTime
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+}
+
+model ExcelTemplate {
+  id            String               @id @default(cuid())
+  name          String               // テンプレート名
+  type          TemplateType         @default(WORK_REPORT) // テンプレートの種類
+  fileData      String               @db.Text // ExcelファイルのBase64エンコードデータ
+  fileName      String               // 元のファイル名（表示用）
+  sheetName     String?              // 出力するシート名（nullの場合は最初のシート）
+  createUserId  String
+  createUser    User                 @relation(fields: [createUserId], references: [id], onDelete: Cascade)
+  fieldMappings ExcelTemplateField[]
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  @@unique([name, createUserId, type])
+}
+
+model ExcelTemplateField {
+  id            String        @id @default(cuid())
+  templateId    String
+  template      ExcelTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  namedRange    String        // Excelの名前付き範囲名
+  valueTemplate String        // 値テンプレート（例: "${クライアント名}様"）
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@unique([templateId, namedRange])
 }

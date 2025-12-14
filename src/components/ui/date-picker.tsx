@@ -2,7 +2,12 @@
 
 import * as React from "react";
 import { FC, useRef, useState } from "react";
-import { FieldValues, Control, Path } from "react-hook-form";
+import {
+  FieldValues,
+  Control,
+  Path,
+  ControllerRenderProps,
+} from "react-hook-form";
 import { FaCalendarAlt } from "react-icons/fa";
 import { StrictOmit } from "ts-essentials";
 
@@ -72,25 +77,36 @@ export const DatePicker: FC<DatePickerProps> = ({
 
 DatePicker.displayName = "DatePicker";
 
-type DatePickerFieldProps<T extends FieldValues> = {
+interface DatePickerFieldProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T> &
     {
-      [P in Path<T>]: T[P] extends Date | undefined ? P : never;
+      [P in Path<T>]: T[P] extends Date | null ? P : never;
     }[Path<T>];
   label: string;
   placeholder?: string;
-};
+  disabled?: boolean;
+  min?: string;
+  max?: string;
+}
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const DatePickerFieldContent = ({
+const DatePickerFieldContent = <T extends FieldValues>({
   field,
   label,
   placeholder,
+  disabled,
+  min,
+  max,
 }: {
-  field: any;
+  field: ControllerRenderProps<
+    T,
+    Path<T> & { [P in Path<T>]: T[P] extends Date | null ? P : never }[Path<T>]
+  >;
   label: string;
   placeholder?: string;
+  disabled?: boolean;
+  min?: string;
+  max?: string;
 }) => {
   const [selectedDate, setSelectedDate] = useState<string>(
     field.value ? new Date(field.value).toISOString().split("T")[0] : "",
@@ -104,11 +120,12 @@ const DatePickerFieldContent = ({
           value={selectedDate}
           onChange={(date) => {
             setSelectedDate(date);
-            field.onChange(
-              date ? new Date(date + "T00:00:00.000Z") : undefined,
-            );
+            field.onChange(date ? new Date(date + "T00:00:00.000Z") : null);
           }}
           placeholder={placeholder}
+          disabled={disabled}
+          min={min}
+          max={max}
         />
       </FormControl>
       <FormMessage />
@@ -121,7 +138,7 @@ DatePickerFieldContent.displayName = "DatePickerFieldContent";
 export const DatePickerField = <T extends FieldValues>(
   props: DatePickerFieldProps<T>,
 ) => {
-  const { control, name, label, placeholder } = props;
+  const { control, name, label, placeholder, disabled, min, max } = props;
   return (
     <FormField
       control={control}
@@ -131,19 +148,23 @@ export const DatePickerField = <T extends FieldValues>(
           field={field}
           label={label}
           placeholder={placeholder}
+          disabled={disabled}
+          min={min}
+          max={max}
         />
       )}
     />
   );
 };
 
-type CommonSelectProps = {
+interface CommonSelectProps {
   value?: string;
   onValueChange: (value: string) => void;
   placeholder: React.ReactNode;
   className?: string;
   options: { value: string; label: string }[];
-};
+  disabledValues?: string[];
+}
 
 const CommonSelect = React.memo(
   ({
@@ -152,15 +173,20 @@ const CommonSelect = React.memo(
     placeholder,
     className,
     options,
+    disabledValues = [],
   }: CommonSelectProps) => {
     const items = React.useMemo(
       () =>
         options.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
+          <SelectItem
+            key={option.value}
+            value={option.value}
+            disabled={disabledValues.includes(option.value)}
+          >
             {option.label}
           </SelectItem>
         )),
-      [options],
+      [options, disabledValues],
     );
 
     return (
@@ -179,10 +205,13 @@ const CommonSelect = React.memo(
 CommonSelect.displayName = "CommonSelect";
 
 // 年の選択肢を生成 (2025年から2099年までの範囲)
-const YEAR_OPTIONS = Array.from({ length: 75 }, (_, i) => ({
-  value: (2025 + i).toString(),
-  label: `${2025 + i}年`,
-}));
+const YEAR_OPTIONS = Array.from({ length: 75 }, (_, i) => {
+  const year = 2025 + i;
+  return {
+    value: year.toString(),
+    label: `${year.toString()}年`,
+  };
+});
 
 // 月の選択肢を生成
 const MONTH_OPTIONS = [
@@ -200,7 +229,7 @@ const MONTH_OPTIONS = [
   { value: "11", label: "12月" },
 ];
 
-type YearMonthPickerFieldProps<T extends FieldValues> = {
+interface YearMonthPickerFieldProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T> &
     {
@@ -212,18 +241,22 @@ type YearMonthPickerFieldProps<T extends FieldValues> = {
   showClearButton?: boolean;
   yearTriggerClassName?: string;
   monthTriggerClassName?: string;
-};
+  isYearMonthDisabled?: (year: number, month: number) => boolean;
+}
 
-type YearMonthPickerContentProps = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  field: any;
+interface YearMonthPickerContentProps {
+  field: {
+    value: Date | null | undefined;
+    onChange: (value: Date | null) => void;
+  };
   yearPlaceholder: string;
   monthPlaceholder: string;
   label?: string;
   showClearButton: boolean;
   yearTriggerClassName?: string;
   monthTriggerClassName?: string;
-};
+  isYearMonthDisabled?: (year: number, month: number) => boolean;
+}
 
 const YearMonthPickerContent = ({
   field,
@@ -233,8 +266,9 @@ const YearMonthPickerContent = ({
   showClearButton,
   yearTriggerClassName,
   monthTriggerClassName,
+  isYearMonthDisabled,
 }: YearMonthPickerContentProps) => {
-  const date = field.value as Date | null;
+  const date = field.value;
   const selectedYear = date?.getFullYear().toString();
   const selectedMonth = date?.getMonth().toString();
 
@@ -260,6 +294,31 @@ const YearMonthPickerContent = ({
     field.onChange(null);
   };
 
+  // 年の無効化リストを計算（その年のすべての月が無効な場合のみ無効化）
+  const disabledYears = React.useMemo(() => {
+    if (!isYearMonthDisabled) return [];
+
+    return YEAR_OPTIONS.filter((yearOption) => {
+      const year = parseInt(yearOption.value);
+      // その年の全ての月が無効化されているかチェック
+      return MONTH_OPTIONS.every((monthOption) => {
+        const month = parseInt(monthOption.value);
+        return isYearMonthDisabled(year, month);
+      });
+    }).map((option) => option.value);
+  }, [isYearMonthDisabled]);
+
+  // 月の無効化リストを計算（選択された年に基づく）
+  const disabledMonths = React.useMemo(() => {
+    if (!isYearMonthDisabled || !selectedYear) return [];
+
+    const year = parseInt(selectedYear);
+    return MONTH_OPTIONS.filter((monthOption) => {
+      const month = parseInt(monthOption.value);
+      return isYearMonthDisabled(year, month);
+    }).map((option) => option.value);
+  }, [isYearMonthDisabled, selectedYear]);
+
   const yearPlaceholderElement = React.useMemo(
     () => <span className="text-muted-foreground">{yearPlaceholder}</span>,
     [yearPlaceholder],
@@ -280,6 +339,7 @@ const YearMonthPickerContent = ({
           placeholder={yearPlaceholderElement}
           className={yearTriggerClassName}
           options={YEAR_OPTIONS}
+          disabledValues={disabledYears}
         />
         <CommonSelect
           value={selectedMonth ?? ""}
@@ -287,6 +347,7 @@ const YearMonthPickerContent = ({
           placeholder={monthPlaceholderElement}
           className={monthTriggerClassName}
           options={MONTH_OPTIONS}
+          disabledValues={disabledMonths}
         />
       </div>
       {showClearButton && (
@@ -319,6 +380,7 @@ export const YearMonthPickerField = <T extends FieldValues>(
     showClearButton = true,
     yearTriggerClassName,
     monthTriggerClassName,
+    isYearMonthDisabled,
   } = props;
 
   return (
@@ -334,6 +396,7 @@ export const YearMonthPickerField = <T extends FieldValues>(
           showClearButton={showClearButton}
           yearTriggerClassName={yearTriggerClassName}
           monthTriggerClassName={monthTriggerClassName}
+          isYearMonthDisabled={isYearMonthDisabled}
         />
       )}
     />

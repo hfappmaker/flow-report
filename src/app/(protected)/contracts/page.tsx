@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { currentUser } from "@/features/auth/lib/auth";
+import { currentUser } from "@/features/auth/libs/auth";
 
 import ContractsClientPage from "./page.client";
 

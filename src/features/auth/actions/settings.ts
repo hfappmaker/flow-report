@@ -3,9 +3,9 @@
 import bcrypt from "bcryptjs";
 import * as z from "zod";
 
-import { unstable_update, currentUser } from "@/features/auth/lib/auth";
-import { sendVerificationEmail } from "@/features/auth/lib/mail";
-import { generateVerificationToken } from "@/features/auth/lib/tokens";
+import { unstable_update, currentUser } from "@/features/auth/libs/auth";
+import { sendVerificationEmail } from "@/features/auth/libs/mail";
+import { generateVerificationToken } from "@/features/auth/libs/tokens";
 import {
   getUserByEmail,
   getUserById,
@@ -20,21 +20,33 @@ export const settings = async (values: z.infer<typeof SettingsSchema>) => {
     return { error: "Unauthorized" };
   }
 
-  const dbUser = await getUserById(user.id);
+  const dbUserResult = await getUserById(user.id);
+
+  if (!dbUserResult.success) {
+    return { error: dbUserResult.error };
+  }
+
+  const dbUser = dbUserResult.data;
 
   if (!dbUser) {
     return { error: "Unauthorized" };
   }
 
   if (user.isOAuth) {
-    values.email = undefined;
-    values.password = undefined;
-    values.newPassword = undefined;
-    values.isTwoFactorEnabled = undefined;
+    values.email = null;
+    values.password = null;
+    values.newPassword = null;
+    values.isTwoFactorEnabled = null;
   }
 
   if (values.email && values.email !== user.email) {
-    const existingUser = await getUserByEmail(values.email);
+    const existingUserResult = await getUserByEmail(values.email);
+
+    if (!existingUserResult.success) {
+      return { error: existingUserResult.error };
+    }
+
+    const existingUser = existingUserResult.data;
 
     if (existingUser && existingUser.id !== user.id) {
       return { error: "Email already in use!" };
@@ -61,13 +73,14 @@ export const settings = async (values: z.infer<typeof SettingsSchema>) => {
 
     const hashedPassword = await bcrypt.hash(values.newPassword, 10);
     values.password = hashedPassword;
-    values.newPassword = undefined;
+    values.newPassword = null;
   }
 
   const updatedUser = await db.user.update({
     where: { id: dbUser.id },
     data: {
       ...values,
+      isTwoFactorEnabled: values.isTwoFactorEnabled ?? undefined,
     },
   });
 

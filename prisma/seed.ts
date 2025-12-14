@@ -3,21 +3,31 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
+const getTestUserPassword = () => {
+  const password = process.env.SEED_TEST_USER_PASSWORD || "";
+  if (!password) {
+    throw new Error("SEED_TEST_USER_PASSWORD environment variable is required");
+  }
+  return password;
+};
+
 async function main() {
+  const testUserPassword = getTestUserPassword();
+
   const testUsers = [
     {
       email: "loadtest1@example.com",
-      password: "LoadTest123!",
+      password: testUserPassword,
       name: "テストユーザー1",
     },
     {
-      email: "loadtest2@example.com", 
-      password: "LoadTest123!",
+      email: "loadtest2@example.com",
+      password: testUserPassword,
       name: "テストユーザー2",
     },
     {
       email: "loadtest3@example.com",
-      password: "LoadTest123!",
+      password: testUserPassword,
       name: "テストユーザー3",
     },
   ];
@@ -42,7 +52,7 @@ async function main() {
       // ユーザーを作成
       const user = await prisma.user.create({
         data: {
-          id: `test-${userData.email.split('@')[0]}`, // ユーザーIDを一意にするためのプレフィックス
+          id: `test-${userData.email.split("@")[0]}`, // ユーザーIDを一意にするためのプレフィックス
           email: userData.email,
           password: hashedPassword,
           name: userData.name,
@@ -76,12 +86,14 @@ async function main() {
           data: {
             stripeCustomerId: stripeCustomer.stripeCustomerId,
             stripeSubscriptionId: `sub_test_${user.id}`,
-            status: "ACTIVE",
-            currentPeriodEnd: oneMonthLater,
+            status: "active",
+            cancelAt: oneMonthLater,
             created: new Date(),
           },
         });
-        console.log(`✅ ${userData.email} に有効なサブスクリプションを追加しました`);
+        console.log(
+          `✅ ${userData.email} に有効なサブスクリプションを追加しました`,
+        );
       } else if (userData.email === "loadtest3@example.com") {
         const stripeCustomer = await prisma.stripeCustomer.create({
           data: {
@@ -94,12 +106,14 @@ async function main() {
           data: {
             stripeCustomerId: stripeCustomer.stripeCustomerId,
             stripeSubscriptionId: `sub_test_${user.id}`,
-            status: "CANCELED",
-            currentPeriodEnd: new Date(),
+            status: "canceled",
+            cancelAt: new Date(),
             created: new Date(),
           },
         });
-        console.log(`✅ ${userData.email} にキャンセル済みのサブスクリプションを追加しました`);
+        console.log(
+          `✅ ${userData.email} にキャンセル済みのサブスクリプションを追加しました`,
+        );
       }
 
       console.log(`✅ ${userData.email} を作成しました (ID: ${user.id})`);

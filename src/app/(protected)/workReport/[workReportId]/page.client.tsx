@@ -1,9 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import ExcelJS from "exceljs";
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { Resolver, useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -26,7 +26,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   TimePickerFieldForDate,
   TimePickerFieldForNumber,
@@ -38,81 +37,76 @@ import {
   formatWorkTime,
   formatAmount,
 } from "@/features/contract/utils/contract-calculation-utils";
-import { Holiday } from "@/features/holidays/types/holiday";
-import {
-  createAttendancesByPromptAction,
-  updateWorkReportAttendanceAction,
-} from "@/features/work-report/actions/attendance";
+import { getEmailTemplatesByCreateUserIdAction } from "@/features/email/actions/email-template";
+import type { EmailTemplate } from "@/features/email/types/email-template";
+import { createFreeeInvoiceFromWorkReportAction } from "@/features/freee/actions/freee-invoice-actions";
+import { updateWorkReportAttendanceAction } from "@/features/work-report/actions/attendance";
 import {
   updateWorkReportAttendancesAction,
   updateWorkReportStatusAction,
+  updateWorkReportRemarksAction,
 } from "@/features/work-report/actions/work-report";
+import { getExcelTemplatesByUserIdAndTypeAction } from "@/features/work-report/actions/work-report-template";
+import { AttendanceEditDialog } from "@/features/work-report/components/attendance-edit-dialog";
+import { EmailTemplateSelectDialog } from "@/features/work-report/components/email-template-select-dialog";
+import {
+  ExportDialog,
+  type ExportResult,
+} from "@/features/work-report/components/export-dialog";
+import { FreeeReauthDialog } from "@/features/work-report/components/freee-reauth-dialog";
+import { RemarksEditDialog } from "@/features/work-report/components/remarks-edit-dialog";
+import { useFreeeConnection } from "@/features/work-report/hooks/use-freee-connection";
+import { useFreeePartners } from "@/features/work-report/hooks/use-freee-partners";
+import { generateWorkReportExcel } from "@/features/work-report/libs/excel-report-generator";
 import {
   type EditFormValues,
   type BulkEditFormValues,
-  editFormSchema,
-  bulkEditFormSchema,
-  type DateRangeMode,
+  createBulkEditFormSchema,
 } from "@/features/work-report/schemas/work-report-form-schemas";
 import { type AttendanceData } from "@/features/work-report/types/attendance";
+import type { ExportFile } from "@/features/work-report/types/export-types";
 import {
   type WorkReportClientProps,
   type WorkReportStatus,
 } from "@/features/work-report/types/work-report";
+import type { ExcelTemplateWithFields } from "@/features/work-report/types/work-report-template";
 import {
   generateDefaultAttendances,
   mergeAttendances,
-  parseRangeReference,
-  parseExcelRange,
-  formatMonthDay,
   shouldUpdateDate,
   getBulkEditFormDefaults,
 } from "@/features/work-report/utils/attendance-utils";
+import { getDateColorClass } from "@/features/work-report/utils/date-display-utils";
+import {
+  formatWorkReportFileName,
+  formatInvoiceFileName,
+  formatTimeInput,
+  formatBreakDuration,
+} from "@/features/work-report/utils/date-formatting";
+import { generateBasicEmailPlaceholderValues } from "@/features/work-report/utils/email-body-builder";
+import { buildMailtoUrlFromTemplate } from "@/features/work-report/utils/mailto-url-builder";
+import type { InvoiceContractData } from "@/features/work-report/utils/placeholder-utils";
 import { useMessageState } from "@/hooks/use-message-state";
 import { formatDateAsUTC } from "@/utils/date-utils";
 
-function isHoliday(date: Date, holidays: Holiday[]): boolean {
-  const dateStr = date.toISOString().split("T")[0]; // YYYY-MM-DD format
-  return holidays.some((holiday) => holiday.date === dateStr);
-}
-
-function getDateColorClass(date: Date, holidays: Holiday[]): string {
-  const dayOfWeek = date.getDay();
-
-  // 祝日チェック
-  if (isHoliday(date, holidays)) {
-    return "text-red-600"; // 祝日は赤
-  }
-
-  // 日曜日
-  if (dayOfWeek === 0) {
-    return "text-red-600"; // 日曜日は赤
-  }
-
-  // 土曜日
-  if (dayOfWeek === 6) {
-    return "text-blue-600"; // 土曜日は青
-  }
-
-  // 平日
-  return "text-white-900";
-}
-
 export default function ClientWorkReportPage({
+  contractId,
   workReportId,
+  userId,
   attendances,
   contractName,
   clientName,
-  contactName,
   closingDay,
   userName,
-  clientEmail,
+  userEmail,
   targetDate,
   dailyWorkMinutes,
   monthlyWorkMinutes,
   basicStartTime,
   basicEndTime,
   basicBreakDuration,
+  basicMemo,
+  remarks: initialRemarks,
   holidays,
   status: initialStatus,
   unitPrice,
@@ -121,23 +115,70 @@ export default function ClientWorkReportPage({
   upperRate,
   lowerRate,
   middleRate,
+  hourlyRate,
   taxInclusiveType,
   taxRoundingType,
+  excessTaxRoundingType,
+  deductionTaxRoundingType,
   rateType,
+  paymentMonthOffset,
+  paymentDay,
+  invoiceRegistrationNumber,
+  postalCode,
+  address,
+  bankName,
+  bankBranchName,
+  bankAccountType,
+  bankAccountNumber,
+  bankAccountHolder,
 }: WorkReportClientProps) {
-  const { error, success, showError, showSuccess } = useMessageState();
-  const { startTransition } = useTransitionContext();
+  const router = useRouter();
+  const { error, success, showError, showSuccess, clearError, clearSuccess } =
+    useMessageState();
+  const { startTransition, setManualPending } = useTransitionContext();
+
   // モーダルの状態管理
   const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
   const [editingDate, setEditingDate] = useState<Date | null>(null);
+  const [defaultValuesForEdit, setDefaultValuesForEdit] = useState<
+    Partial<EditFormValues> | undefined
+  >(undefined);
 
-  // New state for holding the uploaded template file
-  const [uploadedTemplateFile, setUploadedTemplateFile] = useState<File | null>(
-    null,
-  );
-  const [templateOption, setTemplateOption] = useState("default"); // 'default' or 'upload'
-  const [extensionOption, setExtensionOption] = useState("excel"); // 'excel' or 'pdf'
   const [status, setStatus] = useState<WorkReportStatus>(initialStatus);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+
+  // freee連携状態管理
+  const {
+    isFreeeConnected,
+    setIsFreeeConnected,
+    isCheckingFreeeConnection,
+    showReauthDialog,
+    setShowReauthDialog,
+  } = useFreeeConnection();
+
+  // freee取引先管理
+  const { partners, selectedPartnerId, setSelectedPartnerId } =
+    useFreeePartners({
+      isDialogOpen: isExportDialogOpen,
+      isFreeeConnected,
+      clientName,
+      onConnectionLost: () => {
+        setIsFreeeConnected(false);
+        setIsExportDialogOpen(false);
+        setShowReauthDialog(true);
+      },
+    });
+  const [remarks, setRemarks] = useState<string>(initialRemarks ?? "");
+  const [isRemarksDialogOpen, setIsRemarksDialogOpen] = useState(false);
+  const [workReportTemplates, setWorkReportTemplates] = useState<
+    ExcelTemplateWithFields[]
+  >([]);
+  const [invoiceTemplates, setInvoiceTemplates] = useState<
+    ExcelTemplateWithFields[]
+  >([]);
+  const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>([]);
+  const [isEmailTemplateDialogOpen, setIsEmailTemplateDialogOpen] =
+    useState(false);
 
   // Compute default attendance values for each day in the range…
   const defaults = generateDefaultAttendances(
@@ -151,49 +192,135 @@ export default function ClientWorkReportPage({
   const [currentAttendances, setCurrentAttendances] =
     useState<AttendanceData[]>(initialAttendances);
 
+  // 作業報告書の開始日と終了日を計算
+  const workReportStartDate = currentAttendances[0]?.date || new Date();
+  const workReportEndDate =
+    currentAttendances[currentAttendances.length - 1]?.date || new Date();
+
   // Calculate work hours and amounts for summary
-  const totalWorkMinutes = calculateTotalWorkMinutes(currentAttendances);
-  const workTimeText = formatWorkTime(totalWorkMinutes);
+  const totalWorkMinutes = useMemo(
+    () => calculateTotalWorkMinutes(currentAttendances, monthlyWorkMinutes),
+    [currentAttendances, monthlyWorkMinutes],
+  );
 
-  const amountCalculation = calculateWorkAmount(totalWorkMinutes, {
-    unitPrice,
-    settlementMin,
-    settlementMax,
-    upperRate,
-    lowerRate,
-    middleRate,
-    taxInclusiveType,
-    taxRoundingType,
-    rateType,
-  });
+  const workTimeText = useMemo(
+    () => formatWorkTime(totalWorkMinutes),
+    [totalWorkMinutes],
+  );
 
-  // 編集用フォーム
-  const editForm = useForm<EditFormValues>({
-    resolver: zodResolver(editFormSchema),
-    defaultValues: {
-      startTime: basicStartTime
-        ? new Date(basicStartTime.toISOString())
-        : undefined,
-      endTime: basicEndTime ? new Date(basicEndTime.toISOString()) : undefined,
-      breakDuration: basicBreakDuration,
-      memo: "",
+  // テンプレートを取得（作業報告書、請求書、メールを並行して取得）
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      const [workReportResult, invoiceResult, emailResult] = await Promise.all([
+        getExcelTemplatesByUserIdAndTypeAction(userId, "WORK_REPORT"),
+        getExcelTemplatesByUserIdAndTypeAction(userId, "INVOICE"),
+        getEmailTemplatesByCreateUserIdAction(userId),
+      ]);
+      if (workReportResult.success) {
+        setWorkReportTemplates(workReportResult.data);
+      }
+      if (invoiceResult.success) {
+        setInvoiceTemplates(invoiceResult.data);
+      }
+      if (emailResult.success) {
+        setEmailTemplates(emailResult.data);
+      }
+    };
+    void fetchTemplates();
+  }, [userId]);
+
+  // Calculate work time for a single attendance in minutes
+  const calculateAttendanceWorkMinutes = useCallback(
+    (
+      startTime: Date | null,
+      endTime: Date | null,
+      breakDuration: number | null,
+    ): number | null => {
+      if (!startTime || !endTime) return null;
+      let endTimeMs = endTime.getTime();
+      // 開始時刻が終了時刻よりあとの場合（日付をまたぐ）、終了時刻に24時間を加算
+      if (startTime.getTime() > endTimeMs) {
+        endTimeMs += 24 * 60 * 60 * 1000; // 24時間分のミリ秒を加算
+      }
+      const workMinutes = (endTimeMs - startTime.getTime()) / (1000 * 60);
+      const breakMinutes = breakDuration ?? 0;
+      return Math.max(0, workMinutes - breakMinutes);
     },
-  });
+    [],
+  );
+
+  const amountCalculation = useMemo(
+    () =>
+      calculateWorkAmount(totalWorkMinutes, {
+        unitPrice,
+        settlementMin,
+        settlementMax,
+        upperRate,
+        lowerRate,
+        middleRate,
+        hourlyRate,
+        taxInclusiveType,
+        taxRoundingType,
+        excessTaxRoundingType,
+        deductionTaxRoundingType,
+        rateType,
+        monthlyWorkMinutes,
+      }),
+    [
+      totalWorkMinutes,
+      unitPrice,
+      settlementMin,
+      settlementMax,
+      upperRate,
+      lowerRate,
+      middleRate,
+      hourlyRate,
+      taxInclusiveType,
+      taxRoundingType,
+      excessTaxRoundingType,
+      deductionTaxRoundingType,
+      rateType,
+      monthlyWorkMinutes,
+    ],
+  );
+
+  // dailyWorkMinutesを使って動的にスキーマを生成
+  const bulkEditFormSchema = useMemo(
+    () => createBulkEditFormSchema(dailyWorkMinutes),
+    [dailyWorkMinutes],
+  );
 
   // 一括編集用フォーム
   const bulkEditForm = useForm<BulkEditFormValues>({
-    resolver: zodResolver(bulkEditFormSchema),
+    resolver: zodResolver(bulkEditFormSchema) as Resolver<BulkEditFormValues>,
     defaultValues: getBulkEditFormDefaults(
       basicStartTime,
       basicEndTime,
       basicBreakDuration,
+      basicMemo,
+      workReportStartDate,
+      workReportEndDate,
     ),
   });
+
+  // 作業報告書一覧画面へ遷移
+  const handleNavigateToList = () => {
+    startTransition(() => {
+      router.push(`/contract/${contractId}`);
+    });
+  };
 
   // 一括編集フォームをリセットする関数を追加
   const resetBulkEditForm = () => {
     bulkEditForm.reset(
-      getBulkEditFormDefaults(basicStartTime, basicEndTime, basicBreakDuration),
+      getBulkEditFormDefaults(
+        basicStartTime,
+        basicEndTime,
+        basicBreakDuration,
+        basicMemo,
+        workReportStartDate,
+        workReportEndDate,
+      ),
     );
     setIsBulkEditModalOpen(false);
   };
@@ -202,76 +329,84 @@ export default function ClientWorkReportPage({
   const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
 
   // 一括編集を適用する
-  const applyBulkEdit = (data: BulkEditFormValues) => {
-    startTransition(async () => {
-      const updatedValues =
-        data.dateRangeMode == "prompt"
-          ? await createAttendancesByPromptAction(
-              workReportId,
-              targetDate,
-              basicStartTime,
-              basicEndTime,
-              basicBreakDuration,
-              currentAttendances,
-              data.prompt ?? "",
-            )
-          : currentAttendances.map((attendance) => {
-              const shouldUpdate = shouldUpdateDate(
-                attendance.date,
-                data.dateRangeMode,
-                data.selectedDays,
-                data.startDate,
-                data.endDate,
-                data.excludeHolidays,
-                holidays,
-              );
-              if (shouldUpdate) {
-                return {
-                  ...attendance,
-                  startTime: data.startTime,
-                  endTime: data.endTime,
-                  breakDuration: data.breakDuration,
-                  memo: data.memo,
-                };
-              }
-              return attendance;
-            });
-      await updateWorkReportAttendancesAction(
-        workReportId,
-        updatedValues.map((attendance) => ({
-          ...attendance,
-          workReportId: workReportId,
-        })),
-      );
-      setCurrentAttendances(updatedValues);
-      resetBulkEditForm();
-      showSuccess("一括編集を適用しました");
-    });
-  };
+  const applyBulkEdit = useCallback(
+    (data: BulkEditFormValues) => {
+      startTransition(() => {
+        void (async () => {
+          // startDateとendDateはバリデーションで必須なので、ここではnullではない
+          if (!data.startDate || !data.endDate) {
+            return;
+          }
+
+          const startDate = data.startDate;
+          const endDate = data.endDate;
+
+          const updatedValues = currentAttendances.map((attendance) => {
+            const shouldUpdate = shouldUpdateDate(
+              attendance.date,
+              data.selectedDays,
+              startDate,
+              endDate,
+              data.excludeHolidays,
+              holidays,
+            );
+            if (shouldUpdate) {
+              return {
+                ...attendance,
+                startTime: data.startTime,
+                endTime: data.endTime,
+                breakDuration: data.breakDuration,
+                memo: data.memo,
+              };
+            }
+            return attendance;
+          });
+          await updateWorkReportAttendancesAction(
+            workReportId,
+            updatedValues.map((attendance) => ({
+              ...attendance,
+              workReportId: workReportId,
+            })),
+          );
+          setCurrentAttendances(updatedValues);
+          resetBulkEditForm();
+          showSuccess("一括編集を適用しました");
+        })();
+      });
+    },
+    [
+      currentAttendances,
+      holidays,
+      workReportId,
+      startTransition,
+      resetBulkEditForm,
+      showSuccess,
+    ],
+  );
 
   // 編集フォームの送信処理
-  const onEditSubmit = (data: EditFormValues) => {
-    try {
-      startTransition(async () => {
-        const updatedValues = currentAttendances.map((attendance) => {
-          if (attendance.date.getTime() === editingDate?.getTime()) {
-            return {
-              ...attendance,
-              startTime: data.startTime,
-              endTime: data.endTime,
-              breakDuration: data.breakDuration,
-              memo: data.memo,
-            };
-          }
-          return attendance;
-        });
-        // フォームの値を更新
-        if (editingDate) {
+  const onEditSubmit = useCallback(
+    async (date: Date, data: EditFormValues) => {
+      startTransition(() => {
+        void (async () => {
+          const updatedValues = currentAttendances.map((attendance) => {
+            if (attendance.date.getTime() === date.getTime()) {
+              return {
+                ...attendance,
+                startTime: data.startTime,
+                endTime: data.endTime,
+                breakDuration: data.breakDuration,
+                memo: data.memo,
+              };
+            }
+            return attendance;
+          });
+          // フォームの値を更新
           const attendance = updatedValues.find(
-            (attendance) => attendance.date.getTime() === editingDate.getTime(),
+            (attendance) => attendance.date.getTime() === date.getTime(),
           );
           if (attendance) {
-            await updateWorkReportAttendanceAction(
+            const result = await updateWorkReportAttendanceAction(
               workReportId,
               attendance.date,
               {
@@ -279,456 +414,307 @@ export default function ClientWorkReportPage({
                 workReportId: workReportId,
               },
             );
+            if (result.success) {
+              setCurrentAttendances(updatedValues);
+              showSuccess("編集を適用しました");
+            } else {
+              console.error(result.error);
+              showError(result.error || "勤怠情報の保存に失敗しました");
+            }
           }
-        }
-        setCurrentAttendances(updatedValues);
-        setEditingDate(null);
+          setEditingDate(null);
+        })();
       });
-      showSuccess("編集を適用しました");
-    } catch (error) {
-      console.error("編集の適用に失敗しました", error);
-      showError("編集の適用に失敗しました");
-    }
-  };
+    },
+    [currentAttendances, workReportId, startTransition, showSuccess, showError],
+  );
 
   // openEditDialog関数を簡略化
   const openEditDialog = (date: Date) => {
+    const attendance = currentAttendances.find(
+      (att) => att.date.getTime() === date.getTime(),
+    );
+    if (attendance) {
+      setDefaultValuesForEdit({
+        startTime: attendance.startTime,
+        endTime: attendance.endTime,
+        breakDuration: attendance.breakDuration,
+        memo: attendance.memo,
+      });
+    }
     setEditingDate(date);
   };
 
-  // editingDateの変更を監視してフォームをリセット
-  useEffect(() => {
-    if (editingDate) {
-      const entry = currentAttendances.find(
-        (attendance) => attendance.date === editingDate,
-      );
-      editForm.reset({
-        startTime: entry?.startTime
-          ? new Date(entry.startTime.toISOString())
-          : undefined,
-        endTime: entry?.endTime
-          ? new Date(entry.endTime.toISOString())
-          : undefined,
-        breakDuration: entry?.breakDuration,
-        memo: entry?.memo,
-      });
-    }
-  }, [editingDate, currentAttendances, editForm]);
+  // エクスポート処理
+  const handleExport = useCallback(
+    async (result: ExportResult): Promise<ExportFile[]> => {
+      const files: ExportFile[] = [];
 
-  // 編集をキャンセル
-  const cancelEdit = () => {
-    setEditingDate(null);
-  };
+      // 作業報告書データ
+      const workReportData = {
+        attendances: currentAttendances,
+        targetDate,
+        userName,
+        email: userEmail,
+        basicStartTime,
+        basicEndTime,
+        basicBreakDuration,
+        dailyWorkMinutes,
+        monthlyWorkMinutes,
+        remarks: remarks || null,
+        // ユーザー情報（請求書用）
+        invoiceRegistrationNumber,
+        postalCode,
+        address,
+        bankName,
+        bankBranchName,
+        bankAccountType,
+        bankAccountNumber,
+        bankAccountHolder,
+      };
 
-  // ミリ秒からシリアル値に変換
-  const msToSerial = (ms: number) => ms / (24 * 60 * 60 * 1000);
+      // 請求書用の契約データ
+      const contractData: InvoiceContractData = {
+        contractName,
+        clientName,
+        unitPrice,
+        hourlyRate,
+        settlementMin,
+        settlementMax,
+        upperRate,
+        lowerRate,
+        middleRate,
+        rateType,
+        taxInclusiveType,
+        taxRoundingType,
+        closingDay,
+        paymentMonthOffset,
+        paymentDay,
+      };
 
-  // テンプレートからの作業報告書作成
-  const createReportFromTemplate = async (
-    templateWorkbook: ExcelJS.Workbook,
-  ) => {
-    try {
-      // フォームデータを取得
-      const formData = currentAttendances;
-
-      // 新しいワークブックを作成
-      const workbook = new ExcelJS.Workbook();
-
-      // テンプレートからシートをコピー
-      for (const worksheet of templateWorkbook.worksheets) {
-        // 新しいシートを作成
-        const newSheet = workbook.addWorksheet(worksheet.name);
-
-        // シートのプロパティをコピー
-        newSheet.properties = { ...worksheet.properties };
-
-        // 列の幅をコピー
-        worksheet.columns.forEach((col, index) => {
-          if (col.width) {
-            newSheet.getColumn(index + 1).width = col.width;
-          }
-        });
-
-        // マージセル情報をコピーする
-        worksheet.model.merges.forEach((mergeRange) => {
-          newSheet.mergeCells(mergeRange);
-        });
-
-        // セルのスタイルをコピー
-        worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
-          const newRow = newSheet.getRow(rowNumber);
-          row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-            const newCell = newRow.getCell(colNumber);
-            newCell.style = { ...cell.style };
-          });
-        });
-
-        // セルの値をコピー
-        worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
-          const newRow = newSheet.getRow(rowNumber);
-          row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-            const newCell = newRow.getCell(colNumber);
-            newCell.value = cell.value;
-          });
-        });
-      }
-
-      // コピー元のテンプレートに定義された名前付き範囲を新しいワークブックに追加する
-      for (const definedName of templateWorkbook.definedNames.model) {
-        // Get the named ranges for "name"
-        const ranges = templateWorkbook.definedNames.getRanges(
-          definedName.name,
+      // 作業報告書を生成
+      if (result.workReportTemplate) {
+        const blob = await generateWorkReportExcel(
+          result.workReportTemplate.workbook,
+          workReportData,
+          result.workReportTemplate.fieldMappings,
+          result.workReportTemplate.sheetName,
+          contractData,
         );
-        if (ranges.ranges.length > 0) {
-          for (const range of ranges.ranges) {
-            workbook.definedNames.add(range, definedName.name);
-          }
-        }
+        files.push({
+          fileName: formatWorkReportFileName(targetDate, userName),
+          blob,
+          type: "WORK_REPORT",
+        });
       }
 
-      // タイトルの名前付き範囲を処理
-      const workReportMonthRanges =
-        templateWorkbook.definedNames.getRanges("タイトル");
-      const [workReportMonthSheetName, workReportMonthRangeAddress] =
-        parseRangeReference(workReportMonthRanges.ranges[0]);
-      if (workReportMonthSheetName) {
-        const targetWorkReportMonthSheet = workbook.getWorksheet(
-          workReportMonthSheetName,
+      // 請求書を生成
+      if (result.invoiceTemplate) {
+        const blob = await generateWorkReportExcel(
+          result.invoiceTemplate.workbook,
+          workReportData,
+          result.invoiceTemplate.fieldMappings,
+          result.invoiceTemplate.sheetName,
+          contractData,
         );
-        if (targetWorkReportMonthSheet && workReportMonthRangeAddress) {
-          const workReportMonthCell = targetWorkReportMonthSheet.getCell(
-            workReportMonthRangeAddress,
-          );
-          workReportMonthCell.value = `${targetDate.getFullYear()}年${targetDate.getMonth() + 1}月度作業報告書`;
-        }
+        files.push({
+          fileName: formatInvoiceFileName(targetDate, userName),
+          blob,
+          type: "INVOICE",
+        });
       }
 
-      // 作業者名の名前付き範囲を処理
-      const workerNameRanges = workbook.definedNames.getRanges("作業者名");
-      if (workerNameRanges.ranges.length > 0) {
-        const [workerNameSheetName, workerNameRangeAddress] =
-          parseRangeReference(workerNameRanges.ranges[0]);
-        if (workerNameSheetName && workerNameRangeAddress) {
-          const targetWorkerNameSheet =
-            workbook.getWorksheet(workerNameSheetName);
-          if (targetWorkerNameSheet) {
-            const workerNameCell = targetWorkerNameSheet.getCell(
-              workerNameRangeAddress,
-            );
-            workerNameCell.value = userName;
-          }
-        }
+      if (files.length > 0) {
+        showSuccess("エクスポートが完了しました");
       }
 
-      // 基本開始時刻の名前付き範囲を処理
-      const basicStartTimeRanges =
-        workbook.definedNames.getRanges("基本開始時刻");
-      if (basicStartTimeRanges.ranges.length > 0 && basicStartTime) {
-        const [basicStartTimeSheetName, basicStartTimeRangeAddress] =
-          parseRangeReference(basicStartTimeRanges.ranges[0]);
-        if (basicStartTimeSheetName && basicStartTimeRangeAddress) {
-          const targetBasicStartTimeSheet = workbook.getWorksheet(
-            basicStartTimeSheetName,
-          );
-          if (targetBasicStartTimeSheet) {
-            const basicStartTimeCell = targetBasicStartTimeSheet.getCell(
-              basicStartTimeRangeAddress,
-            );
-            basicStartTimeCell.value = msToSerial(basicStartTime.getTime());
-            basicStartTimeCell.numFmt = "[h]:mm";
-          }
-        }
-      }
+      return files;
+    },
+    [
+      currentAttendances,
+      targetDate,
+      userName,
+      userEmail,
+      basicStartTime,
+      basicEndTime,
+      basicBreakDuration,
+      dailyWorkMinutes,
+      monthlyWorkMinutes,
+      remarks,
+      invoiceRegistrationNumber,
+      postalCode,
+      address,
+      bankName,
+      bankBranchName,
+      bankAccountType,
+      bankAccountNumber,
+      bankAccountHolder,
+      unitPrice,
+      hourlyRate,
+      settlementMin,
+      settlementMax,
+      upperRate,
+      lowerRate,
+      middleRate,
+      rateType,
+      taxInclusiveType,
+      taxRoundingType,
+      closingDay,
+      showSuccess,
+    ],
+  );
 
-      // 基本終了時刻の名前付き範囲を処理
-      const basicEndTimeRanges =
-        workbook.definedNames.getRanges("基本終了時刻");
-      if (basicEndTimeRanges.ranges.length > 0 && basicEndTime) {
-        const [basicEndTimeSheetName, basicEndTimeRangeAddress] =
-          parseRangeReference(basicEndTimeRanges.ranges[0]);
-        if (basicEndTimeSheetName && basicEndTimeRangeAddress) {
-          const targetBasicEndTimeSheet = workbook.getWorksheet(
-            basicEndTimeSheetName,
-          );
-          if (targetBasicEndTimeSheet) {
-            const basicEndTimeCell = targetBasicEndTimeSheet.getCell(
-              basicEndTimeRangeAddress,
-            );
-            basicEndTimeCell.value = msToSerial(basicEndTime.getTime());
-            basicEndTimeCell.numFmt = "[h]:mm";
-          }
-        }
-      }
-
-      // 基本休憩時間の名前付き範囲を処理
-      const basicBreakDurationRanges =
-        workbook.definedNames.getRanges("基本休憩時間");
-      if (basicBreakDurationRanges.ranges.length > 0 && basicBreakDuration) {
-        const [basicBreakDurationSheetName, basicBreakDurationRangeAddress] =
-          parseRangeReference(basicBreakDurationRanges.ranges[0]);
-        if (basicBreakDurationSheetName && basicBreakDurationRangeAddress) {
-          const targetBasicBreakDurationSheet = workbook.getWorksheet(
-            basicBreakDurationSheetName,
-          );
-          if (targetBasicBreakDurationSheet) {
-            const basicBreakDurationCell =
-              targetBasicBreakDurationSheet.getCell(
-                basicBreakDurationRangeAddress,
-              );
-            basicBreakDurationCell.value = msToSerial(
-              basicBreakDuration * 60000,
-            );
-            basicBreakDurationCell.numFmt = "[h]:mm";
-          }
-        }
-      }
-
-      // 1日あたりの作業単位の名前付き範囲を処理
-      const dailyWorkMinutesRanges =
-        workbook.definedNames.getRanges("_１日あたりの作業単位");
-      if (dailyWorkMinutesRanges.ranges.length > 0 && dailyWorkMinutes) {
-        const [dailyWorkMinutesSheetName, dailyWorkMinutesRangeAddress] =
-          parseRangeReference(dailyWorkMinutesRanges.ranges[0]);
-        if (dailyWorkMinutesSheetName && dailyWorkMinutesRangeAddress) {
-          const targetDailyWorkMinutesSheet = workbook.getWorksheet(
-            dailyWorkMinutesSheetName,
-          );
-          if (targetDailyWorkMinutesSheet) {
-            const dailyWorkMinutesCell = targetDailyWorkMinutesSheet.getCell(
-              dailyWorkMinutesRangeAddress,
-            );
-            dailyWorkMinutesCell.value = `${dailyWorkMinutes}分`;
-          }
-        }
-      }
-
-      // 1ヶ月あたりの作業単位の名前付き範囲を処理
-      const monthlyWorkMinutesRanges =
-        workbook.definedNames.getRanges("_１ヶ月あたりの作業単位");
-      if (monthlyWorkMinutesRanges.ranges.length > 0 && monthlyWorkMinutes) {
-        const [monthlyWorkMinutesSheetName, monthlyWorkMinutesRangeAddress] =
-          parseRangeReference(monthlyWorkMinutesRanges.ranges[0]);
-        if (monthlyWorkMinutesSheetName && monthlyWorkMinutesRangeAddress) {
-          const targetMonthlyWorkMinutesSheet = workbook.getWorksheet(
-            monthlyWorkMinutesSheetName,
-          );
-          if (targetMonthlyWorkMinutesSheet) {
-            const monthlyWorkMinutesCell =
-              targetMonthlyWorkMinutesSheet.getCell(
-                monthlyWorkMinutesRangeAddress,
-              );
-            monthlyWorkMinutesCell.value = `${monthlyWorkMinutes}分`;
-          }
-        }
-      }
-
-      // ----- New code: Fill form data into the named ranges -----
-      // Assume the named ranges '日付', '開始時刻', '終了時刻', '休憩時間' are each 31 cells vertically arranged
-      const sortedFormData = [...formData].sort(
-        (a, b) => a.date.getTime() - b.date.getTime(),
-      );
-      const fieldNames = [
-        "日付",
-        "開始時刻",
-        "終了時刻",
-        "休憩時間",
-        "稼働時間",
-        "作業内容",
-      ];
-      fieldNames.forEach((fieldName) => {
-        const fieldRanges = workbook.definedNames.getRanges(fieldName);
-        if (fieldRanges.ranges.length > 0) {
-          const [sheetName, rangeAddress] = parseRangeReference(
-            fieldRanges.ranges[0],
-          );
-          if (sheetName && rangeAddress) {
-            const { startRow, startCol } = parseExcelRange(rangeAddress);
-            const sheet = workbook.getWorksheet(sheetName);
-            if (sheet) {
-              for (let i = 0; i < 31; i++) {
-                const currentRow = startRow + i;
-                let value: string | number = "";
-                if (i < sortedFormData.length) {
-                  const entry = sortedFormData[i];
-                  console.log("Start Time:", entry.startTime?.toISOString());
-                  console.log("End Time:", entry.endTime?.toISOString());
-                  if (fieldName === "日付") {
-                    value = formatMonthDay(entry.date.toISOString());
-                  } else if (fieldName === "開始時刻") {
-                    if (entry.startTime) {
-                      value = msToSerial(
-                        (entry.startTime.getUTCHours() * 60 +
-                          entry.startTime.getUTCMinutes()) *
-                          60000,
-                      );
-                      sheet.getCell(currentRow, startCol).numFmt = "[h]:mm";
-                    }
-                  } else if (fieldName === "終了時刻") {
-                    if (entry.endTime) {
-                      value = msToSerial(
-                        (entry.endTime.getUTCHours() * 60 +
-                          entry.endTime.getUTCMinutes()) *
-                          60000,
-                      );
-                      sheet.getCell(currentRow, startCol).numFmt = "[h]:mm";
-                    }
-                  } else if (fieldName === "休憩時間") {
-                    if (entry.breakDuration) {
-                      value = msToSerial(entry.breakDuration * 60000);
-                      sheet.getCell(currentRow, startCol).numFmt = "[h]:mm";
-                    }
-                  } else if (fieldName === "稼働時間") {
-                    if (entry.startTime && entry.endTime) {
-                      const startMs = entry.startTime.getTime();
-                      const endMs = entry.endTime.getTime();
-                      if (entry.breakDuration) {
-                        const breakMs = entry.breakDuration * 60000;
-                        value = msToSerial(endMs - startMs - breakMs);
-                      } else {
-                        value = msToSerial(endMs - startMs);
-                      }
-                      sheet.getCell(currentRow, startCol).numFmt = "[h]:mm";
-                    }
-                  } else if (fieldName === "作業内容") {
-                    if (entry.memo) {
-                      value = entry.memo;
-                    }
-                  }
-                }
-                sheet.getCell(currentRow, startCol).value = value;
-              }
-            }
-          }
-        }
-      });
-      // ----- End of new code -----
-
-      // ファイルを保存
-      const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${targetDate.getFullYear()}年${targetDate.getMonth() + 1}月度作業報告書_${userName}.xlsx`;
-      link.click();
-      window.URL.revokeObjectURL(url);
-      showSuccess("テンプレートからの作業報告書作成が完了しました");
-    } catch (err) {
-      console.error("Error creating report from template:", err);
-      showError("テンプレートからの作業報告書作成に失敗しました");
-    }
-  };
-
-  // メール送信用の関数を追加
-  const createReportAndSendEmail = () => {
-    try {
-      if (
-        !window.confirm(
-          "作業報告書は自動で添付されません。\n「作業報告書を作成」でダウンロードしたファイルを手動で添付してください。",
-        )
-      ) {
-        return;
-      }
-      // メーラーを起動
-      const recipient = clientEmail; // 送信先
-      const subject = encodeURIComponent(
-        `【作業報告書】${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分_${userName}`,
-      );
-      const body = encodeURIComponent(`
-${contactName ? contactName : clientName}様
-   
-お世話になっております。${userName}です。
-
-${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業報告書を送付いたします。
-ご確認のほど、よろしくお願いいたします。
-`);
-      window.open(
-        `mailto:${recipient}?subject=${subject}&body=${body}`,
-        "_blank",
-      );
-    } catch (error) {
-      console.error("作業報告書の作成に失敗しました", error);
-      showError("作業報告書の作成に失敗しました");
-    }
-  };
-
-  const handleConfirmCreateReport = async () => {
-    if (extensionOption === "excel") {
-      if (templateOption === "upload") {
-        if (!uploadedTemplateFile) {
-          showError("テンプレートファイルが選択されていません");
-          return;
-        }
-        try {
-          const buffer = await uploadedTemplateFile.arrayBuffer();
-          const workbook = new ExcelJS.Workbook();
-          await workbook.xlsx.load(buffer);
-          await createReportFromTemplate(workbook);
-        } catch (err) {
-          console.error("アップロードテンプレートの処理に失敗しました", err);
-          showError("アップロードテンプレートの処理に失敗しました");
-          return;
-        }
-      }
-      if (templateOption === "default") {
-        try {
-          const response = await fetch("/workReportDefaultTemplate.xlsx");
-          if (!response.ok) {
-            throw new Error("デフォルトテンプレートの取得に失敗しました");
-          }
-          const buffer = await response.arrayBuffer();
-          const workbook = new ExcelJS.Workbook();
-          await workbook.xlsx.load(buffer);
-          await createReportFromTemplate(workbook);
-        } catch (err) {
-          console.error("デフォルトテンプレートの読み込みに失敗しました:", err);
-          showError("デフォルトテンプレートの読み込みに失敗しました");
-          return;
-        }
-      }
-    } else if (extensionOption === "pdf") {
-      showError("PDF形式での作業報告書作成は未実装です");
+  // freee請求書作成処理
+  const handleCreateFreeeInvoice = useCallback(async () => {
+    if (!selectedPartnerId) {
+      showError("取引先を選択してください");
       return;
     }
+
+    const result = await createFreeeInvoiceFromWorkReportAction(
+      workReportId,
+      selectedPartnerId,
+    );
+
+    if (result.success) {
+      showSuccess(result.message);
+      if (result.invoiceUrl) {
+        // 請求書URLをクリップボードにコピー（エラーが発生しても継続）
+        try {
+          await navigator.clipboard.writeText(result.invoiceUrl);
+          showSuccess("請求書URLをクリップボードにコピーしました");
+        } catch (clipboardError) {
+          console.warn("Failed to copy to clipboard:", clipboardError);
+          // クリップボードエラーは致命的ではないので処理を継続
+        }
+
+        // freee請求書ページを新しいタブで開く
+        window.open(result.invoiceUrl, "_blank");
+      }
+    } else {
+      // 再連携が必要な場合
+      if (result.requiresReauth) {
+        showError(result.message);
+        setIsFreeeConnected(false);
+        setIsExportDialogOpen(false);
+        setShowReauthDialog(true);
+      } else {
+        showError(result.message);
+      }
+    }
+  }, [
+    selectedPartnerId,
+    workReportId,
+    showError,
+    showSuccess,
+    setIsFreeeConnected,
+    setShowReauthDialog,
+  ]);
+
+  // メール用プレースホルダー値を生成
+  const emailPlaceholderValues = useMemo(
+    () =>
+      generateBasicEmailPlaceholderValues({
+        clientName,
+        userName,
+        targetDate,
+      }),
+    [clientName, userName, targetDate],
+  );
+
+  // メールテンプレート選択ダイアログを開く
+  const openEmailTemplateDialog = () => {
+    setIsEmailTemplateDialogOpen(true);
   };
+
+  // メール送信処理（テンプレート選択後に呼ばれる）
+  const handleEmailSend = useCallback(
+    (
+      subject: string,
+      body: string,
+      toAddresses: string[],
+      ccAddresses: string[],
+    ) => {
+      try {
+        const mailtoUrl = buildMailtoUrlFromTemplate({
+          toAddresses,
+          ccAddresses,
+          subject,
+          body,
+        });
+        window.open(mailtoUrl, "_blank");
+      } catch (error) {
+        console.error("メール送信に失敗しました", error);
+        showError("メール送信に失敗しました");
+      }
+    },
+    [showError],
+  );
 
   // 月締め処理を実行
   const handleConfirmStatusChange = () => {
     const nextStatus = status === "DRAFT" ? "SUBMITTED" : "DRAFT";
-    startTransition(async () => {
-      try {
-        await updateWorkReportStatusAction(workReportId, nextStatus);
-        setStatus(nextStatus);
-        showSuccess(
-          nextStatus === "SUBMITTED" ? "月締めしました" : "月締め解除しました",
-        );
-      } catch {
-        showError("月締めステータスの変更に失敗しました");
-      }
+    startTransition(() => {
+      void (async () => {
+        try {
+          await updateWorkReportStatusAction(workReportId, nextStatus);
+          setStatus(nextStatus);
+          showSuccess(
+            nextStatus === "SUBMITTED"
+              ? "月締めしました"
+              : "月締め解除しました",
+          );
+        } catch {
+          showError("月締めステータスの変更に失敗しました");
+        }
+      })();
     });
     setStatus(nextStatus);
   };
 
+  // 備考を更新
+  const handleRemarksSubmit = useCallback(
+    async (newRemarks: string | null) => {
+      startTransition(() => {
+        void (async () => {
+          try {
+            await updateWorkReportRemarksAction(
+              workReportId,
+              newRemarks ?? null,
+            );
+            setRemarks(newRemarks ?? "");
+            showSuccess("備考を保存しました");
+          } catch {
+            showError("備考の保存に失敗しました");
+          }
+        })();
+      });
+    },
+    [workReportId, startTransition, showSuccess, showError],
+  );
+
   return (
-    <div className="p-4">
-      <h1 className="mb-4 text-xl font-bold text-muted-foreground">
-        {contractName}の{targetDate.getFullYear()}年{targetDate.getMonth() + 1}
-        月度作業報告書
-      </h1>
-      <FormError message={error.message} resetSignal={error.date.getTime()} />
-      <FormSuccess
-        message={success.message}
-        resetSignal={success.date.getTime()}
-      />
+    <div className="mx-auto">
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-xl font-bold text-muted-foreground">
+          {contractName}の{targetDate.getFullYear()}年
+          {targetDate.getMonth() + 1}
+          月度作業報告書
+        </h1>
+        <Button type="button" onClick={handleNavigateToList}>
+          作業報告書一覧へ
+        </Button>
+      </div>
+      <FormError message={error} onClose={clearError} />
+      <FormSuccess message={success} onClose={clearSuccess} />
 
       {/* Work Hours and Amount Summary */}
       <div className="mb-6 rounded-lg border bg-muted/30 p-4">
-        <h2 className="mb-3 text-lg font-semibold">稼働時間・金額サマリー</h2>
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div>
-            <span className="font-medium text-muted-foreground">稼働時間:</span>
+            <span className="font-medium text-muted-foreground">
+              総稼働時間:
+            </span>
             <div className="text-base font-semibold">{workTimeText}</div>
           </div>
           <div>
@@ -753,8 +739,7 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
       </div>
 
       <div className="flex flex-col gap-2">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">出勤情報を入力</h2>
+        <div className="mb-2 flex justify-end">
           <div className="flex gap-2">
             <Button
               type="button"
@@ -773,46 +758,50 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
             >
               一括入力
             </Button>
+          </div>
+        </div>
+        <div className="mb-4 flex justify-end">
+          <div className="flex flex-wrap gap-2">
             <Button
               type="button"
               variant="outline"
               disabled={status !== "SUBMITTED"}
               onClick={() => {
-                startTransition(async () => {
-                  await handleConfirmCreateReport();
-                });
+                setIsExportDialogOpen(true);
               }}
             >
-              作業報告書を作成
+              エクスポート
             </Button>
             <Button
               type="button"
               variant="outline"
               disabled={status !== "SUBMITTED"}
-              onClick={createReportAndSendEmail}
+              onClick={openEmailTemplateDialog}
             >
               メール送信
             </Button>
           </div>
         </div>
 
-        {/* 列ヘッダー */}
-        <div className="mb-2 flex items-center space-x-4">
-          <span className="w-40"></span>
-          <span className="w-16"></span>
-          <span className="flex-1 text-center font-medium">出勤時間</span>
-          <span className="flex-1 text-center font-medium">退勤時間</span>
-          <span className="flex-1 text-center font-medium">休憩時間</span>
-          <span className="w-[400px] text-center font-medium">作業内容</span>
+        {/* Header for desktop view */}
+        <div className="mb-2 hidden items-center px-3 text-sm font-medium text-muted-foreground lg:grid lg:grid-cols-[minmax(0,_1fr)_120px_120px_120px_120px_minmax(0,_2fr)_100px] lg:gap-4">
+          <span>日付</span>
+          <span>出勤時間</span>
+          <span>退勤時間</span>
+          <span>休憩時間</span>
+          <span>稼働時間</span>
+          <span>作業内容</span>
+          <span />
         </div>
 
         {currentAttendances.map((day) => (
           <div
             key={day.date.toISOString()}
-            className="mb-2 flex items-center space-x-4"
+            className="mb-4 rounded-lg border p-3 lg:grid lg:grid-cols-[minmax(0,_1fr)_120px_120px_120px_120px_minmax(0,_2fr)_100px] lg:items-center lg:gap-4"
           >
-            <div className="flex w-40 items-center justify-between">
-              <span>
+            {/* Date */}
+            <div className="flex items-center justify-between lg:col-span-1">
+              <span className="text-sm font-medium">
                 {(() => {
                   const date = day.date;
                   const dayOfWeek = date.getDay();
@@ -827,12 +816,12 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                   );
                 })()}
               </span>
-            </div>
-            <div className="flex w-16 items-center justify-between">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
+                className="lg:hidden"
+                disabled={status === "SUBMITTED"}
                 onClick={() => {
                   openEditDialog(day.date);
                 }}
@@ -840,58 +829,119 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                 編集
               </Button>
             </div>
-            <div className="flex-1">
-              <Input
-                type="time"
-                id={`start-${day.date.toISOString()}`}
-                readOnly
-                value={
-                  day.startTime
-                    ? day.startTime.toISOString().split("T")[1].substring(0, 5)
-                    : ""
-                }
-              />
+
+            {/* Inputs */}
+            <div className="mt-3 space-y-3 lg:mt-0 lg:contents">
+              <div className="flex flex-wrap gap-2 lg:contents">
+                {/* Start time */}
+                <div className="w-[calc(50%-0.25rem)] lg:col-span-1 lg:w-auto">
+                  <Label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
+                    出勤時間
+                  </Label>
+                  <Input
+                    type="time"
+                    id={`start-${day.date.toISOString()}`}
+                    readOnly
+                    value={formatTimeInput(day.startTime)}
+                  />
+                </div>
+                {/* End time */}
+                <div className="w-[calc(50%-0.25rem)] lg:col-span-1 lg:w-auto">
+                  <Label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
+                    退勤時間
+                  </Label>
+                  <Input
+                    type="time"
+                    id={`end-${day.date.toISOString()}`}
+                    readOnly
+                    value={formatTimeInput(day.endTime)}
+                  />
+                </div>
+                {/* Break time */}
+                <div className="w-[calc(50%-0.25rem)] lg:col-span-1 lg:w-auto">
+                  <Label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
+                    休憩時間
+                  </Label>
+                  <Input
+                    type="time"
+                    id={`break-${day.date.toISOString()}`}
+                    readOnly
+                    value={formatBreakDuration(day.breakDuration)}
+                  />
+                </div>
+                {/* Work time */}
+                <div className="w-[calc(50%-0.25rem)] lg:col-span-1 lg:w-auto">
+                  <Label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
+                    稼働時間
+                  </Label>
+                  <Input
+                    type="time"
+                    id={`work-${day.date.toISOString()}`}
+                    readOnly
+                    value={formatBreakDuration(
+                      calculateAttendanceWorkMinutes(
+                        day.startTime,
+                        day.endTime,
+                        day.breakDuration,
+                      ),
+                    )}
+                  />
+                </div>
+                {/* Memo */}
+                <div className="lg:col-span-1">
+                  <Label className="mb-1 block text-xs font-medium text-muted-foreground lg:hidden">
+                    作業内容
+                  </Label>
+                  <Input
+                    type="text"
+                    id={`memo-${day.date.toISOString()}`}
+                    readOnly
+                    value={day.memo ?? ""}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="flex-1">
-              <Input
-                type="time"
-                id={`end-${day.date.toISOString()}`}
-                readOnly
-                value={
-                  day.endTime
-                    ? day.endTime.toISOString().split("T")[1].substring(0, 5)
-                    : ""
-                }
-              />
-            </div>
-            <div className="flex-1">
-              <Input
-                type="time"
-                id={`break-${day.date.toISOString()}`}
-                readOnly
-                value={
-                  day.breakDuration
-                    ? `${Math.floor(day.breakDuration / 60)
-                        .toString()
-                        .padStart(
-                          2,
-                          "0",
-                        )}:${(day.breakDuration % 60).toString().padStart(2, "0")}`
-                    : ""
-                }
-              />
-            </div>
-            <div className="flex-1">
-              <Input
-                type="text"
-                id={`memo-${day.date.toISOString()}`}
-                className="w-[400px]"
-                readOnly
-                value={day.memo ?? ""}
-              />
+            {/* Edit Button (Desktop) */}
+            <div className="hidden text-center lg:col-span-1 lg:block">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={status === "SUBMITTED"}
+                onClick={() => {
+                  openEditDialog(day.date);
+                }}
+              >
+                編集
+              </Button>
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Remarks Section */}
+      <div className="mb-6 rounded-lg border bg-muted/30 p-4">
+        <div className="mb-2 flex items-center justify-between">
+          <Label className="text-sm font-medium">備考</Label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={status === "SUBMITTED"}
+            onClick={() => {
+              setIsRemarksDialogOpen(true);
+            }}
+          >
+            編集
+          </Button>
+        </div>
+        <div className="min-h-[100px] whitespace-pre-wrap rounded-md border bg-background p-3 text-sm">
+          {remarks || (
+            <span className="text-muted-foreground">
+              備考を入力してください
+            </span>
+          )}
+        </div>
       </div>
 
       {/* 一括編集用モーダルダイアログ */}
@@ -909,41 +959,69 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
           </DialogHeader>
           <Form {...bulkEditForm}>
             <form
-              onSubmit={bulkEditForm.handleSubmit(applyBulkEdit)}
+              onSubmit={(e) => {
+                void bulkEditForm.handleSubmit(applyBulkEdit)(e);
+              }}
               className="space-y-4"
             >
+              {/* 適用する期間 */}
               <div>
-                <h3 className="mb-2 text-sm font-medium">適用範囲</h3>
+                <h3 className="mb-2 text-sm font-medium">適用する期間</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <DatePickerField
+                    control={bulkEditForm.control}
+                    name="startDate"
+                    label="開始日"
+                    placeholder="開始日を選択"
+                    min={workReportStartDate.toISOString().split("T")[0]}
+                    max={workReportEndDate.toISOString().split("T")[0]}
+                  />
+                  <DatePickerField
+                    control={bulkEditForm.control}
+                    name="endDate"
+                    label="終了日"
+                    placeholder="終了日を選択"
+                    min={workReportStartDate.toISOString().split("T")[0]}
+                    max={workReportEndDate.toISOString().split("T")[0]}
+                  />
+                </div>
+              </div>
+
+              {/* 曜日を選択 */}
+              <div className="py-2">
+                <h3 className="mb-2 text-sm font-medium">曜日を選択</h3>
                 <FormField
                   control={bulkEditForm.control}
-                  name="dateRangeMode"
+                  name="selectedDays"
                   render={({ field }) => (
-                    <FormItem className="flex space-x-4">
+                    <FormItem>
                       <FormControl>
-                        <RadioGroup
-                          onValueChange={(value: DateRangeMode) => {
-                            field.onChange(value);
-                          }}
-                          value={field.value}
-                          className="flex space-x-4"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="all" id="all" />
-                            <label htmlFor="all">全日</label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="weekday" id="weekday" />
-                            <label htmlFor="weekday">曜日指定</label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="custom" id="custom" />
-                            <label htmlFor="custom">期間指定</label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="prompt" id="prompt" />
-                            <label htmlFor="prompt">プロンプト指定</label>
-                          </div>
-                        </RadioGroup>
+                        <div className="flex flex-wrap gap-2">
+                          {dayNames.map((day, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center space-x-2"
+                            >
+                              <Checkbox
+                                id={`day-${String(index)}`}
+                                checked={field.value?.includes(index)}
+                                onCheckedChange={(checked) => {
+                                  const currentValue = field.value ?? [];
+                                  if (checked) {
+                                    field.onChange([...currentValue, index]);
+                                  } else {
+                                    field.onChange(
+                                      currentValue.filter((d) => d !== index),
+                                    );
+                                  }
+                                }}
+                              />
+                              <Label htmlFor={`day-${String(index)}`}>
+                                {day}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -951,187 +1029,109 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
                 />
               </div>
 
-              {bulkEditForm.watch("dateRangeMode") === "weekday" && (
-                <>
-                  <div className="py-2">
-                    <h3 className="mb-2 text-sm font-medium">曜日を選択</h3>
-                    <FormField
-                      control={bulkEditForm.control}
-                      name="selectedDays"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <div className="flex flex-wrap gap-2">
-                              {dayNames.map((day, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-center space-x-2"
-                                >
-                                  <Checkbox
-                                    id={`day-${index}`}
-                                    checked={field.value?.includes(index)}
-                                    onCheckedChange={(checked) => {
-                                      const currentValue = field.value ?? [];
-                                      if (checked) {
-                                        field.onChange([
-                                          ...currentValue,
-                                          index,
-                                        ]);
-                                      } else {
-                                        field.onChange(
-                                          currentValue.filter(
-                                            (d) => d !== index,
-                                          ),
-                                        );
-                                      }
-                                    }}
-                                  />
-                                  <Label htmlFor={`day-${index}`}>{day}</Label>
-                                </div>
-                              ))}
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  {/* 祝日除外チェックボックス */}
-                  <div className="py-2">
-                    <FormField
-                      control={bulkEditForm.control}
-                      name="excludeHolidays"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <FormLabel className="text-sm font-normal">
-                            祝日は除く
-                          </FormLabel>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </>
-              )}
-
-              {bulkEditForm.watch("dateRangeMode") === "custom" && (
-                <div className="grid grid-cols-2 gap-4">
-                  <DatePickerField
-                    control={bulkEditForm.control}
-                    name="startDate"
-                    label="開始日"
-                    placeholder="開始日を選択(任意)"
-                  />
-
-                  <DatePickerField
-                    control={bulkEditForm.control}
-                    name="endDate"
-                    label="終了日"
-                    placeholder="終了日を選択(任意)"
-                  />
-                </div>
-              )}
-
-              {bulkEditForm.watch("dateRangeMode") === "prompt" && (
-                <div className="py-2">
-                  <FormField
-                    control={bulkEditForm.control}
-                    name="prompt"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>プロンプト</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="text"
-                            className="w-full"
-                            placeholder="例: 9:00-18:00の勤務で、昼休憩は60分"
-                            {...field}
-                          />
-                        </FormControl>
-                        <div className="mt-1 text-xs text-muted-foreground">
-                          💡 その他の例: &quot;フレックスタイム制で10:00-19:00&quot; /
-                          &quot;短時間勤務で9:30-15:30、休憩30分&quot; /
-                          &quot;リモートワークで自由な時間&quot;
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              )}
-
-              {(bulkEditForm.watch("dateRangeMode") === "weekday" ||
-                bulkEditForm.watch("dateRangeMode") === "custom" ||
-                bulkEditForm.watch("dateRangeMode") === "all") && (
-                <>
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-medium">勤怠情報</h3>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="flex flex-col gap-2">
-                        <TimePickerFieldForDate
-                          control={bulkEditForm.control}
-                          name="startTime"
-                          showClearButton={false}
-                          minuteStep={dailyWorkMinutes}
-                          label="出勤時間"
+              {/* 祝日除外チェックボックス */}
+              <div className="py-2">
+                <FormField
+                  control={bulkEditForm.control}
+                  name="excludeHolidays"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value ?? undefined}
+                          onCheckedChange={field.onChange}
                         />
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <TimePickerFieldForDate
-                          control={bulkEditForm.control}
-                          name="endTime"
-                          showClearButton={false}
-                          minuteStep={dailyWorkMinutes}
-                          label="退勤時間"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <TimePickerFieldForNumber
-                          control={bulkEditForm.control}
-                          name="breakDuration"
-                          showClearButton={false}
-                          minuteStep={dailyWorkMinutes}
-                          label="休憩時間"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <div>作業内容</div>
-                        <FormField
-                          control={bulkEditForm.control}
-                          name="memo"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>作業内容</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="text"
-                                  className="w-[400px]"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                      </FormControl>
+                      <FormLabel className="text-sm font-normal">
+                        祝日は除く
+                      </FormLabel>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* 勤怠情報 */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium">勤怠情報</h3>
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-4">
+                    <div className="w-[140px]">
+                      <TimePickerFieldForDate
+                        control={bulkEditForm.control}
+                        name="startTime"
+                        showClearButton={false}
+                        minuteStep={dailyWorkMinutes}
+                        label="出勤時間"
+                        showFormMessage={false}
+                      />
+                    </div>
+                    <div className="w-[140px]">
+                      <TimePickerFieldForDate
+                        control={bulkEditForm.control}
+                        name="endTime"
+                        showClearButton={false}
+                        minuteStep={dailyWorkMinutes}
+                        label="退勤時間"
+                        showFormMessage={false}
+                      />
+                    </div>
+                    <div className="w-[140px]">
+                      <TimePickerFieldForNumber
+                        control={bulkEditForm.control}
+                        name="breakDuration"
+                        showClearButton={false}
+                        minuteStep={dailyWorkMinutes}
+                        label="休憩時間"
+                        showFormMessage={false}
+                      />
                     </div>
                   </div>
-                </>
-              )}
-              <div className="mt-4 flex justify-end space-x-2">
+                  {/* バリデーションエラーをまとめて表示 */}
+                  {(bulkEditForm.formState.errors.startTime ||
+                    bulkEditForm.formState.errors.endTime ||
+                    bulkEditForm.formState.errors.breakDuration) && (
+                    <p className="text-sm font-medium text-destructive">
+                      {[
+                        bulkEditForm.formState.errors.startTime?.message,
+                        bulkEditForm.formState.errors.endTime?.message,
+                        bulkEditForm.formState.errors.breakDuration?.message,
+                      ]
+                        .filter(Boolean)
+                        .join(" / ")}
+                    </p>
+                  )}
+                </div>
+                <FormField
+                  control={bulkEditForm.control}
+                  name="memo"
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <FormLabel>作業内容</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          className="w-full max-w-[400px]"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={resetBulkEditForm}
+                  className="w-full sm:w-auto"
                 >
                   キャンセル
                 </Button>
-                <Button type="submit">適用</Button>
+                <Button type="submit" className="w-full sm:w-auto">
+                  適用
+                </Button>
               </div>
             </form>
           </Form>
@@ -1139,92 +1139,71 @@ ${targetDate.getUTCFullYear()}年${targetDate.getUTCMonth() + 1}月分の作業�
       </Dialog>
 
       {/* 編集用モーダルダイアログ */}
-      <Dialog
-        open={editingDate !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setEditingDate(null);
-          }
+      <AttendanceEditDialog
+        key={editingDate?.toISOString() ?? "closed"}
+        isOpen={editingDate !== null}
+        onClose={() => {
+          setEditingDate(null);
         }}
-      >
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>勤怠情報の編集</DialogTitle>
-          </DialogHeader>
-          {editingDate && (
-            <Form {...editForm}>
-              <form
-                onSubmit={editForm.handleSubmit(onEditSubmit)}
-                className="space-y-4"
-              >
-                <div>
-                  <h3 className="mb-2 text-sm font-medium">
-                    {(() => {
-                      const date = new Date(editingDate);
-                      const dayOfWeek = date.getDay();
-                      return `${formatDateAsUTC(editingDate)} (${dayNames[dayOfWeek]})の勤怠情報を編集`;
-                    })()}
-                  </h3>
-                </div>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                    <div className="flex flex-col gap-2">
-                      <TimePickerFieldForDate
-                        control={editForm.control}
-                        name="startTime"
-                        label="出勤時間"
-                        minuteStep={dailyWorkMinutes}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <TimePickerFieldForDate
-                        control={editForm.control}
-                        name="endTime"
-                        label="退勤時間"
-                        minuteStep={dailyWorkMinutes}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <TimePickerFieldForNumber
-                        control={editForm.control}
-                        name="breakDuration"
-                        label="休憩時間"
-                        minuteStep={dailyWorkMinutes}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <FormField
-                        control={editForm.control}
-                        name="memo"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>作業内容</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="text"
-                                className="w-[400px]"
-                                {...field}
-                                value={field.value ?? ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-4 flex justify-end space-x-2">
-                  <Button type="button" variant="outline" onClick={cancelEdit}>
-                    キャンセル
-                  </Button>
-                  <Button type="submit">保存</Button>
-                </div>
-              </form>
-            </Form>
-          )}
-        </DialogContent>
-      </Dialog>
+        selectedDate={editingDate ?? new Date()}
+        onSubmit={onEditSubmit}
+        defaultValues={defaultValuesForEdit}
+        basicStartTime={basicStartTime}
+        basicEndTime={basicEndTime}
+        basicBreakDuration={basicBreakDuration}
+        basicMemo={basicMemo}
+        dailyWorkMinutes={dailyWorkMinutes}
+        holidays={holidays}
+      />
+
+      {/* freee再連携促進ダイアログ */}
+      <FreeeReauthDialog
+        open={showReauthDialog}
+        onOpenChange={setShowReauthDialog}
+      />
+
+      <ExportDialog
+        open={isExportDialogOpen}
+        onOpenChange={setIsExportDialogOpen}
+        onExport={handleExport}
+        workReportTemplates={workReportTemplates}
+        invoiceTemplates={invoiceTemplates}
+        targetDate={targetDate}
+        // freee関連props
+        isFreeeConnected={isFreeeConnected}
+        isCheckingFreeeConnection={isCheckingFreeeConnection}
+        partners={partners}
+        selectedPartnerId={selectedPartnerId}
+        onPartnerIdChange={setSelectedPartnerId}
+        workReportId={workReportId}
+        clientName={clientName}
+        workTimeText={workTimeText}
+        baseAmount={amountCalculation?.baseAmount ?? 0}
+        taxAmount={amountCalculation?.taxAmount ?? 0}
+        onFreeeInvoiceCreate={handleCreateFreeeInvoice}
+        onConnectionStart={() => {
+          setManualPending(true);
+        }}
+      />
+
+      {/* 備考編集ダイアログ */}
+      <RemarksEditDialog
+        isOpen={isRemarksDialogOpen}
+        onClose={() => {
+          setIsRemarksDialogOpen(false);
+        }}
+        onSubmit={handleRemarksSubmit}
+        defaultValue={remarks}
+      />
+
+      {/* メールテンプレート選択ダイアログ */}
+      <EmailTemplateSelectDialog
+        open={isEmailTemplateDialogOpen}
+        onOpenChange={setIsEmailTemplateDialogOpen}
+        emailTemplates={emailTemplates}
+        placeholderValues={emailPlaceholderValues}
+        onSend={handleEmailSend}
+      />
     </div>
   );
 }

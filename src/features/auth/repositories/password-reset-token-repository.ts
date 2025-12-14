@@ -1,25 +1,34 @@
-import { db } from "@/repositories/db";
+import type { PasswordResetToken } from "@prisma/client";
 
-export const getPasswordResetTokenByToken = async (token: string) => {
+import { db } from "@/repositories/db";
+import { type Result, err, ok } from "@/types/result";
+
+export const getPasswordResetTokenByToken = async (
+  token: string,
+): Promise<Result<PasswordResetToken | null>> => {
   try {
     const passwordResetToken = await db.passwordResetToken.findUnique({
       where: { token },
     });
 
-    return passwordResetToken;
-  } catch {
-    return null;
+    return ok(passwordResetToken);
+  } catch (error) {
+    console.error("Error fetching password reset token by token:", error);
+    return err("パスワードリセットトークンの取得に失敗しました");
   }
 };
 
-export const getPasswordResetTokenByEmail = async (email: string) => {
+export const getPasswordResetTokenByEmail = async (
+  email: string,
+): Promise<Result<PasswordResetToken | null>> => {
   try {
     const passwordResetToken = await db.passwordResetToken.findFirst({
       where: { email },
     });
 
-    return passwordResetToken;
-  } catch {
-    return null;
+    return ok(passwordResetToken);
+  } catch (error) {
+    console.error("Error fetching password reset token by email:", error);
+    return err("パスワードリセットトークンの取得に失敗しました");
   }
 };

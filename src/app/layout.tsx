@@ -12,15 +12,14 @@ const mono = Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | 勤怠管理システム",
-    default: "勤怠管理システム",
+    template: "%s | Flow Report",
+    default: "Flow Report",
   },
-  description:
-    "勤怠管理システム",
+  description: "Flow Report",
   icons: {
     icon: [
       {
-        url: "/icon.svg",
+        url: "/favicon.svg",
         type: "image/svg+xml",
       },
       {
@@ -40,19 +39,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={mono.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <ClientLayout>
             <TransitionProvider>
               {children}
-              <Toaster
-                richColors
-                closeButton
-              />
+              <Toaster richColors closeButton />
             </TransitionProvider>
           </ClientLayout>
         </ThemeProvider>

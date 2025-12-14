@@ -47,7 +47,7 @@ type IsUndefinedUnion<T> = [T] extends [undefined]
 
 // シリアライズされた型
 export type SerializedType<T, UseBranded = true> = T extends null
-  ? undefined
+  ? null
   : T extends Primitive
     ? T
     : T extends StandardBuiltInObject
@@ -79,7 +79,7 @@ export function Serialize<T, UseBranded extends boolean = true>(
   value: T,
 ): SerializedType<T, UseBranded> {
   if (value === null) {
-    return undefined as SerializedType<T, UseBranded>;
+    return null as SerializedType<T, UseBranded>;
   }
 
   if (isPrimitive(value) || isStandardBuiltInObject(value)) {

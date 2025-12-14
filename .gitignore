@@ -5,6 +5,7 @@
 /.pnp
 .pnp.js
 .yarn/install-state.gz
+.pnpm-store
 
 # testing
 /coverage
@@ -26,17 +27,16 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
 # local env files
-.env*.local
-.env
-.env.production
-.env.test
-.env.staging
+.env*
 
 # keep these env files
 !.env.example
 !.env.development
+!.env.production
+!.env.test
 
 # vercel
 .vercel
@@ -45,7 +45,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 public_key_filename.txt
-work-time-management-user-deploy_accessKeys.csv
+flow-report-user-deploy_accessKeys.csv
+
+# eslint
+.eslintcache
 
 # prisma
 /prisma/generated
@@ -55,3 +58,7 @@ work-time-management-user-deploy_accessKeys.csv
 
 # serena cache
 .serena/cache/
+
+# Claude Code
+.claude/settings.local.json
+.env*.local

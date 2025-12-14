@@ -1,27 +1,23 @@
 import FormError from "./error-alert";
 import FormSuccess from "./success-alert";
 
-type MessageState = {
-  message: string;
-  date: Date;
-};
+interface MessageDisplayProps {
+  error: string;
+  success: string;
+  onCloseError?: () => void;
+  onCloseSuccess?: () => void;
+}
 
-type MessageDisplayProps = {
-  error: MessageState;
-  success: MessageState;
-};
-
-export const MessageDisplay = ({ error, success }: MessageDisplayProps) => {
+export const MessageDisplay = ({
+  error,
+  success,
+  onCloseError,
+  onCloseSuccess,
+}: MessageDisplayProps) => {
   return (
     <>
-      <FormError
-        message={error.message}
-        resetSignal={error.date.getTime()}
-      />
-      <FormSuccess
-        message={success.message}
-        resetSignal={success.date.getTime()}
-      />
+      <FormError message={error} onClose={onCloseError} />
+      <FormSuccess message={success} onClose={onCloseSuccess} />
     </>
   );
-}; 
+};

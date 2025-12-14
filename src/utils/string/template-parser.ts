@@ -27,11 +27,22 @@ export function extractTemplateVariables(template: string): string[] {
  * @returns 有効な場合はtrue
  */
 export function isValidTemplateString(template: string): boolean {
-  // 変数の構文が正しいかチェック（${name}の形式）
-  const validSyntax = /\${(\w+)}/g.test(template);
   // 閉じ忘れがないかチェック（${の数と}の数が一致）
   const openCount = (template.match(/\${/g) ?? []).length;
   const closeCount = (template.match(/}/g) ?? []).length;
 
-  return validSyntax && openCount === closeCount;
+  if (openCount !== closeCount) {
+    return false;
+  }
+
+  // 変数がない場合は有効
+  if (openCount === 0) {
+    return true;
+  }
+
+  // 変数の構文が正しいかチェック（${name}や${日本語キー}の形式）
+  const variables = template.match(/\${[^}]*}/g) ?? [];
+  const validVariablePattern = /^\${.+}$/;
+
+  return variables.every((v) => validVariablePattern.test(v));
 }

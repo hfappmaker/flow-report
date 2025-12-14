@@ -2,7 +2,7 @@ name: Deploy
 on:
   push:
     paths-ignore:
-      - '**.md'
+      - "**.md"
     branches:
       - main
 
@@ -22,16 +22,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
 
       - name: Build an Image
         run: docker image build -t temp-api-image:latest .
 
       - name: Configure AWS credencials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: ${{ env.AWS_REGION }}
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
@@ -49,15 +49,15 @@ jobs:
           echo $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }} > api-image-uri.txt
 
       - name: Upload the image uri file as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v5
         with:
           name: api-image-uri
           path: api-image-uri.txt
 
       # - name: Install dependencies
-      #   run: npm install
+      #   run: pnpm install
       # - name: Apply all pending migrations to the database
-      #   run: npx prisma migrate deploy
+      #   run: pnpm exec prisma migrate deploy
       #   env:
       #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
   deploy:
@@ -65,16 +65,16 @@ jobs:
     needs: build-and-push
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Configure AWS credencials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: ${{ env.AWS_REGION }}
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
 
       - name: Download the artifact
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v6.0.0
         with:
           name: api-image-uri
           path: artifacts
@@ -88,11 +88,11 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION_API }}
-          container-name: work-time-management-container
+          container-name: flow-report-container
           image: ${{ env.API_IMAGE_URI }}
 
       - name: Deploy ECS Task
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.render-task-def.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
@@ -107,8 +107,8 @@ jobs:
       #     subnets: ${{ secrets.SUBNET_NAME }}
       #     security-groups: ${{ secrets.SECURITY_GROUP_NAME }}
       #     assign-public-ip: ENABLED
-      #     override-container: work-time-management-container
+      #     override-container: flow-report-container
       #     override-container-command: |
       #       sh
       #       -c
-      #       npx prisma migrate deploy
+      #       pnpm exec prisma migrate deploy

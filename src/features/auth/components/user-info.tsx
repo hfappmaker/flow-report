@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { User } from "@/features/auth/types/user";
 
-type UserInfoProps = {
+interface UserInfoProps {
   user?: User;
   label: string;
 }

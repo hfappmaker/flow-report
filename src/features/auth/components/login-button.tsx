@@ -2,11 +2,17 @@
 
 import { useRouter } from "next/navigation";
 
-import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useTransitionContext } from "@/contexts/transition-context";
 import LoginForm from "@/features/auth/components/login-form";
 
-type LoginButtonProps = {
+interface LoginButtonProps {
   children: React.ReactNode;
   mode?: "modal" | "redirect";
   asChild?: boolean;
@@ -41,10 +47,7 @@ const LoginButton = ({
   }
 
   return (
-    <span
-      onClick={handleLogin}
-      className="cursor-pointer"
-    >
+    <span onClick={handleLogin} className="cursor-pointer">
       {children}
     </span>
   );

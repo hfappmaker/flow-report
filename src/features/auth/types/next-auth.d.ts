@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/consistent-type-definitions */
-import { UserRole } from "@prisma/client";
+import type { UserRole } from "@prisma/client";
 /* eslint-disable unused-imports/no-unused-imports */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { DefaultJWT } from "next-auth/jwt";

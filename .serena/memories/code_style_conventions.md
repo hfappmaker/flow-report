@@ -13,17 +13,55 @@
 - Props型を明示的に定義
 - 関数コンポーネントを優先
 
+## オプショナル値の扱い
+- **`undefined` ではなく `null` を使用**
+- Zodスキーマでは `optional()` ではなく `nullable()` を使用
+- react-hook-formなどのフォームフィールド値も `null` で統一
+- 例: `z.string().nullable()`, `z.date().nullable()`
+- データベース型とフォーム型の一貫性を保つため
+
+## テンプレートリテラルでの型安全性
+- 数値を使用する場合は `String()` で明示的に変換
+- 例: `` `${String(month + 1)}月${String(day)}日` ``
+- ESLint警告 `@typescript-eslint/restrict-template-expressions` を回避
+
+## Promise処理のベストプラクティス
+- イベントハンドラでPromise返却関数を使う場合は `void` 演算子を使用
+- 例: `onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}`
+- react-hook-formは内部で `preventDefault()` を処理するため不要
+- ESLint警告 `@typescript-eslint/no-misused-promises` を回避
+
+## react-hook-formの型定義
+- `Resolver` 型を明示的にインポートして使用
+- 例: `import { useForm, Resolver } from "react-hook-form"`
+- 型キャスト: `resolver: zodResolver(schema) as Resolver<FormValues>`
+
 ## フォルダ構造
 ```
 src/
   ├── app/              // ルーティング
+  │   ├── api/          // API定義
+  ├── assets/           // 静的ファイル
   ├── components/       // 汎用コンポーネント
+  ├── config/           // グローバル設定
   ├── features/         // 機能モジュール
+  │   ├── actions/      // Server Actions
   │   ├── assets/       // 機能固有の静的ファイル
   │   ├── components/   // 機能固有のコンポーネント
   │   ├── hooks/        // 機能固有のフック
+  │   ├── libs/         // 機能固有のライブラリ
   │   ├── repositories/ // 機能固有のリポジトリ
-  │   └── types/        // 機能固有の型定義
+  │   ├── schemas/      // Zodスキーマ
+  │   ├── stores/       // 状態管理
+  │   ├── testing/      // テストユーティリティ
+  │   ├── types/        // 機能固有の型定義
+  │   └── utils/        // 機能固有のユーティリティ
+  ├── hooks/            // 汎用フック
+  ├── libs/             // 汎用ライブラリ
+  ├── repositories/     // 汎用リポジトリ
+  ├── stores/           // 汎用状態管理
+  ├── testing/          // 汎用テストユーティリティ
+  ├── types/            // 汎用型定義
   └── utils/            // 汎用ユーティリティ
 ```
 
@@ -32,6 +70,34 @@ src/
 - カスタムCSSの代わりにTailwindクラスを使用
 - `<br />`を使わない
 - 再利用可能なスタイルはtailwind.configで定義
+
+## リポジトリ層のエラーハンドリング
+- すべてのリポジトリ関数は例外をスローせず `Result<T>` 型を返す
+- `@/types/result` から `Result`, `ok`, `err` をインポート
+- データベース操作はtry-catchでラップし、エラーメッセージを返す
+- 例: `return ok(entity)` または `return err("エラーメッセージ")`
+
+## ローディング処理のルール
+- ローディング処理には必ず `useTransitionContext` を使用
+- `@/contexts/transition-context` からインポート
+- `useState` で個別のローディング状態を管理しない
+- Reactの `useTransition` を直接使用しない
+- カスタムのローディングスピナーやオーバーレイを実装しない
+- ユーザーからの明示的な指示がある場合のみ例外を許可
+
+## フォーム作成ルール
+- フォームには必ず `react-hook-form` + `zodResolver` パターンを使用
+- 各フィールドに個別の `useState` を使用しない
+- Zodスキーマなしで手動バリデーションを行わない
+- バリデーションスキーマは `features/[feature]/schemas/` に定義
+- `@/components/ui/form` コンポーネント（Form, FormField, FormControl, FormMessage）を使用
+- 参考実装: `src/features/contract/components/contract-form.tsx`
+
+## UIコンポーネント使用ルール
+- 基本UIコンポーネントは必ず `src/components/ui/` から使用
+- ネイティブHTML要素（button, input, label等）の直接使用を避ける
+- カスタムUIコンポーネントの新規作成を避ける
+- 利用可能: Button, Input, Label, Checkbox, Select, Textarea, Dialog, Card, Badge, Avatar, Tabs, Switch, RadioGroup, DatePicker, TimePicker, DropdownMenu, Sheet, Popover, Form, Loading, Feedback
 
 ## その他
 - barrel filesを避ける（tree-shakingの問題）

@@ -1,7 +1,7 @@
 "use server";
 import Stripe from "stripe";
 
-import { currentUser } from "@/features/auth/lib/auth";
+import { currentUser } from "@/features/auth/libs/auth";
 import {
   stripe,
   TRIAL_PERIOD_DAYS,
@@ -12,6 +12,7 @@ import {
   getStripeCustomerByUserId,
 } from "@/features/subscription/repositories/subscription-repository";
 import { CheckoutSessionResult } from "@/features/subscription/types/subscription";
+import { getAppUrl } from "@/utils/get-app-url";
 
 export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
   try {
@@ -30,33 +31,40 @@ export async function createCheckoutSession(): Promise<CheckoutSessionResult> {
       return { error: "サーバー設定エラーが発生しました" };
     }
 
-    // アプリケーションのベースURLを取得
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
-    if (!baseUrl) {
-      console.error("NEXT_PUBLIC_APP_URL is not defined");
+    // アプリケーションのベースURLを取得（環境に応じて自動決定）
+    let baseUrl: string;
+    try {
+      baseUrl = getAppUrl();
+    } catch (error) {
+      console.error("Failed to get application URL:", error);
       return { error: "サーバー設定エラーが発生しました" };
     }
 
-    let subscriptionInfo;
-    try {
-      subscriptionInfo = await getSubscriptionInfoByUserId(user.id);
-    } catch (error) {
-      if (error instanceof Error && error.message.includes("does not exist")) {
-        return {
-          error: "ユーザー情報が見つかりません。再度ログインしてください。",
-        };
-      }
-      throw error;
+    const subscriptionInfoResult = await getSubscriptionInfoByUserId(user.id);
+    if (!subscriptionInfoResult.success) {
+      console.error(
+        "Error fetching subscription info:",
+        subscriptionInfoResult.error,
+      );
+      return { error: subscriptionInfoResult.error };
     }
+    const subscriptionInfo = subscriptionInfoResult.data;
 
     // 既に有効なサブスクリプションがある場合
-    if (subscriptionInfo?.status === "ACTIVE") {
+    if (subscriptionInfo?.status === "active") {
       return { error: "既に有効なサブスクリプションがあります" };
     }
 
     // StripeCustomer情報を取得
-    const stripeCustomer = await getStripeCustomerByUserId(user.id);
-    let customerId = stripeCustomer?.stripeCustomerId;
+    const stripeCustomerResult = await getStripeCustomerByUserId(user.id);
+    if (!stripeCustomerResult.success) {
+      console.error(
+        "Error fetching stripe customer:",
+        stripeCustomerResult.error,
+      );
+      return { error: stripeCustomerResult.error };
+    }
+    let customerId = stripeCustomerResult.data?.stripeCustomerId;
 
     // Stripeカスタマーが存在しない場合は作成（API呼び出しを最小限に）
     if (!customerId) {

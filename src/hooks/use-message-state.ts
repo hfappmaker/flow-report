@@ -1,42 +1,51 @@
-import { useState } from "react";
-
-type MessageState = {
-  message: string;
-  date: Date;
-};
+import { useState, useCallback } from "react";
 
 type MessageType = "error" | "success";
 
 export const useMessageState = () => {
-  const [error, setError] = useState<MessageState>({
-    message: "",
-    date: new Date(),
-  });
-  const [success, setSuccess] = useState<MessageState>({
-    message: "",
-    date: new Date(),
-  });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const showError = (message: string) => {
-    setError({ message, date: new Date() });
+  const showError = useCallback((message: string) => {
+    setError(message);
+  }, []);
+
+  const showSuccess = useCallback((message: string) => {
+    setSuccess(message);
+  }, []);
+
+  const setMessage = useCallback(
+    ({ type, message }: { type: MessageType; message: string }) => {
+      if (type === "error") {
+        showError(message);
+      } else if (type === "success") {
+        showSuccess(message);
+      }
+    },
+    [showError, showSuccess],
+  );
+
+  const clearError = useCallback(() => {
+    setError("");
+  }, []);
+
+  const clearSuccess = useCallback(() => {
+    setSuccess("");
+  }, []);
+
+  const clearMessages = useCallback(() => {
+    setError("");
+    setSuccess("");
+  }, []);
+
+  return {
+    error,
+    success,
+    showError,
+    showSuccess,
+    setMessage,
+    clearError,
+    clearSuccess,
+    clearMessages,
   };
-
-  const showSuccess = (message: string) => {
-    setSuccess({ message, date: new Date() });
-  };
-
-  const setMessage = ({ type, message }: { type: MessageType; message: string }) => {
-    if (type === "error") {
-      showError(message);
-    } else if (type === "success") {
-      showSuccess(message);
-    }
-  };
-
-  const clearMessages = () => {
-    setError({ message: "", date: new Date() });
-    setSuccess({ message: "", date: new Date() });
-  };
-
-  return { error, success, showError, showSuccess, setMessage, clearMessages };
-}; 
+};

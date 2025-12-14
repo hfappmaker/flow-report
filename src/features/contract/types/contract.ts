@@ -1,5 +1,5 @@
-import { Contract as PrismaContract } from "@prisma/client";
-import { StrictOmit } from "ts-essentials";
+import type { Contract as PrismaContract } from "@prisma/client";
+import type { StrictOmit } from "ts-essentials";
 
 import { SerializedType } from "@/utils/serialization/serialization-utils";
 

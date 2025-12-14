@@ -1,34 +1,48 @@
 # 推奨コマンド
 
 ## 開発コマンド
-- `npm run dev`: 開発サーバー起動
-- `npm run dev:turbo`: Turboモードで開発サーバー起動
-- `npm run dev:inspect`: Node.jsインスペクターで開発サーバー起動
-- `npm run dev:test`: テスト環境で開発サーバー起動（ポート5000）
+- `pnpm run dev`: 開発サーバー起動
+- `pnpm run dev:turbo`: Turboモードで開発サーバー起動
+- `pnpm run dev:inspect`: Node.jsインスペクターで開発サーバー起動
 
 ## ビルド・デプロイ
-- `npm run build`: プロダクションビルド
-- `npm start`: プロダクション起動（ポート80、マイグレーション実行）
+- `pnpm run build`: プロダクションビルド
+- `pnpm start`: プロダクション起動（ポート80、マイグレーション実行）
 
 ## コード品質
-- `npm run lint`: ESLintによるコード解析
-- `prettier --write .`: コードフォーマット
+- `pnpm exec tsc --noEmit`: 型チェック
+- `pnpm exec prettier --write .`: コードフォーマット
+- `pnpm exec prettier --write "<file>"`: 特定ファイルのフォーマット
+
+**注意**: ESLint (`pnpm run lint`, `pnpm exec eslint`) は直接実行しない（CLAUDE.mdで禁止）
 
 ## テスト
-- `npm run test:j`: Jest単体テスト
-- `npm run test:p`: Playwrightテスト
-- `npm run test:p:ui`: PlaywrightテストUI
-- `npm run test:p:debug`: Playwrightデバッグモード
-- `npm run test:p:headed`: Playwrightヘッドモード
+- `pnpm run test`: Vitestウォッチモード
+- `pnpm run test:run`: Vitest単発実行
+- `pnpm run test:ui`: Vitest UI
+- `pnpm run test:coverage`: カバレッジレポート生成
+- `pnpm run test:p`: Playwrightテスト
+- `pnpm run test:p:ui`: PlaywrightテストUI
+- `pnpm run test:p:debug`: Playwrightデバッグモード
+- `pnpm run test:p:headed`: Playwrightヘッドモード
 
 ## データベース
-- `npx prisma generate`: Prismaクライアント生成
-- `npx prisma migrate deploy`: マイグレーション実行
-- `npm run seed:test-users`: テストユーザーデータ挿入
+- `pnpm exec prisma generate`: Prismaクライアント生成
+- `pnpm exec prisma migrate deploy`: マイグレーション実行
 
-## 基本コマンド（Linux）
-- `ls`: ファイル一覧
-- `cd`: ディレクトリ移動
-- `grep`: テキスト検索
-- `find`: ファイル検索
-- `git`: バージョン管理
+- `pnpm run reset:dev`: 開発DBリセット＆シード
+- `pnpm run reset:preview`: プレビューDBリセット＆シード
+
+## Git Worktree
+- `pnpm run worktree:init`: Git worktree初期化
+- `pnpm run worktree:list`: Git worktree一覧
+- `pnpm run worktree:remove`: Git worktree削除
+
+## 分析
+- `pnpm run analyze`: バンドル分析
+
+## Claude Codeカスタムコマンド
+- `/commit-push`: Prettier自動フォーマット→コミット→プッシュの一括実行
+- `/create-pr`: `/commit-push`を実行後、PRを作成
+- `/refactor`: リファクタリング支援
+- `/sync-serena-memories`: Serenaメモリーをコードベースと同期

@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -22,13 +21,15 @@ import { register } from "@/features/auth/actions/register";
 import CardWrapper from "@/features/auth/components/card-wrapper";
 import { PasswordInput } from "@/features/auth/components/password-input";
 import { RegisterSchema } from "@/features/auth/schemas/register";
+import { useTransitionContext } from "@/contexts/transition-context";
 import { useIsClient } from "@/hooks/use-is-client";
 import { useMessageState } from "@/hooks/use-message-state";
 
 const RegisterForm = () => {
   const isClient = useIsClient();
-  const { error, success, showError, showSuccess } = useMessageState();
-  const [isPending, startTransition] = useTransition();
+  const { error, success, showError, showSuccess, clearError, clearSuccess } =
+    useMessageState();
+  const { isPending, startTransition } = useTransitionContext();
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
@@ -64,10 +65,7 @@ const RegisterForm = () => {
       showSocial
     >
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
             <FormField
               control={form.control}
@@ -150,7 +148,12 @@ const RegisterForm = () => {
               )}
             />
           </div>
-          <MessageDisplay error={error} success={success} />
+          <MessageDisplay
+            error={error}
+            success={success}
+            onCloseError={clearError}
+            onCloseSuccess={clearSuccess}
+          />
           <Button
             type="submit"
             disabled={isPending}

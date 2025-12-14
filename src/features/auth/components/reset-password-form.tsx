@@ -16,13 +16,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useMessageState } from "@/hooks/use-message-state";
 import { reset } from "@/features/auth/actions/reset";
 import CardWrapper from "@/features/auth/components/card-wrapper";
 import { ResetSchema } from "@/features/auth/schemas/reset";
+import { useMessageState } from "@/hooks/use-message-state";
 
 const ResetPasswordForm = () => {
-  const { error, success, showError, showSuccess } = useMessageState();
+  const { error, success, showError, showSuccess, clearError, clearSuccess } =
+    useMessageState();
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<z.infer<typeof ResetSchema>>({
@@ -53,10 +54,7 @@ const ResetPasswordForm = () => {
       backButtonHref="/auth/login"
     >
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
             <FormField
               control={form.control}
@@ -77,7 +75,12 @@ const ResetPasswordForm = () => {
               )}
             />
           </div>
-          <MessageDisplay error={error} success={success} />
+          <MessageDisplay
+            error={error}
+            success={success}
+            onCloseError={clearError}
+            onCloseSuccess={clearSuccess}
+          />
           <Button
             disabled={isPending}
             type="submit"

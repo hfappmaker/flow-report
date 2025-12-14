@@ -1,11 +1,10 @@
 "use server";
 
-import { currentUser } from "@/features/auth/lib/auth";
+import { currentUser } from "@/features/auth/libs/auth";
 import { stripe } from "@/features/subscription/libs/stripe";
-import {
-  getStripeCustomerByUserId,
-} from "@/features/subscription/repositories/subscription-repository";
+import { getStripeCustomerByUserId } from "@/features/subscription/repositories/subscription-repository";
 import { CustomerPortalSessionResult } from "@/features/subscription/types/subscription";
+import { getAppUrl } from "@/utils/get-app-url";
 
 export async function createCustomerPortalSession(): Promise<CustomerPortalSessionResult> {
   try {
@@ -14,15 +13,22 @@ export async function createCustomerPortalSession(): Promise<CustomerPortalSessi
       return { error: "認証が必要です" };
     }
 
-    const stripeCustomer = await getStripeCustomerByUserId(user.id);
+    const stripeCustomerResult = await getStripeCustomerByUserId(user.id);
+    if (!stripeCustomerResult.success) {
+      return { error: stripeCustomerResult.error };
+    }
+    const stripeCustomer = stripeCustomerResult.data;
 
     if (!stripeCustomer?.stripeCustomerId) {
       return { error: "顧客情報が見つかりません" };
     }
 
-    // アプリケーションのベースURLを取得
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
-    if (!baseUrl) {
+    // アプリケーションのベースURLを取得（環境に応じて自動決定）
+    let baseUrl: string;
+    try {
+      baseUrl = getAppUrl();
+    } catch (error) {
+      console.error("Failed to get application URL:", error);
       return { error: "サーバー設定エラーが発生しました" };
     }
 
