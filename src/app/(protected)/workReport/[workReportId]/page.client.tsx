@@ -967,7 +967,7 @@ export default function ClientWorkReportPage({
               {/* 適用する期間 */}
               <div>
                 <h3 className="mb-2 text-sm font-medium">適用する期間</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <DatePickerField
                     control={bulkEditForm.control}
                     name="startDate"
