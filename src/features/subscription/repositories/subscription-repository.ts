@@ -15,9 +15,9 @@ export async function upsertStripeCustomer(
   created: Date,
 ): Promise<Result<StripeCustomer>> {
   try {
-    // 既存のStripeCustomerをstripeCustomerIdで検索
+    // 既存のStripeCustomerをuserIdで検索
     const existingCustomer = await db.stripeCustomer.findUnique({
-      where: { stripeCustomerId },
+      where: { userId },
     });
 
     if (existingCustomer && created < existingCustomer.created) {
@@ -25,14 +25,13 @@ export async function upsertStripeCustomer(
     }
 
     const customer = await db.stripeCustomer.upsert({
-      where: { stripeCustomerId },
+      where: { userId },
       create: {
         userId,
         stripeCustomerId,
         created,
       },
       update: {
-        userId,
         stripeCustomerId,
         created,
       },
