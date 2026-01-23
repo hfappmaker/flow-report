@@ -1,12 +1,14 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Roboto_Mono as Mono } from "next/font/google";
-import "./globals.css";
 import { ThemeProvider } from "next-themes";
 
+import "./globals.css";
+
+import ClientLayout from "./client-layout";
 import { Toaster } from "@/components/ui/sonner";
 import { TransitionProvider } from "@/contexts/transition-context";
 
-import ClientLayout from "./client-layout";
 
 const mono = Mono({ subsets: ["latin"] });
 
@@ -47,6 +49,7 @@ export default function RootLayout({
             </TransitionProvider>
           </ClientLayout>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
