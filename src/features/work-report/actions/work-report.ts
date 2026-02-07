@@ -151,7 +151,7 @@ export const updateWorkReportStatusAction = async (
   if (!result.success) {
     return { success: false, error: result.error };
   }
-  revalidatePath(`/workReport/${result.data.contractId}/${result.data.id}`);
+  revalidatePath(`/work-report/${result.data.contractId}/${result.data.id}`);
   return {
     success: true,
     data: convertPrismaWorkReportToWorkReportDto(result.data),
