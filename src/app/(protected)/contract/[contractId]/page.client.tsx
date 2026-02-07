@@ -86,7 +86,7 @@ export default function ContractClientPage({
 
   const handleNavigation = (workReportId: string) => {
     startTransition(() => {
-      router.push(`/workReport/${workReportId}`);
+      router.push(`/work-report/${workReportId}`);
     });
   };
 

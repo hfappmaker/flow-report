@@ -56,7 +56,7 @@ export const updateWorkReportAttendanceAction = async (
   if (!result.success) {
     return { success: false, error: result.error };
   }
-  revalidatePath(`/workReport/${workReportId}`);
+  revalidatePath(`/work-report/${workReportId}`);
   return { success: true, data: result.data };
 };
 
