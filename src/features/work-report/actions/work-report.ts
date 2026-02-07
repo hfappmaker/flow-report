@@ -58,7 +58,7 @@ export const createWorkReportAction = async (
   if (!result.success) {
     return { success: false, error: result.error };
   }
-  revalidatePath(`/workReport/${contractId}`);
+  revalidatePath(`/work-report/${contractId}`);
   return {
     success: true,
     data: convertPrismaWorkReportToWorkReportDto(result.data),
@@ -95,7 +95,7 @@ export const updateWorkReportAttendancesAction = async (
   if (!result.success) {
     return { success: false, error: result.error };
   }
-  revalidatePath(`/workReport/${workReportId}`);
+  revalidatePath(`/work-report/${workReportId}`);
   return {
     success: true,
     data: convertPrismaWorkReportToWorkReportDto(result.data),
@@ -168,7 +168,7 @@ export const updateWorkReportRemarksAction = async (
   if (!result.success) {
     return { success: false, error: result.error };
   }
-  revalidatePath(`/workReport/${result.data.contractId}/${result.data.id}`);
+  revalidatePath(`/work-report/${result.data.contractId}/${result.data.id}`);
   return {
     success: true,
     data: convertPrismaWorkReportToWorkReportDto(result.data),

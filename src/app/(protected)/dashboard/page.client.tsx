@@ -208,7 +208,7 @@ export default function DashboardClientPage({
 
   const handleNavigation = (reportId: string) => {
     startTransition(() => {
-      router.push(`/workReport/${reportId}`);
+      router.push(`/work-report/${reportId}`);
     });
   };
 
