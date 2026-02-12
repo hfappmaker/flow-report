@@ -1,6 +1,9 @@
 ---
 name: refactoring-investigator
-description: Use this agent to investigate code quality issues and identify refactoring opportunities. This agent analyzes code to find technical debt, code smells, duplication, complexity issues, and anti-patterns, then provides actionable refactoring recommendations. Examples:\n\n<example>\nuser: "調査して、リファクタリングすべき箇所を教えて"\nassistant: "Let me use the refactoring-investigator agent to analyze the codebase and identify refactoring opportunities."\n<commentary>\nThe user wants to identify areas that need refactoring, so launch the refactoring-investigator agent.\n</commentary>\n</example>\n\n<example>\nuser: "This feature has grown complex. What should we refactor?"\nassistant: "I'll use the refactoring-investigator agent to analyze this feature and identify specific refactoring opportunities."\n<commentary>\nClear request for refactoring analysis, use the specialized agent.\n</commentary>\n</example>\n\n<example>\nuser: "Before starting the new feature, can you check if there's technical debt we should address?"\nassistant: "Let me launch the refactoring-investigator agent to assess technical debt and recommend what to address first."\n<commentary>\nProactive technical debt assessment requires the refactoring investigator.\n</commentary>\n</example>
+description: >
+  Use this agent to investigate code quality issues and identify refactoring opportunities.
+  This agent analyzes code to find technical debt, code smells, duplication, complexity issues,
+  and anti-patterns, then provides actionable refactoring recommendations.
 model: sonnet
 color: yellow
 ---
