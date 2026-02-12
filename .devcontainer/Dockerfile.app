@@ -29,8 +29,8 @@ ENV PNPM_HOME=/root/.local/share/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 RUN pnpm config set global-bin-dir $PNPM_HOME
 
-# Claude Code CLIのインストール
-RUN pnpm add -g @anthropic-ai/claude-code
+# Claude Code CLIのインストール（ネイティブインストール）
+RUN curl -fsSL https://claude.ai/install.sh | sh
 # Playwright browserのインストール
 RUN pnpm dlx playwright install
 RUN pnpm dlx playwright install-deps
