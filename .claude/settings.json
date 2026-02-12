@@ -78,17 +78,6 @@
       "mcp__next-devtools__nextjs_docs",
       "mcp__next-devtools__nextjs_runtime",
       "mcp__next-devtools__upgrade_nextjs_16",
-      "mcp__playwright__browser_click",
-      "mcp__playwright__browser_console_messages",
-      "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_press_key",
-      "mcp__playwright__browser_snapshot",
-      "mcp__playwright__browser_tab_list",
-      "mcp__playwright__browser_tab_new",
-      "mcp__playwright__browser_tab_select",
-      "mcp__playwright__browser_type",
-      "mcp__playwright__browser_wait_for",
-      "mcp__postgresql__query",
       "mcp__serena__check_onboarding_performed",
       "mcp__serena__find_file",
       "mcp__serena__find_referencing_symbols",
@@ -115,7 +104,8 @@
   "enabledMcpjsonServers": [
     "next-devtools",
     "serena",
-    "github"
+    "github",
+    "context7"
   ],
   "outputStyle": "default"
 }
