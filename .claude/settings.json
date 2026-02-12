@@ -107,5 +107,6 @@
     "github",
     "context7"
   ],
-  "outputStyle": "default"
+  "outputStyle": "default",
+  "enabledPlugins": {}
 }
