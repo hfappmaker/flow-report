@@ -103,4 +103,3 @@ src/
 - barrel filesを避ける（tree-shakingの問題）
 - 直接インポートを使用
 - 環境変数は.envファイルで管理
-- Prismaランタイムライブラリのインポートを避ける

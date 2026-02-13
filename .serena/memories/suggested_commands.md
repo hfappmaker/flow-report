@@ -7,7 +7,6 @@
 
 ## ビルド・デプロイ
 - `pnpm run build`: プロダクションビルド
-- `pnpm start`: プロダクション起動（ポート80、マイグレーション実行）
 
 ## コード品質
 - `pnpm exec tsc --noEmit`: 型チェック
@@ -29,9 +28,6 @@
 ## データベース
 - `pnpm exec prisma generate`: Prismaクライアント生成
 - `pnpm exec prisma migrate deploy`: マイグレーション実行
-
-- `pnpm run reset:dev`: 開発DBリセット＆シード
-- `pnpm run reset:preview`: プレビューDBリセット＆シード
 
 ## Git Worktree
 - `pnpm run worktree:init`: Git worktree初期化
