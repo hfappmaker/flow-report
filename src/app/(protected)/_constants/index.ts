@@ -34,9 +34,10 @@ export const NAV_LINKS: NavLink[] = [
     path: "/user-info",
     icon: UserCog,
   },
-  {
-    title: "サブスクリプション情報",
-    path: "/subscription-info",
-    icon: CreditCard,
-  },
+  // TODO: サブスクリプション機能を再有効化する際は以下のエントリを復活させる
+  // {
+  //   title: "サブスクリプション情報",
+  //   path: "/subscription-info",
+  //   icon: CreditCard,
+  // },
 ];
