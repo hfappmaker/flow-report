@@ -1,13 +1,5 @@
 {
   "mcpServers": {
-    "github": {
-      "type": "stdio",
-      "command": "pnpm",
-      "args": ["dlx", "@modelcontextprotocol/server-github@latest"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
-      }
-    },
     "next-devtools": {
       "type": "stdio",
       "command": "pnpm",
