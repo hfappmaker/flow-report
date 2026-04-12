@@ -9,13 +9,17 @@ import {
   errorRoutes,
 } from "@/app/routes";
 import authConfig from "@/features/auth/libs/auth-edge.config";
-import { SubscriptionInfo } from "@/features/subscription/types/subscription";
-import { isSubscriptionValid } from "@/features/subscription/utils/subscription-utils";
+// TODO: サブスクリプション機能を再有効化する際は以下のimportを復活させる
+// import { SubscriptionInfo } from "@/features/subscription/types/subscription";
+// import { isSubscriptionValid } from "@/features/subscription/utils/subscription-utils";
 
 const { auth } = NextAuth(authConfig);
 
 console.log("proxy file is being loaded");
+
+// TODO: サブスクリプション機能を再有効化する際は以下の関数を復活させる
 // サブスクリプション情報を取得する関数
+/*
 async function getSubscriptionInfo(
   req: NextRequest,
 ): Promise<SubscriptionInfo | null> {
@@ -37,14 +41,18 @@ async function getSubscriptionInfo(
   console.error("Failed to fetch subscription status:", response.statusText);
   throw new Error("Failed to fetch subscription status");
 }
+*/
 
-// 認証済みユーザーのサブスクリプション状態をチェックし、必要に応じてリダイレクト
+// 認証済みユーザーの処理（サブスクリプション検証は一時的に無効化中）
 async function handleAuthenticatedUser(req: NextRequest) {
   const { nextUrl } = req;
+  const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+
+  // TODO: サブスクリプション機能を再有効化する際は以下のブロックを復活させる
+  /*
   const isSubscriptionRoute = nextUrl.pathname === "/subscription";
   const isSubscriptionExpiredRoute =
     nextUrl.pathname === "/subscription/expired";
-  const isAuthRoute = authRoutes.includes(nextUrl.pathname);
   try {
     const subscriptionInfo = await getSubscriptionInfo(req);
     console.log("Subscription info retrieved:", subscriptionInfo);
@@ -93,6 +101,15 @@ async function handleAuthenticatedUser(req: NextRequest) {
     // リクエストを通過させ、Next.jsの通常のエラーハンドリングに任せる
     throw error;
   }
+  */
+
+  // 認証済みユーザーが認証ルートにアクセスした場合はダッシュボードにリダイレクト
+  if (isAuthRoute) {
+    return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+  }
+
+  // それ以外はそのまま通過
+  return;
 }
 
 // 未認証ユーザーの処理

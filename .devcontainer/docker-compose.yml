@@ -2,8 +2,10 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile.app
-    container_name: app_container
+      dockerfile: Dockerfile.dev
+    container_name: dev_container
+    env_file:
+      - .env
     volumes:
       - ../:/workspace:cached 
     command: sleep infinity

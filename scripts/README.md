@@ -126,7 +126,7 @@ pnpm run worktree:init feature/analytics
 
 - **独立したコンテナ**: 各worktreeは独自のDockerコンテナを持ちます
 - **独立したボリューム**: `node_modules`や`dist`は各worktree専用のDockerボリュームに保存されます
-- **コンテナ名**: 自動的にブランチ名が付加されます（例: `app_container_feature-new-auth`）
+- **コンテナ名**: 自動的にブランチ名が付加されます（例: `dev_container_feature-new-auth`）
 - **同時実行可能**: 複数worktreeで同時にDevContainerを起動できます
 
 ### DevContainerでの開発サーバー起動

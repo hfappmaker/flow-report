@@ -60,7 +60,6 @@ src/
 - Define reusable styles in tailwind.config
 - Don't use `<br />` for line breaks
 - Manage environment variables in `.env` files (never commit sensitive information)
-- Don't import Prisma runtime libraries (e.g., `import { Decimal } from "@prisma/client/runtime/library"`)
 - Don't use Tailwind classes for element selection in tests
 
 ### 2.4 Functional Programming Standards
