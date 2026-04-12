@@ -2,7 +2,6 @@
 
 import { ExitIcon } from "@radix-ui/react-icons";
 import { FaUser } from "react-icons/fa";
-import { MdSettings } from "react-icons/md";
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -10,21 +9,14 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import LogoutButton from "@/features/auth/components/logout-button";
-import ManageSubscriptionButton from "@/features/subscription/components/manage-subscription-button";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useSubscription } from "@/hooks/use-subscription";
 
 const UserButton = () => {
   const user = useCurrentUser();
-  const { subscriptionInfo, refreshSubscription } = useSubscription();
-
-  const handleCancelSuccess = () => {
-    // サブスクリプション情報をリフレッシュ
-    void refreshSubscription();
-  };
+  const { subscriptionInfo } = useSubscription();
 
   console.log("UserButton - subscriptionInfo:", subscriptionInfo);
 
