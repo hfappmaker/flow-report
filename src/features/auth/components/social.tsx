@@ -22,7 +22,7 @@ const Social = () => {
     <div className="flex w-full items-center gap-x-2">
       <Button
         size="lg"
-        className="w-full text-xl hover:bg-sky-400 hover:text-background"
+        className="w-full text-xl hover:bg-primary hover:text-primary-foreground"
         variant="outline"
         onClick={() => {
           onClick("google");
@@ -32,7 +32,7 @@ const Social = () => {
       </Button>
       <Button
         size="lg"
-        className="w-full text-2xl hover:bg-sky-400 hover:text-background"
+        className="w-full text-2xl hover:bg-primary hover:text-primary-foreground"
         variant="outline"
         onClick={() => {
           onClick("github");

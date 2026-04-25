@@ -197,7 +197,7 @@ export default function ContractClientPage({
       <CardHeader className="flex-row items-center justify-between gap-x-3">
         <div>
           <div className="flex items-center gap-x-3 font-semibold">
-            <ClipboardList className="text-3xl text-sky-400" />
+            <ClipboardList className="text-3xl text-primary" />
             <h1 className="text-2xl">作業報告書一覧（{contract?.name}）</h1>
           </div>
         </div>

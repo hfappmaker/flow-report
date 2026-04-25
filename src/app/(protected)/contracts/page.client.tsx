@@ -227,7 +227,7 @@ export default function ContractsClientPage({ userId }: { userId: string }) {
     <Card className="w-full shadow-sm">
       <CardHeader className="flex-row items-center justify-between gap-x-3">
         <div className="flex items-center gap-x-3 font-semibold">
-          <FileText className="text-3xl text-sky-400" />
+          <FileText className="text-3xl text-primary" />
           <h1 className="text-2xl">契約一覧</h1>
         </div>
         <Button

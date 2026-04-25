@@ -570,7 +570,7 @@ export default function TemplatesClientPage({
     <Card className="w-full shadow-sm">
       <CardHeader className="flex-row items-center justify-between gap-x-3">
         <div className="flex items-center gap-x-3 font-semibold">
-          <FileSpreadsheet className="text-3xl text-sky-400" />
+          <FileSpreadsheet className="text-3xl text-primary" />
           <p className="text-2xl">テンプレート一覧</p>
         </div>
       </CardHeader>
