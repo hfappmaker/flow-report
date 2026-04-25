@@ -177,7 +177,7 @@ export function AttendanceEditDialog({
               </div>
               <div className="space-y-2">
                 <div className="flex flex-wrap gap-4">
-                  <div className="w-[140px]">
+                  <div className="w-full sm:w-[140px]">
                     <TimePickerFieldForDate
                       control={editForm.control}
                       name="startTime"
@@ -187,7 +187,7 @@ export function AttendanceEditDialog({
                       showClearButton={false}
                     />
                   </div>
-                  <div className="w-[140px]">
+                  <div className="w-full sm:w-[140px]">
                     <TimePickerFieldForDate
                       control={editForm.control}
                       name="endTime"
@@ -197,7 +197,7 @@ export function AttendanceEditDialog({
                       showClearButton={false}
                     />
                   </div>
-                  <div className="w-[140px]">
+                  <div className="w-full sm:w-[140px]">
                     <TimePickerFieldForNumber
                       control={editForm.control}
                       name="breakDuration"

@@ -1055,7 +1055,7 @@ export default function ClientWorkReportPage({
                 <h3 className="text-sm font-medium">勤怠情報</h3>
                 <div className="space-y-2">
                   <div className="flex flex-wrap gap-4">
-                    <div className="w-[140px]">
+                    <div className="w-full sm:w-[140px]">
                       <TimePickerFieldForDate
                         control={bulkEditForm.control}
                         name="startTime"
@@ -1065,7 +1065,7 @@ export default function ClientWorkReportPage({
                         showFormMessage={false}
                       />
                     </div>
-                    <div className="w-[140px]">
+                    <div className="w-full sm:w-[140px]">
                       <TimePickerFieldForDate
                         control={bulkEditForm.control}
                         name="endTime"
@@ -1075,7 +1075,7 @@ export default function ClientWorkReportPage({
                         showFormMessage={false}
                       />
                     </div>
-                    <div className="w-[140px]">
+                    <div className="w-full sm:w-[140px]">
                       <TimePickerFieldForNumber
                         control={bulkEditForm.control}
                         name="breakDuration"
