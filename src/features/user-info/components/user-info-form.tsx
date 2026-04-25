@@ -118,7 +118,7 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
     <Card className="w-full shadow-sm">
       <CardHeader className="font-semibold">
         <div className="flex items-center gap-x-3">
-          <UserCog className="text-3xl text-sky-400" />
+          <UserCog className="text-3xl text-primary" />
           <h1 className="text-2xl">ユーザー情報</h1>
         </div>
       </CardHeader>

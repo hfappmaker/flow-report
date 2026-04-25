@@ -10,7 +10,7 @@ const sizeClasses = {
 };
 
 const colorClasses = {
-  blue: "fill-sky-400 text-muted",
+  blue: "fill-primary text-muted",
   gray: "fill-gray-400 text-gray-200",
   primary: "fill-primary text-primary/20",
 };

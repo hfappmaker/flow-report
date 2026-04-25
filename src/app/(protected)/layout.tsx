@@ -4,7 +4,7 @@ import { SessionProvider } from "next-auth/react";
 
 import { auth } from "@/features/auth/libs/auth";
 
-import Navbar from "./_components/navbar";
+import Sidebar from "./_components/sidebar";
 
 export default async function ProtectedLayout({
   children,
@@ -15,10 +15,14 @@ export default async function ProtectedLayout({
 
   return (
     <SessionProvider session={session}>
-      <Navbar />
-      <main className="mx-4 my-6 flex items-center justify-center lg:mt-20">
-        {children}
-      </main>
+      <div className="flex h-screen">
+        <Sidebar />
+        <main className="flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
+            {children}
+          </div>
+        </main>
+      </div>
     </SessionProvider>
   );
 }

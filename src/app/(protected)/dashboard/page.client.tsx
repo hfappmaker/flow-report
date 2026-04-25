@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, FileText, LayoutDashboard } from "lucide-react";
+import { Clock, FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -371,23 +371,34 @@ export default function DashboardClientPage({
 
   return (
     <>
-      <Card className="w-full shadow-sm">
-        <CardHeader className="flex-row items-center justify-between gap-x-3">
-          <div className="flex items-center gap-x-3 font-semibold">
-            <LayoutDashboard className="text-3xl text-sky-400" />
-            <h1 className="text-2xl">ダッシュボード</h1>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <FormError message={error} onClose={clearError} />
-          <FormSuccess message={success} onClose={clearSuccess} />
+      <div className="w-full space-y-8">
+        {/* ページヘッダー */}
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            ダッシュボード
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">作業報告書の概要</p>
+        </div>
 
-          <h2 className="text-xl font-bold">作成中の作業報告書一覧</h2>
+        <FormError message={error} onClose={clearError} />
+        <FormSuccess message={success} onClose={clearSuccess} />
+
+        {/* 作成中セクション */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-medium">作成中の作業報告書</h2>
+            <Badge variant="secondary" className="text-xs">
+              {Object.values(draftWorkReports).reduce(
+                (sum, c) => sum + c.workReports.length,
+                0,
+              )}
+            </Badge>
+          </div>
 
           {Object.entries(draftWorkReports).map(([contractId, contract]) => (
             <Card
               key={contractId}
-              className="group/card mb-6 cursor-pointer transition-colors hover:bg-muted/30 has-[button:hover]:bg-transparent has-[.work-report-card:hover]:bg-transparent"
+              className="group/card cursor-pointer transition-all duration-200 hover:border-primary/30 hover:shadow-md has-[button:hover]:shadow-sm has-[.work-report-card:hover]:shadow-sm"
               onClick={() => {
                 startTransition(() => {
                   void openContractDetailsDialog(contractId);
@@ -398,7 +409,7 @@ export default function DashboardClientPage({
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <CardTitle>{contract.contractName}</CardTitle>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       {contract.clientName}
                     </p>
                   </div>
@@ -445,7 +456,7 @@ export default function DashboardClientPage({
                       <button
                         key={workReport.id}
                         type="button"
-                        className="work-report-card block w-full cursor-pointer rounded-lg border bg-background p-4 text-left transition-colors hover:bg-muted/50"
+                        className="work-report-card block w-full cursor-pointer rounded-xl border bg-background p-4 text-left transition-all duration-200 hover:-translate-y-px hover:border-primary/20 hover:shadow-sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleNavigation(workReport.id);
@@ -479,22 +490,33 @@ export default function DashboardClientPage({
             </Card>
           ))}
           {Object.entries(draftWorkReports).length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <FileText className="mb-4 size-12 text-muted-foreground" />
-              <p className="text-muted-foreground">
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center">
+              <FileText className="mb-3 size-10 text-muted-foreground/50" />
+              <p className="text-sm text-muted-foreground">
                 作成中の作業報告書はありません
               </p>
             </div>
           )}
+        </section>
 
-          <h2 className="mt-8 text-xl font-bold">
-            作成済みの作業報告書一覧 (直近3ヶ月)
-          </h2>
+        {/* 作成済みセクション */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-medium">
+              作成済みの作業報告書 (直近3ヶ月)
+            </h2>
+            <Badge variant="secondary" className="text-xs">
+              {Object.values(submittedWorkReportsLast3Months).reduce(
+                (sum, c) => sum + c.workReports.length,
+                0,
+              )}
+            </Badge>
+          </div>
           {Object.entries(submittedWorkReportsLast3Months).map(
             ([contractId, contract]) => (
               <Card
                 key={contractId}
-                className="group/card mb-6 cursor-pointer transition-colors hover:bg-muted/30 has-[button:hover]:bg-transparent has-[.work-report-card:hover]:bg-transparent"
+                className="group/card cursor-pointer transition-all duration-200 hover:border-primary/30 hover:shadow-md has-[button:hover]:shadow-sm has-[.work-report-card:hover]:shadow-sm"
                 onClick={() => {
                   startTransition(() => {
                     void openContractDetailsDialog(contractId);
@@ -503,7 +525,7 @@ export default function DashboardClientPage({
               >
                 <CardHeader>
                   <CardTitle>{contract.contractName}</CardTitle>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {contract.clientName}
                   </p>
                 </CardHeader>
@@ -519,7 +541,7 @@ export default function DashboardClientPage({
                         <button
                           key={workReport.id}
                           type="button"
-                          className="work-report-card block w-full cursor-pointer rounded-lg border bg-background p-4 text-left transition-colors hover:bg-muted/50"
+                          className="work-report-card block w-full cursor-pointer rounded-xl border bg-background p-4 text-left transition-all duration-200 hover:-translate-y-px hover:border-primary/20 hover:shadow-sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleNavigation(workReport.id);
@@ -556,15 +578,15 @@ export default function DashboardClientPage({
             ),
           )}
           {Object.entries(submittedWorkReportsLast3Months).length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <FileText className="mb-4 size-12 text-muted-foreground" />
-              <p className="text-muted-foreground">
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center">
+              <FileText className="mb-3 size-10 text-muted-foreground/50" />
+              <p className="text-sm text-muted-foreground">
                 作成済みの作業報告書はありません
               </p>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </section>
+      </div>
 
       <ContractDialog
         type="details"

@@ -108,7 +108,7 @@ const NewPasswordForm = () => {
           <Button
             disabled={isPending}
             type="submit"
-            className="w-full hover:bg-sky-400"
+            className="w-full hover:bg-primary/90"
           >
             Reset password
           </Button>

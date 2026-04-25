@@ -25,7 +25,7 @@ const UserButton = () => {
       <DropdownMenuTrigger>
         <Avatar>
           <AvatarImage src={user?.image ?? ""} />
-          <AvatarFallback className="bg-sky-400 text-primary-foreground">
+          <AvatarFallback className="bg-primary text-primary-foreground">
             <FaUser className="size-6" />
           </AvatarFallback>
         </Avatar>
@@ -33,7 +33,7 @@ const UserButton = () => {
       <DropdownMenuContent className="w-48" align="end">
         {/* ログアウトボタン */}
         <LogoutButton>
-          <DropdownMenuItem className="justify-center text-center hover:bg-sky-400 hover:text-primary-foreground focus:bg-sky-400 focus:text-primary-foreground">
+          <DropdownMenuItem className="justify-center text-center hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground">
             <ExitIcon className="mr-2 size-4" />
             ログアウト
           </DropdownMenuItem>
