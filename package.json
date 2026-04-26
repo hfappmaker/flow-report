@@ -102,7 +102,7 @@
     }
   },
   "devDependencies": {
-    "@eslint/js": "^9.36.0",
+    "@eslint/js": "^9.39.4",
     "@next/bundle-analyzer": "^16.0.6",
     "@next/eslint-plugin-next": "^16.0.6",
     "@playwright/test": "^1.56.1",
