@@ -40,5 +40,8 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
   const verificationToken = await generateVerificationToken(email);
   await sendVerificationEmail(verificationToken.email, verificationToken.token);
 
-  return { success: "登録が完了しました。メールアドレスをご確認ください" };
+  return {
+    success:
+      "確認メールを送信しました。メール内のリンクから登録を完了してください",
+  };
 };
