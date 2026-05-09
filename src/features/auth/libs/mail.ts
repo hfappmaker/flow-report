@@ -100,7 +100,7 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
       <p>${SERVICE_NAME} のパスワード再設定リクエストを受け付けました。</p>
       <p>下記のリンクから新しいパスワードを設定してください。</p>
       <p><a href="${resetLink}">パスワードを再設定する</a></p>
-      <p>このリクエストに心当たりがない場合は、このメールを破棄してください。アカウントは安全な状態のままです。</p>
+      <p>このリクエストに心当たりがない場合は、このメールを破棄してください。</p>
     `),
     context: "passwordReset",
   });
