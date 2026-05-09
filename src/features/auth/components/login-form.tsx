@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -29,6 +29,7 @@ import { useIsClient } from "@/hooks/use-is-client";
 import { LoginSchema } from "../schemas/login";
 
 const LoginForm = () => {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
 
@@ -70,6 +71,12 @@ const LoginForm = () => {
 
         if (data?.twoFactor) {
           setShowTwoFactor(true);
+          return;
+        }
+
+        if (data?.redirectTo) {
+          router.push(data.redirectTo);
+          router.refresh();
         }
       } catch (err) {
         console.error(err);

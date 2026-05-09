@@ -111,18 +111,15 @@ export const login = async (
     }
   }
 
+  // redirect: false にしてサーバー側でNEXT_REDIRECTを発生させず、
+  // クライアント側でルーティングする方式に変更（Next.js 16 + NextAuth v5 betaでの不安定性回避）
   try {
     await signIn("credentials", {
-      redirectTo: callbackUrl ?? DEFAULT_LOGIN_REDIRECT,
+      redirect: false,
       email: email,
       password: password,
     });
   } catch (error) {
-    // Next.js の redirect シグナルは再スローして通常のリダイレクト処理に委ねる
-    if (isNextRedirectError(error)) {
-      throw error;
-    }
-
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
@@ -146,14 +143,6 @@ export const login = async (
       error: `ログイン処理中にエラーが発生しました: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
-};
 
-const isNextRedirectError = (error: unknown): boolean => {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "digest" in error &&
-    typeof (error as { digest?: unknown }).digest === "string" &&
-    (error as { digest: string }).digest.startsWith("NEXT_REDIRECT")
-  );
+  return { redirectTo: callbackUrl ?? DEFAULT_LOGIN_REDIRECT };
 };
