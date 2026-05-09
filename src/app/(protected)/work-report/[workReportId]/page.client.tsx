@@ -642,12 +642,7 @@ export default function ClientWorkReportPage({
           subject,
           body,
         });
-        // window.open(_blank)はモダンブラウザがmailto:を新規タブとして
-        // popupブロックするケースがあるため、a要素クリックでメーラーを起動する
-        const link = document.createElement("a");
-        link.href = mailtoUrl;
-        link.rel = "noopener noreferrer";
-        link.click();
+        window.open(mailtoUrl, "_blank");
       } catch (error) {
         console.error("メール送信に失敗しました", error);
         showError("メール送信に失敗しました");
