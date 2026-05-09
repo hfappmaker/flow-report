@@ -73,7 +73,6 @@ const NewPasswordForm = () => {
                       {...field}
                       disabled={isPending}
                       placeholder="******"
-                      type="password"
                     />
                   </FormControl>
                   <FormMessage />
@@ -90,7 +89,6 @@ const NewPasswordForm = () => {
                     <PasswordInput
                       {...field}
                       disabled={isPending}
-                      type="password"
                       placeholder="******"
                     />
                   </FormControl>

@@ -48,9 +48,8 @@ const RegisterForm = () => {
         if (data.success) showSuccess(data.success);
         if (data.error) showError(data.error);
       } catch (err) {
-        showError(
-          `エラーが発生しました: ${err instanceof Error ? err.message : String(err)}`,
-        );
+        console.error(err);
+        showError("エラーが発生しました");
       }
     });
 
@@ -114,7 +113,6 @@ const RegisterForm = () => {
                     <PasswordInput
                       {...field}
                       disabled={isPending}
-                      type="password"
                       placeholder="******"
                     />
                   </FormControl>
@@ -132,7 +130,6 @@ const RegisterForm = () => {
                     <PasswordInput
                       {...field}
                       disabled={isPending}
-                      type="password"
                       placeholder="******"
                     />
                   </FormControl>

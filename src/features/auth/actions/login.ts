@@ -118,15 +118,42 @@ export const login = async (
       password: password,
     });
   } catch (error) {
+    // Next.js の redirect シグナルは再スローして通常のリダイレクト処理に委ねる
+    if (isNextRedirectError(error)) {
+      throw error;
+    }
+
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
           return { error: "メールアドレスまたはパスワードが正しくありません" };
+        case "AccessDenied":
+          return {
+            error:
+              "アクセスが拒否されました。メールアドレスの認証が完了していない可能性があります",
+          };
+        case "CallbackRouteError":
+          console.error("CallbackRouteError:", error);
+          return { error: "認証処理でエラーが発生しました" };
         default:
-          return { error: "エラーが発生しました" };
+          console.error("AuthError:", error.type, error.message);
+          return { error: `ログインに失敗しました（${error.type}）` };
       }
     }
 
-    throw error;
+    console.error("Unexpected login error:", error);
+    return {
+      error: `ログイン処理中にエラーが発生しました: ${error instanceof Error ? error.message : String(error)}`,
+    };
   }
+};
+
+const isNextRedirectError = (error: unknown): boolean => {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    typeof (error as { digest?: unknown }).digest === "string" &&
+    (error as { digest: string }).digest.startsWith("NEXT_REDIRECT")
+  );
 };

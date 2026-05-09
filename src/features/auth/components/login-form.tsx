@@ -51,30 +51,29 @@ const LoginForm = () => {
   });
 
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
+    setError("");
+    setSuccess("");
     startTransition(async () => {
       try {
         const data = await login(values, callbackUrl);
         if (data?.error) {
           form.reset();
           setError(data.error);
+          return;
         }
 
         if (data?.success) {
           form.reset();
           setSuccess(data.success);
+          return;
         }
 
         if (data?.twoFactor) {
           setShowTwoFactor(true);
         }
       } catch (err) {
-        setError(
-          `エラーが発生しました: ${err instanceof Error ? err.message : String(err)}`,
-        );
-      } finally {
-        setShowTwoFactor(false);
-        setSuccess("");
-        setError("");
+        console.error(err);
+        setError("エラーが発生しました");
       }
     });
   };
@@ -147,7 +146,6 @@ const LoginForm = () => {
                         <PasswordInput
                           {...field}
                           disabled={isPending}
-                          type="password"
                           placeholder="******"
                         />
                       </FormControl>
