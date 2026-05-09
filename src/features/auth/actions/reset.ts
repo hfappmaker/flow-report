@@ -11,15 +11,19 @@ export const reset = async (values: z.infer<typeof ResetSchema>) => {
   const validatedFields = ResetSchema.safeParse(values);
 
   if (!validatedFields.success) {
-    return { error: "Invalid emaiL!" };
+    return { error: "メールアドレスが正しくありません" };
   }
 
   const { email } = validatedFields.data;
 
-  const existingUser = await getUserByEmail(email);
+  const existingUserResult = await getUserByEmail(email);
 
-  if (!existingUser) {
-    return { error: "User email not found!" };
+  if (!existingUserResult.success) {
+    return { error: existingUserResult.error };
+  }
+
+  if (!existingUserResult.data) {
+    return { error: "ユーザーが見つかりません" };
   }
 
   const passwordResetToken = await generatePasswordResetToken(email);
@@ -28,5 +32,5 @@ export const reset = async (values: z.infer<typeof ResetSchema>) => {
     passwordResetToken.token,
   );
 
-  return { success: "Reset password email sent!" };
+  return { success: "パスワード再設定メールを送信しました" };
 };

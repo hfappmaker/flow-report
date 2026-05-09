@@ -21,7 +21,7 @@ const NewVerificationForm = () => {
     if (success !== "" || error !== "") return;
 
     if (!token) {
-      setError("Missing token!");
+      setError("トークンが見つかりません");
       return;
     }
 
@@ -31,7 +31,7 @@ const NewVerificationForm = () => {
         setError(data.error ?? "");
       })
       .catch(() => {
-        setError("Something went wrong!");
+        setError("エラーが発生しました");
       });
   }, [token, success, error]);
 
@@ -41,8 +41,8 @@ const NewVerificationForm = () => {
 
   return (
     <CardWrapper
-      headerLabel="Confirming your verification"
-      backButtonLabel="Back to login"
+      headerLabel="メールアドレスを確認しています"
+      backButtonLabel="ログイン画面に戻る"
       backButtonHref="/auth/login"
     >
       <div className="flex w-full items-center justify-center">

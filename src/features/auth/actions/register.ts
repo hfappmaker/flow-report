@@ -13,7 +13,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
   const validatedFields = RegisterSchema.safeParse(values);
 
   if (!validatedFields.success) {
-    return { error: "Invalid fields." };
+    return { error: "入力内容に誤りがあります" };
   }
 
   const { name, password, email } = validatedFields.data;
@@ -26,7 +26,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
   }
 
   if (existingUserResult.data) {
-    return { error: "User email already exists." };
+    return { error: "このメールアドレスはすでに登録されています" };
   }
 
   await db.user.create({
@@ -40,5 +40,5 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
   const verificationToken = await generateVerificationToken(email);
   await sendVerificationEmail(verificationToken.email, verificationToken.token);
 
-  return { success: "Successfully registered. Verify your email!" };
+  return { success: "登録が完了しました。メールアドレスをご確認ください" };
 };

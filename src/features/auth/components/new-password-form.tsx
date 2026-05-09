@@ -46,7 +46,7 @@ const NewPasswordForm = () => {
         if (data.success) showSuccess(data.success);
       } catch (err) {
         console.error(err);
-        showError("Something went wrong!");
+        showError("エラーが発生しました");
       }
     });
 
@@ -55,8 +55,8 @@ const NewPasswordForm = () => {
 
   return (
     <CardWrapper
-      headerLabel="Enter a new password"
-      backButtonLabel="Back to login"
+      headerLabel="新しいパスワードを入力してください"
+      backButtonLabel="ログイン画面に戻る"
       backButtonHref="/auth/login"
     >
       <Form {...form}>
@@ -67,7 +67,7 @@ const NewPasswordForm = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>新しいパスワード</FormLabel>
                   <FormControl>
                     <PasswordInput
                       {...field}
@@ -85,7 +85,7 @@ const NewPasswordForm = () => {
               name="passwordConfirmation"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm your password</FormLabel>
+                  <FormLabel>新しいパスワード（確認）</FormLabel>
                   <FormControl>
                     <PasswordInput
                       {...field}
@@ -110,7 +110,7 @@ const NewPasswordForm = () => {
             type="submit"
             className="w-full hover:bg-primary/90"
           >
-            Reset password
+            パスワードを更新する
           </Button>
         </form>
       </Form>

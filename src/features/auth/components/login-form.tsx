@@ -69,7 +69,7 @@ const LoginForm = () => {
         }
       } catch (err) {
         setError(
-          `Something went wrong! Error: ${err instanceof Error ? err.message : String(err)}`,
+          `エラーが発生しました: ${err instanceof Error ? err.message : String(err)}`,
         );
       } finally {
         setShowTwoFactor(false);
@@ -83,8 +83,8 @@ const LoginForm = () => {
 
   return (
     <CardWrapper
-      headerLabel="Welcome back!"
-      backButtonLabel="Don't have an account?"
+      headerLabel="おかえりなさい"
+      backButtonLabel="アカウントをお持ちでない方はこちら"
       backButtonHref="/auth/register"
     >
       <Form {...form}>
@@ -101,7 +101,7 @@ const LoginForm = () => {
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Two Factor Authentication Code</FormLabel>
+                    <FormLabel>2要素認証コード</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
@@ -123,7 +123,7 @@ const LoginForm = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>メールアドレス</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -142,7 +142,7 @@ const LoginForm = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>パスワード</FormLabel>
                       <FormControl>
                         <PasswordInput
                           {...field}
@@ -158,7 +158,9 @@ const LoginForm = () => {
                         asChild
                         className="px-0 text-muted-foreground"
                       >
-                        <Link href="/auth/reset">Forgot your password?</Link>
+                        <Link href="/auth/reset">
+                          パスワードをお忘れですか？
+                        </Link>
                       </Button>
                     </FormItem>
                   )}
@@ -173,7 +175,7 @@ const LoginForm = () => {
             disabled={isPending}
             className="w-full hover:bg-primary/90"
           >
-            {showTwoFactor ? "Confirm" : "Login"}
+            {showTwoFactor ? "認証する" : "ログイン"}
           </Button>
         </form>
       </Form>

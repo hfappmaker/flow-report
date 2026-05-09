@@ -26,7 +26,7 @@ export const login = async (
   const validatedFields = LoginSchema.safeParse(values);
 
   if (!validatedFields.success) {
-    return { error: "Invalid fields" };
+    return { error: "入力内容に誤りがあります" };
   }
 
   const { email, password, code } = validatedFields.data;
@@ -40,7 +40,7 @@ export const login = async (
   const existingUser = existingUserResult.data;
 
   if (!existingUser?.email || !existingUser.password) {
-    return { error: "User not registered!" };
+    return { error: "ユーザーが登録されていません" };
   }
 
   if (!existingUser.emailVerified) {
@@ -53,7 +53,7 @@ export const login = async (
       verificationToken.token,
     );
 
-    return { success: "Verification email sent!" };
+    return { success: "確認メールを送信しました" };
   }
 
   if (existingUser.isTwoFactorEnabled && existingUser.email) {
@@ -69,13 +69,13 @@ export const login = async (
       const twoFactorToken = twoFactorTokenResult.data;
 
       if (!twoFactorToken || twoFactorToken.token !== code) {
-        return { error: "Invalid code!" };
+        return { error: "認証コードが正しくありません" };
       }
 
       const hasExpired = new Date(twoFactorToken.expires) < new Date();
 
       if (hasExpired) {
-        return { error: "Code expired!" };
+        return { error: "認証コードの有効期限が切れています" };
       }
 
       await db.twoFactorToken.delete({
@@ -121,9 +121,9 @@ export const login = async (
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
-          return { error: "Invalid credentials!" };
+          return { error: "メールアドレスまたはパスワードが正しくありません" };
         default:
-          return { error: "Something went wrong!" };
+          return { error: "エラーが発生しました" };
       }
     }
 

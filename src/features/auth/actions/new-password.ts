@@ -13,13 +13,13 @@ export const newPassword = async (
   token?: string | null,
 ) => {
   if (!token) {
-    return { error: "Missing token!" };
+    return { error: "トークンが見つかりません" };
   }
 
   const validatedFields = NewPasswordSchema.safeParse(values);
 
   if (!validatedFields.success) {
-    return { error: "Invalid fields!" };
+    return { error: "入力内容に誤りがあります" };
   }
 
   const { password } = validatedFields.data;
@@ -33,13 +33,13 @@ export const newPassword = async (
   const existingToken = existingTokenResult.data;
 
   if (!existingToken) {
-    return { error: "Invalid token!" };
+    return { error: "無効なトークンです" };
   }
 
   const hasExpired = new Date(existingToken.expires) < new Date();
 
   if (hasExpired) {
-    return { error: "Token has expired!" };
+    return { error: "トークンの有効期限が切れています" };
   }
 
   const existingUserResult = await getUserByEmail(existingToken.email);
@@ -51,7 +51,7 @@ export const newPassword = async (
   const existingUser = existingUserResult.data;
 
   if (!existingUser) {
-    return { error: "User email does not exist!" };
+    return { error: "ユーザーが見つかりません" };
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -65,5 +65,5 @@ export const newPassword = async (
     where: { id: existingToken.id },
   });
 
-  return { success: "Password updated!" };
+  return { success: "パスワードを更新しました" };
 };

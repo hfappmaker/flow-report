@@ -10,10 +10,10 @@ interface UserInfoProps {
 const UserInfo = ({ user, label }: UserInfoProps) => {
   const userDetails = {
     ID: user?.id,
-    Name: user?.name,
-    Email: user?.email,
-    Role: user?.role,
-    "Two Factor Authentication": user?.isTwoFactorEnabled,
+    名前: user?.name,
+    メールアドレス: user?.email,
+    権限: user?.role,
+    "2要素認証": user?.isTwoFactorEnabled,
   };
 
   return (
@@ -28,12 +28,12 @@ const UserInfo = ({ user, label }: UserInfoProps) => {
             className="flex flex-row items-center justify-between rounded-lg border p-3"
           >
             <p className="text-sm font-medium">{key}</p>
-            {key === "Two Factor Authentication" ? (
+            {key === "2要素認証" ? (
               <Badge
                 variant={value ? "success" : "destructive"}
                 className="ml-4"
               >
-                {value ? "Enabled" : "Disabled"}
+                {value ? "有効" : "無効"}
               </Badge>
             ) : (
               <p className="max-w-[180px] truncate rounded-md bg-secondary p-1 text-xs">
