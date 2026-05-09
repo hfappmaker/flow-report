@@ -20,7 +20,13 @@
     "test:p:headed": "playwright test --headed",
     "worktree:init": "bash scripts/worktree-init.sh",
     "worktree:list": "bash scripts/worktree-list.sh",
-    "worktree:remove": "bash scripts/worktree-remove.sh"
+    "worktree:remove": "bash scripts/worktree-remove.sh",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,mjs,cjs,json,md,yml,yaml,css}": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",
@@ -130,7 +136,9 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-tailwindcss": "^3.18.2",
     "eslint-plugin-unused-imports": "^4.3.0",
+    "husky": "^9.1.7",
     "jsdom": "^29.0.2",
+    "lint-staged": "^16.4.0",
     "only-allow": "^1.2.1",
     "postcss": "8.5.6",
     "prettier": "^3.5.3",
