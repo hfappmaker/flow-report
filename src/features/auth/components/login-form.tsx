@@ -82,7 +82,7 @@ const LoginForm = () => {
 
   return (
     <CardWrapper
-      headerLabel="おかえりなさい"
+      headerLabel="ログイン"
       backButtonLabel="アカウントをお持ちでない方はこちら"
       backButtonHref="/auth/register"
     >
