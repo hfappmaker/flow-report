@@ -121,7 +121,8 @@ export const login = async (
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
-          return { error: "メールアドレスまたはパスワードが正しくありません" };
+          // signIn到達時点でユーザー存在は確認済みのため、CredentialsSigninはパスワード不一致を意味する
+          return { error: "パスワードが正しくありません" };
         case "AccessDenied":
           return {
             error:
