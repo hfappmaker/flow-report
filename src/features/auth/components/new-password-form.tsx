@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -53,6 +54,8 @@ const NewPasswordForm = () => {
     form.reset();
   };
 
+  const isTokenExpired = error.includes("有効期限");
+
   return (
     <CardWrapper
       headerLabel="新しいパスワードを入力してください"
@@ -103,6 +106,13 @@ const NewPasswordForm = () => {
             onCloseError={clearError}
             onCloseSuccess={clearSuccess}
           />
+          {isTokenExpired && (
+            <Button asChild variant="default" className="w-full">
+              <Link href="/auth/reset">
+                再度パスワード再設定をリクエストする
+              </Link>
+            </Button>
+          )}
           <Button
             disabled={isPending}
             type="submit"
