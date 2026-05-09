@@ -14,7 +14,7 @@ const getFromAddress = () => {
       "RESEND_FROM_EMAIL が設定されていません。送信元メールアドレスを環境変数で指定してください。",
     );
   }
-  return from;
+  return `${SERVICE_NAME} <${from}>`;
 };
 
 // 環境に応じてアプリケーションURLを取得する
@@ -25,6 +25,44 @@ const getDomain = () => {
     console.error("Failed to get application URL, using fallback:", error);
     return "http://localhost:3000";
   }
+};
+
+// Resendは API エラーを throw せず { data, error } で返すため、エラー時は明示的に throw する
+const sendEmail = async (params: {
+  to: string;
+  subject: string;
+  html: string;
+  context: string;
+}) => {
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error(
+      "RESEND_API_KEY が設定されていません。環境変数を確認してください。",
+    );
+  }
+
+  const from = getFromAddress();
+  const result = await resend.emails.send({
+    from,
+    to: params.to,
+    subject: params.subject,
+    html: params.html,
+  });
+
+  if (result.error) {
+    console.error(`[${params.context}] Resend send failed:`, {
+      from,
+      to: params.to,
+      error: result.error,
+    });
+    throw new Error(
+      `メール送信に失敗しました: ${result.error.name ?? "Unknown"} - ${result.error.message ?? ""}`,
+    );
+  }
+
+  console.log(`[${params.context}] Email sent successfully`, {
+    id: result.data?.id,
+    to: params.to,
+  });
 };
 
 const renderEmailBody = (innerHtml: string) => `
@@ -40,8 +78,7 @@ const renderEmailBody = (innerHtml: string) => `
 `;
 
 export const sendTwoFactorTokenEmail = async (email: string, token: string) => {
-  await resend.emails.send({
-    from: getFromAddress(),
+  await sendEmail({
     to: email,
     subject: `【${SERVICE_NAME}】2要素認証コードのお知らせ`,
     html: renderEmailBody(`
@@ -49,6 +86,7 @@ export const sendTwoFactorTokenEmail = async (email: string, token: string) => {
       <p style="font-size: 20px; font-weight: bold; letter-spacing: 2px;">${token}</p>
       <p>このコードはまもなく無効になります。ログイン画面に入力して認証を完了してください。</p>
     `),
+    context: "twoFactor",
   });
 };
 
@@ -56,8 +94,7 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
   const domain = getDomain();
   const resetLink = `${domain}/auth/new-password?token=${token}`;
 
-  await resend.emails.send({
-    from: getFromAddress(),
+  await sendEmail({
     to: email,
     subject: `【${SERVICE_NAME}】パスワード再設定のご案内`,
     html: renderEmailBody(`
@@ -66,6 +103,7 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
       <p><a href="${resetLink}">パスワードを再設定する</a></p>
       <p>このリクエストに心当たりがない場合は、このメールを破棄してください。アカウントは安全な状態のままです。</p>
     `),
+    context: "passwordReset",
   });
 };
 
@@ -73,8 +111,7 @@ export const sendVerificationEmail = async (email: string, token: string) => {
   const domain = getDomain();
   const confirmLink = `${domain}/auth/new-verification?token=${token}`;
 
-  await resend.emails.send({
-    from: getFromAddress(),
+  await sendEmail({
     to: email,
     subject: `【${SERVICE_NAME}】メールアドレスの確認のお願い`,
     html: renderEmailBody(`
@@ -82,5 +119,6 @@ export const sendVerificationEmail = async (email: string, token: string) => {
       <p>下記のリンクをクリックしてメールアドレスの確認を完了してください。確認が完了すると、${SERVICE_NAME} にログインできるようになります。</p>
       <p><a href="${confirmLink}">メールアドレスを確認する</a></p>
     `),
+    context: "verification",
   });
 };
