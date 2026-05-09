@@ -13,7 +13,7 @@ declare global {
       NEXT_PUBLIC_AUTH_URL?: string; // Custom auth URL for OAuth callbacks
 
       // === Server-side only Vercel variables ===
-      VERCEL_ENV?: 'production' | 'preview' | 'development';
+      VERCEL_ENV?: "production" | "preview" | "development";
       VERCEL_TARGET_ENV?: string; // Can be production, preview, development, or custom name
       VERCEL_URL?: string; // The domain without protocol (e.g., xxx.vercel.app)
       VERCEL_PROJECT_PRODUCTION_URL?: string; // Production domain (available in all environments)
@@ -23,7 +23,7 @@ declare global {
       VERCEL_TEAM_ID?: string; // The ID of the Vercel team (if applicable)
 
       // === Client-side accessible (NEXT_PUBLIC_ prefix) ===
-      NEXT_PUBLIC_VERCEL_ENV?: 'production' | 'preview' | 'development';
+      NEXT_PUBLIC_VERCEL_ENV?: "production" | "preview" | "development";
       NEXT_PUBLIC_VERCEL_TARGET_ENV?: string;
       NEXT_PUBLIC_VERCEL_URL?: string; // The domain without protocol (e.g., xxx.vercel.app)
       NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL?: string; // Production domain (useful for OG images)
@@ -54,10 +54,15 @@ declare global {
       NEXT_PUBLIC_VERCEL_GIT_PULL_REQUEST_ID?: string;
 
       // Next.js specific
-      NODE_ENV?: 'development' | 'production' | 'test';
+      NODE_ENV?: "development" | "production" | "test";
 
       // Legacy auth URL (deprecated - use NEXT_PUBLIC_AUTH_URL or getAuthUrl() instead)
       AUTH_URL?: string;
+
+      // === Email (Resend) ===
+      RESEND_API_KEY?: string;
+      // 送信元アドレス（例: "Flow Report <noreply@flowreport.flowtech.co.jp>"）
+      RESEND_FROM_EMAIL?: string;
     }
   }
 }

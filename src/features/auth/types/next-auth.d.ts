@@ -7,7 +7,6 @@ declare module "next-auth" {
   interface User {
     role?: UserRole;
     isTwoFactorEnabled?: boolean;
-    isOAuth?: boolean;
   }
 }
 
@@ -15,6 +14,5 @@ declare module "next-auth/jwt" {
   interface JWT {
     role?: UserRole;
     isTwoFactorEnabled?: boolean;
-    isOAuth?: boolean;
   }
 }

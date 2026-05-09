@@ -27,3 +27,15 @@ export async function updateUserInfo(
     return err("ユーザー情報の更新に失敗しました");
   }
 }
+
+export async function deleteUser(userId: string): Promise<Result<void>> {
+  try {
+    await db.user.delete({
+      where: { id: userId },
+    });
+    return ok(undefined);
+  } catch (error) {
+    console.error("ユーザー削除エラー:", error);
+    return err("アカウントの削除に失敗しました");
+  }
+}

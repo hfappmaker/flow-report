@@ -83,12 +83,12 @@ export const createAttendancesByPromptAction = async (
 
   type SchemaType = z.infer<typeof schema>;
 
-  const holidays = await fetchHolidays(2025);
   targetDate = new Date(targetDate);
 
   // 月の全日付と曜日情報を生成
   const year = targetDate.getFullYear();
   const month = targetDate.getMonth();
+  const holidays = await fetchHolidays(year);
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
 

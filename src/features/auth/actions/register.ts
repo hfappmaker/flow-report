@@ -19,9 +19,13 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
   const { name, password, email } = validatedFields.data;
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const existingUser = await getUserByEmail(email);
+  const existingUserResult = await getUserByEmail(email);
 
-  if (existingUser) {
+  if (!existingUserResult.success) {
+    return { error: existingUserResult.error };
+  }
+
+  if (existingUserResult.data) {
     return { error: "User email already exists." };
   }
 

@@ -32,13 +32,6 @@ export const settings = async (values: z.infer<typeof SettingsSchema>) => {
     return { error: "Unauthorized" };
   }
 
-  if (user.isOAuth) {
-    values.email = null;
-    values.password = null;
-    values.newPassword = null;
-    values.isTwoFactorEnabled = null;
-  }
-
   if (values.email && values.email !== user.email) {
     const existingUserResult = await getUserByEmail(values.email);
 
