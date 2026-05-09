@@ -111,8 +111,6 @@ export const login = async (
     }
   }
 
-  // redirect: false にしてサーバー側でNEXT_REDIRECTを発生させず、
-  // クライアント側でルーティングする方式に変更（Next.js 16 + NextAuth v5 betaでの不安定性回避）
   try {
     await signIn("credentials", {
       redirect: false,

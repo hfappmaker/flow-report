@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,13 +16,6 @@ import { SubscriptionPromptButton } from "@/features/subscription/components/sub
 
 export default function SubscriptionExpiredPage() {
   const [isOpen, setIsOpen] = useState(true);
-
-  useEffect(() => {
-    // URLが正しくない場合は修正
-    if (window.location.pathname !== "/subscription/expired") {
-      window.history.replaceState(null, "", "/subscription/expired");
-    }
-  }, []);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

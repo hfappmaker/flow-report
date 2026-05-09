@@ -13,6 +13,7 @@ const LogoutButton = ({ children }: { children: React.ReactNode }) => {
     startTransition(async () => {
       await logout();
       router.push("/auth/login");
+      router.refresh();
     });
   };
 
