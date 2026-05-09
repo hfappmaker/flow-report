@@ -32,5 +32,8 @@ export const reset = async (values: z.infer<typeof ResetSchema>) => {
     passwordResetToken.token,
   );
 
-  return { success: "パスワード再設定メールを送信しました" };
+  return {
+    success:
+      "パスワード再設定メールを送信しました。メール内のリンクから新しいパスワードを設定してください",
+  };
 };

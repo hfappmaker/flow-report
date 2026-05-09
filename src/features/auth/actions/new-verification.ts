@@ -47,5 +47,8 @@ export const newVerification = async (token: string) => {
     where: { id: existingToken.id },
   });
 
-  return { success: "メールアドレスの確認が完了しました" };
+  return {
+    success:
+      "メールアドレスの確認が完了しました。ログインできるようになりました",
+  };
 };

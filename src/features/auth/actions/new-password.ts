@@ -65,5 +65,7 @@ export const newPassword = async (
     where: { id: existingToken.id },
   });
 
-  return { success: "パスワードを更新しました" };
+  return {
+    success: "パスワードを更新しました。新しいパスワードでログインしてください",
+  };
 };
