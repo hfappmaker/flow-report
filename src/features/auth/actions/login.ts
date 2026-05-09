@@ -53,7 +53,10 @@ export const login = async (
       verificationToken.token,
     );
 
-    return { success: "確認メールを送信しました" };
+    return {
+      success:
+        "メールアドレスが未認証のため、確認メールを再送しました。メール内のリンクから認証を完了してください",
+    };
   }
 
   if (existingUser.isTwoFactorEnabled && existingUser.email) {

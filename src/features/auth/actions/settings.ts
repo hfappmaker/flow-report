@@ -51,7 +51,10 @@ export const settings = async (values: z.infer<typeof SettingsSchema>) => {
       verificationToken.token,
     );
 
-    return { success: "確認メールを送信しました" };
+    return {
+      success:
+        "新しいメールアドレス宛に確認メールを送信しました。メール内のリンクから認証を完了するとアドレスが変更されます",
+    };
   }
 
   if (values.password && values.newPassword && dbUser.password) {
