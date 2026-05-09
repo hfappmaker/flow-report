@@ -11,12 +11,28 @@ import { getTwoFactorConfirmationByUserId } from "@/features/auth/repositories/t
 import { getTwoFactorTokenByEmail } from "@/features/auth/repositories/two-factor-token-repository";
 import { getUserByEmail } from "@/features/auth/repositories/user-repository";
 import { LoginSchema } from "@/features/auth/schemas/login";
+import { isBotRequest } from "@/libs/bot-protection";
+import { checkRateLimit } from "@/libs/rate-limit";
+import { getRequestIp } from "@/libs/request-ip";
 import { db } from "@/repositories/db";
 
 export const login = async (
   values: z.infer<typeof LoginSchema>,
   callbackUrl?: string | null,
 ) => {
+  if (await isBotRequest()) {
+    return { error: "不正なリクエストとして拒否されました" };
+  }
+
+  const ip = await getRequestIp();
+  const rateLimit = await checkRateLimit("login", ip);
+  if (!rateLimit.success) {
+    return {
+      error:
+        "リクエストが多すぎます。しばらく時間を置いてから再度お試しください",
+    };
+  }
+
   const validatedFields = LoginSchema.safeParse(values);
 
   if (!validatedFields.success) {

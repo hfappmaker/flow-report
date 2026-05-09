@@ -7,9 +7,25 @@ import { sendVerificationEmail } from "@/features/auth/libs/mail";
 import { generateVerificationToken } from "@/features/auth/libs/tokens";
 import { getUserByEmail } from "@/features/auth/repositories/user-repository";
 import { RegisterSchema } from "@/features/auth/schemas/register";
+import { isBotRequest } from "@/libs/bot-protection";
+import { checkRateLimit } from "@/libs/rate-limit";
+import { getRequestIp } from "@/libs/request-ip";
 import { db } from "@/repositories/db";
 
 export const register = async (values: z.infer<typeof RegisterSchema>) => {
+  if (await isBotRequest()) {
+    return { error: "不正なリクエストとして拒否されました" };
+  }
+
+  const ip = await getRequestIp();
+  const rateLimit = await checkRateLimit("register", ip);
+  if (!rateLimit.success) {
+    return {
+      error:
+        "リクエストが多すぎます。しばらく時間を置いてから再度お試しください",
+    };
+  }
+
   const validatedFields = RegisterSchema.safeParse(values);
 
   if (!validatedFields.success) {

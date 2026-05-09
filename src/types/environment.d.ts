@@ -63,6 +63,13 @@ declare global {
       RESEND_API_KEY?: string;
       // 送信元アドレス（例: "Flow Report <noreply@flowreport.flowtech.co.jp>"）
       RESEND_FROM_EMAIL?: string;
+
+      // === Rate limit (Upstash Redis via Vercel Marketplace) ===
+      // Vercel統合で自動プロビジョニングされる環境変数 (KV_* プレフィックス)
+      KV_URL?: string;
+      KV_REST_API_URL?: string;
+      KV_REST_API_TOKEN?: string;
+      KV_REST_API_READ_ONLY_TOKEN?: string;
     }
   }
 }

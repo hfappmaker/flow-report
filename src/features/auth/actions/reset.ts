@@ -6,8 +6,24 @@ import { sendPasswordResetEmail } from "@/features/auth/libs/mail";
 import { generatePasswordResetToken } from "@/features/auth/libs/tokens";
 import { getUserByEmail } from "@/features/auth/repositories/user-repository";
 import { ResetSchema } from "@/features/auth/schemas/reset";
+import { isBotRequest } from "@/libs/bot-protection";
+import { checkRateLimit } from "@/libs/rate-limit";
+import { getRequestIp } from "@/libs/request-ip";
 
 export const reset = async (values: z.infer<typeof ResetSchema>) => {
+  if (await isBotRequest()) {
+    return { error: "不正なリクエストとして拒否されました" };
+  }
+
+  const ip = await getRequestIp();
+  const rateLimit = await checkRateLimit("passwordReset", ip);
+  if (!rateLimit.success) {
+    return {
+      error:
+        "リクエストが多すぎます。しばらく時間を置いてから再度お試しください",
+    };
+  }
+
   const validatedFields = ResetSchema.safeParse(values);
 
   if (!validatedFields.success) {
