@@ -66,10 +66,8 @@ declare global {
 
       // === Rate limit (Upstash Redis via Vercel Marketplace) ===
       // Vercel統合で自動プロビジョニングされる環境変数 (KV_* プレフィックス)
-      KV_URL?: string;
       KV_REST_API_URL?: string;
       KV_REST_API_TOKEN?: string;
-      KV_REST_API_READ_ONLY_TOKEN?: string;
     }
   }
 }
