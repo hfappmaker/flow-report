@@ -48,7 +48,8 @@ const RegisterForm = () => {
         if (data.success) showSuccess(data.success);
         if (data.error) showError(data.error);
       } catch (err) {
-        showError(`Something went wrong! ${err}`);
+        console.error(err);
+        showError("エラーが発生しました");
       }
     });
 
@@ -59,10 +60,9 @@ const RegisterForm = () => {
 
   return (
     <CardWrapper
-      headerLabel="Create an account"
-      backButtonLabel="Already have an account?"
+      headerLabel="新規アカウントを作成"
+      backButtonLabel="すでにアカウントをお持ちの方はこちら"
       backButtonHref="/auth/login"
-      showSocial
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -72,12 +72,12 @@ const RegisterForm = () => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>名前</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       disabled={isPending}
-                      placeholder="John Doe"
+                      placeholder="山田 太郎"
                       type="text"
                     />
                   </FormControl>
@@ -90,12 +90,12 @@ const RegisterForm = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>メールアドレス</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       disabled={isPending}
-                      placeholder="john.doe@example.com"
+                      placeholder="your.email@example.com"
                       type="email"
                     />
                   </FormControl>
@@ -108,12 +108,11 @@ const RegisterForm = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>パスワード</FormLabel>
                   <FormControl>
                     <PasswordInput
                       {...field}
                       disabled={isPending}
-                      type="password"
                       placeholder="******"
                     />
                   </FormControl>
@@ -126,12 +125,11 @@ const RegisterForm = () => {
               name="passwordConfirmation"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm your password</FormLabel>
+                  <FormLabel>パスワード（確認）</FormLabel>
                   <FormControl>
                     <PasswordInput
                       {...field}
                       disabled={isPending}
-                      type="password"
                       placeholder="******"
                     />
                   </FormControl>
@@ -142,7 +140,7 @@ const RegisterForm = () => {
                     asChild
                     className="px-0 text-muted-foreground"
                   >
-                    <Link href="/auth/reset">Forgot your password?</Link>
+                    <Link href="/auth/reset">パスワードをお忘れですか？</Link>
                   </Button>
                 </FormItem>
               )}
@@ -159,7 +157,7 @@ const RegisterForm = () => {
             disabled={isPending}
             className="w-full hover:bg-primary/90"
           >
-            Register
+            登録する
           </Button>
         </form>
       </Form>

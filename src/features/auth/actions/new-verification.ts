@@ -14,13 +14,13 @@ export const newVerification = async (token: string) => {
   const existingToken = existingTokenResult.data;
 
   if (!existingToken) {
-    return { error: "Token does not exist!" };
+    return { error: "トークンが見つかりません" };
   }
 
   const hasExpired = new Date(existingToken.expires) < new Date();
 
   if (hasExpired) {
-    return { error: "Token has expired!" };
+    return { error: "トークンの有効期限が切れています" };
   }
 
   const existingUserResult = await getUserByEmail(existingToken.email);
@@ -32,7 +32,7 @@ export const newVerification = async (token: string) => {
   const existingUser = existingUserResult.data;
 
   if (!existingUser) {
-    return { error: "User not registered!" };
+    return { error: "ユーザーが登録されていません" };
   }
 
   await db.user.update({
@@ -47,5 +47,8 @@ export const newVerification = async (token: string) => {
     where: { id: existingToken.id },
   });
 
-  return { success: "Account verified!" };
+  return {
+    success:
+      "メールアドレスの確認が完了しました。ログインできるようになりました",
+  };
 };

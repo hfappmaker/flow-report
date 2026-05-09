@@ -1,14 +1,12 @@
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
 
 import NewPasswordForm from "@/features/auth/components/new-password-form";
 
 export const metadata = {
-  title: "New Password",
+  title: "新しいパスワードの設定",
 };
 
 export default function NewPasswordPage() {
-  return notFound();
   return (
     <Suspense>
       <NewPasswordForm />

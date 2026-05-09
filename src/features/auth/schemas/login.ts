@@ -2,10 +2,10 @@ import * as z from "zod";
 
 export const LoginSchema = z.object({
   email: z.string().email({
-    message: "Please enter a valid email address. Email is required.",
+    message: "有効なメールアドレスを入力してください",
   }),
   password: z.string().min(1, {
-    message: "Please enter your password. Password is required.",
+    message: "パスワードを入力してください",
   }),
   code: z.optional(z.string()),
 });

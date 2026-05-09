@@ -41,7 +41,8 @@ const ResetPasswordForm = () => {
           if (data.error) showError(data.error);
           if (data.success) showSuccess(data.success);
         } catch (err) {
-          showError(`Something went wrong! ${err}`);
+          console.error(err);
+          showError("エラーが発生しました");
         }
       })();
     });
@@ -49,8 +50,8 @@ const ResetPasswordForm = () => {
 
   return (
     <CardWrapper
-      headerLabel="Forgot your password?"
-      backButtonLabel="Back to login"
+      headerLabel="パスワードをお忘れですか？"
+      backButtonLabel="ログイン画面に戻る"
       backButtonHref="/auth/login"
     >
       <Form {...form}>
@@ -61,7 +62,7 @@ const ResetPasswordForm = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>メールアドレス</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -86,7 +87,7 @@ const ResetPasswordForm = () => {
             type="submit"
             className="w-full hover:bg-primary/90"
           >
-            Send reset password email
+            再設定メールを送信
           </Button>
         </form>
       </Form>

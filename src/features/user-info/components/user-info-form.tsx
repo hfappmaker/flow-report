@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { ComboBoxField } from "@/components/ui/combobox";
 import { useTransitionContext } from "@/contexts/transition-context";
 import { updateUserInfo } from "@/features/user-info/actions/update-user-info";
+import { DeleteAccountSection } from "@/features/user-info/components/delete-account-section";
 import {
   BANK_ACCOUNT_TYPES,
   userInfoFormSchema,
@@ -406,6 +407,9 @@ export function UserInfoForm({ initialInfo }: UserInfoFormProps) {
             </div>
           </form>
         </Form>
+        <div className="mt-8">
+          <DeleteAccountSection />
+        </div>
       </CardContent>
     </Card>
   );

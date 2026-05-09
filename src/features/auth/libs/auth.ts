@@ -1,7 +1,6 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth, { type NextAuthConfig } from "next-auth";
 
-import { getAccountByUserId } from "@/features/auth/repositories/account-repository";
 import { getTwoFactorConfirmationByUserId } from "@/features/auth/repositories/two-factor-confirmation-repository";
 import { getUserById } from "@/features/auth/repositories/user-repository";
 import { baseDb } from "@/repositories/base-db";
@@ -19,22 +18,11 @@ export const {
     signIn: "/auth/login",
     error: "/auth/error",
   },
-  events: {
-    async linkAccount({ user }) {
-      await baseDb.user.update({
-        where: { id: user.id },
-        data: { emailVerified: new Date() },
-      });
-    },
-  },
   callbacks: {
-    async signIn({ user, account }) {
-      // Allow OAuth without email verification
-      if (account?.provider !== "credentials") return true;
-
+    async signIn({ user }) {
       const existingUserResult = await getUserById(user.id ?? "");
 
-      // Prevent sign in without email verification
+      // メール未認証ユーザーのサインインを防止
       if (
         !existingUserResult.success ||
         !existingUserResult.data?.emailVerified
@@ -55,7 +43,7 @@ export const {
 
         const twoFactorConfirmation = twoFactorConfirmationResult.data;
 
-        // Delete two factor confirmation for next sign in
+        // 次回サインイン用に二要素認証確認情報を削除
         await baseDb.twoFactorConfirmation.delete({
           where: { id: twoFactorConfirmation.id },
         });
@@ -70,7 +58,6 @@ export const {
       }
 
       session.user.role = token.role;
-      session.user.isOAuth = token.isOAuth;
       session.user.isTwoFactorEnabled = token.isTwoFactorEnabled;
       session.user.name = token.name;
 
@@ -89,10 +76,6 @@ export const {
 
       const existingUser = existingUserResult.data;
 
-      const existingAccountResult = await getAccountByUserId(existingUser.id);
-
-      token.isOAuth =
-        existingAccountResult.success && !!existingAccountResult.data;
       token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;
       token.name = existingUser.name;
       token.email = existingUser.email;

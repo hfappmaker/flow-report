@@ -72,7 +72,6 @@ model User {
   isTwoFactorEnabled    Boolean                @default(false)
   twoFactorConfirmation TwoFactorConfirmation?
   contracts             Contract[]
-  auditLogs             AuditLog[]
   EmailTemplate         EmailTemplate[]
   excelTemplates        ExcelTemplate[]
 
@@ -233,9 +232,8 @@ model AuditLog {
   // 変更内容の詳細を JSON 形式で格納（必要に応じて）
   changedFields Json?
   createdAt     DateTime    @default(now())
-  // 操作を行ったユーザー（任意）
+  // 操作を行ったユーザーID（履歴保持のためFK制約は意図的に持たせない）
   userId        String?
-  user          User?       @relation(fields: [userId], references: [id])
 }
 
 model StripeCustomer {

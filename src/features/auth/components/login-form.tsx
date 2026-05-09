@@ -2,14 +2,13 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
 import FormError from "@/components/ui/feedback/error-alert";
-import FormSuccess from "@/components/ui/feedback/success-alert";
 import {
   Form,
   FormControl,
@@ -29,13 +28,13 @@ import { useIsClient } from "@/hooks/use-is-client";
 import { LoginSchema } from "../schemas/login";
 
 const LoginForm = () => {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
 
   const [showTwoFactor, setShowTwoFactor] = useState(false);
 
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const { isPending, startTransition } = useTransitionContext();
 
@@ -51,30 +50,28 @@ const LoginForm = () => {
   });
 
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
+    setError("");
     startTransition(async () => {
       try {
         const data = await login(values, callbackUrl);
         if (data?.error) {
           form.reset();
           setError(data.error);
-        }
-
-        if (data?.success) {
-          form.reset();
-          setSuccess(data.success);
+          return;
         }
 
         if (data?.twoFactor) {
           setShowTwoFactor(true);
+          return;
+        }
+
+        if (data?.redirectTo) {
+          router.push(data.redirectTo);
+          router.refresh();
         }
       } catch (err) {
-        setError(
-          `Something went wrong! Error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-      } finally {
-        setShowTwoFactor(false);
-        setSuccess("");
-        setError("");
+        console.error(err);
+        setError("エラーが発生しました");
       }
     });
   };
@@ -83,10 +80,9 @@ const LoginForm = () => {
 
   return (
     <CardWrapper
-      headerLabel="Welcome back!"
-      backButtonLabel="Don't have an account?"
+      headerLabel="ログイン"
+      backButtonLabel="アカウントをお持ちでない方はこちら"
       backButtonHref="/auth/register"
-      showSocial
     >
       <Form {...form}>
         <form
@@ -102,7 +98,7 @@ const LoginForm = () => {
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Two Factor Authentication Code</FormLabel>
+                    <FormLabel>2要素認証コード</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
@@ -124,7 +120,7 @@ const LoginForm = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>メールアドレス</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -143,12 +139,11 @@ const LoginForm = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>パスワード</FormLabel>
                       <FormControl>
                         <PasswordInput
                           {...field}
                           disabled={isPending}
-                          type="password"
                           placeholder="******"
                         />
                       </FormControl>
@@ -159,7 +154,9 @@ const LoginForm = () => {
                         asChild
                         className="px-0 text-muted-foreground"
                       >
-                        <Link href="/auth/reset">Forgot your password?</Link>
+                        <Link href="/auth/reset">
+                          パスワードをお忘れですか？
+                        </Link>
                       </Button>
                     </FormItem>
                   )}
@@ -168,13 +165,12 @@ const LoginForm = () => {
             )}
           </div>
           <FormError message={error} onClose={() => setError("")} />
-          <FormSuccess message={success} onClose={() => setSuccess("")} />
           <Button
             type="submit"
             disabled={isPending}
             className="w-full hover:bg-primary/90"
           >
-            {showTwoFactor ? "Confirm" : "Login"}
+            {showTwoFactor ? "認証する" : "ログイン"}
           </Button>
         </form>
       </Form>

@@ -35,27 +35,24 @@ export const SettingsSchema = z
     password: z.nullable(z.string().min(1)),
     newPassword: z.nullable(
       z.string().min(6, {
-        message:
-          "Please enter a new password with at least 6 characters, required",
+        message: "新しいパスワードは6文字以上で入力してください",
       }),
     ),
     newPasswordConfirmation: z.nullable(
       z.string().min(6, {
-        message:
-          "Please confirm your password with at least 6 characters, required",
+        message: "確認用の新しいパスワードは6文字以上で入力してください",
       }),
     ),
   })
   .refine((data) => passwordRequired(data, "password", "newPassword"), {
-    message:
-      "Please enter a new password with at least 6 characters, required!",
+    message: "新しいパスワードを6文字以上で入力してください",
     path: ["newPassword"],
   })
   .refine((data) => passwordRequired(data, "newPassword", "password"), {
-    message: "Please enter your valid password, required!",
+    message: "現在のパスワードを入力してください",
     path: ["password"],
   })
   .refine((data) => data.newPassword === data.newPasswordConfirmation, {
-    message: "Passwords do not match.",
+    message: "パスワードが一致しません",
     path: ["newPasswordConfirmation"],
   });

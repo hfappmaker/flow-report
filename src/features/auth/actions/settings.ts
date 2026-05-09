@@ -17,7 +17,7 @@ export const settings = async (values: z.infer<typeof SettingsSchema>) => {
   const user = await currentUser();
 
   if (!user?.id) {
-    return { error: "Unauthorized" };
+    return { error: "認証されていません" };
   }
 
   const dbUserResult = await getUserById(user.id);
@@ -29,14 +29,7 @@ export const settings = async (values: z.infer<typeof SettingsSchema>) => {
   const dbUser = dbUserResult.data;
 
   if (!dbUser) {
-    return { error: "Unauthorized" };
-  }
-
-  if (user.isOAuth) {
-    values.email = null;
-    values.password = null;
-    values.newPassword = null;
-    values.isTwoFactorEnabled = null;
+    return { error: "認証されていません" };
   }
 
   if (values.email && values.email !== user.email) {
@@ -49,7 +42,7 @@ export const settings = async (values: z.infer<typeof SettingsSchema>) => {
     const existingUser = existingUserResult.data;
 
     if (existingUser && existingUser.id !== user.id) {
-      return { error: "Email already in use!" };
+      return { error: "このメールアドレスはすでに使用されています" };
     }
 
     const verificationToken = await generateVerificationToken(values.email);
@@ -58,7 +51,10 @@ export const settings = async (values: z.infer<typeof SettingsSchema>) => {
       verificationToken.token,
     );
 
-    return { success: "Verification email sent!" };
+    return {
+      success:
+        "新しいメールアドレス宛に確認メールを送信しました。メール内のリンクから認証を完了するとアドレスが変更されます",
+    };
   }
 
   if (values.password && values.newPassword && dbUser.password) {
@@ -68,7 +64,7 @@ export const settings = async (values: z.infer<typeof SettingsSchema>) => {
     );
 
     if (!passwordsMatch) {
-      return { error: "Incorrect password!" };
+      return { error: "パスワードが正しくありません" };
     }
 
     const hashedPassword = await bcrypt.hash(values.newPassword, 10);
@@ -93,5 +89,5 @@ export const settings = async (values: z.infer<typeof SettingsSchema>) => {
     },
   });
 
-  return { success: "Settings Updated!" };
+  return { success: "設定を更新しました" };
 };
