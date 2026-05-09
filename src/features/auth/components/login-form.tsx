@@ -9,7 +9,6 @@ import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
 import FormError from "@/components/ui/feedback/error-alert";
-import FormSuccess from "@/components/ui/feedback/success-alert";
 import {
   Form,
   FormControl,
@@ -36,7 +35,6 @@ const LoginForm = () => {
   const [showTwoFactor, setShowTwoFactor] = useState(false);
 
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const { isPending, startTransition } = useTransitionContext();
 
@@ -53,19 +51,12 @@ const LoginForm = () => {
 
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
     setError("");
-    setSuccess("");
     startTransition(async () => {
       try {
         const data = await login(values, callbackUrl);
         if (data?.error) {
           form.reset();
           setError(data.error);
-          return;
-        }
-
-        if (data?.success) {
-          form.reset();
-          setSuccess(data.success);
           return;
         }
 
@@ -174,7 +165,6 @@ const LoginForm = () => {
             )}
           </div>
           <FormError message={error} onClose={() => setError("")} />
-          <FormSuccess message={success} onClose={() => setSuccess("")} />
           <Button
             type="submit"
             disabled={isPending}
