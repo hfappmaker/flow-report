@@ -1,5 +1,4 @@
 import { Analytics } from "@vercel/analytics/next";
-import { BotIdClient } from "botid/client";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
@@ -10,13 +9,6 @@ import "./globals.css";
 import ClientLayout from "./client-layout";
 import { Toaster } from "@/components/ui/sonner";
 import { TransitionProvider } from "@/contexts/transition-context";
-
-const botIdProtectedRoutes = [
-  { path: "/auth/login", method: "POST" as const },
-  { path: "/auth/register", method: "POST" as const },
-  { path: "/auth/reset", method: "POST" as const },
-  { path: "/auth/new-password", method: "POST" as const },
-];
 
 export const metadata: Metadata = {
   title: {
@@ -46,9 +38,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja" suppressHydrationWarning>
-      <head>
-        <BotIdClient protect={botIdProtectedRoutes} />
-      </head>
       <body
         className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`}
       >
