@@ -25,17 +25,32 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
     return { error: existingUserResult.error };
   }
 
-  if (existingUserResult.data) {
+  const existingUser = existingUserResult.data;
+
+  // 既に認証済みのユーザーが存在する場合のみ拒否する。
+  // 未認証のまま放置されている場合は同じメアドでの再登録を許可し、
+  // パスワードを更新したうえで新しい確認メールを送る。
+  if (existingUser?.emailVerified) {
     return { error: "このメールアドレスはすでに登録されています" };
   }
 
-  await db.user.create({
-    data: {
-      name,
-      email,
-      password: hashedPassword,
-    },
-  });
+  if (existingUser) {
+    await db.user.update({
+      where: { id: existingUser.id },
+      data: {
+        name,
+        password: hashedPassword,
+      },
+    });
+  } else {
+    await db.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+      },
+    });
+  }
 
   const verificationToken = await generateVerificationToken(email);
   await sendVerificationEmail(verificationToken.email, verificationToken.token);

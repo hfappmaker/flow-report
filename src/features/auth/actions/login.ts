@@ -5,14 +5,8 @@ import * as z from "zod";
 
 import { DEFAULT_LOGIN_REDIRECT } from "@/app/routes";
 import { signIn } from "@/features/auth/libs/auth";
-import {
-  sendVerificationEmail,
-  sendTwoFactorTokenEmail,
-} from "@/features/auth/libs/mail";
-import {
-  generateVerificationToken,
-  generateTwoFactorToken,
-} from "@/features/auth/libs/tokens";
+import { sendTwoFactorTokenEmail } from "@/features/auth/libs/mail";
+import { generateTwoFactorToken } from "@/features/auth/libs/tokens";
 import { getTwoFactorConfirmationByUserId } from "@/features/auth/repositories/two-factor-confirmation-repository";
 import { getTwoFactorTokenByEmail } from "@/features/auth/repositories/two-factor-token-repository";
 import { getUserByEmail } from "@/features/auth/repositories/user-repository";
@@ -44,18 +38,9 @@ export const login = async (
   }
 
   if (!existingUser.emailVerified) {
-    const verificationToken = await generateVerificationToken(
-      existingUser.email,
-    );
-
-    await sendVerificationEmail(
-      verificationToken.email,
-      verificationToken.token,
-    );
-
     return {
-      success:
-        "メールアドレスが未認証のため、確認メールを再送しました。メール内のリンクから認証を完了してください",
+      error:
+        "メールアドレスが未認証です。お送りした確認メールのリンクから認証を完了してください。期限が切れている場合は再度ご登録ください",
     };
   }
 
