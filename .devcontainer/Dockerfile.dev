@@ -42,6 +42,10 @@ RUN pnpm add -g playwright
 # sudo apt install -y fonts-noto-cjk fonts-ipafont-gothic fonts-ipafont-mincho
 # Vercel CLIのインストール
 RUN pnpm add -g vercel
+# Codex CLIのインストール
+RUN pnpm add -g @openai/codex
+# 以下のコマンドでCodex CLIにサインインする
+# codex login
 # Playwright MCPのインストール
 # RUN claude mcp add playwright -s project -- pnpm dlx -y @playwright/mcp@latest --headless --no-sandbox --isolated
 # PostgreSQL MCPのインストール
