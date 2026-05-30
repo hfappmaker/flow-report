@@ -26,7 +26,8 @@
         "ms-playwright.playwright",
         "Stripe.vscode-stripe",
         "eamodio.gitlens",
-        "Prisma.prisma"
+        "Prisma.prisma",
+        "openai.chatgpt"
       ]
     }
   },
