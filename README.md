@@ -1,255 +1,184 @@
-# フリーランスエンジニア向け勤怠管理システム
+# flow-report
 
-フリーランスエンジニアの勤怠管理・報告書作成を効率化する Web アプリケーションです。
+フリーランスエンジニア向けの勤怠管理・作業報告書作成 Web アプリケーションです。契約、月次の勤怠、作業報告書、メールテンプレート、サブスクリプション、freee 連携をまとめて管理できます。
 
 ## 技術スタック
 
-### フロントエンド
-
-- **Next.js** v16.0.1 (App Router)
-- **React** v19.2.0
-- **TypeScript** v5.9.3
-- **TailwindCSS** v3.4.18
-- **Radix UI / Material-UI** - UIコンポーネント
-- **React Hook Form** + **Zod** - フォーム管理とバリデーション
-- **Jotai** - 状態管理
-
-### バックエンド
-
-- **Prisma** v6.18.0 (ORM)
-- **PostgreSQL** - データベース
-- **NextAuth.js** v5 - 認証
-- **Stripe** - サブスクリプション決済
-- **ExcelJS** - Excel生成
-- **Resend** - メール送信
-
-### テスト・開発ツール
-
-- **Vitest** - ユニットテスト
-- **Playwright** - E2Eテスト
-- **ESLint** + **Prettier** - コード品質管理
-- **pnpm** - パッケージマネージャー
-- **DevContainer** - 開発環境
-
-### 外部サービス連携
-
-- **Google OAuth 2.0** - 認証
-- **Stripe API** - サブスクリプション管理
-- **freee API** - 会計連携
-- **OpenAI / Ollama** - AI機能
+- Next.js 16 / React 19 / TypeScript
+- Tailwind CSS / Radix UI / Material UI
+- Prisma / PostgreSQL
+- NextAuth.js v5 / Google OAuth / 2要素認証
+- Stripe / Resend / freee API
+- OpenAI / Ollama
+- Vitest / Playwright / ESLint / Prettier
+- pnpm / DevContainer
 
 ## 主な機能
 
-### 認証・ユーザー管理
-
-- OAuth2.0を用いたGoogle認証によるログイン
-- 2要素認証対応
-- パスワードリセット機能
-- ユーザーロール管理（管理者/一般ユーザー）
-
-### 契約・勤怠管理
-
-- クライアント・契約の作成、編集、削除
-- 月次勤怠表の作成、編集、削除
-- 勤怠の一括入力機能
-- 複数の精算方式対応（上下割、中間割、固定精算、時間単価）
-- 税込・税抜設定と端数処理
-
-### レポート・メール機能
-
-- ExcelJSを使用した作業報告書の自動生成
-- メールテンプレート管理
-- mailtoスキームでのメーラー起動
-
-### サブスクリプション機能
-
-- Stripe統合によるサブスクリプション管理
-- トライアル期間管理
-- サブスクリプション状態管理
-
-### その他
-
-- DBへのCRUD操作を記録する監査ログ機能
-- freee API連携
-- 祝日管理
-- AI機能（OpenAI、Ollama統合）
+- Google OAuth とメールアドレス認証によるログイン、2要素認証、パスワードリセット
+- クライアント、契約、月次勤怠、作業報告書の管理
+- 複数の精算方式、税込・税抜、端数処理への対応
+- 作業報告書の Excel 出力
+- メールテンプレート管理と mailto 起動
+- Stripe によるサブスクリプション管理
+- freee OAuth 連携、取引先取得、請求書作成
+- OpenAI / Ollama を使った勤怠入力支援
+- Prisma 拡張による監査ログ記録
+- 祝日管理、レート制限、Bot 対策
 
 ## セットアップ
 
 ### 前提条件
 
-- Node.js 18以上
+- Node.js 22 推奨
 - pnpm
-- Docker & Docker Compose（DevContainer使用時）
+- Docker と Docker Compose（DevContainer を使う場合）
+- PostgreSQL（DevContainer 外で起動する場合）
 
-### DevContainerでの起動（推奨）
+### DevContainer で起動する
 
-1. リポジトリをクローン
+1. リポジトリをクローンします。
 
 ```bash
 git clone <repository-url>
 cd flow-report
 ```
 
-2. VS Codeで開き、DevContainerで再度開く
-   - コマンドパレット（Ctrl+Shift+P / Cmd+Shift+P）から `Dev Containers: Reopen in Container` を選択
+2. VS Code で開き、`Dev Containers: Reopen in Container` を実行します。
 
-3. 環境変数を設定
+3. 環境変数を用意します。
 
 ```bash
-# Vercelから自動取得（推奨）
-vercel env pull .env.local
+# Vercel から development 環境の変数を取得する場合
+vercel login
+vercel link
+vercel env pull .env.development.local --environment=development
 
-# または手動で設定
-cp .env.example .env.local
-# .env.localを編集して必要な環境変数を設定
+# 手動で用意する場合
+cp .env.example .env.development.local
 ```
 
-4. 依存関係のインストール
+必要に応じて `.env` や `.env.local` もローカル実行環境に合わせて設定してください。DevContainer は `.env` を読み込みます。
+
+4. 依存関係をインストールします。
 
 ```bash
 pnpm install
 ```
 
-5. データベースのセットアップ
+5. データベースをセットアップします。
 
 ```bash
-# マイグレーション実行
 pnpm prisma migrate dev
-
-# シードデータ投入（オプション）
 pnpm prisma db seed
 ```
 
-6. 開発サーバー起動
+6. 開発サーバーを起動します。
 
 ```bash
 pnpm dev
 ```
 
-ブラウザで http://localhost:3000 を開く
+http://localhost:3000 を開きます。
 
-### ローカル環境での起動
+### ローカルで起動する
 
-DevContainerを使用しない場合は、PostgreSQLを別途用意してください。
+DevContainer を使わない場合は PostgreSQL を別途用意し、`DATABASE_URL` と `PRISMA_DATABASE_URL` を設定してください。
 
 ```bash
-# 依存関係のインストール
 pnpm install
-
-# 環境変数の設定
 cp .env.example .env.local
-# DATABASE_URLなどを編集
-
-# データベースのセットアップ
 pnpm prisma migrate dev
-
-# 開発サーバー起動
 pnpm dev
 ```
 
-## 開発ガイド
-
-### プロジェクト構造
-
-```
-src/
-  ├── app/              # Next.js App Router
-  │   └── api/          # API Routes
-  ├── components/       # 共通UIコンポーネント
-  ├── features/         # 機能モジュール
-  │   ├── auth/         # 認証機能
-  │   ├── contract/     # 契約管理
-  │   ├── work-report/  # 勤怠・報告書
-  │   ├── subscription/ # サブスクリプション
-  │   └── ...           # その他の機能
-  ├── libs/             # 共通ライブラリ
-  ├── hooks/            # カスタムフック
-  └── utils/            # ユーティリティ関数
-```
-
-各featureモジュールは以下のサブフォルダで構成されます：
-
-- `actions/` - Server Actions
-- `components/` - UIコンポーネント
-- `hooks/` - カスタムフック
-- `libs/` - ビジネスロジック
-- `repositories/` - データアクセス層
-- `schemas/` - バリデーションスキーマ
-- `types/` - 型定義
-- `utils/` - ユーティリティ関数
-
-### コーディング規約
-
-- **TypeScript strict mode** を使用
-- **関数型プログラミング原則** を採用
-  - `let` の代わりに `const` を使用
-  - 配列・オブジェクトは immutable に操作
-  - mutable なメソッド（`push`, `splice` など）は禁止
-- **ESLint** と **Prettier** による自動チェック
-- **kebab-case** でファイル・ディレクトリ命名
-- **camelCase** で変数・関数命名
-- **UPPER_SNAKE_CASE** で定数命名
-
-詳細は [CLAUDE.md](CLAUDE.md) を参照してください。
-
-### テスト
+## よく使うコマンド
 
 ```bash
-# ユニットテスト（Vitest）
+# 開発サーバー
+pnpm dev
+pnpm dev:turbo
+
+# Prisma
+pnpm prisma generate
+pnpm prisma migrate dev
+pnpm prisma studio
+
+# テスト
 pnpm test
-pnpm test:watch
-
-# E2Eテスト（Playwright）
-pnpm test:e2e
-pnpm test:e2e:ui  # UIモード
-
-# カバレッジ
+pnpm test:run
 pnpm test:coverage
-```
+pnpm test:p
+pnpm test:p:ui
 
-### リント・フォーマット
+# 静的チェック
+pnpm exec eslint .
+pnpm exec tsc --noEmit
+pnpm exec prettier --check .
 
-```bash
-# リント
-pnpm lint
-pnpm lint:fix
-
-# 型チェック
-pnpm type-check
-
-# フォーマット
-pnpm format
-```
-
-### ビルド
-
-```bash
-# 本番ビルド
+# ビルド
 pnpm build
-
-# ビルドサイズ分析
 pnpm analyze
 ```
 
+## プロジェクト構成
+
+```text
+src/
+  app/          Next.js App Router と API Routes
+  components/   共通 UI コンポーネント
+  contexts/     React Context
+  features/     機能単位のモジュール
+  hooks/        共通 hooks
+  libs/         共通ライブラリ
+  repositories/ 共通データアクセス層
+  types/        共通型定義
+  utils/        共通ユーティリティ
+```
+
+主な feature は以下です。
+
+- `auth` - 認証、2要素認証、パスワードリセット
+- `contract` - 契約管理
+- `work-report` - 勤怠、作業報告書、Excel 出力
+- `email` - メールテンプレート
+- `subscription` - Stripe サブスクリプション
+- `freee` - freee OAuth、取引先取得、請求書作成
+- `ai` - OpenAI / Ollama 連携
+- `admin` - 管理者向け処理
+- `user-info` - ユーザー情報
+- `holidays` - 祝日管理
+
+各 feature は必要に応じて `actions/`, `components/`, `hooks/`, `libs/`, `repositories/`, `schemas/`, `types/`, `utils/` などを持ちます。
+
+## 開発ルール
+
+- TypeScript strict mode を前提にします。
+- データベースアクセスは repository 層に集約し、Server Actions から直接 Prisma を呼びません。
+- repository 関数は例外を投げず、`Result<T>` を返します。
+- フォームは `react-hook-form` と Zod schema を組み合わせます。
+- ファイルとディレクトリは kebab-case、変数と関数は camelCase、定数は UPPER_SNAKE_CASE を使います。
+- 詳細なルールは [CLAUDE.md](CLAUDE.md) を参照してください。
+
 ## デプロイ
 
-このプロジェクトは **Vercel** にデプロイされています。
+Vercel へのデプロイを前提にしています。
 
 ```bash
-# Vercel CLIでデプロイ
 vercel
-
-# 本番環境へデプロイ
 vercel --prod
 ```
 
-環境変数は Vercel のダッシュボードで設定するか、`vercel env pull` で取得できます。
+環境変数は Vercel のダッシュボードで設定するか、`vercel env pull` で取得します。
 
-## アピールポイント
+## Worktree 補助スクリプト
 
-- 最新の技術スタック（TypeScript、React v19、Next.js v16 App Router、Prisma、PostgreSQL）を採用
-- DevContainerを活用した一貫した開発環境により、チーム全体での生産性が向上
-- 関数型プログラミング原則に基づいた保守性の高いコードベース
-- VitestとPlaywrightによる包括的なテスト体制
-- Vercelによる高速なCI/CDパイプライン
+複数ブランチを並行して扱うための git worktree 管理スクリプトがあります。
+
+```bash
+pnpm run worktree:init <branch-name> [base-branch]
+pnpm run worktree:list
+pnpm run worktree:remove <worktree-path-or-branch-name>
+```
+
+詳しくは [scripts/README.md](scripts/README.md) を参照してください。
