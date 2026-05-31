@@ -78,7 +78,10 @@ export const createMonthlyWorkReportsAction = async (
     if (!result.success) {
       // エラーが発生しても処理を中断せず、コンソールに出力する
       console.error(
-        `作業報告書作成エラー (契約ID: ${contractId}, 対象月: ${month.getFullYear()}/${month.getMonth() + 1}):`,
+        "作業報告書作成エラー (契約ID: %s, 対象月: %s/%s): %s",
+        contractId,
+        month.getFullYear(),
+        month.getMonth() + 1,
         result.error,
       );
     }
