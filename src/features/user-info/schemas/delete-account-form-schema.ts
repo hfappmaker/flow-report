@@ -10,4 +10,4 @@ export const deleteAccountFormSchema = z.object({
     }),
 });
 
-export type DeleteAccountFormValues = z.infer<typeof deleteAccountFormSchema>;
+export type DeleteAccountFormValues = z.input<typeof deleteAccountFormSchema>;

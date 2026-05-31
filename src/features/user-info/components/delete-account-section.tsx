@@ -1,6 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -40,7 +39,6 @@ export function DeleteAccountSection() {
   const [error, setError] = useState("");
 
   const form = useForm<DeleteAccountFormValues>({
-    resolver: zodResolver(deleteAccountFormSchema),
     defaultValues: {
       confirmText: "",
     },

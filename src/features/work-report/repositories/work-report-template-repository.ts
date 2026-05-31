@@ -1,8 +1,4 @@
-import type {
-  ExcelTemplate,
-  ExcelTemplateField,
-  TemplateType,
-} from "@prisma/client";
+import type { Prisma, ExcelTemplate, TemplateType } from "@prisma/client";
 
 import type {
   CreateExcelTemplateInput,
@@ -11,9 +7,9 @@ import type {
 import { db } from "@/repositories/db";
 import { type Result, err, ok } from "@/types/result";
 
-type ExcelTemplateWithFields = ExcelTemplate & {
-  fieldMappings: ExcelTemplateField[];
-};
+type ExcelTemplateWithFields = Prisma.ExcelTemplateGetPayload<{
+  include: { fieldMappings: true };
+}>;
 
 export class ExcelTemplateRepository {
   /**
@@ -30,7 +26,7 @@ export class ExcelTemplateRepository {
         },
         orderBy: { createdAt: "desc" },
       });
-      return ok(templates);
+      return ok(templates as ExcelTemplateWithFields[]);
     } catch (error) {
       console.error("Error fetching excel templates:", error);
       return err("Excelテンプレート一覧の取得に失敗しました");
@@ -52,7 +48,7 @@ export class ExcelTemplateRepository {
         },
         orderBy: { createdAt: "desc" },
       });
-      return ok(templates);
+      return ok(templates as ExcelTemplateWithFields[]);
     } catch (error) {
       console.error("Error fetching excel templates by type:", error);
       return err("Excelテンプレート一覧の取得に失敗しました");
@@ -70,7 +66,7 @@ export class ExcelTemplateRepository {
           fieldMappings: true,
         },
       });
-      return ok(template);
+      return ok(template as ExcelTemplateWithFields | null);
     } catch (error) {
       console.error("Error fetching excel template by id:", error);
       return err("Excelテンプレートの取得に失敗しました");
@@ -100,7 +96,7 @@ export class ExcelTemplateRepository {
           fieldMappings: true,
         },
       });
-      return ok(template);
+      return ok(template as ExcelTemplateWithFields);
     } catch (error) {
       console.error("Error creating excel template:", error);
       return err("Excelテンプレートの作成に失敗しました");
@@ -138,7 +134,7 @@ export class ExcelTemplateRepository {
             fieldMappings: true,
           },
         });
-        return ok(template);
+        return ok(template as ExcelTemplateWithFields);
       }
 
       const template = await db.excelTemplate.update({
@@ -148,7 +144,7 @@ export class ExcelTemplateRepository {
           fieldMappings: true,
         },
       });
-      return ok(template);
+      return ok(template as ExcelTemplateWithFields);
     } catch (error) {
       console.error("Error updating excel template:", error);
       return err("Excelテンプレートの更新に失敗しました");
