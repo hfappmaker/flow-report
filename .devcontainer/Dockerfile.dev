@@ -42,6 +42,8 @@ RUN pnpm add -g playwright
 # sudo apt install -y fonts-noto-cjk fonts-ipafont-gothic fonts-ipafont-mincho
 # Vercel CLIのインストール
 RUN pnpm add -g vercel
+# 以下のコマンドでvercelのenvを取得
+# vercel link && vercel env pull .env.development.local 
 # Codex CLIのインストール
 RUN pnpm add -g @openai/codex
 # 以下のコマンドでCodex CLIにサインインする
