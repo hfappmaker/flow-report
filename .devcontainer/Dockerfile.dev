@@ -60,6 +60,8 @@ RUN pnpm add -g vercel
 RUN pnpm add -g @openai/codex
 # 以下のコマンドでCodex CLIにサインインする
 # codex login
+# Agent Skills CLIのインストール
+RUN pnpm add -g skills
 # Playwright MCPのインストール
 # RUN claude mcp add playwright -s project -- pnpm dlx -y @playwright/mcp@latest --headless --no-sandbox --isolated
 # PostgreSQL MCPのインストール
