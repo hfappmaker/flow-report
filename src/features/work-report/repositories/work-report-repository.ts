@@ -1,4 +1,5 @@
 import {
+  Prisma,
   Attendance,
   ContractRateType,
   TaxInclusiveType,
@@ -157,9 +158,9 @@ export async function getWorkReportsByContractId(
   }
 }
 
-type WorkReportWithAttendances = WorkReport & {
-  attendances: Attendance[];
-};
+type WorkReportWithAttendances = Prisma.WorkReportGetPayload<{
+  include: { attendances: true };
+}>;
 
 export async function getWorkReportsByContractIdAndYearMonthDateRange(
   contractId: string,
@@ -179,7 +180,7 @@ export async function getWorkReportsByContractIdAndYearMonthDateRange(
         targetDate: "asc",
       },
     });
-    return ok(workReports);
+    return ok(workReports as WorkReportWithAttendances[]);
   } catch (error) {
     console.error(
       "Error fetching work reports by contract id and date range:",
