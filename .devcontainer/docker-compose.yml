@@ -4,8 +4,11 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     container_name: dev_container
+    user: node
     env_file:
       - .env
+    environment:
+      HOME: /home/node
     volumes:
-      - ../:/workspace:cached 
+      - ../:/workspace:cached
     command: sleep infinity

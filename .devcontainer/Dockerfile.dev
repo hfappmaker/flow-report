@@ -1,5 +1,7 @@
 FROM mcr.microsoft.com/devcontainers/typescript-node:dev-22-bookworm
 
+USER root
+
 # システムの更新とpnpmのインストール
 RUN apt update && apt upgrade -y \
     && npm install -g pnpm@latest \
@@ -20,21 +22,31 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
     && apt update \
     && apt install -y gh
 
+# pnpmのグローバルbinディレクトリをセットアップ
+ENV SHELL=/bin/bash
+ENV HOME=/home/node
+ENV PNPM_HOME=/home/node/.local/share/pnpm
+ENV PATH=$PNPM_HOME:/home/node/.local/bin:$PATH
+RUN mkdir -p $PNPM_HOME /home/node/.cache /home/node/.local/bin \
+    && chown -R node:node /home/node/.cache /home/node/.local
+
+USER node
+RUN pnpm config set global-bin-dir $PNPM_HOME
+
 #uvのinstall
 RUN curl -LsSf https://astral.sh/uv/install.sh | bash
 
-# pnpmのグローバルbinディレクトリをセットアップ
-ENV SHELL=/bin/bash
-ENV PNPM_HOME=/root/.local/share/pnpm
-ENV PATH=$PNPM_HOME:$PATH
-RUN pnpm config set global-bin-dir $PNPM_HOME
-
 # Claude Code CLIのインストール（ネイティブインストール）
 RUN curl -fsSL https://claude.ai/install.sh | bash
+
 # Playwright browserのインストール
 RUN pnpm dlx playwright install
-RUN pnpm dlx playwright install-deps
+USER root
+RUN pnpm dlx playwright install-deps \
+    && chown -R node:node /home/node/.cache /home/node/.local
+USER node
 RUN pnpm dlx playwright install chrome
+
 # Playwrightのインストール
 RUN pnpm add -g playwright
 # 日本語フォントのインストール

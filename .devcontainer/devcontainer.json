@@ -12,7 +12,7 @@
   "service": "app",
   "workspaceFolder": "/workspace",
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "sudo chown -R node:node . && pnpm install",
+  "postCreateCommand": "sudo chown -R node:node . && pnpm install --frozen-lockfile",
   // Configure tool-specific properties.
 
   "customizations": {
@@ -44,6 +44,8 @@
   // Configure tool-specific properties.
   // "customizations": {},
 
-  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-  "remoteUser": "root"
+  // Connect and run the dev container as the non-root node user.
+  "containerUser": "node",
+  "remoteUser": "node",
+  "updateRemoteUserUID": true
 }
