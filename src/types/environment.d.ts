@@ -61,7 +61,7 @@ declare global {
 
       // === Email (Resend) ===
       RESEND_API_KEY?: string;
-      // 送信元アドレス（例: "Flow Report <noreply@flowreport.flowtech.co.jp>"）
+      // 送信元アドレス（例: "FlowReport <noreply@flowreport.flowtech.co.jp>"）
       RESEND_FROM_EMAIL?: string;
 
       // === Rate limit (Upstash Redis via Vercel Marketplace) ===

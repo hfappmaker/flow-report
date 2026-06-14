@@ -10,7 +10,7 @@ const Header = ({ label }: HeaderProps) => {
       <div className="flex items-center justify-center">
         <Image
           src="/flow-report.png"
-          alt="Flow Report"
+          alt="FlowReport"
           width={200}
           height={60}
           priority
