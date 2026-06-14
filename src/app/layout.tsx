@@ -12,10 +12,10 @@ import { TransitionProvider } from "@/contexts/transition-context";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | Flow Report",
-    default: "Flow Report",
+    template: "%s | FlowReport",
+    default: "FlowReport",
   },
-  description: "Flow Report",
+  description: "FlowReport",
   icons: {
     icon: [
       {

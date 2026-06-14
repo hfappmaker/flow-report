@@ -3,10 +3,10 @@ import { getAppUrl } from "@/utils/get-app-url";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const SERVICE_NAME = "Flow Report";
+const SERVICE_NAME = "FlowReport";
 const SERVICE_URL = "https://flowreport.flowtech.co.jp";
 
-// 送信元アドレス（環境変数で指定。例: "Flow Report <noreply@flowreport.flowtech.co.jp>"）
+// 送信元アドレス（環境変数で指定。例: "FlowReport <noreply@flowreport.flowtech.co.jp>"）
 const getFromAddress = () => {
   const from = process.env.RESEND_FROM_EMAIL;
   if (!from) {

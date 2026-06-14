@@ -72,7 +72,7 @@ const Sidebar = () => {
             <div className="flex w-full justify-center">
               <Image
                 src="/flow-report.png"
-                alt="Flow Report"
+                alt="FlowReport"
                 width={32}
                 height={32}
                 priority
@@ -82,7 +82,7 @@ const Sidebar = () => {
           ) : (
             <Image
               src="/flow-report.png"
-              alt="Flow Report"
+              alt="FlowReport"
               width={140}
               height={30}
               priority
@@ -169,7 +169,7 @@ const Sidebar = () => {
               <SheetTitle className="flex items-center">
                 <Image
                   src="/flow-report.png"
-                  alt="Flow Report"
+                  alt="FlowReport"
                   width={140}
                   height={30}
                   priority
@@ -213,7 +213,7 @@ const Sidebar = () => {
 
         <Image
           src="/flow-report.png"
-          alt="Flow Report"
+          alt="FlowReport"
           width={120}
           height={26}
           priority

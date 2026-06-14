@@ -25,7 +25,7 @@ export default function LoginPage() {
           href="https://about.flowreport.flowtech.co.jp"
           className="hover:underline"
         >
-          Flow Reportについて
+          FlowReportについて
         </Link>
       </footer>
     </main>
