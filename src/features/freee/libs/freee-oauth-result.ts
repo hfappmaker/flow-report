@@ -1,3 +1,5 @@
+import { sanitizeInternalPath } from "@/utils/url/sanitize-internal-path";
+
 /**
  * freee OAuth の結果を一度だけ画面に伝えるためのフラッシュ Cookie
  *
@@ -25,16 +27,6 @@ export const freeeOAuthResultCookieOptions = {
 
 /**
  * OAuth 完了後の戻り先として安全なアプリ内パスに正規化する
- *
- * "//evil.example" や "https://..." のような外部URLへのオープンリダイレクトを防ぐ。
  */
-export const sanitizeReturnTo = (value: string | null | undefined): string => {
-  if (
-    !value?.startsWith("/") ||
-    value.startsWith("//") ||
-    value.includes("\\")
-  ) {
-    return "/";
-  }
-  return value;
-};
+export const sanitizeReturnTo = (value: string | null | undefined): string =>
+  sanitizeInternalPath(value);
