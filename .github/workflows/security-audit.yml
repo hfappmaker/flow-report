@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - develop
   schedule:
     # 毎週月曜 09:00 JST に、依存を変えていなくても新たに公表された脆弱性を検知する
     - cron: "0 0 * * 1"
