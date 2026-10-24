@@ -1,0 +1,36 @@
+name: Security Audit
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    # 毎週月曜 09:00 JST に、依存を変えていなくても新たに公表された脆弱性を検知する
+    - cron: "0 0 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Dependency audit (critical)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      # pnpm-lock.yaml を元に監査するため依存のインストールは不要。
+      # critical の脆弱性が 1 件でもあれば非ゼロ終了でジョブを失敗させる。
+      - name: Audit dependencies
+        run: pnpm audit --audit-level=critical
