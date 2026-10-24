@@ -1,6 +1,13 @@
 "use server";
 
+import { cookies } from "next/headers";
+
 import { currentUser } from "@/features/auth/libs/auth";
+import {
+  FREEE_OAUTH_RESULT_COOKIE,
+  type FreeeOAuthResult,
+  isFreeeOAuthResult,
+} from "@/features/freee/libs/freee-oauth-result";
 import {
   deleteFreeeToken,
   getFreeeToken,
@@ -59,6 +66,19 @@ export async function checkFreeeConnectionAction(): Promise<boolean> {
     console.error("Failed to check freee connection:", error);
     return false;
   }
+}
+
+/**
+ * OAuth コールバックが残した結果を一度だけ読み出して消す
+ */
+export async function consumeFreeeOAuthResultAction(): Promise<FreeeOAuthResult | null> {
+  const cookieStore = await cookies();
+  const value = cookieStore.get(FREEE_OAUTH_RESULT_COOKIE)?.value;
+  if (value === undefined) {
+    return null;
+  }
+  cookieStore.delete(FREEE_OAUTH_RESULT_COOKIE);
+  return isFreeeOAuthResult(value) ? value : null;
 }
 
 /**

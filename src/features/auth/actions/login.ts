@@ -15,6 +15,7 @@ import { isBotRequest } from "@/libs/bot-protection";
 import { checkRateLimit } from "@/libs/rate-limit";
 import { getRequestIp } from "@/libs/request-ip";
 import { db } from "@/repositories/db";
+import { sanitizeInternalPath } from "@/utils/url/sanitize-internal-path";
 
 export const login = async (
   values: z.infer<typeof LoginSchema>,
@@ -147,5 +148,8 @@ export const login = async (
     };
   }
 
-  return { redirectTo: callbackUrl ?? DEFAULT_LOGIN_REDIRECT };
+  // callbackUrl はクエリ由来なので、外部URLへのオープンリダイレクトを防ぐ
+  return {
+    redirectTo: sanitizeInternalPath(callbackUrl, DEFAULT_LOGIN_REDIRECT),
+  };
 };

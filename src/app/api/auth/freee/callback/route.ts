@@ -2,8 +2,34 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { currentUser } from "@/features/auth/libs/auth";
 import { exchangeCodeForToken } from "@/features/freee/libs/freee-oauth";
+import {
+  FREEE_OAUTH_RESULT_COOKIE,
+  type FreeeOAuthResult,
+  freeeOAuthResultCookieOptions,
+  sanitizeReturnTo,
+} from "@/features/freee/libs/freee-oauth-result";
 import { saveFreeeToken } from "@/features/freee/repositories/freee-token-repository";
 import { getAuthUrl } from "@/utils/get-app-url";
+
+/**
+ * 元のページへ戻すレスポンスを作る
+ *
+ * 結果はURLクエリではなくフラッシュ Cookie で渡し、戻り先URLをきれいなまま保つ。
+ */
+function redirectBack(request: NextRequest, result: FreeeOAuthResult) {
+  const returnTo = sanitizeReturnTo(
+    request.cookies.get("freee_oauth_return_to")?.value,
+  );
+  const response = NextResponse.redirect(new URL(returnTo, request.url));
+  response.cookies.set(
+    FREEE_OAUTH_RESULT_COOKIE,
+    result,
+    freeeOAuthResultCookieOptions,
+  );
+  response.cookies.delete("freee_oauth_state");
+  response.cookies.delete("freee_oauth_return_to");
+  return response;
+}
 
 /**
  * freee OAuth コールバック処理
@@ -27,11 +53,7 @@ export async function GET(request: NextRequest) {
     // エラーチェック
     if (error) {
       console.error("freee auth callback error:", error);
-      const returnTo =
-        request.cookies.get("freee_oauth_return_to")?.value ?? "/";
-      return NextResponse.redirect(
-        new URL(`${returnTo}?error=freee_auth_denied`, request.url),
-      );
+      return redirectBack(request, "denied");
     }
 
     if (!code || !state) {
@@ -67,23 +89,10 @@ export async function GET(request: NextRequest) {
     // トークンをデータベースに保存
     await saveFreeeToken(user.id, tokenData);
 
-    // 元のページにリダイレクト
-    const returnTo = request.cookies.get("freee_oauth_return_to")?.value ?? "/";
-
-    const response = NextResponse.redirect(
-      new URL(`${returnTo}?freee_connected=true`, request.url),
-    );
-
-    // Cookieをクリア
-    response.cookies.delete("freee_oauth_state");
-    response.cookies.delete("freee_oauth_return_to");
-
-    return response;
+    // 元のページにリダイレクト（Cookie もここでクリア）
+    return redirectBack(request, "connected");
   } catch (error) {
     console.error("freee auth callback error:", error);
-    const returnTo = request.cookies.get("freee_oauth_return_to")?.value ?? "/";
-    return NextResponse.redirect(
-      new URL(`${returnTo}?error=freee_auth_failed`, request.url),
-    );
+    return redirectBack(request, "failed");
   }
 }
