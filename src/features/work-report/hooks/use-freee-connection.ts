@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 
-import { checkFreeeConnectionAction } from "@/features/freee/actions/freee-auth-actions";
+import {
+  checkFreeeConnectionAction,
+  consumeFreeeOAuthResultAction,
+} from "@/features/freee/actions/freee-auth-actions";
 import { useMessageState } from "@/hooks/use-message-state";
 
 /**
@@ -26,22 +29,21 @@ export const useFreeeConnection = () => {
       }
     };
 
-    void checkConnection();
+    // OAuth コールバックから戻ってきた場合の結果表示（サーバー側の Cookie で受け取る）
+    const showOAuthResult = async () => {
+      const result = await consumeFreeeOAuthResultAction();
+      if (result === "connected") {
+        setIsFreeeConnected(true);
+        showSuccess("freeeとの連携が完了しました");
+      } else if (result === "failed") {
+        showError("freee連携に失敗しました");
+      } else if (result === "denied") {
+        showError("freee連携がキャンセルされました");
+      }
+    };
 
-    // OAuth コールバックから戻ってきた場合の処理
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("freee_connected") === "true") {
-      setIsFreeeConnected(true);
-      showSuccess("freeeとの連携が完了しました");
-      // URLパラメータをクリア
-      window.history.replaceState({}, "", window.location.pathname);
-    } else if (params.get("error") === "freee_auth_failed") {
-      showError("freee連携に失敗しました");
-      window.history.replaceState({}, "", window.location.pathname);
-    } else if (params.get("error") === "freee_auth_denied") {
-      showError("freee連携がキャンセルされました");
-      window.history.replaceState({}, "", window.location.pathname);
-    }
+    void checkConnection();
+    void showOAuthResult();
   }, [showSuccess, showError]);
 
   return {

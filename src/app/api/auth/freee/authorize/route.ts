@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { currentUser } from "@/features/auth/libs/auth";
 import { generateFreeeAuthUrl } from "@/features/freee/libs/freee-oauth";
+import { sanitizeReturnTo } from "@/features/freee/libs/freee-oauth-result";
 import { getAuthUrl } from "@/utils/get-app-url";
 
 /**
@@ -45,7 +46,9 @@ export async function GET(request: NextRequest) {
     });
 
     // 元のページURLを保存（認証後に戻るため）
-    const returnTo = request.nextUrl.searchParams.get("returnTo") ?? "/";
+    const returnTo = sanitizeReturnTo(
+      request.nextUrl.searchParams.get("returnTo"),
+    );
     response.cookies.set("freee_oauth_return_to", returnTo, {
       httpOnly: true,
       secure: process.env.VERCEL_ENV === "production",
