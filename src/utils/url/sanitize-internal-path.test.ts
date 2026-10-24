@@ -18,6 +18,10 @@ describe("sanitizeInternalPath", () => {
     "/\\evil.example",
     "https://evil.example",
     "javascript:alert(1)",
+    "/\t/evil.example",
+    "/\n/evil.example",
+    "/\r/evil.example",
+    "/ /evil.example",
   ])("外部URLや不正な値 %s は fallback を返す", (value) => {
     expect(sanitizeInternalPath(value)).toBe("/");
     expect(sanitizeInternalPath(value, "/dashboard")).toBe("/dashboard");
