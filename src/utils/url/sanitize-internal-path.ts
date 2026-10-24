@@ -21,7 +21,12 @@ export const sanitizeInternalPath = (
     if (url.origin !== INTERNAL_ORIGIN) {
       return fallback;
     }
-    return `${url.pathname}${url.search}${url.hash}`;
+    const result = `${url.pathname}${url.search}${url.hash}`;
+    // "/.//evil.example" のようにドットセグメントの正規化で "//" 始まりになる値も拒否する
+    if (result.startsWith("//")) {
+      return fallback;
+    }
+    return result;
   } catch {
     return fallback;
   }
