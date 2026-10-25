@@ -68,7 +68,7 @@
     "dayjs": "^1.11.19",
     "exceljs": "^4.4.0",
     "geist": "^1.7.0",
-    "jotai": "^2.15.1",
+    "jotai": "^3.0.1",
     "lucide-react": "^0.555.0",
     "next": "^16.4.2",
     "next-auth": "5.0.0-beta.32",
